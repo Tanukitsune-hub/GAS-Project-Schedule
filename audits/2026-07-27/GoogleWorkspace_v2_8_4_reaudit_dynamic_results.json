@@ -1,0 +1,60 @@
+{
+  "custom_mirror_failure_test": {
+    "first_error": {
+      "code": "",
+      "message": "INJECTED_SET_NOTE_FAILURE"
+    },
+    "old_version": 1,
+    "row_after": {
+      "task_title": "After mirror failure",
+      "row_version": 2,
+      "business_version": 2
+    },
+    "mirror_unchanged": true,
+    "second_error": {
+      "code": "E_TASK_AUTHORITY_DRIFT",
+      "message": "Task rowがtrusted authoritative stateと一致しません: task_title,manual_fields,row_version,updated_at,authoritative_snapshot_json,business_version,calendar_reconcile_required,calendar_intent_version"
+    }
+  },
+  "custom_missing_mirror_self_authorization_test": {
+    "before_mirror_present": true,
+    "mirror_missing_before_handler": true,
+    "handler_error": null,
+    "handler_status": "REJECTED",
+    "handler_reason": "MANAGEMENT_COLUMN_EDIT",
+    "title_after": "Tampered but self-authorized",
+    "snapshot_title_after": "Tampered but self-authorized",
+    "mirror_after_present": true
+  },
+  "custom_corrupt_batch_test": {
+    "error": {
+      "code": "E_TASK_SNAPSHOT_INVALID",
+      "message": "Task trusted mirrorの形式が一致しません。"
+    },
+    "row_a_version_after": 700,
+    "row_b_version_after": 800
+  },
+  "custom_header_edit_test": {
+    "original_header": "タスク内容",
+    "header_result": {
+      "status": "IGNORED",
+      "reason": "HEADER_EDIT",
+      "processed_rows": 0
+    },
+    "header_error": null,
+    "header_after": "改変ヘッダー",
+    "original_id": "needs_review",
+    "id_result": null,
+    "id_error": {
+      "code": "E_SCHEMA_MISSING_COLUMN",
+      "message": "タスク一覧の内部列IDが一致しません。"
+    },
+    "id_after": "tampered_internal_id"
+  },
+  "setup_corrupt_mirror_evidence": {
+    "initial_status": "UPDATED",
+    "corrupted_note_present": true,
+    "rerun_status": "CURRENT",
+    "snapshot_cell_unchanged": true
+  }
+}
