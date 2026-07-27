@@ -257,6 +257,100 @@ test('R-GMAIL-11_REFETCH_RECHECKS_BUDGET_BEFORE_MESSAGE_BODY', () => {
   assert.strictEqual(budgetChecks, 2);
 });
 
+test('R3-P2-01_MANUAL_EXACT_MESSAGES_ADVANCE_OLDEST_FIRST', () => {
+  const importLabel = sandbox.WorkOsConfig.GMAIL_LABELS[4];
+  const formalByName = {};
+  const namesById = {};
+  sandbox.WorkOsConfig.GMAIL_LABELS.forEach((name, index) => {
+    const id = `Label_${index}`;
+    formalByName[name] = { id, name };
+    namesById[id] = name;
+  });
+  const importLabelId = formalByName[importLabel].id;
+  sandbox.Gmail.Users.Threads.list = () => ({
+    threads: [{ id: 'synthetic-order-thread' }]
+  });
+  sandbox.Gmail.Users.Threads.get = () => ({
+    id: 'synthetic-order-thread',
+    messages: [
+      {
+        id: 'synthetic-oldest',
+        internalDate: '1000',
+        labelIds: [importLabelId]
+      },
+      {
+        id: 'synthetic-middle',
+        internalDate: '2000',
+        labelIds: [importLabelId]
+      },
+      {
+        id: 'synthetic-newest',
+        internalDate: '3000',
+        labelIds: [importLabelId]
+      }
+    ]
+  });
+
+  const candidates = Gateway.listManualCandidates({
+    label_cache: {
+      formal_by_name: formalByName,
+      names_by_id: namesById
+    },
+    process_suppressed_message_ids: {},
+    skip_suppressed_message_ids: {}
+  });
+
+  assert.strictEqual(candidates.length, 1);
+  assert.strictEqual(candidates[0].message_id, 'synthetic-oldest');
+  assert.deepStrictEqual(
+    candidates[0].message_refs.map((item) => item.id),
+    ['synthetic-oldest']
+  );
+});
+
+test('R3-P2-02_MANUAL_CANDIDATES_ARE_OLDEST_FIRST_ACROSS_THREADS', () => {
+  const importLabel = sandbox.WorkOsConfig.GMAIL_LABELS[4];
+  const formalByName = {};
+  const namesById = {};
+  sandbox.WorkOsConfig.GMAIL_LABELS.forEach((name, index) => {
+    const id = `Cross_Label_${index}`;
+    formalByName[name] = { id, name };
+    namesById[id] = name;
+  });
+  const importLabelId = formalByName[importLabel].id;
+  sandbox.Gmail.Users.Threads.list = () => ({
+    threads: [
+      { id: 'synthetic-newer-thread' },
+      { id: 'synthetic-older-thread' }
+    ]
+  });
+  sandbox.Gmail.Users.Threads.get = (_userId, threadId) => ({
+    id: threadId,
+    messages: [{
+      id: threadId === 'synthetic-older-thread'
+        ? 'synthetic-cross-oldest'
+        : 'synthetic-cross-newer',
+      internalDate: threadId === 'synthetic-older-thread'
+        ? '1000'
+        : '2000',
+      labelIds: [importLabelId]
+    }]
+  });
+
+  const candidates = Gateway.listManualCandidates({
+    label_cache: {
+      formal_by_name: formalByName,
+      names_by_id: namesById
+    },
+    process_suppressed_message_ids: {},
+    skip_suppressed_message_ids: {}
+  });
+  assert.deepStrictEqual(
+    Array.from(candidates, (item) => item.message_id),
+    ['synthetic-cross-oldest', 'synthetic-cross-newer']
+  );
+});
+
 const failed = results.filter((item) => item.status === 'FAIL');
 console.log(JSON.stringify({
   suite: 'remediation_gmail_policy',

@@ -1,8 +1,8 @@
 # Master Plan
 
-最終更新日: 2026-07-23  
+最終更新日: 2026-07-27  
 Current Architecture: Apps Script v2 + AI classification + human confirmation in Tasks  
-Current Phase: v2 Design Baseline - Rebuild Preparation
+Current Phase: Code 2.8.4-prepilot / READY_FOR_INDEPENDENT_REAUDIT
 
 ## 1. 結論
 
@@ -135,9 +135,13 @@ pending_changes_json
 created_at
 updated_at
 last_calendar_sync_at
+authoritative_snapshot_json
+business_version
+calendar_reconcile_required
+calendar_intent_version
 ```
 
-管理列は右側へ配置し、原則非表示・保護する。
+管理列は右側へ配置し、原則非表示・保護する。Task Schema 2.5は47列で、trusted full-row state、business Review guard、durable Calendar intentを分離する。
 
 ## 5. 確認フロー
 
@@ -194,7 +198,7 @@ SYS/失敗
 ### 6.3 初期テスト
 
 - 自動処理開始前は通常Inboxを検索しない
-- `手動/取込`付き最新1メッセージだけを対象にする
+- `手動/取込`付き未処理exact Messageを受信時刻の古い順に1件ずつ対象にする
 - 最大10スレッド、最大1～3メッセージで確認する
 - Mock Adapterで縦フローを通してから実AIへ接続する
 
@@ -270,7 +274,7 @@ Calendar Event IDとTask IDタグで重複を防ぐ。Calendarは正本ではな
 ### Phase 2: Gmail手動取込
 
 - 正式ラベル作成
-- `手動/取込`付き最新1メッセージ取得
+- `手動/取込`付き未処理exact Messageを古い順に取得
 - Message ID重複防止
 - 既読・未読非依存
 
@@ -323,6 +327,8 @@ Calendar Event IDとTask IDタグで重複を防ぐ。Calendarは正本ではな
 - 新規別アカウントで再現
 - 手引書のみで導入
 - 情報管理確認
+- Code 2.8.4-prepilotの最上位statusは`READY_FOR_INDEPENDENT_REAUDIT`
+- Phase 8B GO/PASS、Phase 8C GO、Pilot readyは独立再監査前に宣言しない
 
 ## 10. 実装上の禁止事項
 
@@ -335,6 +341,8 @@ Calendar Event IDとTask IDタグで重複を防ぐ。Calendarは正本ではな
 - DiagnosticからDashboard更新や全行書換えを呼ばない
 - 同じSheetを1実行内で何度も全件読込しない
 - AI結果保存前にTask・Calendar等の副作用を開始しない
+- current Schemaのlive rowからtrusted snapshotをsilent再生成しない
+- TaskとCalendar Outboxを単一transactionと仮定せず、durable intentから回復する
 - 自動処理を初期値ONにしない
 
 ## 11. 配布・初期セットアップ
@@ -363,6 +371,13 @@ setupSystem()を実行
 自動処理を明示的に開始
 ```
 
-## 12. 参考資料
+## 12. Repositoryとrelease provenance
+
+- 唯一のGitHub正本は`Tanukitsune-hub/GAS-Project-Schedule`とする。
+- Source、tests、tools、canonical docs、CHANGELOGをSource Commit Aへまとめる。
+- Commit Aからrelease packageを生成・検証し、implementation reportとともにRelease Commit Bへまとめる。
+- manifestはRepository、実在Source commit、manifest自身を含むrelease content commit、生成日時、TEST_MODE、Automation状態を記録する。
+
+## 13. 参考資料
 
 v1で発生した具体的な問題と強制ガードレールは`PROTOTYPE_V1_LESSONS_LEARNED.md`を正とする。

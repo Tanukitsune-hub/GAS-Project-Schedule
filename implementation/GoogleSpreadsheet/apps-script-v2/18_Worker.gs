@@ -919,7 +919,8 @@ var WorkOsWorker = (function () {
     var counts = {
       inspected_count: 0,
       queued_count: 0,
-      noop_count: 0
+      noop_count: 0,
+      recovered_intent_count: 0
     };
     (tasks || []).forEach(function (task) {
       if (budget &&
@@ -933,6 +934,21 @@ var WorkOsWorker = (function () {
         return;
       }
       var currentStatus = String(task.calendar_sync_status || '');
+      var hasDurableIntent =
+        task.calendar_reconcile_required === true;
+      var expectedIntentVersion = Number(
+        task.calendar_intent_version
+      );
+      if (hasDurableIntent &&
+          (!Number.isInteger(expectedIntentVersion) ||
+           expectedIntentVersion < 1)) {
+        throw new WorkOsAppError(
+          'E_CALENDAR_INTENT_INVALID',
+          'CALENDAR_RECONCILE',
+          false,
+          'Calendar reconcile intentが不正です。'
+        );
+      }
       var existingRow = outboxContext.byTaskId[taskId];
       var existingRecord = existingRow
         ? WorkOsCalendarSync.readOutboxRow(
@@ -940,7 +956,9 @@ var WorkOsWorker = (function () {
           existingRow
         )
         : null;
-      if (existingRecord && existingRecord.status === 'DEAD') {
+      if (existingRecord &&
+          existingRecord.status === 'DEAD' &&
+          !hasDurableIntent) {
         taskIds.push(taskId);
         counts.inspected_count += 1;
         counts.noop_count += 1;
@@ -962,10 +980,12 @@ var WorkOsWorker = (function () {
         {
           now: nowValue,
           timezone: WorkOsConfig.TIMEZONE,
-          force_enqueue: mayForceCompletedJob && (
-            forceAll === true ||
-            currentStatus === 'PENDING' ||
-            currentStatus === 'DELETE_PENDING'
+          force_enqueue: hasDurableIntent || (
+            mayForceCompletedJob && (
+              forceAll === true ||
+              currentStatus === 'PENDING' ||
+              currentStatus === 'DELETE_PENDING'
+            )
           )
         }
       );
@@ -988,7 +1008,16 @@ var WorkOsWorker = (function () {
           enqueueResult.desired_action === 'NOOP') {
         patchStatus = 'NOT_REQUIRED';
       }
-      if (patchStatus && currentStatus !== patchStatus) {
+      if (hasDurableIntent) {
+        WorkOsTaskRepository.acknowledgeCalendarIntent(
+          taskId,
+          expectedIntentVersion,
+          patchStatus || currentStatus || 'NOT_REQUIRED',
+          taskContext,
+          nowValue
+        );
+        counts.recovered_intent_count += 1;
+      } else if (patchStatus && currentStatus !== patchStatus) {
         WorkOsTaskRepository.applyCalendarPatch(
           taskId,
           { calendar_sync_status: patchStatus },

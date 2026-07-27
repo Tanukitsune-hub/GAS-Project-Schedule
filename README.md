@@ -1,20 +1,33 @@
 # Google Workspace Personal Work OS
 
-最終更新日: 2026-07-23  
-Current Phase: v2 Redesign Baseline - Implementation Specification Pending
+最終更新日: 2026-07-27  
+Current Version: Code `2.8.4-prepilot` / Schema `2.5` / AI Schema `2.0` / Migration `2`  
+Status: `READY_FOR_INDEPENDENT_REAUDIT`
 
-## 重要
+## GitHub正本
 
-このプロジェクトは、v1.xプロトタイプへの追加パッチを停止し、v2をゼロから再構築する段階にある。
+`Tanukitsune-hub/GAS-Project-Schedule`が、context、implementation、tests、tools、
+release、audit、instructionsの唯一のGitHub正本です。
 
-次の旧文書・成果物は**現在の実装正本ではない**。
+## 現在地
 
-- `google_workspace_auto_deadline_manager_apps_script_spec_v1.0.md`
-- v1.x Apps Scriptコード
-- v1.xの要確認タブを含むシート構造
-- v1.x向けMigrationおよび修正パッチ
+Code 2.8.3独立再監査のR3-01～R3-07を修正しました。
 
-旧仕様書は検証経緯の参照用であり、新しいコード生成の入力として単独使用してはならない。
+- management列を含むeditのevent全体拒否と全47列完全復元
+- Setup／Migrationのsilent rebaseline禁止
+- physical row versionとbusiness Review guardの分離
+- Task editからCalendar Outboxまでのdurable reconcile intent
+- 1行open Reviewの明示的な再stage
+- canonical文書のRepository統一
+- Source Commit AとRelease Commit Bを分けたrelease provenance
+- 手動Gmail exact Messageのoldest-first policy
+
+Local evidenceは38 suites、`556 PASS / 0 FAIL / 11 SKIPPED`、static
+validationは`10 PASS / 0 FAIL`です。SKIPPEDは実Provider／実Google Workspace
+相当項目で、PASSへ昇格していません。
+
+最上位statusは`READY_FOR_INDEPENDENT_REAUDIT`です。Phase 8B GO/PASS、
+Phase 8C GO、Production ready、Pilot readyは宣言しません。
 
 ## 読む順番
 
@@ -22,41 +35,28 @@ Current Phase: v2 Redesign Baseline - Implementation Specification Pending
 2. `DECISIONS.md`
 3. `PROJECT_CONTEXT.md`
 4. `MASTER_PLAN.md`
-5. `AUTOMATED_DEADLINE_MANAGER_DESIGN.md`
-6. `INITIAL_IMPLEMENTATION_DEFAULTS.md`
-7. `PROTOTYPE_V1_LESSONS_LEARNED.md`
-8. `NAMING_AND_GMAIL_LABELS.md`
+5. `instructions/GoogleWorkspace_v2_8_3_Next_Remediation_Work_Prompt_2026-07-27.md`
+6. `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND3_IMPLEMENTATION_REPORT.md`
+7. `implementation/GoogleSpreadsheet/apps-script-v2/README.md`
 
 ## 可視化
 
 - [可視化インデックス](docs/visualizations/index.html)
 - [タスク管理システム 全体ワークフロー](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html)
 
-ワークフロー図は外部ライブラリに依存しない単一HTMLで、全体像、自動処理、手動取込・編集、Review、Calendar同期、障害・再実行の表示を切り替えられる。
+ワークフロー図は外部ライブラリに依存しない単一HTMLで、全体像、自動処理、手動取込・編集、Review、Calendar同期、障害・再実行の表示を切り替えられます。
 
-記述が矛盾する場合の優先順位。
+## 主要directory
 
-1. より新しいDecision
-2. `CURRENT_STATUS.md`の明示的な訂正
-3. `PROJECT_CONTEXT.md`
-4. `MASTER_PLAN.md`
-5. v2詳細設計
-6. v1以前の仕様・プロトタイプ資料
+- `implementation/GoogleSpreadsheet/apps-script-v2/`: Apps Script source
+- `implementation/GoogleSpreadsheet/tests/`: local regression
+- `implementation/GoogleSpreadsheet/tools/`: validatorとrelease tooling
+- `implementation/GoogleSpreadsheet/release/`: versioned packages
+- `audits/2026-07-27/`: 独立監査とRound 3 local evidence
+- `instructions/`: 作業指示
 
-## v2の核心
+## Guardrails
 
-- 新しい空のGoogle Sheetsへ新規構築する
-- v1との後方互換Migrationを初期版に持たない
-- 要確認専用タブを作らない
-- 日常操作をタスク一覧へ一本化する
-- 新規曖昧候補は`status=REVIEW`で同じ一覧へ登録する
-- 既存タスク変更候補はpending項目へ保存する
-- Setup、Runtime、Diagnostic、Migrationを分離する
-- Phaseごとの最小縦フローと受入テストで実装する
-- v1コードのコピー＆パッチを行わない
-
-## 次の成果物
-
-次に作成するのは、v2新規構築専用の詳細実装仕様書である。
-
-仕様書確定前にApps Script本体を一括生成しない。
+実Provider、OAuth、実Gmail／Calendar操作、installable edit Trigger実event、
+LockService実競合は今回`NOT EXECUTED`です。credential、実メール本文、
+個人情報、実Workspace ID／URLをRepositoryへ保存しません。

@@ -1772,7 +1772,7 @@ test('P3-I30_MANAGEMENT_EDIT_WARNING_IS_NON_SENSITIVE_AND_IDEMPOTENT', () => {
   const entry = readTasks(taskSheet)[0];
   const beforeExternal = { ...externalCallCounters };
   const first = runEdit(taskSheet, entry.row, 'task_id');
-  assert.strictEqual(first.status, 'IGNORED');
+    assert.strictEqual(first.status, 'REJECTED');
   assert.strictEqual(first.reason, 'MANAGEMENT_COLUMN_EDIT');
   assert.strictEqual(first.management_warning.recorded, true);
   const propertyKey =

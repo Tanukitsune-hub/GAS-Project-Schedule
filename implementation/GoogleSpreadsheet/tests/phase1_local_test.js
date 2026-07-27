@@ -138,8 +138,8 @@ test('P1-L01_SCHEMA_DEFINITIONS', () => {
   const validation = sandbox.WorkOsSchemas.validateSchemaDefinitions();
   assert.strictEqual(validation.ok, true, validation.errors.join('; '));
   assert.strictEqual(
-    sandbox.WorkOsSchemas.getSheetSchema(sandbox.WorkOsConfig.SHEETS.TASKS).length,
-    44
+      sandbox.WorkOsSchemas.getSheetSchema(sandbox.WorkOsConfig.SHEETS.TASKS).length,
+      47
   );
 });
 
@@ -305,10 +305,16 @@ test('P1-L11_VALIDATION_PLAN', () => {
   const checkboxIds = plan
     .filter((item) => item.validation === 'CHECKBOX')
     .map((item) => item.id);
-  assert.deepStrictEqual(
-    Array.from(checkboxIds),
-    ['needs_review', 'completed', 'excluded', 'waiting_for_reply']
-  );
+    assert.deepStrictEqual(
+      Array.from(checkboxIds),
+      [
+        'needs_review',
+        'completed',
+        'excluded',
+        'waiting_for_reply',
+        'calendar_reconcile_required'
+      ]
+    );
   assert.strictEqual(
     plan.find((item) => item.id === 'comment').validation,
     null

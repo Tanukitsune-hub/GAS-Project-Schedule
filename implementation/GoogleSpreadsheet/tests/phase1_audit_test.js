@@ -491,7 +491,9 @@ const expectedTaskIds = [
   'calendar_category', 'calendar_importance', 'calendar_event_id',
   'calendar_sync_status', 'schedule_state', 'manual_fields', 'row_version',
   'pending_action_type', 'pending_changes_json', 'created_at', 'updated_at',
-  'last_calendar_sync_at', 'authoritative_snapshot_json'
+  'last_calendar_sync_at', 'authoritative_snapshot_json',
+  'business_version', 'calendar_reconcile_required',
+  'calendar_intent_version'
 ];
 
 const expectedTaskHeaders = [
@@ -504,7 +506,9 @@ const expectedTaskHeaders = [
   'calendar_category', 'calendar_importance', 'calendar_event_id',
   'calendar_sync_status', 'schedule_state', 'manual_fields', 'row_version',
   'pending_action_type', 'pending_changes_json', 'created_at', 'updated_at',
-  'last_calendar_sync_at', 'authoritative_snapshot_json'
+  'last_calendar_sync_at', 'authoritative_snapshot_json',
+  'business_version', 'calendar_reconcile_required',
+  'calendar_intent_version'
 ];
 
 test('P1-AUD-01_LITERAL_SCHEMA_CONTRACT', () => {
@@ -679,7 +683,7 @@ test('P1-AUD-07_STALE_CONTEXT_PRESERVES_USER_EDIT', () => {
   assert.strictEqual(sheet.cells[2][map.comment], '利用者の同時編集');
 });
 
-test('P1-AUD-08_UPDATE_WRITES_CHANGED_CELLS_ONLY', () => {
+test('P1-AUD-08_UPDATE_WRITES_AUTHORITY_ATOMICALLY', () => {
   const sheet = taskSheet();
   const originKey = 'org_00000000000000000000000000000013';
   sandbox.WorkOsTaskRepository.upsertTask(
@@ -698,10 +702,17 @@ test('P1-AUD-08_UPDATE_WRITES_CHANGED_CELLS_ONLY', () => {
       ai_confidence: 0.9
     },
     { sheet }
-  );
-  assert.ok(sheet.writeLog.length >= 1);
-  assert.ok(sheet.writeLog.every((entry) => entry.columnCount < 44));
-});
+    );
+    assert.ok(sheet.writeLog.length >= 1);
+    const taskWidth = sandbox.WorkOsSchemas.getSheetSchema(
+      sandbox.WorkOsConfig.SHEETS.TASKS
+    ).length;
+    assert.ok(
+      sheet.writeLog.some((entry) =>
+        entry.column === 1 && entry.columnCount === taskWidth
+      )
+    );
+  });
 
 test('P1-AUD-09_NEW_TASK_ID_IS_REPOSITORY_OWNED', () => {
   const sheet = taskSheet();

@@ -1,5 +1,68 @@
 # Changelog
 
+## 2.8.4-prepilot - 2026-07-27
+
+### Fixed
+
+- R3-01: management列を1列でも含むeditはevent全体を拒否し、対象全行の
+  全47列をtrusted authoritative stateへ復元する。snapshot cellのprotected
+  full-row stateとnote mirrorを相互検証し、snapshot改変、mixed/multi-row/
+  20行超paste、blank row、corrupt batchをfail closedかつpartial writeなしで
+  処理する。
+- R3-02: Schema 2.3の初回snapshot構築、Schema 2.4の旧snapshot trust
+  anchor、Schema 2.5のstrict current validationを分離した。Setupはsnapshot
+  欠落、不正JSON、Task ID／Schema不一致、live business driftをsilent
+  rebaselineせず、最初のmutation前に停止する。2.4→2.5 migrationはbounded、
+  resumable、idempotent、data-preservingである。
+- R3-03: physical CAS用`row_version`とReview conflict用`business_version`を
+  分離した。Calendar metadataとsync timestampだけのsystem updateはbusiness
+  guardを変えず、human business/manual-field driftはACCEPTをfail closedにする。
+- R3-04: Calendar関連Task editと同時に
+  `calendar_reconcile_required`／`calendar_intent_version`をdurable commitし、
+  Outbox enqueue後だけexact intent versionでacknowledgeする。Outbox欠落、
+  append失敗、Lock timeout、enqueue直後crash、NOOP retryからbounded recovery
+  でき、create/update/delete/no-opを重複なく再構築する。
+- R3-05: `選択したReviewを再stage`を追加し、1行selection、open
+  `EXISTING_CHANGE` Review、confirmation、target identity、business guard、
+  pending payloadのLock下再検証を必須とした。automatic restageは行わない。
+- R3-06: GitHub正本を`Tanukitsune-hub/GAS-Project-Schedule`だけへ統一し、
+  canonical文書の旧Repository役割分担Decisionを置換した。
+- R3-07: Source／tests／tools／canonical docs／CHANGELOGのCommit Aと、
+  Commit Aから生成するrelease package／実装報告のCommit Bを分離する。
+  manifestはRepository、実在Source commit、manifest自身を含むrelease content
+  commit、生成日時、TEST_MODE、Automation状態を記録する。
+- P2 policy: 手動Gmail候補をThread間と同一Thread内の両方で、受信時刻の古い
+  未処理exact Messageから進める。
+
+### Added
+
+- Task管理列`business_version`、`calendar_reconcile_required`、
+  `calendar_intent_version`。Task Schemaは47列。
+- Round 3専用のmanagement restore、Setup/Migration、Review guard、
+  Calendar durability、explicit restage、oldest-first Gmail回帰test。
+- `tools/v2_8_4/`と2.8.4用の決定的build／verify scripts。
+- `release/v2.8.4-prepilot/`と
+  `release/v2.8.4-prepilot-phase8c/`の生成契約。
+
+### Version and validation
+
+- Code/Schema/AI Schema/Migration:
+  `2.8.4-prepilot` / `2.5` / `2.0` / `2`.
+- Pre-fix reproduction:
+  Round 3 `2 PASS / 15 FAIL`、Schema `8 PASS / 5 FAIL`、
+  Gmail policy `11 PASS / 1 FAIL`。
+- Post-fix targeted:
+  Round 3 `25 PASS / 0 FAIL`、Schema `17 PASS / 0 FAIL`、
+  Gmail policy `13 PASS / 0 FAIL`。
+- Full local regression: 38 suites,
+  `556 PASS / 0 FAIL / 11 SKIPPED`; SKIPPEDは実Providerおよび実Google
+  Workspace項目で、local PASSへ昇格していない。
+- Static Apps Script validation: `10 PASS / 0 FAIL`。22個別`.gs`構文、
+  連結構文、global evaluation、top-level duplicate、Config参照、
+  namespace、append path、simple onEdit、secret scanを含む。
+- Release statusの最上位は`READY_FOR_INDEPENDENT_REAUDIT`。Phase 8B
+  GO/PASS、Phase 8C GO、Pilot readyは宣言しない。
+
 ## 2.8.3-prepilot - 2026-07-27
 
 ### Fixed

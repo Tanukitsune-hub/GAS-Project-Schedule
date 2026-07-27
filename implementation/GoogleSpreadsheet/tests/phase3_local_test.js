@@ -173,6 +173,7 @@ let activeSpreadsheet = null;
 let lockAvailable = true;
 let globalLockHeld = false;
 let lockAttemptCount = 0;
+let lockAvailabilitySequence = null;
 const scriptProperties = new Map();
 const sandbox = {
   console,
@@ -226,7 +227,11 @@ const sandbox = {
       return {
         tryLock: () => {
           lockAttemptCount += 1;
-          if (!lockAvailable || globalLockHeld) {
+          const sequenceAllows = Array.isArray(lockAvailabilitySequence) &&
+            lockAvailabilitySequence.length
+            ? lockAvailabilitySequence.shift()
+            : true;
+          if (!lockAvailable || !sequenceAllows || globalLockHeld) {
             return false;
           }
           heldByThisLock = true;
@@ -477,7 +482,10 @@ function insertTaskFixture(sheet, fields = {}) {
       deadline_basis: fields.deadline_basis || 'NONE',
       pending_action_type: fields.pending_action_type || '',
       pending_changes_json: fields.pending_changes_json || {},
-      priority: 'MEDIUM',
+      priority: fields.priority || 'MEDIUM',
+      calendar_sync_mode: fields.calendar_sync_mode || 'AUTO',
+      calendar_category: fields.calendar_category || 'NONE',
+      calendar_importance: fields.calendar_importance || 'LOW',
       source_message_id: `synthetic-source-${source}`,
       source_thread_id: `synthetic-thread-${source}`,
       stable_thread_key: `root:synthetic-${source}`,
@@ -684,6 +692,7 @@ function test(id, body) {
     lockAvailable = true;
     globalLockHeld = false;
     lockAttemptCount = 0;
+    lockAvailabilitySequence = null;
     scriptProperties.clear();
   }
 }
@@ -1993,10 +2002,18 @@ test('P3-A03_PENDING_CONFLICT_APPLIES_EXACT_TARGET_WITH_CAS_ONCE', () => {
         due_date: '2026-08-20',
         deadline_basis: 'EXPLICIT',
         suggested_due_date: ''
-      },
-      target_task_id: target.task_id,
-      expected_target_row_version: target.row_version,
-      target_resolution: 'CONFLICT',
+        },
+        target_task_id: target.task_id,
+        expected_target_row_version: target.row_version,
+        expected_target_business_version: target.business_version,
+        target_identity: {
+          task_id: target.task_id,
+          origin_key: target.origin_key,
+          stable_thread_key: target.stable_thread_key,
+          source_message_id: target.source_message_id,
+          source_thread_id: target.source_thread_id
+        },
+        target_resolution: 'CONFLICT',
       manual_conflicts: [],
       ai_provenance: provenance
     }
@@ -2174,20 +2191,27 @@ test('P3-A06_REVIEW_NOTE_SUMMARIZES_PENDING_AND_CLEARS_ON_DECISION', () => {
     source: 'audit-review-note-target',
     task_title:
       'Synthetic deadline task https://private.example.invalid/item',
-    due_date: '2026-08-01',
+    due_date: '2026-07-31',
     deadline_basis: 'EXPLICIT'
   });
+  const existingRow = taskRow(sheet, existing.task_id);
   setTaskCell(
     sheet,
-    taskRow(sheet, existing.task_id),
-    'manual_fields',
-    '["due_date"]'
+    existingRow,
+    'due_date',
+    new Date('2026-08-01T00:00:00.000Z')
   );
+  sandbox.WorkOsTaskRepository.applyUserEdits(
+    sheet,
+    [{ row: existingRow, column_ids: ['due_date'] }],
+    new Date('2026-07-27T02:00:00.000Z')
+  );
+  const manuallyEdited = readTask(sheet, existing.task_id);
   const fixture = classify('UPDATE_DUE', {
     message_id: 'synthetic-review-note-message',
     stable_thread_key: existing.stable_thread_key,
     today: '2026-08-10',
-    active_tasks: [activeTaskSummary(existing)]
+    active_tasks: [activeTaskSummary(manuallyEdited)]
   });
   fixture.classification.actions[0].deadline = '2026-08-05';
   fixture.classification.actions[0].changes.due_date = '2026-08-05';
