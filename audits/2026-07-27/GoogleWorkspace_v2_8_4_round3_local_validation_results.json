@@ -1,0 +1,74 @@
+{
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "instruction": "instructions/GoogleWorkspace_v2_8_3_Next_Remediation_Work_Prompt_2026-07-27.md",
+  "generated_at": "2026-07-27T21:21:43+09:00",
+  "baseline_commit": "beeb1e55ef2b5afa04bb89ff0b75a75c85dff87e",
+  "version": {
+    "code": "2.8.4-prepilot",
+    "schema": "2.5",
+    "ai_schema": "2.0",
+    "migration": "2",
+    "test_mode": true,
+    "automation": "OFF"
+  },
+  "pre_fix_reproduction": {
+    "remediation_round3": {
+      "passed": 2,
+      "failed": 15
+    },
+    "phase5_schema_extension": {
+      "passed": 8,
+      "failed": 5
+    },
+    "remediation_gmail_policy": {
+      "passed": 11,
+      "failed": 1
+    }
+  },
+  "post_fix_targeted": {
+    "remediation_round3": {
+      "passed": 25,
+      "failed": 0
+    },
+    "phase5_schema_extension": {
+      "passed": 17,
+      "failed": 0
+    },
+    "remediation_gmail_policy": {
+      "passed": 13,
+      "failed": 0
+    },
+    "remediation_round3_provenance": {
+      "passed": 11,
+      "failed": 0
+    }
+  },
+  "full_local_regression": {
+    "suites": 38,
+    "passed": 556,
+    "failed": 0,
+    "skipped": 11,
+    "external_skips_promoted_to_pass": false
+  },
+  "static_validation": {
+    "suite": "tools/validate_apps_script_v2.js",
+    "passed": 10,
+    "failed": 0,
+    "gs_files": 22,
+    "real_google_workspace": "NOT_EXECUTED"
+  },
+  "real_external_validation": {
+    "oauth_consent": "NOT_EXECUTED",
+    "native_data_validation": "NOT_EXECUTED",
+    "protection_owner_behavior": "NOT_EXECUTED",
+    "gmail_exact_message_mutation": "NOT_EXECUTED",
+    "calendar_crud": "NOT_EXECUTED",
+    "installable_edit_trigger_shape": "NOT_EXECUTED",
+    "time_driven_trigger": "NOT_EXECUTED",
+    "lockservice_contention": "NOT_EXECUTED",
+    "apps_script_quota_runtime": "NOT_EXECUTED",
+    "real_provider": "NOT_EXECUTED"
+  },
+  "highest_status": "READY_FOR_INDEPENDENT_REAUDIT",
+  "prohibited_statuses_declared": []
+}
