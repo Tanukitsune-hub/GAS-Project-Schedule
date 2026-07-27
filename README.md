@@ -1,12 +1,21 @@
 # Google Workspace Personal Work OS
 
-最終更新日: 2026-07-27  
+最終更新日: 2026-07-28  
 Current Version: Code `2.8.4-prepilot` / Schema `2.5` / AI Schema `2.0` / Migration `2`  
 Status: `REAUDIT_NO_GO` / additional remediation required
 
 ## GitHub正本
 
 `Tanukitsune-hub/GAS-Project-Schedule`が、context、implementation、tests、tools、release、audit、instructionsの唯一のGitHub正本です。
+
+## ChatGPT–Codex連携方針
+
+ChatGPTとCodexの情報連携は、このGitHub Repositoryを介して行います。
+
+ChatGPTがCodex向け作業指示書を生成する場合は、毎回、完成版を`instructions/`へ保存し、GitHubから保存内容を再確認したうえで、完全なGitHub参照URLを含む短いCodex貼付文を同時に出力します。会話欄だけに存在し、GitHubへ保存されていない長い指示書は正式な作業指示として扱いません。
+
+- [ChatGPT–Codex GitHub Handoff Policy](CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md)
+- Decision: `DECISIONS.md` D-036
 
 ## 現在地
 
@@ -36,17 +45,19 @@ Automation: OFF
 2. `DECISIONS.md`
 3. `PROJECT_CONTEXT.md`
 4. `MASTER_PLAN.md`
-5. `audits/2026-07-27/GoogleWorkspace_v2_8_4_Independent_Reaudit_Report_2026-07-27.md`
-6. `instructions/GoogleWorkspace_v2_8_4_Next_Remediation_Work_Prompt_2026-07-27.md`
-7. `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND3_IMPLEMENTATION_REPORT.md`
-8. `implementation/GoogleSpreadsheet/apps-script-v2/README.md`
+5. `CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md`
+6. `audits/2026-07-27/GoogleWorkspace_v2_8_4_Independent_Reaudit_Report_2026-07-27.md`
+7. `instructions/GoogleWorkspace_v2_8_5_Remote_Publication_Consistency_and_Independent_Reaudit_Prompt_2026-07-28.md`
+8. `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND3_IMPLEMENTATION_REPORT.md`
+9. `implementation/GoogleSpreadsheet/apps-script-v2/README.md`
 
 ## 最新監査・作業指示
 
 - [Code 2.8.4独立再監査報告](audits/2026-07-27/GoogleWorkspace_v2_8_4_Independent_Reaudit_Report_2026-07-27.md)
 - [Code 2.8.4動的再現結果](audits/2026-07-27/GoogleWorkspace_v2_8_4_reaudit_dynamic_results.json)
 - [Code 2.8.4独立検証結果](audits/2026-07-27/GoogleWorkspace_v2_8_4_reaudit_verification_results.json)
-- [次回修正・完全再検証指示](instructions/GoogleWorkspace_v2_8_4_Next_Remediation_Work_Prompt_2026-07-27.md)
+- [Code 2.8.5 remote publication・整合性確認・独立再監査準備指示](instructions/GoogleWorkspace_v2_8_5_Remote_Publication_Consistency_and_Independent_Reaudit_Prompt_2026-07-28.md)
+- [Code 2.8.4独立再監査後の旧修正指示](instructions/GoogleWorkspace_v2_8_4_Next_Remediation_Work_Prompt_2026-07-27.md)
 
 ## 可視化
 
@@ -62,7 +73,7 @@ Automation: OFF
 - `implementation/GoogleSpreadsheet/tools/`: validatorとrelease tooling
 - `implementation/GoogleSpreadsheet/release/`: versioned packages
 - `audits/2026-07-27/`: 独立監査・動的再現・検証結果
-- `instructions/`: 作業指示
+- `instructions/`: ChatGPTが作成するCodex作業指示とhistorical instruction
 - `docs/visualizations/`: HTML可視化
 
 ## Guardrails
