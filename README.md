@@ -27,6 +27,13 @@ Current Phase: v2 Redesign Baseline - Implementation Specification Pending
 7. `PROTOTYPE_V1_LESSONS_LEARNED.md`
 8. `NAMING_AND_GMAIL_LABELS.md`
 
+## 可視化
+
+- [可視化インデックス](docs/visualizations/index.html)
+- [タスク管理システム 全体ワークフロー](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html)
+
+ワークフロー図は外部ライブラリに依存しない単一HTMLで、全体像、自動処理、手動取込・編集、Review、Calendar同期、障害・再実行の表示を切り替えられる。
+
 記述が矛盾する場合の優先順位。
 
 1. より新しいDecision
