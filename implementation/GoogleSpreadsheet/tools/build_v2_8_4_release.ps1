@@ -250,7 +250,7 @@ $payloadBundleHash = Get-CanonicalHash -Text $canonicalPayload
 
 $sourceCommitValue = "``$SourceCommit``"
 $repositoryValue = "``$Repository``"
-$releaseCommitValue = '``SELF (the Git commit containing this manifest)``'
+$releaseCommitValue = '`SELF (the Git commit containing this manifest)`'
 
 $payloadTable = (
   $payloadRecords |
