@@ -1,4 +1,4 @@
-# Google Workspace Personal Work OS v2 - 2.8.3-prepilot / Round 2 Remediation
+# Google Workspace Personal Work OS v2 - 2.8.4-prepilot / Round 3 Remediation
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 
@@ -34,7 +34,11 @@ Phase 7は失敗を`エラー・再実行`へ1 subsystem・1 safe reference単�
 
 手動Gmail取込はThread単位ではなく正確なMessage ID単位で完了状態を抑止し、同じThreadの次の未処理`手動/取込`へ進みます。Thread内の`手動/除外`は引き続き最優先です。Setup再実行は既存Schema 2.2／2.3環境を2.4へデータ保持で拡張した後、全行のValidation、owner-only Protection、Task／Errorsの行拡張範囲を冪等に再整備します。
 
-Phase 8B用`release/v2.8.3-prepilot/`は`TEST_MODE=true`、Automation OFF、Test Harness同梱です。Phase 8C候補`release/v2.8.3-prepilot-phase8c/`は`TEST_MODE=false`への単一監査済みConfig変換を除きsourceと同一で、`99_TestHarness.gs`を除外しています。両payloadは別packageです。ローカル検証は36 suites、`509 PASS / 0 FAIL / 11 SKIPPED`で、SKIPPEDは実Provider／実Google Workspace項目です。現在の最高到達点は`READY_FOR_INDEPENDENT_REAUDIT`であり、Phase 8B Part D、Phase 8C、実Provider、OAuth、実Workspace受入は未実施です。
+`2.8.4-prepilot`では、独立再監査のR3-01～R3-07を修正しました。Task正本は全47列のprotected snapshotとsnapshot cell note内のtrusted mirrorで保持し、管理列を含むeditはevent全体を拒否して対象全行を完全復元します。復元前に全対象行を検証するため、trusted stateが1行でも壊れていれば部分writeしません。SetupはSchema 2.3から最初のsnapshotを構築し、2.4からは既存snapshotをtrust anchorとして2.5へ移行します。Schema 2.5ではlive business dataとsnapshotが不一致、欠落、不正、Task ID／Schema不一致なら最初のmutation前に停止し、silent rebaselineしません。
+
+物理更新の`row_version`と人間の業務変更を表す`business_version`を分離しました。Reviewはbusiness version、target identity、staged values、manual fieldsをguardとし、Calendar metadataやsync timestampだけの変化では拒否しません。Task editはCalendar reconcile intentをTask行へ先にdurable commitし、Outbox enqueue成功後だけexact intent versionでacknowledgeします。Outbox欠落、append失敗、Lock timeout、enqueue直後の再実行でもbounded recoveryがcreate/update/delete/no-op intentを冪等に回収します。open Reviewの明示的な`選択したReviewを再stage`は確認dialogと1行selection、row-bound再検証を必須とします。手動Gmail候補はThread間とThread内のどちらも古い未処理Messageを先に選びます。
+
+`release/v2.8.4-prepilot/`は`TEST_MODE=true`、Automation OFF、Test Harness同梱です。`release/v2.8.4-prepilot-phase8c/`は`TEST_MODE=false`への単一監査済みConfig変換を除きsourceと同一で、`99_TestHarness.gs`を除外する候補artifactです。両packageは`Tanukitsune-hub/GAS-Project-Schedule`のSource commitを明記し、release content commitはmanifest自身を含むGit commitとして追跡します。ローカル検証は38 suites、`556 PASS / 0 FAIL / 11 SKIPPED`、静的validatorは`10 PASS / 0 FAIL`です。SKIPPEDは実Provider／実Google Workspace項目で、PASSへ昇格していません。現在の最高到達点は`READY_FOR_INDEPENDENT_REAUDIT`です。Phase 8B GO/PASS、Phase 8C GO、Pilot readyは宣言しません。
 
 Phase 8AではApps Script sourceを変更せず、`release/v2.8.1-prepilot/`へ
 TEST_MODE=true・Automation OFFの決定的な非本番Sandbox導入packageを作成しました。
@@ -144,7 +148,7 @@ S50とS60は公開Setupから実行されます。S80はTask編集用Triggerだ�
 32. `[MOCK:INVALID_JSON]`、`[MOCK:SCHEMA_ERROR]`、未知Action、11 ActionはTask副作用前に拒否される。
 33. 本文中の`[MOCK:*]`、命令文、URLは制御として扱われず、件名先頭markerだけがfixtureを選ぶ。
 34. AI label同期は`AI/要対応`、`AI/期限`、`AI/返信待`、`AI/要確認`だけを管理し、`手動/*`を変更しない。`SYS/失敗`はエラー処理だけが管理する。
-35. 管理列の直接編集を`handleTaskEdit(event)`へ渡すと、値を戻さず安全なエラー行とDiagnostic warningを記録する。
+35. 管理列を含むeditを`handleTaskEdit(event)`へ渡すとevent全体を拒否し、20行超を含む対象全行の全47列をtrusted authoritative stateへ完全復元する。trusted stateが1行でも不正なら部分writeしない。
 36. Phase 3のEditHandlerは所有者installable edit Triggerから狭いTask編集だけを自動反映し、選択範囲メニューはfallbackとして到達できる。
 37. 件名、送信者、Task名、AI理由が`= + - @`等の式prefixで始まる完全な架空入力を使い、`タスク一覧`の対象セルについて`getFormula()`が空であることを確認する。
 38. 同じThreadに未解決`RETRY`または`DEAD`が残る場合、別Message成功後も`SYS/失敗`が残ることを確認する。
@@ -156,7 +160,7 @@ S50とS60は公開Setupから実行されます。S80はTask編集用Triggerだ�
 44. Calendar一時失敗後はOutboxが`RETRY`となり、初回失敗後の5/15/60分の最大3回retry scheduleに従い、AI分類やTask作成を再実行しない。3回目のretryも失敗した場合、または非retryable失敗は`DEAD`となる。
 45. 保存Event ID不整合、複数marker Event、foreign instance marker、同名Calendar重複では対象を推測・上書きせず安全停止する。
 46. Setup直後はtime-driven Triggerが0件である。現在の未承認構成では明示的な自動化有効化も拒否され、Triggerが増えない。
-47. 既存v2環境をSetupすると、`メール状態`のprovenanceと`タスク一覧`の`authoritative_snapshot_json`がSchema 2.4へデータ保持で拡張される。再実行はno-opになる。
+47. 既存Schema 2.3環境をSetupすると最初のTask snapshotを構築し、Schema 2.4環境は既存snapshotをtrust anchorとしてSchema 2.5へ拡張される。Schema 2.5のsnapshot欠落、不正、identity不一致、business driftはsilent rebaselineせず最初のwrite前に停止する。正常な再実行はno-opになる。
 48. Phase 5 HarnessではCode implementationとMock HTTP TransportだけがPASSし、Real provider connectionは`NOT EXECUTED`、Company approvalとCredential storage approvalは`NOT CONFIRMED`である。
 49. manifestにExternal request scopeがなく、repositoryに`UrlFetchApp`、実endpoint、model、credential値がない。
 50. Phase 6 local testsでCLOCK Triggerの単一化、wrong-event置換、disable fail-safe、missing trigger UID拒否、24時間overlap、Message単位upper bound、4 page上限、Message ID dedup、partial cursor再開、最大10 Message、due retry優先を確認する。
@@ -172,6 +176,12 @@ S50とS60は公開Setupから実行されます。S80はTask編集用Triggerだ�
 60. ownership、stage、input hash、Task row version、二重WorkerのCAS競合でstale結果をcommitしない。
 61. Calendar外部CREATE後のTask/Outbox競合を再実行し、Eventを重複・孤立させず現在Taskへ収束する。
 62. Dashboard blank-key値、formula、metadata、foreign marker、failed Quick Diagnosticで`E_DASHBOARD_LAYOUT_CONFLICT`となり、部分writeを行わない。
+63. Calendar metadataとsync timestampだけがReview stage後に変化しても受入でき、人間のbusiness fieldが変化した場合はbusiness version guardで拒否される。
+64. Task edit後にOutbox欠落、append失敗、Lock timeoutが起きても`calendar_reconcile_required`とintent versionが残り、次のbounded recoveryで重複なく回収される。
+65. Calendar Outbox enqueue後の再実行はexact intent versionのacknowledgeとjob冪等性により重複しない。
+66. `選択したReviewを再stage`はopen Reviewの1行selectionと確認dialogだけを受け付け、最新business versionとtarget identityへ更新する。
+67. 手動Gmail候補はThread間と同一Thread内の両方で古い未処理Messageから進む。
+68. Code／Schema／AI Schema／Migrationは`2.8.4-prepilot`／`2.5`／`2.0`／`2`であり、release provenanceはRepository、Source commit、manifest自身を含むrelease content commitを区別する。
 
 Google Workspace実環境で実行していない項目はPASSにせず、未実施として記録してください。
 
@@ -188,7 +198,8 @@ clasp login
 clasp push
 ```
 
-このRepositoryではcommit、push、deployを自動実行しません。
+Apps Scriptへの`clasp push`や実環境deployは自動実行しません。GitHub releaseは
+Source commitとrelease content commitを分離し、manifestのprovenanceと照合します。
 
 ## 情報管理
 
@@ -204,7 +215,7 @@ Test HarnessのTaskは完全な架空データです。認証情報をSheetセ�
 ## 既知の制約
 
 - Google Workspace固有のData Validation、Protection、Advanced Gmail/Calendar Service、OAuth、実際のlabel hierarchy、専用Calendar所有判定、Event CRUD、選択範囲メニュー、式neutralizationの`getFormula()`確認、Script Lock競合、実行時間は実環境での手動受入が必要です。ローカルPASSはこれらの実環境PASSを意味しません。
-- Code Versionは`2.8.3-prepilot`、Schema Versionは`2.4`、AI Schema Versionは`2.0`、Migration Versionは`1`として分離しています。
+- Code Versionは`2.8.4-prepilot`、Schema Versionは`2.5`、AI Schema Versionは`2.0`、Migration Versionは`2`として分離しています。
 - Phase 2 entry pointは`PREPROCESSED`で停止します。Mock縦フローはMock分類、Task/Review、AIラベル、Calendar Outboxを扱いますが、実AIを呼びません。
 - installable edit TriggerはSetupでTask編集用に1件だけ作成します。time-driven TriggerはSetupから作成せず、明示的有効化と全前提条件を満たす場合だけ管理します。現在の未承認・実Transport未実装構成では作成を拒否します。
 - Calendar Eventは専用Calendar内の本system所有markerを持つEventだけを更新・削除します。Calendar側の変更をTask正本へ逆流させません。
