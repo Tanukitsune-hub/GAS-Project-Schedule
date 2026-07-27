@@ -1,6 +1,6 @@
 # Decision Log
 
-最終更新日: 2026-07-27
+最終更新日: 2026-07-28
 
 ## Decision一覧
 
@@ -41,6 +41,7 @@
 | D-033 | 2026-07-26 | 実装コードと案件コンテキストを別Repositoryで管理する | 置換済み | D-034 |
 | D-034 | 2026-07-27 | `Tanukitsune-hub/GAS-Project-Schedule`をcontext、implementation、test、tool、release、audit、instructionの唯一のGitHub正本とする | 採用 | D-001、D-033 |
 | D-035 | 2026-07-27 | Source Commit AとRelease Commit Bを分離し、release manifestを実在Source SHAへ結び付ける | 採用 | provenance未確定release |
+| D-036 | 2026-07-28 | ChatGPTが生成するCodex作業指示書を毎回GitHubへ保存し、GitHub URL付きの短いCodex貼付文を同時に出力する | 採用 | 会話欄だけに依存する引継ぎ |
 
 ## Decision詳細
 
@@ -212,5 +213,21 @@ D-033の分割管理は置換済みである。現在は`Tanukitsune-hub/GAS-Pro
 - Commit B: Commit Aから生成・検証したrelease packageとRound 3 implementation report
 - manifestにはGAS Repository名、実在Source commit SHA、manifest自身を含むrelease content commit、生成日時、TEST_MODE、Automation状態を記録する
 - Git commitの自己SHAを同じcommit内へ埋め込めないため、release content commitは`SELF (the Git commit containing this manifest)`と記載し、確定したCommit B SHAをimplementation reportとGitHub証跡で示す
+
+### D-036: ChatGPT–Codex GitHub handoff
+
+ChatGPTとCodexの情報連携は、会話欄だけに依存せず、このGitHub Repositoryを介して行う。
+
+ChatGPTがCodex向け作業指示書を生成する場合は、毎回、次を必須とする。
+
+- 完成した指示書を回答前に`instructions/`へ保存する
+- 長文の場合はindexと番号付き分割ファイルを使用してよい
+- GitHubから保存内容を再取得し、branch、path、内容、参照URLを検証する
+- Codexのチャット欄へ貼り付ける短い指示文を同時に出力する
+- 短い指示文には完全なGitHub URL、Repository、branch、path、status gate、主要禁止事項を含める
+- GitHub保存に失敗した場合は保存済みと報告せず、正式な引継ぎ完了と扱わない
+- Codexは実装、test、report、releaseおよび証跡を同じRepositoryへ戻し、ChatGPTはGitHub上の確定成果物を再監査する
+
+詳細な運用契約は`CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md`を正とする。
 
 API key、password、token、実メール本文、個人情報、未公表情報、実Google Workspace ID・URLはGitHubへ保存しない。
