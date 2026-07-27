@@ -1,12 +1,12 @@
 # Decision Log
 
-最終更新日: 2026-07-26
+最終更新日: 2026-07-27
 
 ## Decision一覧
 
 | ID | 日付 | 判断 | 状態 | 置換対象 |
 |---|---|---|---|---|
-| D-001 | 2026-07-14 | Google Workspace個人業務OSを独立プロジェクトとしてContext Hubへ追加する | 採用 | - |
+| D-001 | 2026-07-14 | Google Workspace個人業務OSを独立プロジェクトとしてContext Hubへ追加する | 置換済み | D-034 |
 | D-002 | 2026-07-14 | Workspace Studioを使用せず、Apps Script中心で構築する | 採用 | - |
 | D-003 | 2026-07-14 | Google Sheetsをタスク管理の正本とする | 採用 | - |
 | D-004 | 2026-07-14 | Google Calendarは重要期限の可視化に限定する | 採用 | - |
@@ -38,13 +38,15 @@
 | D-030 | 2026-07-26 | Phase 8はSandbox準備、TEST_MODE Sandbox、実接続Sandbox、個人パイロットの順に分割する | 採用 | Phase 8の即時配布案 |
 | D-031 | 2026-07-26 | 個人パイロットと反復改善を経てから少人数・部内展開を判断する | 採用 | 完成直後の部内展開案 |
 | D-032 | 2026-07-26 | 利用者の日常作業を例外処理へ限定し、内部の複雑性をUIへ露出させない | 採用 | 手動中心の運用案 |
-| D-033 | 2026-07-26 | 実装コードは`GoogleSpreadsheet`で管理し、案件コンテキストは`context-hub`を正本とする | 採用 | 単一Repository混在案 |
+| D-033 | 2026-07-26 | 実装コードと案件コンテキストを別Repositoryで管理する | 置換済み | D-034 |
+| D-034 | 2026-07-27 | `Tanukitsune-hub/GAS-Project-Schedule`をcontext、implementation、test、tool、release、audit、instructionの唯一のGitHub正本とする | 採用 | D-001、D-033 |
+| D-035 | 2026-07-27 | Source Commit AとRelease Commit Bを分離し、release manifestを実在Source SHAへ結び付ける | 採用 | provenance未確定release |
 
 ## Decision詳細
 
 ### D-001～D-004: 基本アーキテクチャ
 
-- 本案件をContext Hubで独立管理する
+- D-001のRepository配置判断はD-034により置換済み
 - Apps Scriptを自動化の中核とする
 - Google Sheetsをタスク・期限・状態の正本とする
 - Calendarは失念時の影響が大きい重要期限だけを可視化する
@@ -200,9 +202,15 @@ Phase 8D: Repository owner本人による実業務パイロット
 
 Message State、Retry、Dead Letter、内部ID等のシステム複雑性は通常利用者へ過度に露出させない。導入、設定、復旧も可能な限り推奨初期値と自動処理で簡素化する。
 
-### D-033: Repositoryの役割分担
+### D-033 / D-034: Repository正本
 
-- `GoogleSpreadsheet`: Apps Script v2、テスト、release package、実装報告の作業Repository
-- `Tanukitsune-hub/context-hub`: 目的、前提、計画、Decision、Current Statusの正本
+D-033の分割管理は置換済みである。現在は`Tanukitsune-hub/GAS-Project-Schedule`だけを、context、implementation、test、tool、release、audit、instructionのGitHub正本とする。旧配置はhistorical audit/reportの参照としてのみ残し、現行の参照・更新・同期先にしない。
 
-API key、password、token、実メール本文、個人情報、未公表情報、実Google Workspace ID・URLはどちらのGitHub Repositoryにも保存しない。
+### D-035: Source／Release commit分離
+
+- Commit A: Source、tests、tools、canonical docs、CHANGELOG
+- Commit B: Commit Aから生成・検証したrelease packageとRound 3 implementation report
+- manifestにはGAS Repository名、実在Source commit SHA、manifest自身を含むrelease content commit、生成日時、TEST_MODE、Automation状態を記録する
+- Git commitの自己SHAを同じcommit内へ埋め込めないため、release content commitは`SELF (the Git commit containing this manifest)`と記載し、確定したCommit B SHAをimplementation reportとGitHub証跡で示す
+
+API key、password、token、実メール本文、個人情報、未公表情報、実Google Workspace ID・URLはGitHubへ保存しない。
