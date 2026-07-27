@@ -91,6 +91,7 @@ function businessSnapshot(task) {
     'pending_action_type',
     'pending_changes_json',
     'manual_fields',
+    'business_version',
     'created_at'
   ];
   const result = {};
@@ -120,6 +121,9 @@ function onlyCalendarManagementWrites(sheet) {
   ]);
   return sheet.writeLog.every((write) => {
     if (write.row < sandbox.WorkOsConfig.DATA_START_ROW) {
+      return true;
+    }
+    if (write.column === 1 && write.columnCount === schema.length) {
       return true;
     }
     for (
