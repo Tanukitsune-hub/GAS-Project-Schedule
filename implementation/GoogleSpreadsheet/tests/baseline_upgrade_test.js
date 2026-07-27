@@ -295,7 +295,7 @@ function makeCompletedPhase4Environment() {
     origin_key: 'org_phase4_existing_0000000000000001',
     task_title: 'Synthetic task that must survive metadata refresh',
     comment: 'User-authored synthetic comment',
-    status: '譛ｪ蟇ｾ蠢・,
+    status: '未対応',
     row_version: 7,
     created_at: new Date('2026-07-23T00:00:00.000Z'),
     updated_at: new Date('2026-07-23T01:00:00.000Z')
@@ -632,4 +632,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

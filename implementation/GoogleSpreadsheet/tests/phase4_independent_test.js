@@ -656,7 +656,37 @@ test('P4-I05_STANDALONE_SYNC_CALLS_NO_GMAIL_OR_AI_AND_MAX_ONE_JOB', () => {
   });
   sandbox.WorkOsAiAdapter = new Proxy({}, {
     get() {
-      throw n…246 tokens truncated…darGateway,
+      throw new Error('Standalone Calendar sync accessed AI');
+    }
+  });
+  try {
+    const first = sandbox.WorkOsWorker.syncPendingCalendarJobs({
+      spreadsheet,
+      calendar_gateway: calendarGateway,
+      calendar_properties: scriptProperties(),
+      instance_id: calendarGateway.instanceId,
+      now: clock.now,
+      budget: fixedBudget(false)
+    });
+    assert.strictEqual(first.status, 'COMPLETE');
+    assert.strictEqual(first.processed_count, 1);
+    assert.strictEqual(calendarGateway.calls.eventInsert, 1);
+    assert.strictEqual(
+      JSON.stringify(first.external_services),
+      JSON.stringify({
+        gmail: 'NOT_CALLED',
+        ai: 'NOT_CALLED',
+        calendar: 'ADVANCED_CALENDAR_SERVICE'
+      })
+    );
+    assert.deepStrictEqual(
+      Array.from(outboxRecords(spreadsheet), (record) => record.status).sort(),
+      ['DONE', 'PENDING']
+    );
+
+    const second = sandbox.WorkOsWorker.syncPendingCalendarJobs({
+      spreadsheet,
+      calendar_gateway: calendarGateway,
       calendar_properties: scriptProperties(),
       instance_id: calendarGateway.instanceId,
       now: clock.now,
@@ -726,8 +756,8 @@ test('P4-I07_EDIT_HANDLER_QUEUES_ONLY_AND_USES_NON_NESTED_LOCKS', () => {
   assert.strictEqual(result.calendar_outbox.pending_count, 1);
   assert.strictEqual(
     harness.getLockAttemptCount() - lockAttemptsBefore,
-    2,
-    'Edit handling must use two sequential locks, never a nested lock'
+    3,
+    'Edit handling must use three sequential locks, never a nested lock'
   );
   assert.strictEqual(outboxRecords(spreadsheet)[0].status, 'PENDING');
   const edited = harness.readTask(taskSheet, task.task_id);
@@ -927,7 +957,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
   );
   assert.match(
     setupSource,
-    /S99_COMPLETE[\s\S]*PHASE7_LOCAL_COMPLETE_EXTERNAL_VALIDATION_PENDING/
+    /S99_COMPLETE[\s\S]*READY_FOR_INDEPENDENT_REAUDIT/
   );
   assert.strictEqual(/\bCalendar\./.test(diagnosticSource), false);
   assert.strictEqual(/\bCalendarApp\b/.test(diagnosticSource), false);
@@ -1240,4 +1270,3 @@ console.log(JSON.stringify({
 if (failed.length) {
   process.exitCode = 1;
 }
-

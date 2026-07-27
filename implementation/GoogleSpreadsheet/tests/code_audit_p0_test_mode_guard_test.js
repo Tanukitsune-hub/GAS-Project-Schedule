@@ -184,13 +184,13 @@ test('P0-F09-05_PRODUCTION_MENU_OMITS_MOCK_AND_TEST_ITEMS', () => {
   const serialized = fixture.menuItems.join('\n');
   [
     'Mock',
-    'Phase 1繝・せ繝・,
-    'Phase 2繝・せ繝・,
-    'Phase 3繝・せ繝・,
-    'Phase 4繝・せ繝・,
-    'Phase 5繝・せ繝・,
-    'Phase 6繝・せ繝・,
-    'Phase 7繝・せ繝・
+    'Phase 1テスト',
+    'Phase 2テスト',
+    'Phase 3テスト',
+    'Phase 4テスト',
+    'Phase 5テスト',
+    'Phase 6テスト',
+    'Phase 7テスト'
   ].forEach((label) => {
     assert.strictEqual(serialized.includes(label), false);
   });
@@ -233,4 +233,3 @@ process.stdout.write(`${JSON.stringify({
 if (failed.length) {
   process.exitCode = 1;
 }
-

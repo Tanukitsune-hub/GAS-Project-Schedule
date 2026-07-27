@@ -65,7 +65,7 @@ var WorkOsEditHandler = (function () {
         'E_CALENDAR_OUTBOX_MISSING',
         'EDIT_HANDLER',
         false,
-        '蜷梧悄迥ｶ諷鬼heet縺後↑縺・◆繧，alendar諢丞峙繧剃ｿ晏ｭ倥〒縺阪∪縺帙ｓ縲・
+        '同期状態SheetがないためCalendar意図を保存できません。'
       );
     }
     return WorkOsUtilities.withScriptLock(function (lock) {
@@ -92,7 +92,7 @@ var WorkOsEditHandler = (function () {
             'E_TARGET_NOT_RESOLVED',
             'EDIT_HANDLER',
             false,
-            '邱ｨ髮・＠縺鬱ask繧辰alendar Outbox謚募・譎ゅ↓遒ｺ隱阪〒縺阪∪縺帙ｓ縲・
+            '編集したTaskをCalendar Outbox投入時に確認できません。'
           );
         }
         var enqueueResult = WorkOsCalendarSync.enqueueTaskInContext(
@@ -143,7 +143,7 @@ var WorkOsEditHandler = (function () {
             String(result.error_code || 'REVIEW_DECISION_REJECTED'),
             'EDIT_HANDLER',
             false,
-            'Task蛻､譁ｭ謫堺ｽ懊ｒ螳牙・縺ｮ縺溘ａ諡貞凄縺励∪縺励◆縲・
+            'Task判断操作を安全のため拒否しました。'
           ),
           {
             task_id: result.review_task_id || result.task_id,
@@ -159,8 +159,8 @@ var WorkOsEditHandler = (function () {
     });
     if (spreadsheet && typeof spreadsheet.toast === 'function') {
       spreadsheet.toast(
-        '遒ｺ隱榊ｾ・■縺ｮReview莉･螟悶〒縺ｯ蛻､譁ｭ繧貞､画峩縺ｧ縺阪∪縺帙ｓ縲・,
-        '蛻､譁ｭ繧貞・縺ｫ謌ｻ縺励∪縺励◆',
+        '確認待ちのReview以外では判断を変更できません。',
+        '判断を元に戻しました',
         5
       );
     }
@@ -185,7 +185,7 @@ var WorkOsEditHandler = (function () {
         'E_EDIT_TRIGGER_NON_CANONICAL',
         'EDIT_HANDLER',
         false,
-        '豁｣隕上・Task邱ｨ髮・rigger莉･螟悶°繧峨・event繧呈拠蜷ｦ縺励∪縺励◆縲・
+        '正規のTask編集Trigger以外からのeventを拒否しました。'
       );
     }
     return true;
@@ -197,7 +197,7 @@ var WorkOsEditHandler = (function () {
         'E_EDIT_EVENT',
         'EDIT_HANDLER',
         false,
-        '邱ｨ髮・vent縺御ｸ崎ｶｳ縺励※縺・∪縺吶・
+        '編集eventが不足しています。'
       );
     }
     var installableEvent = assertCanonicalInstallableEvent(event);
@@ -221,7 +221,7 @@ var WorkOsEditHandler = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'EDIT_HANDLER',
         false,
-        '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜀・Κ蛻悠D縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+        'タスク一覧の内部列IDが一致しません。'
       );
     }
     var firstRow = Math.max(
@@ -241,7 +241,7 @@ var WorkOsEditHandler = (function () {
         'E_EDIT_RANGE_LIMIT',
         'EDIT_HANDLER',
         false,
-        '1蝗槭↓蜿肴丐縺ｧ縺阪ｋTask邱ｨ髮・・20陦後∪縺ｧ縺ｧ縺吶・
+        '1回に反映できるTask編集は20行までです。'
       );
     }
     var firstColumn = Math.max(1, range.getColumn());
@@ -307,7 +307,7 @@ var WorkOsEditHandler = (function () {
         'E_EDIT_EVENT',
         'EDIT_HANDLER',
         false,
-        '蜿肴丐縺吶ｋTask邱ｨ髮・ｯ・峇繧帝∈謚槭＠縺ｦ縺上□縺輔＞縲・
+        '反映するTask編集範囲を選択してください。'
       );
     }
     return handle({ range: range });
@@ -328,4 +328,3 @@ function handleTaskEdit(event) {
 function applySelectedTaskEdits() {
   return WorkOsEditHandler.handleActiveSelection();
 }
-

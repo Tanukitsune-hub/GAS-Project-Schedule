@@ -319,15 +319,15 @@ test('P2-L01_LITERAL_MESSAGE_STATE_SCHEMA', () => {
 test('P2-L02_FORMAL_LABEL_ENSURE_IS_IDEMPOTENT', () => {
   const fake = installGmailFake({
     labels: [
-      { id: 'OLD', name: '譌ｧ/繝ｩ繝吶Ν' },
-      { id: 'MANUAL', name: '謇句虚/蜿冶ｾｼ' }
+      { id: 'OLD', name: '旧/ラベル' },
+      { id: 'MANUAL', name: '手動/取込' }
     ]
   });
   const first = sandbox.WorkOsGmailGateway.ensureFormalLabels();
   const second = sandbox.WorkOsGmailGateway.ensureFormalLabels();
   assert.strictEqual(first.created_count, 6);
   assert.strictEqual(second.created_count, 0);
-  assert.strictEqual(fake.labels.filter((label) => label.name === '譌ｧ/繝ｩ繝吶Ν').length, 1);
+  assert.strictEqual(fake.labels.filter((label) => label.name === '旧/ラベル').length, 1);
   assert.deepStrictEqual(
     fake.labels
       .filter((label) => sandbox.WorkOsConfig.GMAIL_LABELS.includes(label.name))
@@ -340,7 +340,7 @@ test('P2-L02_FORMAL_LABEL_ENSURE_IS_IDEMPOTENT', () => {
 test('P2-L03_PARTIAL_LABEL_FAILURE_RESUMES_WITHOUT_DUPLICATES', () => {
   const fake = installGmailFake({
     labels: [],
-    createFailureName: 'AI/隕∫｢ｺ隱・
+    createFailureName: 'AI/要確認'
   });
   assert.throws(
     () => sandbox.WorkOsGmailGateway.ensureFormalLabels(),
@@ -355,7 +355,7 @@ test('P2-L03_PARTIAL_LABEL_FAILURE_RESUMES_WITHOUT_DUPLICATES', () => {
 
 test('P2-L04_MANUAL_QUERY_BOUNDS_AND_READ_STATE_INDEPENDENCE', () => {
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
   const threads = {};
   for (let index = 0; index < 11; index += 1) {
     threads[`thread-${index}`] = {
@@ -382,7 +382,7 @@ test('P2-L04_MANUAL_QUERY_BOUNDS_AND_READ_STATE_INDEPENDENCE', () => {
   assert.strictEqual(candidates.every((item) => item.manual_decision === 'PROCESS'), true);
   assert.strictEqual(candidates.every((item) => item.message_refs.length <= 3), true);
   assert.deepStrictEqual(fake.calls.threadList[0], {
-    q: 'label:謇句虚/蜿冶ｾｼ -label:謇句虚/髯､螟・,
+    q: 'label:手動/取込 -label:手動/除外',
     maxResults: 10,
     includeSpamTrash: false
   });
@@ -391,13 +391,13 @@ test('P2-L04_MANUAL_QUERY_BOUNDS_AND_READ_STATE_INDEPENDENCE', () => {
 test('P2-L05_MANUAL_EXCLUDE_AND_SPAM_WIN', () => {
   assert.strictEqual(
     sandbox.WorkOsGmailGateway.decideManualLabelAction([
-      '謇句虚/蜿冶ｾｼ',
-      '謇句虚/髯､螟・
+      '手動/取込',
+      '手動/除外'
     ]),
     'SKIP'
   );
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
   const fake = installGmailFake({
     labels,
     threads: {
@@ -418,8 +418,8 @@ test('P2-L05_MANUAL_EXCLUDE_AND_SPAM_WIN', () => {
 
 test('P2-L05A_THREAD_LEVEL_MANUAL_EXCLUDE_WINS', () => {
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
-  const excludeId = labels.find((label) => label.name === '謇句虚/髯､螟・).id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
+  const excludeId = labels.find((label) => label.name === '手動/除外').id;
   installGmailFake({
     labels,
     threads: {
@@ -470,7 +470,7 @@ test('P2-L06_STABLE_THREAD_KEY', () => {
 
 test('P2-L06A_THREAD_MESSAGE_ORDER_IS_NORMALIZED', () => {
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
   installGmailFake({
     labels,
     threads: {
@@ -514,7 +514,7 @@ test('P2-L06A_THREAD_MESSAGE_ORDER_IS_NORMALIZED', () => {
 
 test('P2-A01_MANUAL_IMPORT_SELECTS_EXACT_LABELED_MESSAGE_ONLY', () => {
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
   installGmailFake({
     labels,
     threads: {
@@ -561,9 +561,9 @@ test('P2-A01_MANUAL_IMPORT_SELECTS_EXACT_LABELED_MESSAGE_ONLY', () => {
   );
 });
 
-test('P2-A02_MANUAL_IMPORT_USES_LATEST_AMONG_LABELED_MESSAGES', () => {
+test('P2-A02_MANUAL_IMPORT_ADVANCES_TO_NEXT_UNPROCESSED_EXACT_MESSAGE', () => {
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
   installGmailFake({
     labels,
     threads: {
@@ -598,13 +598,41 @@ test('P2-A02_MANUAL_IMPORT_USES_LATEST_AMONG_LABELED_MESSAGES', () => {
       }
     }
   });
-  const candidates = sandbox.WorkOsGmailGateway.listManualCandidates();
-  assert.strictEqual(candidates.length, 1);
-  assert.strictEqual(candidates[0].message_id, 'message-import-second');
+  const firstCandidates = sandbox.WorkOsGmailGateway.listManualCandidates();
+  assert.strictEqual(firstCandidates.length, 1);
+  assert.strictEqual(firstCandidates[0].message_id, 'message-import-second');
   assert.deepStrictEqual(
-    Array.from(candidates[0].message_refs, (item) => item.id),
+    Array.from(firstCandidates[0].message_refs, (item) => item.id),
     ['message-import-first', 'message-middle', 'message-import-second']
   );
+
+  const secondCandidates = sandbox.WorkOsGmailGateway.listManualCandidates({
+    process_suppressed_message_ids: {
+      'message-import-second': true
+    }
+  });
+  assert.strictEqual(secondCandidates.length, 1);
+  assert.strictEqual(secondCandidates[0].message_id, 'message-import-first');
+  assert.deepStrictEqual(
+    Array.from(secondCandidates[0].message_refs, (item) => item.id),
+    ['message-import-first']
+  );
+  assert.strictEqual(
+    secondCandidates[0].message_refs.some((item) =>
+      item.id === 'message-middle' ||
+      item.id === 'message-import-second' ||
+      item.id === 'message-after-selection'
+    ),
+    false
+  );
+
+  const exhausted = sandbox.WorkOsGmailGateway.listManualCandidates({
+    process_suppressed_message_ids: {
+      'message-import-first': true,
+      'message-import-second': true
+    }
+  });
+  assert.strictEqual(exhausted.length, 0);
 });
 
 test('P2-A03_THREAD_WITHOUT_EXACT_IMPORT_LABEL_FAILS_CLOSED', () => {
@@ -691,18 +719,18 @@ test('P2-L08_PREPROCESS_BOUNDARIES_UNICODE_AND_HASH', () => {
   });
   [19999, 20000].forEach((count) => {
     const output = sandbox.WorkOsEmailPreprocessor.preprocess(
-      makeInput('・'.repeat(count)),
+      makeInput('😀'.repeat(count)),
       { today: '2026-07-24', timezone: 'Asia/Tokyo', active_tasks: [] }
     );
     assert.strictEqual(output.metadata.truncated, false);
     assert.strictEqual(Array.from(output.body).length, count);
   });
   const long = sandbox.WorkOsEmailPreprocessor.preprocess(
-    makeInput('・'.repeat(20001)),
+    makeInput('😀'.repeat(20001)),
     { today: '2026-07-24', timezone: 'Asia/Tokyo', active_tasks: [] }
   );
   const replay = sandbox.WorkOsEmailPreprocessor.preprocess(
-    makeInput('・'.repeat(20001)),
+    makeInput('😀'.repeat(20001)),
     { today: '2026-07-25', timezone: 'Asia/Tokyo', active_tasks: [] }
   );
   assert.strictEqual(Array.from(long.body).length, 20000);
@@ -965,8 +993,15 @@ test('P2-L15_WORKER_SUCCESS_IS_IDEMPOTENT_AND_PERSISTS_NO_BODY', () => {
     manual_decision: 'PROCESS',
     message_refs: [{ id: 'message-worker', internal_date: 1 }]
   });
+  const candidateOptions = [];
   const gateway = {
-    listManualCandidates: () => [candidate],
+    listManualCandidates: (options = {}) => {
+      candidateOptions.push(options);
+      return options.process_suppressed_message_ids &&
+        options.process_suppressed_message_ids[candidate.message_id]
+        ? []
+        : [candidate];
+    },
     fetchSelectedContent: () => ({
       ...candidate,
       subject: 'PRIVATE SUBJECT',
@@ -993,6 +1028,20 @@ test('P2-L15_WORKER_SUCCESS_IS_IDEMPOTENT_AND_PERSISTS_NO_BODY', () => {
   assert.strictEqual(first.processed_count, 1);
   assert.strictEqual(first.checkpoint, 'PREPROCESSED');
   assert.strictEqual(second.processed_count, 0);
+  assert.strictEqual(
+    candidateOptions[1].process_suppressed_message_ids[
+      candidate.message_id
+    ],
+    true
+  );
+  assert.strictEqual(
+    Boolean(
+      candidateOptions[1].skip_suppressed_message_ids[
+        candidate.message_id
+      ]
+    ),
+    false
+  );
   const stateSheet = activeSpreadsheet.getSheetByName(
     sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE
   );
@@ -1086,7 +1135,7 @@ test('P2-L16_WORKER_BUDGET_BEFORE_AND_AFTER_CLAIM', () => {
 
 test('P2-L16B_GATEWAY_STOPS_THREAD_EXPANSION_AT_BUDGET', () => {
   const labels = allFormalLabels();
-  const importId = labels.find((label) => label.name === '謇句虚/蜿冶ｾｼ').id;
+  const importId = labels.find((label) => label.name === '手動/取込').id;
   const threads = {};
   for (let index = 0; index < 10; index += 1) {
     threads[`budget-thread-${index}`] = {
@@ -1307,4 +1356,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

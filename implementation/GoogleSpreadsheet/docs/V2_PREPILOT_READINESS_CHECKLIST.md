@@ -29,7 +29,7 @@ NOT_APPLICABLE
 | Check | Status | Evidence / required action |
 |---|---|---|
 | Repository root is `GoogleSpreadsheet` | PASS_LOCAL | `git rev-parse --show-toplevel` |
-| Audited Phase 1窶・ baseline boundary identified | PASS_LOCAL | staged 24-suite `2.7.0-phase7` boundary: 384 PASS / 0 FAIL / 10 SKIPPED |
+| Audited Phase 1–7 baseline boundary identified | PASS_LOCAL | staged 24-suite `2.7.0-phase7` boundary: 384 PASS / 0 FAIL / 10 SKIPPED |
 | Baseline candidate contains no real secret | PASS_LOCAL | staged extraction and Archive scan |
 | Task-only Codex prompt excluded from baseline | PASS_LOCAL | current index and working-tree inventory |
 | Baseline local paths removed | PASS_LOCAL | placeholder paths; high-confidence absolute-path scan 0 |
@@ -87,9 +87,9 @@ NOT_APPLICABLE
 |---|---|---|
 | Empty production Provider registry | PASS_LOCAL | fail-closed implementation |
 | Production factory boundary | PASS_LOCAL | registry/component validation |
-| Lock-free external classification boundary | PASS_LOCAL | Gmail search/body/label縲、I transport縲，alendar list/CRUD縺ｯ遏ｭ譎る俣claim Lock縺ｮ螟門・縲・ock Lock縺ｧ蜻ｼ蜃ｺ譎ゅ・髱樔ｿ晄戟繧堤峩謗･讀懆ｨｼ・・-001/F-007 closure・・|
-| Production Provider failure suppression / Run History | PASS_LOCAL | transient Provider螟ｱ謨励ｒbounded suppression accounting縺ｸ謗･邯壹＠縲∬ｨｭ螳壼､ｱ謨励ｒ蜷ｫ繧蜈ｨrun outcome繧池un_id蜀ｪ遲峨〒蜃ｦ逅・ｱ･豁ｴ縺ｸ險倬鹸・・-014 closure・・|
-| CAS conflict failure injection | PASS_LOCAL | claim ownership縲《tage縲（nput hash縲ゝask row_version縲∽ｺ碁㍾Worker縲，alendar蜑ｯ菴懃畑蠕卦ask/Outbox遶ｶ蜷医ｒ逶ｴ謗･豕ｨ蜈･・・-015 closure・・|
+| Lock-free external classification boundary | PASS_LOCAL | Gmail search/body/label、AI transport、Calendar list/CRUDは短時間claim Lockの外側。Mock Lockで呼出時の非保持を直接検証（F-001/F-007 closure） |
+| Production Provider failure suppression / Run History | PASS_LOCAL | transient Provider失敗をbounded suppression accountingへ接続し、設定失敗を含む全run outcomeをrun_id冪等で処理履歴へ記録（F-014 closure） |
+| CAS conflict failure injection | PASS_LOCAL | claim ownership、stage、input hash、Task row_version、二重Worker、Calendar副作用後Task/Outbox競合を直接注入（F-015 closure） |
 | Provider selected | BLOCKED | external decision |
 | Endpoint and model selected | BLOCKED | external decision |
 | Provider-specific Adapter | BLOCKED | implement after decision |
@@ -128,8 +128,8 @@ NOT_APPLICABLE
 | Check | Status | Evidence / required action |
 |---|---|---|
 | Formal seven-label contract | PASS_LOCAL | schema and tests |
-| `謇句虚/髯､螟冒 precedence | PASS_LOCAL | local tests |
-| Message-scoped `謇句虚/蜿冶ｾｼ` priority in automatic path | PASS_LOCAL | local tests |
+| `手動/除外` precedence | PASS_LOCAL | local tests |
+| Message-scoped `手動/取込` priority in automatic path | PASS_LOCAL | local tests |
 | Spam / Trash / promotions / social exclusion | PASS_LOCAL | production-code VM tests |
 | Newsletter policy | BLOCKED | product decision; enable Gate remains closed |
 | Calendar-notification policy | BLOCKED | product decision; enable Gate remains closed |
@@ -167,10 +167,10 @@ NOT_APPLICABLE
 | Explicit refresh only | PASS_LOCAL | menu/static test |
 | Worker non-coupling | PASS_LOCAL | call graph/static test |
 | Source-Sheet read-only aggregation | PASS_LOCAL | no source write path |
-| Custom row/formula preservation | PASS_LOCAL | system marker縺ｧ謇譛峨☆繧矩｣邯・蛻傭lock縺縺代ｒ譖ｴ譁ｰ縺励｜lank-key陦後・蛟､縲’ormula縲］ote縲」alidation縲［erge縲｝rotection縲］amed range縲’ormat繧断ail closed縺ｧ菫晁ｭｷ・・-005 closure・・|
-| Corrupt Dashboard / failed Quick Diagnostic write prevention | PASS_LOCAL | refresh蜑阪・Quick Diagnostic縺ｨlayout ownership讀懈渊縺悟､ｱ謨励＠縺溷ｴ蜷医・write蜑阪↓`E_DASHBOARD_LAYOUT_CONFLICT`縺ｧ蛛懈ｭ｢・・-005 closure・・|
+| Custom row/formula preservation | PASS_LOCAL | system markerで所有する連続3列blockだけを更新し、blank-key行の値、formula、note、validation、merge、protection、named range、formatをfail closedで保護（F-005 closure） |
+| Corrupt Dashboard / failed Quick Diagnostic write prevention | PASS_LOCAL | refresh前のQuick Diagnosticとlayout ownership検査が失敗した場合はwrite前に`E_DASHBOARD_LAYOUT_CONFLICT`で停止（F-005 closure） |
 | 100 / 1,000 / 10,000 rows | PASS_LOCAL | local linear checks |
-| Direct `E_DASHBOARD_LAYOUT_CONFLICT` negative test | PASS_LOCAL | blank-key value/formula縲［etadata縲’oreign marker縲‥iagnostic failure繧堤峩謗･豕ｨ蜈･縺励∝､繝ｻformula繝ｻ陦梧焚繝ｻsource Sheet荳榊､峨ｒ讀懆ｨｼ・・-013 closure・・|
+| Direct `E_DASHBOARD_LAYOUT_CONFLICT` negative test | PASS_LOCAL | blank-key value/formula、metadata、foreign marker、diagnostic failureを直接注入し、値・formula・行数・source Sheet不変を検証（F-013 closure） |
 | Real Dashboard UI/runtime | NOT_EXECUTED | TEST_MODE=true Sandbox |
 
 ## 12. Diagnostic, retry and Dead Letter
@@ -202,18 +202,20 @@ NOT_APPLICABLE
 
 | Stage | Status | Exit condition |
 |---|---|---|
-| Local/Mock regression execution | PASS_LOCAL | 34 suites縲・71 PASS / 0 FAIL / 11 SKIPPED縲４KIPPED縺ｯ螳檬oogle Workspace・丞ｮ蘖rovider縺ｮ縺ｿ |
-| Local remediation completion | PASS_LOCAL | F-001/F-005/F-007/F-013/F-014/F-015縺ｮcode-remediable螳牙・諤ｧ遽・峇繧帝哩骼悶１hase 8A UX review縺ｮpilot-deferred Medium 3莉ｶ縺ｯ荳玖ｨ倥↓蛻・屬 |
-| Phase 8A package preparation | PASS_LOCAL | package縲…hecksum縲＿uickstart縲｀anual Guide縲〉esults template縲〉ead-only validator螳梧・ |
-| TEST_MODE=true non-confidential Sandbox | CONDITIONAL_GO | checksum辣ｧ蜷亥ｾ後∵眠隕縦lean Sheet縲《ynthetic/self data縲、utomation OFF縲∝ｮ蘖rovider縺ｪ縺励ょｮ櫚ockService遶ｶ蜷医→螳櫃alendar CRUD縺ｯ縺ｾ縺NOT EXECUTED |
-| TEST_MODE=false Sandbox | NO_GO | Provider/model/endpoint/auth縲∽ｼ夂､ｾ謇ｿ隱阪…redential菫晉ｮ｡謇ｿ隱阪［anifest scope蛻､譁ｭ縲∝ｮ蘖rovider・丞ｮ欷orkspace Gate縺梧悴遒ｺ螳壹・譛ｪ螳滓命 |
+| Local/Mock regression execution | PASS_LOCAL | 34 suites、471 PASS / 0 FAIL / 11 SKIPPED。SKIPPEDは実Google Workspace／実Providerのみ |
+| Local remediation completion | PASS_LOCAL | F-001/F-005/F-007/F-013/F-014/F-015のcode-remediable安全性範囲を閉鎖。Phase 8A UX reviewのpilot-deferred Medium 3件は下記に分離 |
+| Phase 8A package preparation | PASS_LOCAL | package、checksum、Quickstart、Manual Guide、results template、read-only validator完成 |
+| TEST_MODE=true non-confidential Sandbox | CONDITIONAL_GO | checksum照合後、新規clean Sheet、synthetic/self data、Automation OFF、実Providerなし。実LockService競合と実Calendar CRUDはまだNOT EXECUTED |
+| TEST_MODE=false Sandbox | NO_GO | Provider/model/endpoint/auth、会社承認、credential保管承認、manifest scope判断、実Provider／実Workspace Gateが未確定・未実施 |
 | Personal real-work pilot | BLOCKED | Git closeout, TEST_MODE=false Sandbox, all external approvals and Workspace acceptance |
 | Limited-user rollout | BLOCKED | successful personal pilot and operational evidence |
 | Department rollout | BLOCKED | company governance, credential/deployment controls, retention and rollout evidence |
 
-Phase 8A UX review縺ｧ縲ゝEST_MODE=true Sandbox髢句ｧ九ｒ螯ｨ縺偵↑縺・′蛟倶ｺｺpilot蜑阪↓蜀崎ｩ穂ｾ｡縺吶ｋ
-code-level Finding繧・莉ｶ險倬鹸縺励※縺・∪縺・ 蟷ｳ蝮ｦ縺ｪ21鬆・岼menu縲～REFUSED`邨先棡縺ｮ豎守畑next
-action縲∵怙螟ｧ10,500譁・ｭ励・蜀・Κstage JSON dialog縲１hase 8A縺ｧ縺ｯ譁ｰ讖溯・繝ｻproduct code繧・螟画峩縺帙★縲＿uickstart縺ｨPart A-L Guide縺ｧ騾壼ｸｸ邨瑚ｷｯ縺ｨ鬮伜ｺｦ縺ｪfailure test繧貞・髮｢縺励∪縺励◆縲・
+Phase 8A UX reviewで、TEST_MODE=true Sandbox開始を妨げないが個人pilot前に再評価する
+code-level Findingを3件記録しています: 平坦な21項目menu、`REFUSED`結果の汎用next
+action、最大10,500文字の内部stage JSON dialog。Phase 8Aでは新機能・product codeを
+変更せず、QuickstartとPart A-L Guideで通常経路と高度なfailure testを分離しました。
+
 ## 15. Final sign-off fields
 
 ```text
@@ -232,4 +234,3 @@ TEST_MODE=false authorization:
 Personal pilot decision:
 Reviewer:
 ```
-

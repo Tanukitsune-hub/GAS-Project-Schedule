@@ -2,7 +2,7 @@
  * Phase 4 deadline Calendar policy, outbox and provider-neutral gateway.
  *
  * The Google Sheet remains the Task source of truth.  This module only writes
- * managed all-day deadline Events to the dedicated "閾ｪ蜍墓悄譌･邂｡逅・ Calendar.
+ * managed all-day deadline Events to the dedicated "自動期日管理" Calendar.
  * Callers can inject a gateway, clock, Properties store, Task reader and Task
  * Calendar-state writer so the policy and retry flow are locally testable.
  */
@@ -150,7 +150,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_CLAIM_STATE',
         false,
-        'Calendar claim縺ｮ菫晏ｭ倡憾諷九′荳肴ｭ｣縺ｧ縺吶・
+        'Calendar claimの保存状態が不正です。'
       );
     }
     var value;
@@ -160,7 +160,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_CLAIM_STATE',
         false,
-        'Calendar claim縺ｮ菫晏ｭ倡憾諷九ｒ隗｣驥医〒縺阪∪縺帙ｓ縲・,
+        'Calendar claimの保存状態を解釈できません。',
         error
       );
     }
@@ -172,7 +172,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_CLAIM_STATE',
         false,
-        'Calendar claim縺ｮ菫晏ｭ伜､縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'Calendar claimの保存値が不正です。'
       );
     }
     value.active = Number(value.expires_at_ms) > nowValue.getTime();
@@ -185,7 +185,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_CLAIM_STATE',
         false,
-        'Calendar claim縺御ｿ晏ｭ倅ｸ企剞繧定ｶ・∴縺ｾ縺励◆縲・
+        'Calendar claimが保存上限を超えました。'
       );
     }
     properties.setProperty(propertyName, serialized);
@@ -221,7 +221,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_BUDGET_EXHAUSTED',
         true,
-        'soft execution budget縺ｫ驕斐＠縺溘◆繧，alendar API call蜑阪↓蛛懈ｭ｢縺励∪縺励◆縲・
+        'soft execution budgetに達したためCalendar API call前に停止しました。'
       );
     }
   }
@@ -282,7 +282,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_INVALID_DATE',
         false,
-        'Calendar蜷梧悄蟇ｾ雎｡縺ｮ譛滄剞譌･縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'Calendar同期対象の期限日が不正です。'
       );
     }
     var parts = String(value).split('-').map(Number);
@@ -333,9 +333,9 @@ var WorkOsCalendarSync = (function () {
         '[REDACTED_CREDENTIAL]'
       )
       .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
-      .replace(/&/g, '・・)
-      .replace(/</g, '・・)
-      .replace(/>/g, '・・)
+      .replace(/&/g, '＆')
+      .replace(/</g, '＜')
+      .replace(/>/g, '＞')
       .replace(/\r\n?/g, '\n')
       .trim();
     return text.slice(0, Number(maxLength || 500));
@@ -351,7 +351,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_INSTANCE_INVALID',
         false,
-        'Calendar蜷梧悄逕ｨinstance縺ｮ蠖｢蠑上′荳肴ｭ｣縺ｧ縺吶４etup S60繧貞・遒ｺ隱阪＠縺ｦ縺上□縺輔＞縲・
+        'Calendar同期用instanceの形式が不正です。Setup S60を再確認してください。'
       );
     }
     return normalized;
@@ -367,7 +367,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_TASK_ID',
         false,
-        'Calendar蜷梧悄蟇ｾ雎｡縺ｮTask ID縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'Calendar同期対象のTask IDが不正です。'
       );
     }
     /*
@@ -389,7 +389,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_EVENT_INPUT',
         false,
-        'Event逕滓・縺ｫ蠢・ｦ√↑Task諠・ｱ縺御ｸ崎ｶｳ縺励※縺・∪縺吶・
+        'Event生成に必要なTask情報が不足しています。'
       );
     }
     var title = safeText(value.task_title, 300);
@@ -397,22 +397,22 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_EVENT_INPUT',
         false,
-        'Event逕滓・縺ｫ蠢・ｦ√↑Task蜷阪′縺ゅｊ縺ｾ縺帙ｓ縲・
+        'Event生成に必要なTask名がありません。'
       );
     }
     var description = [
-      '騾∽ｿ｡閠・ ' + safeText(value.sender, 320),
-      '譛滄剞譬ｹ諡: ' + safeText(
+      '送信者: ' + safeText(value.sender, 320),
+      '期限根拠: ' + safeText(
         normalizeEnum(value.deadline_basis, 'DeadlineBasis'),
         30
       ),
-      '蜈・Γ繝ｼ繝ｫ蜿ら・: ' + safeText(value.source_email, 1000),
+      '元メール参照: ' + safeText(value.source_email, 1000),
       taskMarker(taskId),
       instanceMarker(instance)
     ].join('\n');
     return {
       id: deterministicEventId(taskId),
-      summary: '縲先悄髯舌・ + title,
+      summary: '【期限】' + title,
       description: description,
       start: { date: dueDate },
       end: { date: addDaysIso(dueDate, 1) },
@@ -557,8 +557,8 @@ var WorkOsCalendarSync = (function () {
         status >= 500 ||
         status === 0 ||
         isRateOrQuota,
-      'Calendar API縺ｮ' + String(operation || '蜃ｦ逅・) +
-        '縺ｫ螟ｱ謨励＠縺ｾ縺励◆縲ょ・蜉帛・螳ｹ縺ｯ險倬鹸縺励※縺・∪縺帙ｓ縲・,
+      'Calendar APIの' + String(operation || '処理') +
+        'に失敗しました。入力内容は記録していません。',
       error
     );
   }
@@ -583,7 +583,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_SERVICE_UNAVAILABLE',
         false,
-        'Advanced Calendar service繧貞茜逕ｨ縺ｧ縺阪∪縺帙ｓ縲・
+        'Advanced Calendar serviceを利用できません。'
       );
     }
   }
@@ -604,14 +604,14 @@ var WorkOsCalendarSync = (function () {
           throw appError(
             'E_BUDGET_EXHAUSTED',
             true,
-            'Calendar荳隕ｧ蜿門ｾ励ｒ螳溯｡御ｺ育ｮ怜・縺ｧ蛛懈ｭ｢縺励∪縺励◆縲・
+            'Calendar一覧取得を実行予算内で停止しました。'
           );
         }
         if (pageCount >= WorkOsConfig.CALENDAR_LIST_MAX_PAGES) {
           throw appError(
             'E_CALENDAR_LIST_PAGE_LIMIT',
             true,
-            'Calendar荳隕ｧ縺御ｸ企剞page謨ｰ繧定ｶ・∴縺溘◆繧∝ｮ牙・縺ｫ蛛懈ｭ｢縺励∪縺励◆縲・
+            'Calendar一覧が上限page数を超えたため安全に停止しました。'
           );
         }
         var params = {
@@ -626,7 +626,7 @@ var WorkOsCalendarSync = (function () {
         try {
           response = this.service.CalendarList.list(params) || {};
         } catch (error) {
-          throw wrapApiError(error, 'Calendar荳隕ｧ蜿門ｾ・);
+          throw wrapApiError(error, 'Calendar一覧取得');
         }
         pageCount += 1;
         (response.items || []).forEach(function (item) {
@@ -639,7 +639,7 @@ var WorkOsCalendarSync = (function () {
           throw appError(
             'E_CALENDAR_LIST_TOKEN_CYCLE',
             true,
-            'Calendar荳隕ｧ縺ｮpage token縺悟ｾｪ迺ｰ縺励◆縺溘ａ螳牙・縺ｫ蛛懈ｭ｢縺励∪縺励◆縲・
+            'Calendar一覧のpage tokenが循環したため安全に停止しました。'
           );
         }
         if (pageToken) {
@@ -652,7 +652,1288 @@ var WorkOsCalendarSync = (function () {
   AdvancedCalendarGateway.prototype.getCalendar = function (calendarId) {
     try {
       return this.service.Calendars.get(String(calendarId));
-    } catch (error) {…9975 tokens truncated…     return {
+    } catch (error) {
+      if (isMissingApiError(error)) {
+        return null;
+      }
+      throw wrapApiError(error, 'Calendar確認');
+    }
+  };
+
+  AdvancedCalendarGateway.prototype.createCalendar =
+    function (summary, instanceId) {
+      try {
+        return this.service.Calendars.insert({
+          summary: String(summary),
+          timeZone: WorkOsConfig.TIMEZONE,
+          description: 'Google Workspace Personal Work OS v2\n' +
+            instanceMarker(String(instanceId))
+        });
+      } catch (error) {
+        throw wrapApiError(error, '専用Calendar作成');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.isPrimaryCalendar =
+    function (calendarId, resource) {
+      if (String(calendarId || '').toLowerCase() === 'primary' ||
+          resource && resource.primary === true) {
+        return true;
+      }
+      try {
+        var entry = this.service.CalendarList.get(String(calendarId));
+        return Boolean(entry && entry.primary === true);
+      } catch (error) {
+        if (isMissingApiError(error)) {
+          return false;
+        }
+        throw wrapApiError(error, 'Calendar権限境界確認');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.getCalendarAccessRole =
+    function (calendarId) {
+      try {
+        var entry = this.service.CalendarList.get(String(calendarId));
+        return String(entry && entry.accessRole || '');
+      } catch (error) {
+        if (isMissingApiError(error)) {
+          return '';
+        }
+        throw wrapApiError(error, 'Calendar所有権確認');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.getEvent =
+    function (calendarId, eventId) {
+      try {
+        return this.service.Events.get(
+          String(calendarId),
+          String(eventId)
+        );
+      } catch (error) {
+        if (isMissingApiError(error)) {
+          return null;
+        }
+        throw wrapApiError(error, 'Event確認');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.findEventsByTaskMarker =
+    function (calendarId, taskId, dueDate) {
+      var window = eventSearchWindow(dueDate);
+      if (!window) {
+        return [];
+      }
+      var params = {
+        maxResults: 10,
+        showDeleted: false,
+        singleEvents: true,
+        timeMin: window.timeMin,
+        timeMax: window.timeMax,
+        privateExtendedProperty: [
+          'workosTaskId=' + String(taskId)
+        ]
+      };
+      try {
+        var response = this.service.Events.list(
+          String(calendarId),
+          params
+        ) || {};
+        return (response.items || []).filter(function (event) {
+          var privateProperties = eventPrivateProperties(event);
+          return String(privateProperties.workosTaskId || '') ===
+            String(taskId || '');
+        });
+      } catch (error) {
+        throw wrapApiError(error, 'Event限定検索');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.insertEvent =
+    function (calendarId, resource) {
+      try {
+        return this.service.Events.insert(
+          resource,
+          String(calendarId),
+          { sendUpdates: 'none' }
+        );
+      } catch (error) {
+        throw wrapApiError(error, 'Event作成');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.updateEvent =
+    function (calendarId, eventId, resource) {
+      try {
+        return this.service.Events.update(
+          resource,
+          String(calendarId),
+          String(eventId),
+          { sendUpdates: 'none' }
+        );
+      } catch (error) {
+        throw wrapApiError(error, 'Event更新');
+      }
+    };
+
+  AdvancedCalendarGateway.prototype.deleteEvent =
+    function (calendarId, eventId) {
+      try {
+        this.service.Events.remove(
+          String(calendarId),
+          String(eventId),
+          { sendUpdates: 'none' }
+        );
+        return true;
+      } catch (error) {
+        if (isMissingApiError(error)) {
+          return false;
+        }
+        throw wrapApiError(error, 'Event削除');
+      }
+    };
+
+  function makeSafeCalendarResult(status, reused) {
+    return {
+      status: String(status),
+      calendar_name: WorkOsConfig.DEADLINE_CALENDAR_NAME,
+      reused: Boolean(reused)
+    };
+  }
+
+  function attachCalendarId(result, calendarId) {
+    Object.defineProperty(result, '_calendarId', {
+      value: String(calendarId || ''),
+      enumerable: false,
+      writable: false,
+      configurable: false
+    });
+    return result;
+  }
+
+  function assertDedicatedCalendar(gateway, calendarId, resource,
+      instanceId, requireOwner, options) {
+    assertCalendarBudget(options);
+    if (!String(calendarId || '').trim() ||
+        String(calendarId).toLowerCase() === 'primary' ||
+        gateway.isPrimaryCalendar(calendarId, resource)) {
+      throw appError(
+        'E_CALENDAR_PRIMARY_FORBIDDEN',
+        false,
+        'メインCalendarは期限同期の対象にできません。'
+      );
+    }
+    if (!resource ||
+        String(resource.summary || '') !==
+          WorkOsConfig.DEADLINE_CALENDAR_NAME) {
+      throw appError(
+        'E_CALENDAR_ID_MISMATCH',
+        false,
+        '保存済みCalendarが専用Calendarと一致しません。'
+      );
+    }
+    if (String(resource.description || '').indexOf(
+      instanceMarker(String(instanceId || ''))
+    ) === -1) {
+      throw appError(
+        'E_CALENDAR_INSTANCE_MISMATCH',
+        false,
+        '専用Calendarのinstance markerが一致しないため変更を停止しました。'
+      );
+    }
+    if (requireOwner) {
+      if (!resource.accessRole &&
+          typeof gateway.getCalendarAccessRole === 'function') {
+        assertCalendarBudget(options);
+      }
+      var role = String(
+        resource.accessRole ||
+        typeof gateway.getCalendarAccessRole === 'function' &&
+          gateway.getCalendarAccessRole(calendarId) ||
+        ''
+      );
+      if (role !== 'owner') {
+        throw appError(
+          'E_CALENDAR_OWNER_REQUIRED',
+          false,
+          '専用Calendarの所有権を確認できないため変更を停止しました。'
+        );
+      }
+    }
+  }
+
+  function resolveDeadlineCalendarUnlocked(options) {
+    var settings = options || {};
+    var gateway = settings.gateway || new AdvancedCalendarGateway();
+    var properties = settings.properties ||
+      PropertiesService.getScriptProperties();
+    var instanceId = String(
+      settings.instance_id ||
+      properties.getProperty(WorkOsConfig.PROPERTIES.INSTANCE_ID) ||
+      ''
+    ).trim();
+    if (!instanceId) {
+      if (settings.allow_provision !== true) {
+        throw appError(
+          'E_CALENDAR_INSTANCE_NOT_CONFIGURED',
+          false,
+          'Calendar同期用instanceが未設定です。Setup S60を再確認してください。'
+        );
+      }
+      instanceId = WorkOsUtilities.makeId('ins_');
+      properties.setProperty(
+        WorkOsConfig.PROPERTIES.INSTANCE_ID,
+        instanceId
+      );
+    }
+    instanceId = normalizeInstanceId(instanceId);
+    var propertyKey = calendarIdPropertyKey();
+    var savedId = String(properties.getProperty(propertyKey) || '').trim();
+    if (savedId) {
+      assertCalendarBudget(settings);
+      var savedCalendar = gateway.getCalendar(savedId);
+      if (!savedCalendar) {
+        throw appError(
+          'E_CALENDAR_SAVED_NOT_FOUND',
+          false,
+          '保存済み専用Calendarを確認できないため自動作成を停止しました。'
+        );
+      }
+      assertDedicatedCalendar(
+        gateway,
+        savedId,
+        savedCalendar,
+        instanceId,
+        true,
+        settings
+      );
+      return attachCalendarId(
+        makeSafeCalendarResult('RESOLVED_SAVED', true),
+        savedId
+      );
+    }
+
+    /*
+     * Provisioning and adoption belong exclusively to Setup S60. Runtime must
+     * never create a Calendar merely because a property is missing.
+     */
+    if (settings.allow_provision !== true) {
+      throw appError(
+        'E_CALENDAR_NOT_CONFIGURED',
+        false,
+        '専用Calendarが未設定です。Setup S60を再確認してください。'
+      );
+    }
+
+    assertCalendarBudget(settings);
+    var matches = gateway.listCalendarsBySummary(
+      WorkOsConfig.DEADLINE_CALENDAR_NAME,
+      {
+        budget: settings.budget,
+        reserve_ms: settings.reserve_ms
+      }
+    );
+    if (matches.length > 1) {
+      throw appError(
+        'E_CALENDAR_DUPLICATE_NAME',
+        false,
+        '同名Calendarが複数あるため自動選択を停止しました。'
+      );
+    }
+    if (matches.length === 1) {
+      var candidateId = String(matches[0].id || '');
+      if (!candidateId ||
+          candidateId.toLowerCase() === 'primary' ||
+          gateway.isPrimaryCalendar(candidateId, matches[0])) {
+        throw appError(
+          'E_CALENDAR_PRIMARY_FORBIDDEN',
+          false,
+          '同名のメインCalendarは採用せず、安全のため作成も停止しました。'
+        );
+      }
+      if (String(matches[0].accessRole || '') !== 'owner') {
+        throw appError(
+          'E_CALENDAR_OWNER_REQUIRED',
+          false,
+          '同名Calendarの所有権を確認できないため作成を停止しました。'
+        );
+      }
+      /*
+       * With calendar.app.created, a successful Calendars.get proves this
+       * deployment may manage the Calendar. Merely seeing it through the
+       * read-only CalendarList is not sufficient for adoption.
+       */
+      assertCalendarBudget(settings);
+      var candidate = gateway.getCalendar(candidateId);
+      if (!candidate) {
+        throw appError(
+          'E_CALENDAR_APP_ACCESS_REQUIRED',
+          false,
+          '同名Calendarが本アプリ作成物と証明できないため作成を停止しました。'
+        );
+      }
+      assertDedicatedCalendar(
+        gateway,
+        candidateId,
+        candidate,
+        instanceId,
+        true,
+        settings
+      );
+      properties.setProperty(propertyKey, candidateId);
+      return attachCalendarId(
+        makeSafeCalendarResult('RESOLVED_PROVEN', true),
+        candidateId
+      );
+    }
+
+    assertCalendarBudget(settings);
+    var created = gateway.createCalendar(
+      WorkOsConfig.DEADLINE_CALENDAR_NAME,
+      instanceId
+    );
+    var createdId = String(created && created.id || '').trim();
+    assertDedicatedCalendar(
+      gateway,
+      createdId,
+      created,
+      instanceId,
+      false,
+      settings
+    );
+    properties.setProperty(propertyKey, createdId);
+    return attachCalendarId(
+      makeSafeCalendarResult('CREATED', false),
+      createdId
+    );
+  }
+
+  function hasHeldLock(settings) {
+    if (settings &&
+        settings.lock &&
+        typeof settings.lock.hasLock === 'function' &&
+        settings.lock.hasLock()) {
+      return true;
+    }
+    return Boolean(
+      settings &&
+      settings.lock_context &&
+      settings.lock_context._workOsCalendarLockMarker === LOCK_MARKER
+    );
+  }
+
+  function acquireCalendarResolutionClaim(settings) {
+    var properties = claimPropertyStore(settings);
+    var nowValue = nowFromSettings(settings);
+    return WorkOsUtilities.withScriptLock(function () {
+      var current = parseClaimProperty(
+        properties,
+        CALENDAR_RESOLUTION_CLAIM_PROPERTY,
+        nowValue
+      );
+      if (current && current.active) {
+        throw appError(
+          'E_CALENDAR_RESOLUTION_BUSY',
+          true,
+          '別のCalendar確認処理が進行中です。'
+        );
+      }
+      var claim = {
+        token: WorkOsUtilities.makeId('clm_'),
+        claimed_at_ms: nowValue.getTime(),
+        expires_at_ms:
+          nowValue.getTime() + CALENDAR_CLAIM_TTL_MS
+      };
+      persistClaimProperty(
+        properties,
+        CALENDAR_RESOLUTION_CLAIM_PROPERTY,
+        claim
+      );
+      return claim;
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function releaseCalendarResolutionClaim(settings, claim) {
+    var properties = claimPropertyStore(settings);
+    var nowValue = nowFromSettings(settings);
+    return WorkOsUtilities.withScriptLock(function () {
+      return clearOwnedClaimProperty(
+        properties,
+        CALENDAR_RESOLUTION_CLAIM_PROPERTY,
+        claim && claim.token,
+        nowValue
+      );
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function resolveDeadlineCalendar(options) {
+    var settings = options || {};
+    if (hasHeldLock(settings)) {
+      throw appError(
+        'E_CALENDAR_LOCK_BOUNDARY',
+        true,
+        'Calendar外部I/OはScript Lock外で実行してください。'
+      );
+    }
+    var claim = acquireCalendarResolutionClaim(settings);
+    var result;
+    var primaryError = null;
+    try {
+      /*
+       * The durable logical claim serializes resolution/provisioning, while
+       * the physical Script Lock has already been released. CalendarList,
+       * Calendars.get/insert and ownership checks therefore never wait under
+       * the shared mutation Lock.
+       */
+      result = resolveDeadlineCalendarUnlocked(settings);
+    } catch (error) {
+      primaryError = error;
+    }
+    try {
+      releaseCalendarResolutionClaim(settings, claim);
+    } catch (releaseError) {
+      if (!primaryError) {
+        throw releaseError;
+      }
+    }
+    if (primaryError) {
+      throw primaryError;
+    }
+    return result;
+  }
+
+  /**
+   * Setup S60 entry point. The returned object intentionally has no enumerable
+   * Calendar ID; the ID is persisted only in Script Properties.
+   */
+  function ensureDedicatedCalendar(options) {
+    var settings = {};
+    Object.keys(options || {}).forEach(function (key) {
+      settings[key] = options[key];
+    });
+    settings.allow_provision = true;
+    var resolved = resolveDeadlineCalendar(settings);
+    return makeSafeCalendarResult(
+      resolved.status,
+      resolved.reused
+    );
+  }
+
+  /**
+   * Read-only configuration inspection for diagnostics. Remote verification is
+   * opt-in because Quick Diagnostic must not perform external Calendar calls.
+   * No Calendar ID is returned in either mode.
+   */
+  function inspectDedicatedCalendarConfiguration(options) {
+    var settings = options || {};
+    var properties = settings.properties ||
+      PropertiesService.getScriptProperties();
+    var saved = String(
+      properties.getProperty(calendarIdPropertyKey()) || ''
+    ).trim();
+    var result = {
+      calendar_name: WorkOsConfig.DEADLINE_CALENDAR_NAME,
+      property_present: Boolean(saved),
+      instance_marker_ok: false,
+      remotely_verified: false,
+      status: saved ? 'CONFIGURED_UNVERIFIED' : 'NOT_CONFIGURED'
+    };
+    try {
+      normalizeInstanceId(
+        properties.getProperty(WorkOsConfig.PROPERTIES.INSTANCE_ID)
+      );
+      result.instance_marker_ok = true;
+    } catch (instanceError) {
+      var safeInstanceError = WorkOsUtilities.safeError(
+        instanceError,
+        'CALENDAR_SYNC'
+      );
+      result.status = 'ERROR';
+      result.error_code = safeInstanceError.code;
+      return result;
+    }
+    if (!saved || !settings.verify_remote) {
+      return result;
+    }
+    try {
+      var gateway = settings.gateway || new AdvancedCalendarGateway();
+      assertCalendarBudget(settings);
+      var resource = gateway.getCalendar(saved);
+      if (!resource) {
+        result.status = 'CONFIGURED_NOT_FOUND';
+        return result;
+      }
+      assertDedicatedCalendar(
+        gateway,
+        saved,
+        resource,
+        properties.getProperty(WorkOsConfig.PROPERTIES.INSTANCE_ID),
+        true,
+        settings
+      );
+      result.remotely_verified = true;
+      result.status = 'CONFIGURED';
+      return result;
+    } catch (error) {
+      if (error && error.code === 'E_BUDGET_EXHAUSTED') {
+        throw error;
+      }
+      var safe = WorkOsUtilities.safeError(error, 'CALENDAR_SYNC');
+      result.status = 'ERROR';
+      result.error_code = safe.code;
+      return result;
+    }
+  }
+
+  function buildOutboxContext(sheet, values, lockMarker) {
+    var byTaskId = {};
+    var bySyncId = {};
+    var logicalRows = [];
+    var duplicateTaskIds = [];
+    var duplicateSyncIds = [];
+    (values || []).forEach(function (row, index) {
+      var physicalRow = WorkOsConfig.DATA_START_ROW + index;
+      var syncId = String(row[0] || '').trim();
+      var taskId = String(row[1] || '').trim();
+      if (!syncId && !taskId) {
+        return;
+      }
+      if (!syncId || !taskId) {
+        throw appError(
+          'E_CALENDAR_OUTBOX_CORRUPT',
+          false,
+          '同期状態に主キー欠落行があります。'
+        );
+      }
+      if (!/^syn_[0-9a-f]{32}$/.test(syncId) ||
+          !/^tsk_[0-9a-f]{32}$/.test(taskId) ||
+          String(row[2] || '') !== TARGET_TYPE ||
+          DESIRED_ACTIONS.indexOf(String(row[3] || '')) === -1 ||
+          JOB_STATUSES.indexOf(String(row[5] || '')) === -1 ||
+          !Number.isInteger(Number(row[6])) ||
+          Number(row[6]) < 0 ||
+          (String(row[10] || '') &&
+           !WorkOsUtilities.isSafeIdentifier(String(row[10])))) {
+        throw appError(
+          'E_CALENDAR_OUTBOX_CORRUPT',
+          false,
+          '同期状態に不正な保存値があるため処理を停止しました。'
+        );
+      }
+      [7, 8, 9, 11].forEach(function (columnIndex) {
+        var dateValue = row[columnIndex];
+        if (dateValue !== '' &&
+            dateValue != null &&
+            (!(dateValue instanceof Date) ||
+             Number.isNaN(dateValue.getTime())) &&
+            Number.isNaN(Date.parse(String(dateValue)))) {
+          throw appError(
+            'E_CALENDAR_OUTBOX_CORRUPT',
+            false,
+            '同期状態に不正な日時があるため処理を停止しました。'
+          );
+        }
+      });
+      if (byTaskId[taskId]) {
+        duplicateTaskIds.push(taskId);
+      } else {
+        byTaskId[taskId] = physicalRow;
+      }
+      if (bySyncId[syncId]) {
+        duplicateSyncIds.push(syncId);
+      } else {
+        bySyncId[syncId] = physicalRow;
+      }
+      logicalRows.push(physicalRow);
+    });
+    var context = {
+      sheet: sheet,
+      values: values,
+      byTaskId: byTaskId,
+      bySyncId: bySyncId,
+      logicalRows: logicalRows,
+      duplicateTaskIds: duplicateTaskIds,
+      duplicateSyncIds: duplicateSyncIds
+    };
+    if (lockMarker === LOCK_MARKER) {
+      Object.defineProperty(context, '_workOsCalendarLockMarker', {
+        value: LOCK_MARKER,
+        enumerable: false,
+        writable: false,
+        configurable: false
+      });
+    }
+    return context;
+  }
+
+  function createOutboxContext(sheet, lockMarker) {
+    if (!sheet) {
+      throw appError(
+        'E_CALENDAR_OUTBOX_MISSING',
+        false,
+        '同期状態Sheetがありません。'
+      );
+    }
+    if (sheet.getMaxColumns() !== OUTBOX_IDS.length) {
+      throw appError(
+        'E_CALENDAR_OUTBOX_SCHEMA',
+        false,
+        '同期状態の列数が仕様と一致しません。'
+      );
+    }
+    var ids = sheet.getRange(
+      WorkOsConfig.HEADER_ID_ROW,
+      1,
+      1,
+      OUTBOX_IDS.length
+    ).getValues()[0].map(function (value) {
+      return String(value || '').trim();
+    });
+    if (JSON.stringify(ids) !== JSON.stringify(OUTBOX_IDS)) {
+      throw appError(
+        'E_CALENDAR_OUTBOX_SCHEMA',
+        false,
+        '同期状態の内部列IDが仕様と一致しません。'
+      );
+    }
+    var rowCount = Math.max(
+      0,
+      sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1
+    );
+    var values = rowCount
+      ? sheet.getRange(
+        WorkOsConfig.DATA_START_ROW,
+        1,
+        rowCount,
+        OUTBOX_IDS.length
+      ).getValues()
+      : [];
+    var context = buildOutboxContext(sheet, values, lockMarker);
+    if (context.duplicateTaskIds.length ||
+        context.duplicateSyncIds.length) {
+      throw appError(
+        'E_CALENDAR_OUTBOX_DUPLICATE',
+        false,
+        '同期状態に主キー重複があるため処理を停止しました。'
+      );
+    }
+    return context;
+  }
+
+  function createOutboxContextForHeldLock(sheet, lock) {
+    if (!lock ||
+        typeof lock.hasLock !== 'function' ||
+        !lock.hasLock()) {
+      throw appError(
+        'E_LOCK_REQUIRED',
+        false,
+        '同期状態の更新にはScript Lockが必要です。'
+      );
+    }
+    return createOutboxContext(sheet, LOCK_MARKER);
+  }
+
+  function withLockedOutboxContext(sheet, callback) {
+    return WorkOsUtilities.withScriptLock(function (lock) {
+      return callback(
+        createOutboxContextForHeldLock(sheet, lock),
+        lock
+      );
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function assertLockedOutboxContext(context) {
+    if (!context ||
+        context._workOsCalendarLockMarker !== LOCK_MARKER) {
+      throw appError(
+        'E_LOCK_REQUIRED',
+        false,
+        '同期状態の更新にはScript Lockが必要です。'
+      );
+    }
+  }
+
+  function readOutboxRow(context, physicalRow) {
+    var index = Number(physicalRow) - WorkOsConfig.DATA_START_ROW;
+    var row = context.values[index];
+    if (!row) {
+      return null;
+    }
+    var result = {};
+    OUTBOX_IDS.forEach(function (id, columnIndex) {
+      result[id] = row[columnIndex];
+    });
+    result.retry_count = Number(result.retry_count || 0);
+    return result;
+  }
+
+  function findLogicalEmptyOutboxRow(context) {
+    for (var index = 0; index < context.values.length; index += 1) {
+      if (WorkOsUtilities.isBlank(context.values[index][0]) &&
+          WorkOsUtilities.isBlank(context.values[index][1])) {
+        return WorkOsConfig.DATA_START_ROW + index;
+      }
+    }
+    return WorkOsConfig.DATA_START_ROW + context.values.length;
+  }
+
+  function ensureOutboxCapacity(context, physicalRow) {
+    var current = context.sheet.getMaxRows();
+    if (physicalRow <= current) {
+      return 0;
+    }
+    var count = Math.ceil(
+      (physicalRow - current) / WorkOsConfig.ROW_EXPANSION_UNIT
+    ) * WorkOsConfig.ROW_EXPANSION_UNIT;
+    context.sheet.insertRowsAfter(current, count);
+    return count;
+  }
+
+  function writeOutboxRecord(context, physicalRow, record) {
+    assertLockedOutboxContext(context);
+    var output = OUTBOX_IDS.map(function (id) {
+      return record[id] == null ? '' : record[id];
+    });
+    ensureOutboxCapacity(context, physicalRow);
+    context.sheet.getRange(
+      physicalRow,
+      1,
+      1,
+      OUTBOX_IDS.length
+    ).setValues([output]);
+    while (context.values.length <=
+        physicalRow - WorkOsConfig.DATA_START_ROW) {
+      context.values.push(new Array(OUTBOX_IDS.length).fill(''));
+    }
+    context.values[
+      physicalRow - WorkOsConfig.DATA_START_ROW
+    ] = output;
+    context.byTaskId[String(record.task_id)] = physicalRow;
+    context.bySyncId[String(record.sync_id)] = physicalRow;
+    if (context.logicalRows.indexOf(physicalRow) === -1) {
+      context.logicalRows.push(physicalRow);
+    }
+  }
+
+  function initialDesiredActionForTask(task, timezone) {
+    var eventId = String(task && task.calendar_event_id || '').trim();
+    if (isEligibleTask(task, timezone)) {
+      return eventId ? 'UPDATE' : 'CREATE';
+    }
+    return eventId ? 'DELETE' : 'NOOP';
+  }
+
+  function enqueueTaskInContext(task, context, options) {
+    assertLockedOutboxContext(context);
+    var settings = options || {};
+    var nowValue = settings.now || WorkOsUtilities.now();
+    var taskId = String(task && task.task_id || '').trim();
+    if (!/^tsk_[0-9a-f]{32}$/.test(taskId)) {
+      throw appError(
+        'E_CALENDAR_TASK_ID',
+        false,
+        '同期状態へ投入するTask IDが不正です。'
+      );
+    }
+    var desiredAction = settings.desired_action ||
+      initialDesiredActionForTask(task, settings.timezone);
+    if (DESIRED_ACTIONS.indexOf(desiredAction) === -1) {
+      throw appError(
+        'E_CALENDAR_ACTION',
+        false,
+        'Calendar desired actionが不正です。'
+      );
+    }
+    var eventId = String(task.calendar_event_id || '').trim();
+    var existingRow = context.byTaskId[taskId];
+    if (existingRow) {
+      var existing = readOutboxRow(context, existingRow);
+      var same = String(existing.desired_action) === desiredAction &&
+        String(existing.event_id || '') === eventId;
+      if (existing.status === 'DEAD' &&
+          !settings.force_enqueue) {
+        return {
+          operation: 'NOOP',
+          desired_action: existing.desired_action,
+          status: 'DEAD'
+        };
+      }
+      if (same &&
+          (existing.status === 'PENDING' ||
+           existing.status === 'RETRY' ||
+           existing.status === 'DONE' ||
+           existing.status === 'DEAD') &&
+          !settings.force_enqueue) {
+        return {
+          operation: 'NOOP',
+          desired_action: desiredAction,
+          status: existing.status
+        };
+      }
+      existing.desired_action = desiredAction;
+      existing.event_id = eventId;
+      existing.status = desiredAction === 'NOOP' ? 'DONE' : 'PENDING';
+      existing.retry_count = 0;
+      existing.next_retry_at = '';
+      existing.last_attempt_at = '';
+      existing.error_code = '';
+      existing.updated_at = nowValue;
+      writeOutboxRecord(context, existingRow, existing);
+      return {
+        operation: 'UPDATE',
+        desired_action: desiredAction,
+        status: existing.status
+      };
+    }
+    /*
+     * A Task with no owned Event and no Calendar eligibility has no external
+     * work to persist. Avoid growing the Outbox with permanent DONE/NOOP rows.
+     */
+    if (desiredAction === 'NOOP') {
+      return {
+        operation: 'NOOP',
+        desired_action: desiredAction,
+        status: 'DONE'
+      };
+    }
+    var record = {
+      sync_id: WorkOsUtilities.makeId('syn_'),
+      task_id: taskId,
+      target_type: TARGET_TYPE,
+      desired_action: desiredAction,
+      event_id: eventId,
+      status: 'PENDING',
+      retry_count: 0,
+      next_retry_at: '',
+      last_attempt_at: '',
+      last_success_at: '',
+      error_code: '',
+      updated_at: nowValue
+    };
+    writeOutboxRecord(
+      context,
+      findLogicalEmptyOutboxRow(context),
+      record
+    );
+    return {
+      operation: 'INSERT',
+      desired_action: desiredAction,
+      status: record.status
+    };
+  }
+
+  function enqueueTask(task, options) {
+    var settings = options || {};
+    var sheet = settings.sheet ||
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+        WorkOsConfig.SHEETS.SYNC_STATE
+      );
+    if (settings.context) {
+      return enqueueTaskInContext(task, settings.context, settings);
+    }
+    return withLockedOutboxContext(sheet, function (context) {
+      return enqueueTaskInContext(task, context, settings);
+    });
+  }
+
+  /**
+   * Reconcile the already-loaded Task index into the already-locked outbox.
+   * This function has no Calendar side effect. It is safe for Worker/EditHandler
+   * to call after Task writes while retaining the same Script Lock.
+   */
+  function reconcileTasksInContext(taskContext, outboxContext, nowOrOptions) {
+    assertLockedOutboxContext(outboxContext);
+    var settings = nowOrOptions instanceof Date
+      ? { now: nowOrOptions }
+      : (nowOrOptions || {});
+    var counts = {
+      inspected_count: 0,
+      inserted_count: 0,
+      updated_count: 0,
+      noop_count: 0
+    };
+    (taskContext && taskContext.logicalRows || []).forEach(
+      function (physicalRow) {
+        var task = WorkOsTaskRepository.readTaskAtRow(
+          taskContext,
+          physicalRow
+        );
+        var syncStatus = String(task.calendar_sync_status || '');
+        var existingRow = outboxContext.byTaskId[
+          String(task.task_id || '')
+        ];
+        var existingRecord = existingRow
+          ? readOutboxRow(outboxContext, existingRow)
+          : null;
+        var result = enqueueTaskInContext(task, outboxContext, {
+          now: settings.now || WorkOsUtilities.now(),
+          timezone: settings.timezone || WorkOsConfig.TIMEZONE,
+          force_enqueue: settings.force_enqueue === true ||
+            (
+              (syncStatus === 'PENDING' ||
+               syncStatus === 'DELETE_PENDING') &&
+              existingRecord &&
+              existingRecord.status === 'DONE'
+            )
+        });
+        counts.inspected_count += 1;
+        if (result.operation === 'INSERT') {
+          counts.inserted_count += 1;
+        } else if (result.operation === 'UPDATE') {
+          counts.updated_count += 1;
+        } else {
+          counts.noop_count += 1;
+        }
+      }
+    );
+    return counts;
+  }
+
+  function isDueForAttempt(record, nowValue) {
+    if (record.status === 'PENDING') {
+      return true;
+    }
+    if (record.status !== 'RETRY') {
+      return false;
+    }
+    if (!record.next_retry_at) {
+      return true;
+    }
+    return new Date(record.next_retry_at).getTime() <=
+      nowValue.getTime();
+  }
+
+  function selectNextJob(context, nowValue, allowedTaskIds) {
+    var allowed = null;
+    if (Array.isArray(allowedTaskIds)) {
+      allowed = {};
+      allowedTaskIds.forEach(function (taskId) {
+        allowed[String(taskId || '')] = true;
+      });
+    }
+    for (var index = 0; index < context.logicalRows.length; index += 1) {
+      var record = readOutboxRow(
+        context,
+        context.logicalRows[index]
+      );
+      if (record &&
+          record.target_type === TARGET_TYPE &&
+          (!allowed || allowed[String(record.task_id || '')]) &&
+          isDueForAttempt(record, nowValue)) {
+        return {
+          row: context.logicalRows[index],
+          record: record
+        };
+      }
+    }
+    return null;
+  }
+
+  function outboxSheetForSettings(settings) {
+    return settings.sheet ||
+      settings.spreadsheet &&
+        settings.spreadsheet.getSheetByName(
+          WorkOsConfig.SHEETS.SYNC_STATE
+        ) ||
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+        WorkOsConfig.SHEETS.SYNC_STATE
+      );
+  }
+
+  function readTaskForHeldLock(settings, taskId, lock) {
+    if (typeof settings.task_reader_in_context === 'function') {
+      return settings.task_reader_in_context(
+        String(taskId || ''),
+        lock
+      );
+    }
+    if (typeof settings.task_reader === 'function') {
+      return settings.task_reader(String(taskId || ''));
+    }
+    throw appError(
+      'E_CALENDAR_TASK_READER',
+      false,
+      'Calendar同期用Task readerがありません。'
+    );
+  }
+
+  function taskWriterForHeldLock(settings, lock, expectedRowVersion) {
+    if (typeof settings.task_writer_in_context === 'function') {
+      return function (taskId, patch) {
+        return settings.task_writer_in_context(
+          String(taskId || ''),
+          patch,
+          expectedRowVersion,
+          lock
+        );
+      };
+    }
+    if (typeof settings.task_writer === 'function') {
+      return function (taskId, patch) {
+        return settings.task_writer(
+          String(taskId || ''),
+          patch,
+          expectedRowVersion
+        );
+      };
+    }
+    throw appError(
+      'E_CALENDAR_TASK_WRITER',
+      false,
+      'Calendar同期用Task writerがありません。'
+    );
+  }
+
+  function acquireCalendarJobClaim(
+    properties,
+    selected,
+    task,
+    nowValue
+  ) {
+    var current = parseClaimProperty(
+      properties,
+      CALENDAR_JOB_CLAIM_PROPERTY,
+      nowValue
+    );
+    if (current && current.active) {
+      return null;
+    }
+    var claim = {
+      token: WorkOsUtilities.makeId('clm_'),
+      sync_id: String(selected.record.sync_id || ''),
+      task_id: String(selected.record.task_id || ''),
+      outbox_fingerprint: outboxFingerprint(selected.record),
+      task_fingerprint: taskFingerprint(task),
+      task_row_version: Number(task && task.row_version || 0),
+      claimed_at_ms: nowValue.getTime(),
+      expires_at_ms: nowValue.getTime() + CALENDAR_CLAIM_TTL_MS
+    };
+    if (!/^syn_[0-9a-f]{32}$/.test(claim.sync_id) ||
+        !/^tsk_[0-9a-f]{32}$/.test(claim.task_id) ||
+        !/^[0-9a-f]{64}$/.test(claim.outbox_fingerprint) ||
+        !/^[0-9a-f]{64}$/.test(claim.task_fingerprint) ||
+        !Number.isInteger(claim.task_row_version) ||
+        claim.task_row_version < 0) {
+      throw appError(
+        'E_CALENDAR_CLAIM_STATE',
+        false,
+        'Calendar job claimを安全に作成できません。'
+      );
+    }
+    persistClaimProperty(
+      properties,
+      CALENDAR_JOB_CLAIM_PROPERTY,
+      claim
+    );
+    return claim;
+  }
+
+  function assertOwnedCalendarJobClaim(
+    properties,
+    prepared,
+    nowValue
+  ) {
+    var current = parseClaimProperty(
+      properties,
+      CALENDAR_JOB_CLAIM_PROPERTY,
+      nowValue
+    );
+    if (!current ||
+        current.active !== true ||
+        current.token !== String(prepared && prepared.claim_token || '') ||
+        current.sync_id !== String(prepared && prepared.sync_id || '') ||
+        current.task_id !== String(prepared && prepared.task_id || '') ||
+        current.outbox_fingerprint !==
+          String(prepared && prepared.outbox_fingerprint || '') ||
+        current.task_fingerprint !==
+          String(prepared && prepared.task_fingerprint || '')) {
+      throw appError(
+        'E_CALENDAR_JOB_CLAIM_CONFLICT',
+        true,
+        'Calendar jobのownershipが変わったため結果を保存しませんでした。'
+      );
+    }
+    return current;
+  }
+
+  /**
+   * Atomically select one due outbox row and persist a bounded logical claim.
+   * No Calendar service is touched in this function.
+   */
+  function prepareNextJob(options) {
+    var settings = options || {};
+    var sheet = outboxSheetForSettings(settings);
+    var properties = claimPropertyStore(settings);
+    return WorkOsUtilities.withScriptLock(function (lock) {
+      var nowValue = nowFromSettings(settings);
+      if (settings.budget &&
+          settings.budget.isExhausted(
+            settings.reserve_ms == null
+              ? WorkOsConfig.MANUAL_WORKER_RESERVE_MS
+              : settings.reserve_ms
+          )) {
+        return { status: 'PAUSED', processed_count: 0 };
+      }
+      var context = createOutboxContextForHeldLock(sheet, lock);
+      var selected = selectNextJob(
+        context,
+        nowValue,
+        settings.allowed_task_ids
+      );
+      if (!selected) {
+        return { status: 'IDLE', processed_count: 0 };
+      }
+      if (typeof settings.task_reader !== 'function' &&
+          typeof settings.task_reader_in_context !== 'function') {
+        throw appError(
+          'E_CALENDAR_TASK_READER',
+          false,
+          'Calendar同期用Task readerがありません。'
+        );
+      }
+      if (typeof settings.task_writer !== 'function' &&
+          typeof settings.task_writer_in_context !== 'function') {
+        throw appError(
+          'E_CALENDAR_TASK_WRITER',
+          false,
+          'Calendar同期用Task writerがありません。'
+        );
+      }
+      var task = readTaskForHeldLock(
+        settings,
+        selected.record.task_id,
+        lock
+      );
+      var claim = acquireCalendarJobClaim(
+        properties,
+        selected,
+        task,
+        nowValue
+      );
+      if (!claim) {
+        return { status: 'BUSY', processed_count: 0 };
+      }
+      return {
+        status: 'READY',
+        claim_token: claim.token,
+        sync_id: claim.sync_id,
+        task_id: claim.task_id,
+        outbox_fingerprint: claim.outbox_fingerprint,
+        task_fingerprint: claim.task_fingerprint,
+        task_row_version: claim.task_row_version,
+        outbox_record: cloneRecord(selected.record),
+        task: task ? cloneRecord(task) : null
+      };
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function assertTaskWriterPatch(patch) {
+    var allowed = {
+      calendar_event_id: true,
+      calendar_sync_status: true,
+      last_calendar_sync_at: true
+    };
+    Object.keys(patch || {}).forEach(function (field) {
+      if (!allowed[field]) {
+        throw appError(
+          'E_CALENDAR_TASK_PATCH',
+          false,
+          'Calendar同期がTask業務fieldを変更しようとしたため停止しました。'
+        );
+      }
+    });
+  }
+
+  function writeTaskCalendarState(writer, taskId, patch) {
+    assertTaskWriterPatch(patch);
+    if (typeof writer !== 'function') {
+      throw appError(
+        'E_CALENDAR_TASK_WRITER',
+        false,
+        'Calendar同期用Task writerがありません。'
+      );
+    }
+    writer(String(taskId), patch);
+  }
+
+  function locateExistingEvent(gateway, calendarId, task, record,
+      instanceId, timezone, options) {
+    var savedEventId = String(
+      record.event_id || task.calendar_event_id || ''
+    ).trim();
+    if (savedEventId) {
+      assertCalendarBudget(options);
+    }
+    var event = savedEventId
+      ? gateway.getEvent(calendarId, savedEventId)
+      : null;
+    if (event) {
+      if (!isOwnedEvent(event, task.task_id, instanceId)) {
+        throw appError(
+          'E_CALENDAR_EVENT_FOREIGN',
+          false,
+          '保存済みEventの所有markerが一致しないため変更を停止しました。'
+        );
+      }
+      return event;
+    }
+    var dueDate = isoDate(task.due_date, timezone);
+    if (!dueDate) {
+      return null;
+    }
+    assertCalendarBudget(options);
+    var matches = gateway.findEventsByTaskMarker(
+      calendarId,
+      task.task_id,
+      dueDate
+    ) || [];
+    if (matches.length > 1) {
+      throw appError(
+        'E_CALENDAR_EVENT_DUPLICATE',
+        false,
+        'Task markerが一致するEventが複数あるため処理を停止しました。'
+      );
+    }
+    if (matches.length === 1) {
+      if (!isOwnedEvent(matches[0], task.task_id, instanceId)) {
+        throw appError(
+          'E_CALENDAR_EVENT_FOREIGN',
+          false,
+          '検索したEventの所有markerが一致しないため変更を停止しました。'
+        );
+      }
+      return matches[0];
+    }
+    return null;
+  }
+
+  function executeCalendarAction(gateway, calendarId, task, record,
+      instanceId, timezone, options) {
+    var eligible = isEligibleTask(task, timezone);
+    var existing = locateExistingEvent(
+      gateway,
+      calendarId,
+      task,
+      record,
+      instanceId,
+      timezone,
+      options
+    );
+    if (!existing &&
+        !isoDate(task.due_date, timezone) &&
+        (record.desired_action === 'DELETE' ||
+         String(task.calendar_sync_status || '') === 'SYNCED' ||
+         String(task.calendar_sync_status || '') === 'DELETE_PENDING')) {
+      throw appError(
+        'E_CALENDAR_EVENT_ID_MISSING',
+        false,
+        '既存Eventを限定検索できるEvent IDまたは期限日がないため停止しました。'
+      );
+    }
+    if (!eligible) {
+      if (!existing) {
+        return {
           action: 'NOOP',
           event_id: '',
           calendar_sync_status: 'NOT_REQUIRED'
@@ -709,7 +1990,7 @@ var WorkOsCalendarSync = (function () {
         throw appError(
           'E_CALENDAR_EVENT_CONFLICT',
           false,
-          'Event ID遶ｶ蜷医ｒ螳牙・縺ｫ隗｣豎ｺ縺ｧ縺阪↑縺・◆繧∝・逅・ｒ蛛懈ｭ｢縺励∪縺励◆縲・
+          'Event ID競合を安全に解決できないため処理を停止しました。'
         );
       }
       if (eventNeedsUpdate(replay, desired)) {
@@ -828,7 +2109,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_JOB_NOT_PREPARED',
         false,
-        'Calendar job縺悟､夜Κ螳溯｡檎畑縺ｫ貅門ｙ縺輔ｌ縺ｦ縺・∪縺帙ｓ縲・
+        'Calendar jobが外部実行用に準備されていません。'
       );
     }
     var properties = claimPropertyStore(settings);
@@ -850,7 +2131,7 @@ var WorkOsCalendarSync = (function () {
         error: appError(
           'E_BUDGET_EXHAUSTED',
           true,
-          'Calendar螟夜ΚI/O縺ｮ蜑阪↓螳溯｡御ｺ育ｮ励∈驕斐＠縺ｾ縺励◆縲・
+          'Calendar外部I/Oの前に実行予算へ達しました。'
         )
       };
     }
@@ -861,7 +2142,7 @@ var WorkOsCalendarSync = (function () {
         error: appError(
           'E_CALENDAR_TASK_NOT_FOUND',
           false,
-          'Calendar蜷梧悄蟇ｾ雎｡Task繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+          'Calendar同期対象Taskを確認できません。'
         )
       };
     }
@@ -1127,7 +2408,7 @@ var WorkOsCalendarSync = (function () {
             appError(
               'E_CALENDAR_SYNC',
               true,
-              'Calendar螟夜Κ蜃ｦ逅・′螳御ｺ・＠縺ｾ縺帙ｓ縺ｧ縺励◆縲・
+              'Calendar外部処理が完了しませんでした。'
             ),
           taskWriter,
           nowValue,
@@ -1164,7 +2445,7 @@ var WorkOsCalendarSync = (function () {
     throw appError(
       'E_CALENDAR_LOCK_BOUNDARY',
       true,
-      'processNextJob繧剃ｽｿ逕ｨ縺励※Calendar螟夜ΚI/O繧鱈ock螟悶〒螳溯｡後＠縺ｦ縺上□縺輔＞縲・
+      'processNextJobを使用してCalendar外部I/OをLock外で実行してください。'
     );
   }
 
@@ -1175,7 +2456,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_TASK_ID',
         false,
-        '謇句虚蜀榊ｮ溯｡悟ｯｾ雎｡縺ｮTask ID縺御ｸ肴ｭ｣縺ｧ縺吶・
+        '手動再実行対象のTask IDが不正です。'
       );
     }
     var row = context.byTaskId[normalizedTaskId];
@@ -1184,7 +2465,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_OUTBOX_MISSING_TASK',
         false,
-        '謇句虚蜀榊ｮ溯｡悟ｯｾ雎｡縺ｮCalendar outbox縺後≠繧翫∪縺帙ｓ縲・
+        '手動再実行対象のCalendar outboxがありません。'
       );
     }
     if (record.status === 'RETRY') {
@@ -1194,7 +2475,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_RETRY_CONFLICT',
         false,
-        'DEAD迥ｶ諷九〒縺ｯ縺ｪ縺Гalendar job縺ｯ謇句虚蜀榊ｮ溯｡後〒縺阪∪縺帙ｓ縲・
+        'DEAD状態ではないCalendar jobは手動再実行できません。'
       );
     }
     if (DESIRED_ACTIONS.indexOf(record.desired_action) === -1 ||
@@ -1202,7 +2483,7 @@ var WorkOsCalendarSync = (function () {
       throw appError(
         'E_CALENDAR_OUTBOX_CORRUPT',
         false,
-        'Calendar job縺ｮ蜀埼幕Action縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'Calendar jobの再開Actionが不正です。'
       );
     }
     var timestamp = nowValue instanceof Date
@@ -1277,4 +2558,3 @@ var WorkOsCalendarSync = (function () {
     assertTaskWriterPatch: assertTaskWriterPatch
   });
 }());
-

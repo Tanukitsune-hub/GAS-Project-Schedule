@@ -309,4 +309,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

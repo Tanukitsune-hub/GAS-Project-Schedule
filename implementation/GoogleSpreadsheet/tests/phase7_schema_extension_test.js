@@ -234,9 +234,9 @@ test('P7-S06_EMPTY_LEGACY_ERROR_SHEET_EXTENDS_WITHOUT_CREATING_DATA', () => {
 
 test('P7-S07_VERSION_METADATA_IS_INDEPENDENT_AND_CURRENT', () => {
   const versions = sandbox.WorkOsMigrations.getVersionState();
-  assert.strictEqual(versions.code_version, '2.8.2-prepilot');
-  assert.strictEqual(versions.schema_version, '2.3');
-  assert.strictEqual(versions.migration_version, '0');
+  assert.strictEqual(versions.code_version, '2.8.3-prepilot');
+  assert.strictEqual(versions.schema_version, '2.4');
+  assert.strictEqual(versions.migration_version, '1');
 });
 
 test('P7-S08_LEGACY_DEAD_WITHOUT_EXHAUSTED_RETRIES_IS_NOT_MANUALLY_RETRYABLE', () => {
@@ -268,4 +268,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

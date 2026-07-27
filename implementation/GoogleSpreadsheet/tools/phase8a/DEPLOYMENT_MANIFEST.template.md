@@ -15,8 +15,10 @@
 | Source commit | {{SOURCE_COMMIT}} |
 | Source tree status | {{SOURCE_TREE_STATUS}} |
 
-縺薙・package縺ｯPhase 8A縺ｧ菴懈・縺励◆髱樊悽逡ｪSandbox蜿怜・逕ｨ縺ｧ縺吶１hase 8B縺ｮ螳檬oogle
-Workspace蜿怜・縲￣hase 8C縺ｮTEST_MODE=false蜿怜・縲∝ｮ蘖rovider謗･邯壹∝倶ｺｺ螳滓･ｭ蜍・繝代う繝ｭ繝・ヨ縺ｯ螳滓命貂医∩縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+このpackageはPhase 8Aで作成した非本番Sandbox受入用です。Phase 8Bの実Google
+Workspace受入、Phase 8CのTEST_MODE=false受入、実Provider接続、個人実業務
+パイロットは実施済みではありません。
+
 ## Apps Script payload
 
 - Source of truth: `apps-script-v2/`
@@ -26,7 +28,9 @@ Workspace蜿怜・縲￣hase 8C縺ｮTEST_MODE=false蜿怜・縲∝ｮ蘖rovider
 - Canonical payload-list SHA-256:
   `{{PAYLOAD_BUNDLE_SHA256}}`
 
-Canonical payload-list hash縺ｯ縲｝ath鬆・↓荳ｦ縺ｹ縺・`<lowercase sha256><two spaces><relative path><LF>`縺ｮ騾｣邨仙､縺ｫ蟇ｾ縺吶ｋSHA-256縺ｧ縺吶・
+Canonical payload-list hashは、path順に並べた
+`<lowercase sha256><two spaces><relative path><LF>`の連結値に対するSHA-256です。
+
 | Relative path | SHA-256 |
 |---|---|
 {{PAYLOAD_TABLE}}
@@ -35,9 +39,14 @@ Canonical payload-list hash縺ｯ縲｝ath鬆・↓荳ｦ縺ｹ縺・`<lowercase
 
 {{OAUTH_SCOPES}}
 
-遖∵ｭ｢蠅・阜:
+禁止境界:
 
-- `script.external_request`縺ｪ縺・- Drive scope縺ｪ縺・- mail-send scope縺ｪ縺・- `mail.google.com`蜈ｨ菴都cope縺ｪ縺・- Calendar蜈ｨ讓ｩ髯尽cope縺ｪ縺・
+- `script.external_request`なし
+- Drive scopeなし
+- mail-send scopeなし
+- `mail.google.com`全体scopeなし
+- Calendar全権限scopeなし
+
 ## Advanced Services
 
 {{ADVANCED_SERVICES}}
@@ -58,14 +67,14 @@ Canonical payload-list hash縺ｯ縲｝ath鬆・↓荳ｦ縺ｹ縺・`<lowercase
 
 ## Package exclusions
 
-縺薙・package縺ｫ蜷ｫ繧√↑縺・ｂ縺ｮ:
+このpackageに含めないもの:
 
-- `.clasp.json`縺ｨ螳欖cript ID
-- credential縲、PI key縲｝assword縲》oken縲｝rivate key
-- Node test縲’ixture縲、rchive縲，odex prompt
-- 螳欖preadsheet / Gmail / Calendar ID
-- Google Workspace蜀・ΚURL
-- 莨夂､ｾ繝｡繝ｼ繝ｫ譛ｬ譁・∵ｷｻ莉倥∝倶ｺｺ諠・ｱ縲∵悴蜈ｬ陦ｨ諠・ｱ
+- `.clasp.json`と実Script ID
+- credential、API key、password、token、private key
+- Node test、fixture、Archive、Codex prompt
+- 実Spreadsheet / Gmail / Calendar ID
+- Google Workspace内部URL
+- 会社メール本文、添付、個人情報、未公表情報
 
-`CHECKSUMS.sha256`縺ｯ縲√％縺ｮmanifest縲＿uickstart縲、pps Script payload繧貞性繧
-package蜈ｨfile・・CHECKSUMS.sha256`閾ｪ霄ｫ繧帝勁縺擾ｼ峨・hash繧恥ath鬆・〒險倬鹸縺励∪縺吶・
+`CHECKSUMS.sha256`は、このmanifest、Quickstart、Apps Script payloadを含む
+package全file（`CHECKSUMS.sha256`自身を除く）のhashをpath順で記録します。

@@ -34,25 +34,25 @@ var WorkOsSchemas = (function () {
   }
 
   var taskColumns = [
-    column('needs_review', '隕∫｢ｺ隱・, 'Boolean', { validation: 'CHECKBOX' }),
-    column('decision', '蛻､譁ｭ', 'Enum', { editable: true, validation: 'ENUM', enumName: 'Decision' }),
-    column('status', '蟇ｾ蠢懃憾豕・, 'Enum', { editable: true, validation: 'ENUM', enumName: 'TaskStatus' }),
-    column('completed', '螳御ｺ・, 'Boolean', { editable: true, validation: 'CHECKBOX' }),
-    column('excluded', '蟇ｾ雎｡螟・, 'Boolean', { editable: true, validation: 'CHECKBOX' }),
-    column('task_title', '繧ｿ繧ｹ繧ｯ蜀・ｮｹ', 'String', { editable: true, maxLength: 300 }),
-    column('due_date', '譛滄剞', 'Date', { editable: true }),
-    column('suggested_due_date', '謗ｨ螂ｨ譛滄剞', 'Date'),
-    column('deadline_basis', '譛滄剞譬ｹ諡', 'Enum', { validation: 'ENUM', enumName: 'DeadlineBasis' }),
-    column('priority', '蜆ｪ蜈亥ｺｦ', 'Enum', { editable: true, validation: 'ENUM', enumName: 'Priority' }),
-    column('waiting_for_reply', '霑比ｿ｡蠕・■', 'Boolean', { editable: true, validation: 'CHECKBOX' }),
-    column('calendar_sync_mode', 'Calendar逋ｻ骭ｲ', 'Enum', { editable: true, validation: 'ENUM', enumName: 'CalendarSyncMode' }),
-    column('comment', '繧ｳ繝｡繝ｳ繝・, 'String', { editable: true, maxLength: 2000 }),
-    column('sender', '騾∽ｿ｡閠・, 'String'),
-    column('subject', '莉ｶ蜷・, 'String'),
-    column('received_at', '蜿嶺ｿ｡譌･譎・, 'DateTime'),
-    column('source_email', '蜈・Γ繝ｼ繝ｫ', 'URL'),
-    column('review_state', '遒ｺ隱咲憾諷・, 'Enum', { validation: 'ENUM', enumName: 'ReviewState' }),
-    column('review_type', '遒ｺ隱咲ｨｮ蛻･', 'String'),
+    column('needs_review', '要確認', 'Boolean', { validation: 'CHECKBOX' }),
+    column('decision', '判断', 'Enum', { editable: true, validation: 'ENUM', enumName: 'Decision' }),
+    column('status', '対応状況', 'Enum', { editable: true, validation: 'ENUM', enumName: 'TaskStatus' }),
+    column('completed', '完了', 'Boolean', { editable: true, validation: 'CHECKBOX' }),
+    column('excluded', '対象外', 'Boolean', { editable: true, validation: 'CHECKBOX' }),
+    column('task_title', 'タスク内容', 'String', { editable: true, maxLength: 300 }),
+    column('due_date', '期限', 'Date', { editable: true }),
+    column('suggested_due_date', '推奨期限', 'Date'),
+    column('deadline_basis', '期限根拠', 'Enum', { validation: 'ENUM', enumName: 'DeadlineBasis' }),
+    column('priority', '優先度', 'Enum', { editable: true, validation: 'ENUM', enumName: 'Priority' }),
+    column('waiting_for_reply', '返信待ち', 'Boolean', { editable: true, validation: 'CHECKBOX' }),
+    column('calendar_sync_mode', 'Calendar登録', 'Enum', { editable: true, validation: 'ENUM', enumName: 'CalendarSyncMode' }),
+    column('comment', 'コメント', 'String', { editable: true, maxLength: 2000 }),
+    column('sender', '送信者', 'String'),
+    column('subject', '件名', 'String'),
+    column('received_at', '受信日時', 'DateTime'),
+    column('source_email', '元メール', 'URL'),
+    column('review_state', '確認状態', 'Enum', { validation: 'ENUM', enumName: 'ReviewState' }),
+    column('review_type', '確認種別', 'String'),
     column('task_id', 'task_id', 'String', { visible: false, protected: true }),
     column('origin_key', 'origin_key', 'String', { visible: false, protected: true }),
     column('source_message_id', 'source_message_id', 'String', { visible: false, protected: true }),
@@ -140,70 +140,70 @@ var WorkOsSchemas = (function () {
   var schemas = {};
 
   schemas[WorkOsConfig.SHEETS.DASHBOARD] = [
-    column('metric_key', '鬆・岼', 'String'),
-    column('metric_value', '蛟､', 'String'),
-    column('note', '豕ｨ險・, 'String')
+    column('metric_key', '項目', 'String'),
+    column('metric_value', '値', 'String'),
+    column('note', '注記', 'String')
   ];
   schemas[WorkOsConfig.SHEETS.TASKS] = taskColumns;
   schemas[WorkOsConfig.SHEETS.SETTINGS] = [
-    column('setting_key', '險ｭ螳壹く繝ｼ', 'String', { protected: true }),
-    column('display_name', '險ｭ螳壼錐', 'String', { protected: true }),
-    column('value', '蛟､', 'String', { editable: true }),
-    column('value_type', '蝙・, 'String', { protected: true }),
-    column('allowed_values', '險ｱ螳ｹ蛟､', 'String', { protected: true }),
-    column('description', '隱ｬ譏・, 'String', { protected: true }),
-    column('editable', '邱ｨ髮・庄', 'Boolean', { protected: true, validation: 'CHECKBOX' }),
-    column('updated_at', '譖ｴ譁ｰ譌･譎・, 'DateTime', { protected: true })
+    column('setting_key', '設定キー', 'String', { protected: true }),
+    column('display_name', '設定名', 'String', { protected: true }),
+    column('value', '値', 'String', { editable: true }),
+    column('value_type', '型', 'String', { protected: true }),
+    column('allowed_values', '許容値', 'String', { protected: true }),
+    column('description', '説明', 'String', { protected: true }),
+    column('editable', '編集可', 'Boolean', { protected: true, validation: 'CHECKBOX' }),
+    column('updated_at', '更新日時', 'DateTime', { protected: true })
   ];
   schemas[WorkOsConfig.SHEETS.RUN_HISTORY] = [
-    column('run_id', '螳溯｡栗D', 'String'),
-    column('trigger_type', '襍ｷ蜍慕ｨｮ蛻･', 'String'),
-    column('mode', '繝｢繝ｼ繝・, 'String'),
-    column('started_at', '髢句ｧ区律譎・, 'DateTime'),
-    column('finished_at', '邨ゆｺ・律譎・, 'DateTime'),
-    column('duration_ms', '謇隕∵凾髢杜s', 'Integer'),
-    column('candidate_count', '蛟呵｣懈焚', 'Integer'),
-    column('processed_count', '蜃ｦ逅・焚', 'Integer'),
-    column('created_task_count', '譁ｰ隕週ask謨ｰ', 'Integer'),
-    column('updated_task_count', '譖ｴ譁ｰTask謨ｰ', 'Integer'),
-    column('review_count', '隕∫｢ｺ隱肴焚', 'Integer'),
-    column('skipped_count', '繧ｹ繧ｭ繝・・謨ｰ', 'Integer'),
-    column('error_count', '繧ｨ繝ｩ繝ｼ謨ｰ', 'Integer'),
-    column('run_status', '螳溯｡檎憾諷・, 'String'),
-    column('note', '豕ｨ險・, 'String')
+    column('run_id', '実行ID', 'String'),
+    column('trigger_type', '起動種別', 'String'),
+    column('mode', 'モード', 'String'),
+    column('started_at', '開始日時', 'DateTime'),
+    column('finished_at', '終了日時', 'DateTime'),
+    column('duration_ms', '所要時間ms', 'Integer'),
+    column('candidate_count', '候補数', 'Integer'),
+    column('processed_count', '処理数', 'Integer'),
+    column('created_task_count', '新規Task数', 'Integer'),
+    column('updated_task_count', '更新Task数', 'Integer'),
+    column('review_count', '要確認数', 'Integer'),
+    column('skipped_count', 'スキップ数', 'Integer'),
+    column('error_count', 'エラー数', 'Integer'),
+    column('run_status', '実行状態', 'String'),
+    column('note', '注記', 'String')
   ];
   schemas[WorkOsConfig.SHEETS.ERRORS] = [
-    column('error_id', '繧ｨ繝ｩ繝ｼID', 'String'),
-    column('status', '迥ｶ諷・, 'String'),
-    column('retry_requested', '蜀榊ｮ溯｡・, 'Boolean', { editable: true, validation: 'CHECKBOX' }),
-    column('stage', '蜃ｦ逅・ｮｵ髫・, 'String'),
-    column('error_code', '繧ｨ繝ｩ繝ｼ繧ｳ繝ｼ繝・, 'String'),
-    column('error_summary', '讎りｦ・, 'String'),
+    column('error_id', 'エラーID', 'String'),
+    column('status', '状態', 'String'),
+    column('retry_requested', '再実行', 'Boolean', { editable: true, validation: 'CHECKBOX' }),
+    column('stage', '処理段階', 'String'),
+    column('error_code', 'エラーコード', 'String'),
+    column('error_summary', '概要', 'String'),
     column('source_message_id', 'Message ID', 'String'),
     column('source_thread_id', 'Thread ID', 'String'),
     column('task_id', 'Task ID', 'String'),
-    column('retry_count', '蜀崎ｩｦ陦悟屓謨ｰ', 'Integer'),
-    column('next_retry_at', '谺｡蝗槫・隧ｦ陦・, 'DateTime'),
-    column('first_failed_at', '蛻晏屓螟ｱ謨・, 'DateTime'),
-    column('last_failed_at', '譛邨ょ､ｱ謨・, 'DateTime'),
-    column('resolved_at', '隗｣豎ｺ譌･譎・, 'DateTime'),
-    column('last_run_id', '譛邨ょｮ溯｡栗D', 'String'),
+    column('retry_count', '再試行回数', 'Integer'),
+    column('next_retry_at', '次回再試行', 'DateTime'),
+    column('first_failed_at', '初回失敗', 'DateTime'),
+    column('last_failed_at', '最終失敗', 'DateTime'),
+    column('resolved_at', '解決日時', 'DateTime'),
+    column('last_run_id', '最終実行ID', 'String'),
     column('dead_letter_id', 'Dead Letter ID', 'String'),
     column('subsystem', 'Subsystem', 'String'),
     column('error_category', 'Error Category', 'String'),
     column('safe_reference', 'Safe Reference', 'String'),
-    column('message_state_id', 'Message State蜿ら・', 'String'),
-    column('resume_stage', '蜀埼幕谿ｵ髫・, 'String'),
-    column('attempt_count', '隧ｦ陦悟屓謨ｰ', 'Integer'),
-    column('last_attempt_at', '譛邨りｩｦ陦・, 'DateTime'),
-    column('next_action', '谺｡縺ｮ謫堺ｽ・, 'String'),
-    column('created_at', '菴懈・譌･譎・, 'DateTime'),
-    column('updated_at', '譖ｴ譁ｰ譌･譎・, 'DateTime')
+    column('message_state_id', 'Message State参照', 'String'),
+    column('resume_stage', '再開段階', 'String'),
+    column('attempt_count', '試行回数', 'Integer'),
+    column('last_attempt_at', '最終試行', 'DateTime'),
+    column('next_action', '次の操作', 'String'),
+    column('created_at', '作成日時', 'DateTime'),
+    column('updated_at', '更新日時', 'DateTime')
   ];
   schemas[WorkOsConfig.SHEETS.GUIDE] = [
-    column('step_id', '謇矩・, 'String'),
-    column('title', '鬆・岼', 'String'),
-    column('instruction', '隱ｬ譏・, 'String')
+    column('step_id', '手順', 'String'),
+    column('title', '項目', 'String'),
+    column('instruction', '説明', 'String')
   ];
   schemas[WorkOsConfig.SHEETS.MESSAGE_STATE] = [
     column('message_id', 'message_id', 'String'),
@@ -506,4 +506,3 @@ var WorkOsSchemas = (function () {
     validateTaskForWrite: validateTaskForWrite
   });
 }());
-

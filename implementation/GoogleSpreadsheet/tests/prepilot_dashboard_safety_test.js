@@ -52,7 +52,7 @@ function makeGrid(options = {}) {
   const notes = blankMatrix(rows, columns, '');
   const validations = blankMatrix(rows, columns, null);
   values[0] = ['metric_key', 'metric_value', 'note'];
-  values[1] = ['鬆・岼', '蛟､', '豕ｨ險・];
+  values[1] = ['項目', '値', '注記'];
   const merged = new Set();
   const hiddenRows = new Set();
   const hiddenColumns = new Set();
@@ -251,11 +251,11 @@ const context = {
     TEST_MODE: true,
     PROPERTIES: { INSTANCE_ID: 'WORK_OS_V2_INSTANCE_ID' },
     SHEETS: {
-      DASHBOARD: '繝繝・す繝･繝懊・繝・,
-      TASKS: '繧ｿ繧ｹ繧ｯ荳隕ｧ',
-      RUN_HISTORY: '蜃ｦ逅・ｱ･豁ｴ',
-      ERRORS: '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡・,
-      SYNC_STATE: '蜷梧悄迥ｶ諷・
+      DASHBOARD: 'ダッシュボード',
+      TASKS: 'タスク一覧',
+      RUN_HISTORY: '処理履歴',
+      ERRORS: 'エラー・再実行',
+      SYNC_STATE: '同期状態'
     }
   },
   WorkOsEnums: {
@@ -455,7 +455,7 @@ test('PREP-DASH-05B_SYSTEM_OWNED_SHEET_PROTECTION_ALLOWS_REFRESH', () => {
   grid.protections.push({
     type: context.SpreadsheetApp.ProtectionType.SHEET,
     getDescription: () =>
-      'WORK_OS_V2_PHASE1_繝繝・す繝･繝懊・繝雲SYSTEM_OWNED_EDIT_POLICY',
+      'WORK_OS_V2_PHASE1_ダッシュボード_SYSTEM_OWNED_EDIT_POLICY',
     isWarningOnly: () => false,
     getUnprotectedRanges: () => []
   });
@@ -562,4 +562,3 @@ process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (failed.length) {
   process.exitCode = 1;
 }
-

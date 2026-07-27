@@ -16,8 +16,8 @@
 ## 1. Executive conclusion
 
 ```text
-Overall audit: PARTIAL 窶・REGRESSION PASS / REMEDIATION GATE NO-GO
-Git closeout: NOT EXECUTED 窶・ENVIRONMENT PERMISSION
+Overall audit: PARTIAL — REGRESSION PASS / REMEDIATION GATE NO-GO
+Git closeout: NOT EXECUTED — ENVIRONMENT PERMISSION
 Critical open: 0
 High remaining: 2 partially closed; F-001 also has code-remediable gaps
 Medium remaining: 4
@@ -27,7 +27,7 @@ Informational open: 1
 
 The remediated working tree independently reproduces 29 suites,
 `444 PASS / 0 FAIL / 11 SKIPPED`. The staged snapshot separately reproduces
-the pre-remediation Phase 1窶・ baseline: 24 suites,
+the pre-remediation Phase 1–7 baseline: 24 suites,
 `384 PASS / 0 FAIL / 10 SKIPPED`, Code `2.7.0-phase7`, 20 `.gs` files,
 valid manifest and no real secret.
 
@@ -52,7 +52,7 @@ force operation, commit, branch, push or PR was attempted.
 
 The audit reviewed the controlling Specification and Plan, final integrated
 audit, Remediation Plan and implementation report, traceability, manual guide,
-README, CHANGELOG, all Phase 1窶・ Apps Script source, all 29 current tests,
+README, CHANGELOG, all Phase 1–7 Apps Script source, all 29 current tests,
 manifest, `.gitignore`, Archive, Git index, working-tree diff and untracked
 artifacts.
 
@@ -79,7 +79,7 @@ Tracked unstaged paths: 35
 Untracked paths before this audit output: 11
 Untracked paths after the two audit outputs: 13
 Working-tree diff --check: PASS
-Cached diff --check: FAIL 窶・two known EOF blank-line findings
+Cached diff --check: FAIL — two known EOF blank-line findings
 ```
 
 ### 3.2 Staged Baseline evidence
@@ -93,7 +93,7 @@ PASS: 384
 FAIL: 0
 SKIPPED: 10
 .gs syntax: 20 / 20 PASS
-Manifest: PASS 窶・V8 / Asia/Tokyo / 7 scopes
+Manifest: PASS — V8 / Asia/Tokyo / 7 scopes
 Code Version: 2.7.0-phase7
 Schema Version: 2.2
 AI Schema Version: 2.0
@@ -210,19 +210,19 @@ None of these cases is counted as PASS.
 |---|---:|---|---|---|
 | F-001 | High | PARTIALLY CLOSED | empty registry, factory boundary and AI classification transport lease/CAS exist | Provider-specific code/decisions plus Gmail search/body/label and Calendar I/O still execute in the long Worker Lock |
 | F-002 | High | PARTIALLY CLOSED / BLOCKED BY EXTERNAL DECISION | promotions/social/system filter, Thread-wide exclude, Message-scoped include, dedup and call cap | newsletter and Calendar-notification policy; real Gmail |
-| F-003 | Medium | CLOSED 窶・LOCAL / EXTERNAL VALIDATION PENDING | standalone/header/URI/JSON/query/multiline redaction and sink tests | real credential handling |
-| F-004 | Medium | CLOSED 窶・LOCAL / EXTERNAL VALIDATION PENDING | owner installable edit Trigger, canonical UID/source, bounded edit and fallback | real owner authorization/edit event |
+| F-003 | Medium | CLOSED — LOCAL / EXTERNAL VALIDATION PENDING | standalone/header/URI/JSON/query/multiline redaction and sink tests | real credential handling |
+| F-004 | Medium | CLOSED — LOCAL / EXTERNAL VALIDATION PENDING | owner installable edit Trigger, canonical UID/source, bounded edit and fallback | real owner authorization/edit event |
 | F-005 | Medium | PARTIALLY CLOSED / REOPENED | 17 metrics, explicit refresh, source read-only aggregation and high-row tests | blank-key rows with B/C values/formulas can be overwritten; corrupt Dashboard/Quick FAIL write boundary |
-| F-006 | Medium | CLOSED 窶・LOCAL / EXTERNAL VALIDATION PENDING | typed protected Settings and shared fail-closed readiness | real Validation/Protection/enable |
+| F-006 | Medium | CLOSED — LOCAL / EXTERNAL VALIDATION PENDING | typed protected Settings and shared fail-closed readiness | real Validation/Protection/enable |
 | F-007 | Medium | PARTIALLY CLOSED | Setup budget, Calendar pagination/budget, Gmail calls and retry limits | Gmail/Calendar external I/O remains inside the 120/210-second Script Lock; real quota/duration/contention |
 | F-008 | Medium | PARTIALLY CLOSED / ENVIRONMENT PERMISSION | `.gitignore`, scans, baseline/remediation separation and manual procedure | baseline/branch/commits cannot be written |
-| F-009 | Medium | CLOSED 窶・LOCAL / EXTERNAL VALIDATION PENDING | side-effect consent, next stage/action and Automation-off explanation | real dialog usability |
+| F-009 | Medium | CLOSED — LOCAL / EXTERNAL VALIDATION PENDING | side-effect consent, next stage/action and Automation-off explanation | real dialog usability |
 | F-010 | Low | OPEN | safe 365/365/90 defaults and no automatic deletion | retention/company long-term policy and broader Deep visibility |
-| F-011 | Low | CLOSED 窶・LOCAL / EXTERNAL VALIDATION PENDING | version, guide, README, CHANGELOG and metadata tests | real existing-v2 rerun |
+| F-011 | Low | CLOSED — LOCAL / EXTERNAL VALIDATION PENDING | version, guide, README, CHANGELOG and metadata tests | real existing-v2 rerun |
 | F-012 | Informational | OPEN | repository reports reconstruct core decisions | complete external governance/control chain |
-| F-013 | Low | OPEN 窶・NEW | implementation throws `E_DASHBOARD_LAYOUT_CONFLICT`; no direct failure-path test | add duplicate/fragmented system-block negative tests before TEST_MODE=false |
-| F-014 | Medium | OPEN 窶・NEW | production classification executes before provider-suppression check; its failure path records Message failure only | call `noteProviderFailure`, preserve safe Run History/Error evidence, and test suppression before real Provider |
-| F-015 | Low | OPEN 窶・NEW | production CAS success is tested, but Task edit/claim/input-hash/row-version/two-Worker conflict injection is absent | add stale-result/CAS conflict tests before TEST_MODE=false |
+| F-013 | Low | OPEN — NEW | implementation throws `E_DASHBOARD_LAYOUT_CONFLICT`; no direct failure-path test | add duplicate/fragmented system-block negative tests before TEST_MODE=false |
+| F-014 | Medium | OPEN — NEW | production classification executes before provider-suppression check; its failure path records Message failure only | call `noteProviderFailure`, preserve safe Run History/Error evidence, and test suppression before real Provider |
+| F-015 | Low | OPEN — NEW | production CAS success is tested, but Task edit/claim/input-hash/row-version/two-Worker conflict injection is absent | add stale-result/CAS conflict tests before TEST_MODE=false |
 
 No new Critical finding was identified. F-001 and F-007 remain code-incomplete;
 F-005 was reopened, and F-014 is a new Medium reliability/observability gap.
@@ -230,8 +230,8 @@ F-005 was reopened, and F-014 is a new Medium reliability/observability gap.
 ## 6. AI production boundary
 
 ```text
-Provider registry: IMPLEMENTED 窶・empty/frozen
-Production factory: IMPLEMENTED 窶・fail closed
+Provider registry: IMPLEMENTED — empty/frozen
+Production factory: IMPLEMENTED — fail closed
 Provider adapter: NOT IMPLEMENTED
 Network transport: NOT IMPLEMENTED
 Credential loader: NOT IMPLEMENTED
@@ -266,8 +266,8 @@ decisions above. `TEST_MODE=false` automation must remain blocked.
 
 ## 7. Gmail, edit Trigger and Runtime
 
-- `謇句虚/髯､螟冒 is strongest and Thread-wide.
-- Automatic `謇句虚/蜿冶ｾｼ` applies only to the exact labelled Message and is
+- `手動/除外` is strongest and Thread-wide.
+- Automatic `手動/取込` applies only to the exact labelled Message and is
   evaluated before promotions/social filters.
 - Spam/Trash/non-Inbox, promotions and social are excluded.
 - Newsletter and Google Calendar-notification detectors exist behind explicit
@@ -544,7 +544,7 @@ the commit commands above until the expected Baseline evidence is reproduced.
 
 ## 14. Current path inventory
 
-### 14.1 Staged paths 窶・57
+### 14.1 Staged paths — 57
 
 ```text
 AGENTS.md
@@ -606,7 +606,7 @@ tests/phase7_schema_extension_test.js
 tests/phase7_security_test.js
 ```
 
-### 14.2 Tracked unstaged paths 窶・35
+### 14.2 Tracked unstaged paths — 35
 
 ```text
 AGENTS.md
@@ -646,7 +646,7 @@ tests/phase7_performance_reliability_test.js
 tests/phase7_schema_extension_test.js
 ```
 
-### 14.3 Untracked remediation/audit outputs 窶・final 13
+### 14.3 Untracked remediation/audit outputs — final 13
 
 ```text
 .gitignore
@@ -690,4 +690,3 @@ All of the following remain `NOT EXECUTED`, not PASS:
 
 Phase 8, `TEST_MODE=false`, real Provider connection, Google Workspace
 mutation, push and PR were not performed.
-

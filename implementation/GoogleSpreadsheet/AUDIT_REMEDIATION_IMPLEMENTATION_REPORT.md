@@ -48,11 +48,11 @@ P0 pre-fix reproductions were recorded before their production fixes:
 |---|---|---|---|
 | F-01 | P0 | FIXED | Correct Calendar job-limit setting, strict integer validation, and automatic Calendar checkpoint completion/failure behavior. |
 | F-02 | P0 | FIXED | `UPDATE_DUE` applies `due_date`, `deadline_basis`, and `suggested_due_date` as one patch. |
-| F-03 | P0 | FIXED | Added `MANUAL_CONFIRMED` / `謇句虚遒ｺ隱港; manual deadline changes update provenance and protect `manual_fields`; Calendar create/update/delete recognizes the formal basis. |
+| F-03 | P0 | FIXED | Added `MANUAL_CONFIRMED` / `手動確認`; manual deadline changes update provenance and protect `manual_fields`; Calendar create/update/delete recognizes the formal basis. |
 | F-04 | P0 | FIXED | Exact target ID, expected target row version, Review row version, pending state and resolution snapshot are checked before cross-row apply. Unresolved targets fail closed. |
 | F-05 | P0 | FIXED | ACCEPT/REJECT is limited to open Review rows. Normal, terminal and already-applied rows reject the edit and restore the prior value without a business-state mutation. |
 | F-06 | P0 | FIXED | Cross-field Task invariants are validated at repository write boundaries, user edit, upsert, Review decision and Calendar patch boundaries. |
-| F-07 | P0 | FIXED | `謇句虚/蜿冶ｾｼ` is selected per exact Gmail Message. Thread-wide `謇句虚/髯､螟冒 remains higher priority. The gateway does not substitute an unlabeled latest Message. |
+| F-07 | P0 | FIXED | `手動/取込` is selected per exact Gmail Message. Thread-wide `手動/除外` remains higher priority. The gateway does not substitute an unlabeled latest Message. |
 | F-08 | P1 | FIXED | Non-editable Review note shows action, target summary, current/new values, deadline basis, manual conflict and past-due warning; raw JSON, IDs, URL and message content are not shown; note clears after decision. |
 | F-09 | P0 | FIXED | Central TEST_MODE guard covers Mock adapter/transport, Mock Task mutation, public Test Harness/Worker entrypoints and menu calls. Production mode has no implicit Mock fallback and no Mock/Test menu. |
 | F-10 | P1 | FIXED LOCALLY | Dashboard, Run History and Guide are fully owner-protected; Errors exposes only `retry_requested`. Expansion extends only that operator range. Dashboard accepts only its exact owned protection and rejects foreign protection. Real Workspace protection behavior remains acceptance-only. |
@@ -235,5 +235,4 @@ Record each as `PASS`, `FAIL`, or `NOT EXECUTED`; do not infer from local tests.
 - Push: not performed.
 - Pull request: not created.
 - Reset/clean/force: not performed.
-
 

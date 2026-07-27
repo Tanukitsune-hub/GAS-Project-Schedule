@@ -324,4 +324,3 @@ if (@($actualFiles | Where-Object {
   TestMode = $false
   AutomationDefault = 'OFF'
 } | Format-List
-

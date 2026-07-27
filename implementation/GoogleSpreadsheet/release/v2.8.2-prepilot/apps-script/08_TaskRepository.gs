@@ -100,7 +100,7 @@ var WorkOsTaskRepository = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'TASK_REPOSITORY',
         false,
-        '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜀・Κ蛻悠D縺御ｻ墓ｧ倥→荳閾ｴ縺励∪縺帙ｓ縲・
+        'タスク一覧の内部列IDが仕様と一致しません。'
       );
     }
     var rowCount = Math.max(0, sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1);
@@ -249,7 +249,7 @@ var WorkOsTaskRepository = (function () {
           'E_INVALID_ENUM',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺ｮEnum蛟､縺御ｸ肴ｭ｣縺ｧ縺吶・
+          columnDefinition.id + 'のEnum値が不正です。'
         );
       }
       return value;
@@ -266,7 +266,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺栗nteger縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'がIntegerではありません。'
         );
       }
       return value;
@@ -277,7 +277,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺君umber縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'がNumberではありません。'
         );
       }
       return value;
@@ -288,7 +288,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺沓oolean縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'がBooleanではありません。'
         );
       }
       return value;
@@ -299,7 +299,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺梧怏蜉ｹ縺ｪ譌･莉倥〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'が有効な日付ではありません。'
         );
       }
       return value;
@@ -310,7 +310,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_TYPE',
         'TASK_REPOSITORY',
         false,
-        columnDefinition.id + '縺郡tring縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+        columnDefinition.id + 'がStringではありません。'
       );
     }
     return value;
@@ -407,11 +407,11 @@ var WorkOsTaskRepository = (function () {
         'yyyy-MM-dd'
       );
     } else if (value === true) {
-      text = '縺ｯ縺・;
+      text = 'はい';
     } else if (value === false) {
-      text = '縺・＞縺・;
+      text = 'いいえ';
     } else {
-      text = String(value == null || value === '' ? '譛ｪ險ｭ螳・ : value);
+      text = String(value == null || value === '' ? '未設定' : value);
       if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
         var parsedDate = new Date(text);
         text = Number.isNaN(parsedDate.getTime())
@@ -424,27 +424,27 @@ var WorkOsTaskRepository = (function () {
       }
     }
     return WorkOsUtilities.redact(text)
-      .replace(/https?:\/\/\S+/gi, '[繝ｪ繝ｳ繧ｯ]')
-      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[繝｡繝ｼ繝ｫ]')
-      .replace(/\b(?:msg|thr|tsk|org)_[0-9a-f]{16,}\b/gi, '[隴伜挨蟄疹')
+      .replace(/https?:\/\/\S+/gi, '[リンク]')
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[メール]')
+      .replace(/\b(?:msg|thr|tsk|org)_[0-9a-f]{16,}\b/gi, '[識別子]')
       .replace(/[\r\n\t]+/g, ' ')
       .slice(0, 120);
   }
 
   function reviewFieldLabel(field) {
     var labels = {
-      task_title: '莉ｶ蜷・,
-      status: '迥ｶ諷・,
-      completed: '螳御ｺ・,
-      excluded: '蟇ｾ雎｡螟・,
-      waiting_for_reply: '霑比ｿ｡蠕・■',
-      due_date: '譛滄剞',
-      suggested_due_date: '謗ｨ螂ｨ譛滄剞',
-      deadline_basis: '譛滄剞譬ｹ諡',
-      priority: '蜆ｪ蜈亥ｺｦ',
-      calendar_sync_mode: 'Calendar蜷梧悄',
-      calendar_category: 'Calendar蛻・｡・,
-      calendar_importance: 'Calendar驥崎ｦ∝ｺｦ'
+      task_title: '件名',
+      status: '状態',
+      completed: '完了',
+      excluded: '対象外',
+      waiting_for_reply: '返信待ち',
+      due_date: '期限',
+      suggested_due_date: '推奨期限',
+      deadline_basis: '期限根拠',
+      priority: '優先度',
+      calendar_sync_mode: 'Calendar同期',
+      calendar_category: 'Calendar分類',
+      calendar_importance: 'Calendar重要度'
     };
     return labels[field] || field;
   }
@@ -463,8 +463,8 @@ var WorkOsTaskRepository = (function () {
       ? pending.current_values
       : {};
     var lines = [
-      '螟画峩: ' + sanitizeReviewDisplay(value.pending_action_type),
-      '蟇ｾ雎｡: ' + sanitizeReviewDisplay(value.task_title)
+      '変更: ' + sanitizeReviewDisplay(value.pending_action_type),
+      '対象: ' + sanitizeReviewDisplay(value.task_title)
     ];
     Object.keys(pending.changes).filter(function (field) {
       return REVIEW_WRITE_FIELDS[field] === true &&
@@ -483,11 +483,11 @@ var WorkOsTaskRepository = (function () {
         : (previousTask &&
           Object.prototype.hasOwnProperty.call(previousTask, field)
           ? previousTask[field]
-          : '蟇ｾ雎｡譛ｪ隗｣豎ｺ');
+          : '対象未解決');
       lines.push(
-        reviewFieldLabel(field) + ' 迴ｾ蝨ｨ蛟､: ' +
+        reviewFieldLabel(field) + ' 現在値: ' +
           sanitizeReviewDisplay(before) +
-          ' / 螟画峩蠕・ ' +
+          ' / 変更後: ' +
           sanitizeReviewDisplay(pending.changes[field])
       );
     });
@@ -496,17 +496,17 @@ var WorkOsTaskRepository = (function () {
       'deadline_basis'
     )) {
       lines.push(
-        '譛滄剞譬ｹ諡: ' +
+        '期限根拠: ' +
           sanitizeReviewDisplay(pending.changes.deadline_basis)
       );
     }
     lines.push(
-      '謇句虚遶ｶ蜷・ ' +
+      '手動競合: ' +
         (Array.isArray(pending.manual_conflicts) &&
-         pending.manual_conflicts.length ? '縺ゅｊ' : '縺ｪ縺・)
+         pending.manual_conflicts.length ? 'あり' : 'なし')
     );
     if (pending.past_due === true) {
-      lines.push('隴ｦ蜻・ 驕主悉譌･縺ｮ譛滄剞蛟呵｣懊〒縺吶・);
+      lines.push('警告: 過去日の期限候補です。');
     }
     return lines.join('\n').slice(0, 1500);
   }
@@ -542,7 +542,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_ROW_OUT_OF_RANGE',
         'TASK_REPOSITORY',
         false,
-        'Task陦後′隱ｭ蜿也ｯ・峇螟悶〒縺吶・
+        'Task行が読取範囲外です。'
       );
     }
     return context.values[index].slice();
@@ -615,7 +615,7 @@ var WorkOsTaskRepository = (function () {
         'E_LOCK_REQUIRED',
         'TASK_REPOSITORY',
         false,
-        '菫晄戟荳ｭ縺ｮScript Lock繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        '保持中のScript Lockを確認できません。'
       );
     }
     return createContext(sheet, LOCK_MARKER);
@@ -637,8 +637,682 @@ var WorkOsTaskRepository = (function () {
         'E_LOCK_REQUIRED',
         'TASK_REPOSITORY',
         false,
-        '菫晄戟荳ｭ縺ｮ…5435 tokens truncated…IEW_TARGET_UNRESOLVED',
-        '蟇ｾ雎｡Task縺梧悴遒ｺ螳壹・縺溘ａ蜿怜・縺ｧ縺阪∪縺帙ｓ縲・
+        '保持中のScript Lockを確認できません。'
+      );
+    }
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var ids = sheet.getRange(1, 1, 1, schema.length).getValues()[0];
+    var expected = WorkOsSchemas.getInternalIds(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    if (JSON.stringify(ids) !== JSON.stringify(expected)) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MISSING_COLUMN',
+        'TASK_REPOSITORY',
+        false,
+        'タスク一覧の内部列IDが仕様と一致しません。'
+      );
+    }
+    var rowsByNumber = {};
+    (physicalRows || []).forEach(function (rowValue) {
+      var rowNumber = Number(rowValue);
+      if (Number.isInteger(rowNumber) &&
+          rowNumber >= WorkOsConfig.DATA_START_ROW) {
+        rowsByNumber[rowNumber] = true;
+      }
+    });
+    var rows = Object.keys(rowsByNumber).map(function (rowValue) {
+      return Number(rowValue);
+    }).sort(function (left, right) {
+      return left - right;
+    });
+    var highestRow = rows.length
+      ? rows[rows.length - 1]
+      : WorkOsConfig.DATA_START_ROW - 1;
+    var values = [];
+    for (
+      var row = WorkOsConfig.DATA_START_ROW;
+      row <= highestRow;
+      row += 1
+    ) {
+      values.push(new Array(schema.length).fill(''));
+    }
+    rows.forEach(function (rowNumber) {
+      values[rowNumber - WorkOsConfig.DATA_START_ROW] =
+        sheet.getRange(
+          rowNumber,
+          1,
+          1,
+          schema.length
+        ).getValues()[0];
+    });
+    var context = buildContextFromValues(
+      sheet,
+      WorkOsSchemas.buildColumnMapFromIds(ids),
+      values
+    );
+    Object.defineProperty(context, '_workOsLockMarker', {
+      value: LOCK_MARKER,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
+    return context;
+  }
+
+  function assertLockedContext(context) {
+    if (!context || context._workOsLockMarker !== LOCK_MARKER) {
+      throw new WorkOsAppError(
+        'E_LOCK_REQUIRED',
+        'TASK_REPOSITORY',
+        false,
+        'Task更新にはScript Lockが必要です。'
+      );
+    }
+  }
+
+  function validateCandidateRow(row, schema, stage) {
+    var candidate = directTaskFromRow(row, schema);
+    var validation = WorkOsSchemas.validateTaskForWrite(candidate, false);
+    if (!validation.ok) {
+      throw new WorkOsAppError(
+        'E_TASK_VALIDATION',
+        stage || 'TASK_REPOSITORY',
+        false,
+        'Task状態が仕様を満たさないため書込みを停止しました: ' +
+          validation.errors.join(', ')
+      );
+    }
+    return candidate;
+  }
+
+  function updateRowWithPatch(
+    context,
+    physicalRow,
+    patch,
+    allowedFields,
+    nowValue
+  ) {
+    assertLockedContext(context);
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var cached = rowForPhysicalRow(context, physicalRow);
+    var current = context.sheet.getRange(
+      physicalRow,
+      1,
+      1,
+      schema.length
+    ).getValues()[0];
+    if (!rowsEqual(cached, current)) {
+      throw new WorkOsAppError(
+        'E_TASK_CONFLICT',
+        'TASK_REPOSITORY',
+        true,
+        'Taskが他の操作で変更されたため書込みを停止しました。'
+      );
+    }
+    var updated = current.slice();
+    var changes = [];
+    Object.keys(patch || {}).forEach(function (field) {
+      if (!allowedFields[field] ||
+          !Object.prototype.hasOwnProperty.call(context.columnMap, field)) {
+        throw new WorkOsAppError(
+          'E_TASK_FIELD_NOT_UPDATABLE',
+          'TASK_REPOSITORY',
+          false,
+          '許可されていないTask field変更です。'
+        );
+      }
+      var index = context.columnMap[field];
+      var cellValue = valueForCell(schema[index], patch[field]);
+      if (!cellsEqual(updated[index], cellValue)) {
+        updated[index] = cellValue;
+        changes.push({ columnIndex: index, value: cellValue });
+      }
+    });
+    if (!changes.length) {
+      return { operation: 'NOOP', row: physicalRow, changed_fields: [] };
+    }
+    var versionIndex = context.columnMap.row_version;
+    var updatedAtIndex = context.columnMap.updated_at;
+    updated[versionIndex] = Number(current[versionIndex] || 0) + 1;
+    updated[updatedAtIndex] = nowValue || WorkOsUtilities.now();
+    changes.push({
+      columnIndex: versionIndex,
+      value: updated[versionIndex]
+    });
+    changes.push({
+      columnIndex: updatedAtIndex,
+      value: updated[updatedAtIndex]
+    });
+    var previousTask = directTaskFromRow(current, schema);
+    var candidateTask = validateCandidateRow(
+      updated,
+      schema,
+      'TASK_REPOSITORY'
+    );
+    writeChangedCells(context.sheet, physicalRow, changes);
+    syncReviewNote(
+      context.sheet,
+      physicalRow,
+      candidateTask,
+      previousTask
+    );
+    context.values[physicalRow - WorkOsConfig.DATA_START_ROW] = updated;
+    return {
+      operation: 'UPDATE',
+      row: physicalRow,
+      changed_fields: Object.keys(patch).concat(['row_version', 'updated_at'])
+    };
+  }
+
+  function stagePendingChange(taskId, actionType, envelope, context) {
+    assertLockedContext(context);
+    var physicalRow = context.byTaskId[String(taskId || '')];
+    if (!physicalRow) {
+      throw new WorkOsAppError(
+        'E_TARGET_NOT_RESOLVED',
+        'TASK_REPOSITORY',
+        false,
+        '変更対象Taskを解決できません。'
+      );
+    }
+    if (WorkOsAiAdapter.ACTION_TYPES.indexOf(String(actionType || '')) === -1) {
+      throw new WorkOsAppError(
+        'E_INVALID_ENUM',
+        'TASK_REPOSITORY',
+        false,
+        'pending Actionが不正です。'
+      );
+    }
+    var current = readTaskAtRow(context, physicalRow);
+    var currentValidation = WorkOsSchemas.validateTaskForWrite(current, false);
+    if (!currentValidation.ok ||
+        current.status === 'DONE' ||
+        current.status === 'EXCLUDED' ||
+        current.status === 'CANCELLED') {
+      throw new WorkOsAppError(
+        'E_TASK_VALIDATION',
+        'TASK_REPOSITORY',
+        false,
+        'terminalまたは不整合Taskにはpending変更を作成できません。'
+      );
+    }
+    var payload = sanitizeStructuredValue(envelope || {});
+    if (!payload.origin_key ||
+        !payload.changes ||
+        typeof payload.changes !== 'object' ||
+        Array.isArray(payload.changes) ||
+        Object.prototype.hasOwnProperty.call(payload.changes, 'comment')) {
+      throw new WorkOsAppError(
+        'E_TASK_VALIDATION',
+        'TASK_REPOSITORY',
+        false,
+        'pending変更の構造が不正です。'
+      );
+    }
+    var provenance = WorkOsAiAdapter.validateProvenance(
+      payload.ai_provenance
+    );
+    payload.action_type = String(actionType);
+    payload.target_task_id = current.task_id;
+    payload.expected_target_row_version = Number(current.row_version);
+    payload.target_resolution = 'RESOLVED';
+    if (!Array.isArray(payload.manual_conflicts)) {
+      payload.manual_conflicts = [];
+    }
+    if (!isPlainObject(payload.current_values)) {
+      payload.current_values = {};
+    }
+    Object.keys(payload.changes).forEach(function (field) {
+      if (REVIEW_WRITE_FIELDS[field] === true &&
+          Object.prototype.hasOwnProperty.call(current, field)) {
+        payload.current_values[field] = sanitizeStructuredValue(
+          current[field]
+        );
+      }
+    });
+    var existingPayload = current.pending_changes_json &&
+      typeof current.pending_changes_json === 'object' &&
+      !Array.isArray(current.pending_changes_json)
+      ? current.pending_changes_json
+      : {};
+    if (current.pending_action_type) {
+      if (existingPayload.origin_key === payload.origin_key &&
+          current.pending_action_type === actionType) {
+        payload.target_task_id = existingPayload.target_task_id;
+        payload.expected_target_row_version =
+          existingPayload.expected_target_row_version;
+        payload.target_resolution = existingPayload.target_resolution;
+      }
+      if (existingPayload.origin_key === payload.origin_key &&
+          current.pending_action_type === actionType &&
+          JSON.stringify(existingPayload) === JSON.stringify(payload)) {
+        return {
+          operation: 'NOOP',
+          row: physicalRow,
+          task_id: current.task_id,
+          changed_fields: []
+        };
+      }
+      throw new WorkOsAppError(
+        'E_TASK_PENDING_CONFLICT',
+        'TASK_REPOSITORY',
+        false,
+        '未処理のpending変更があるため上書きしません。'
+      );
+    }
+    var result = updateRowWithPatch(
+      context,
+      physicalRow,
+      {
+        needs_review: true,
+        decision: 'NONE',
+        review_state: 'OPEN',
+        review_type: 'EXISTING_CHANGE',
+        pending_action_type: actionType,
+        pending_changes_json: payload,
+        ai_provider: provenance.provider,
+        ai_model: provenance.model,
+        ai_prompt_version: provenance.prompt_version
+      },
+      {
+        needs_review: true,
+        decision: true,
+        review_state: true,
+        review_type: true,
+        pending_action_type: true,
+        pending_changes_json: true,
+        ai_provider: true,
+        ai_model: true,
+        ai_prompt_version: true
+      }
+    );
+    result.task_id = current.task_id;
+    return result;
+  }
+
+  function directTaskFromRow(row, schema) {
+    var task = {};
+    schema.forEach(function (column, index) {
+      task[column.id] = valueFromCell(column, row[index]);
+    });
+    return task;
+  }
+
+  function normalizeUserState(task, patch, editedColumnIds) {
+    function effective(field) {
+      return Object.prototype.hasOwnProperty.call(patch, field)
+        ? patch[field]
+        : task[field];
+    }
+    var edited = editedColumnIds || [];
+    var statusWasEdited = edited.indexOf('status') !== -1;
+    var waitingWasEdited = edited.indexOf('waiting_for_reply') !== -1;
+    if (effective('excluded') === true ||
+        (statusWasEdited && effective('status') === 'EXCLUDED')) {
+      patch.status = 'EXCLUDED';
+      patch.excluded = true;
+      patch.completed = false;
+      patch.waiting_for_reply = false;
+    } else if (effective('completed') === true ||
+        (statusWasEdited && effective('status') === 'DONE')) {
+      patch.status = 'DONE';
+      patch.completed = true;
+      patch.excluded = false;
+      patch.waiting_for_reply = false;
+    } else if (effective('status') === 'CANCELLED') {
+      patch.completed = false;
+      patch.excluded = false;
+      patch.waiting_for_reply = false;
+    } else if (effective('waiting_for_reply') === true ||
+        (statusWasEdited && effective('status') === 'WAITING')) {
+      patch.status = 'WAITING';
+      patch.waiting_for_reply = true;
+    } else if (waitingWasEdited &&
+        task.status === 'WAITING' &&
+        effective('waiting_for_reply') === false) {
+      patch.status = 'OPEN';
+    }
+  }
+
+  function isPlainObject(value) {
+    return value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value);
+  }
+
+  function priorDecisionForState(reviewState) {
+    if (reviewState === 'APPLIED') {
+      return 'ACCEPT';
+    }
+    if (reviewState === 'REJECTED') {
+      return 'REJECT';
+    }
+    return 'NONE';
+  }
+
+  function revertDecisionCell(context, physicalRow, priorDecision) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var decisionIndex = context.columnMap.decision;
+    var cellValue = valueForCell(
+      schema[decisionIndex],
+      priorDecision || 'NONE'
+    );
+    context.sheet.getRange(
+      physicalRow,
+      decisionIndex + 1,
+      1,
+      1
+    ).setValues([[cellValue]]);
+    context.values[
+      physicalRow - WorkOsConfig.DATA_START_ROW
+    ][decisionIndex] = cellValue;
+  }
+
+  function rejectedReviewResult(
+    context,
+    physicalRow,
+    task,
+    errorCode,
+    message
+  ) {
+    revertDecisionCell(
+      context,
+      physicalRow,
+      priorDecisionForState(task.review_state)
+    );
+    return {
+      operation: 'REJECTED',
+      row: physicalRow,
+      task_id: task.task_id,
+      review_task_id: task.task_id,
+      changed_fields: [],
+      calendar_reconcile: false,
+      error_code: errorCode,
+      user_message: message || 'この判断操作は受け付けられません。'
+    };
+  }
+
+  function assertReviewChanges(changes) {
+    if (!isPlainObject(changes)) {
+      return false;
+    }
+    return Object.keys(changes).every(function (field) {
+      return field !== 'comment' && REVIEW_WRITE_FIELDS[field] === true;
+    });
+  }
+
+  function sameRowReviewPatch(task, reviewType, decision, pending) {
+    var patch = {};
+    if (decision === 'ACCEPT') {
+      if (reviewType === 'EXISTING_CHANGE') {
+        Object.keys(pending.changes).forEach(function (field) {
+          patch[field] = pending.changes[field];
+        });
+      } else {
+        patch.status = 'OPEN';
+        patch.completed = false;
+        patch.excluded = false;
+        patch.waiting_for_reply = false;
+      }
+      patch.needs_review = false;
+      patch.decision = 'ACCEPT';
+      patch.review_state = 'APPLIED';
+    } else {
+      if (reviewType !== 'EXISTING_CHANGE') {
+        patch.status = 'EXCLUDED';
+        patch.completed = false;
+        patch.excluded = true;
+        patch.waiting_for_reply = false;
+      }
+      patch.needs_review = false;
+      patch.decision = 'REJECT';
+      patch.review_state = 'REJECTED';
+    }
+    patch.pending_action_type = '';
+    patch.pending_changes_json = {};
+    return patch;
+  }
+
+  function changesMatchTask(context, physicalRow, changes) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var row = rowForPhysicalRow(context, physicalRow);
+    return Object.keys(changes).every(function (field) {
+      if (!Object.prototype.hasOwnProperty.call(context.columnMap, field)) {
+        return false;
+      }
+      var index = context.columnMap[field];
+      return cellsEqual(row[index], valueForCell(schema[index], changes[field]));
+    });
+  }
+
+  function applyConflictReviewDecision(
+    context,
+    reviewRow,
+    reviewTask,
+    pending,
+    nowValue
+  ) {
+    var targetTaskId = String(pending.target_task_id || '');
+    var targetRow = context.byTaskId[targetTaskId];
+    var expectedTargetVersion = Number(
+      pending.expected_target_row_version
+    );
+    if (!targetTaskId ||
+        targetTaskId === reviewTask.task_id ||
+        !targetRow ||
+        !Number.isInteger(expectedTargetVersion) ||
+        expectedTargetVersion < 1 ||
+        !assertReviewChanges(pending.changes)) {
+      return rejectedReviewResult(
+        context,
+        reviewRow,
+        reviewTask,
+        'REVIEW_TARGET_CONFLICT',
+        '対象Taskを確認できないため受入を取り消しました。'
+      );
+    }
+    var target = readTaskAtRow(context, targetRow);
+    var checkpoint = String(pending.application_checkpoint || '');
+    var targetMatches = changesMatchTask(
+      context,
+      targetRow,
+      pending.changes
+    );
+    var targetAlreadyApplied = checkpoint === 'TARGET_APPLYING' &&
+      target.row_version === expectedTargetVersion + 1 &&
+      targetMatches;
+    if (!targetAlreadyApplied &&
+        (target.row_version !== expectedTargetVersion ||
+         target.pending_action_type ||
+         (isPlainObject(target.pending_changes_json) &&
+          isPlainObject(target.pending_changes_json.changes)))) {
+      return rejectedReviewResult(
+        context,
+        reviewRow,
+        reviewTask,
+        'REVIEW_TARGET_CONFLICT',
+        '対象Taskが更新済みまたは確認中のため受入を取り消しました。'
+      );
+    }
+
+    if (checkpoint !== 'TARGET_APPLYING') {
+      var checkpointPayload = sanitizeStructuredValue(pending);
+      checkpointPayload.application_checkpoint = 'TARGET_APPLYING';
+      checkpointPayload.checkpoint_target_row_version =
+        expectedTargetVersion;
+      updateRowWithPatch(
+        context,
+        reviewRow,
+        {
+          decision: 'NONE',
+          pending_changes_json: checkpointPayload
+        },
+        REVIEW_WRITE_FIELDS,
+        nowValue
+      );
+      pending = checkpointPayload;
+    }
+
+    var targetResult;
+    if (targetAlreadyApplied) {
+      targetResult = {
+        operation: 'NOOP',
+        row: targetRow,
+        task_id: targetTaskId,
+        changed_fields: []
+      };
+    } else {
+      targetResult = updateRowWithPatch(
+        context,
+        targetRow,
+        pending.changes,
+        REVIEW_WRITE_FIELDS,
+        nowValue
+      );
+      targetResult.task_id = targetTaskId;
+    }
+    updateRowWithPatch(
+      context,
+      reviewRow,
+      {
+        status: 'EXCLUDED',
+        completed: false,
+        excluded: true,
+        waiting_for_reply: false,
+        needs_review: false,
+        decision: 'ACCEPT',
+        review_state: 'APPLIED',
+        pending_action_type: '',
+        pending_changes_json: {}
+      },
+      REVIEW_WRITE_FIELDS,
+      nowValue
+    );
+    return {
+      operation: targetResult.operation === 'NOOP' ? 'UPDATE' :
+        targetResult.operation,
+      row: targetRow,
+      task_id: targetTaskId,
+      review_row: reviewRow,
+      review_task_id: reviewTask.task_id,
+      changed_fields: targetResult.changed_fields,
+      calendar_reconcile: true
+    };
+  }
+
+  function applyReviewDecisionUnlocked(options, context) {
+    assertLockedContext(context);
+    var settings = options || {};
+    var reviewTaskId = String(settings.reviewTaskId || '');
+    var physicalRow = context.byTaskId[reviewTaskId];
+    if (!physicalRow) {
+      throw new WorkOsAppError(
+        'E_TARGET_NOT_RESOLVED',
+        'TASK_REVIEW',
+        false,
+        'Review Taskを解決できません。'
+      );
+    }
+    var task = readTaskAtRow(context, physicalRow);
+    var decision = String(settings.decision || task.decision || '');
+    var expectedReviewVersion = Number(settings.expectedReviewRowVersion);
+    if (!Number.isInteger(expectedReviewVersion) ||
+        expectedReviewVersion !== Number(task.row_version)) {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_ROW_CONFLICT',
+        'Reviewが更新済みのため判断を取り消しました。'
+      );
+    }
+    if (decision !== 'ACCEPT' && decision !== 'REJECT') {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_DECISION_INVALID',
+        '判断値が不正なため元に戻しました。'
+      );
+    }
+    if (task.review_state === 'APPLIED' ||
+        task.review_state === 'REJECTED') {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_ALREADY_CLOSED',
+        'このReviewはすでに処理済みです。'
+      );
+    }
+    if (task.status === 'DONE' ||
+        task.status === 'EXCLUDED' ||
+        task.status === 'CANCELLED') {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_TERMINAL_TASK',
+        '完了済みTaskでは判断を変更できません。'
+      );
+    }
+    if (task.needs_review !== true ||
+        task.review_state !== 'OPEN' ||
+        !REVIEW_TYPES[String(task.review_type || '')]) {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_NOT_OPEN',
+        '確認待ちReview以外では判断を変更できません。'
+      );
+    }
+
+    var pending = isPlainObject(task.pending_changes_json)
+      ? task.pending_changes_json
+      : {};
+    var reviewType = String(task.review_type);
+    var hasPending = Boolean(task.pending_action_type) &&
+      isPlainObject(pending.changes);
+    var structureValid = reviewType === 'NEW_TASK'
+      ? !task.pending_action_type &&
+        !Object.prototype.hasOwnProperty.call(pending, 'changes')
+      : hasPending &&
+        String(pending.action_type || '') ===
+          String(task.pending_action_type || '') &&
+        assertReviewChanges(pending.changes);
+    if (structureValid && reviewType === 'EXISTING_CHANGE') {
+      structureValid = pending.target_resolution === 'RESOLVED' &&
+        pending.target_task_id === task.task_id;
+    } else if (structureValid && reviewType === 'TARGET_UNRESOLVED') {
+      structureValid = pending.target_resolution === 'UNRESOLVED';
+    } else if (structureValid && reviewType === 'PENDING_CONFLICT') {
+      structureValid = pending.target_resolution === 'CONFLICT';
+    }
+    if (structureValid && reviewType !== 'NEW_TASK') {
+      try {
+        WorkOsAiAdapter.validateProvenance(pending.ai_provenance);
+      } catch (error) {
+        structureValid = false;
+      }
+    }
+    if (!structureValid) {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_PAYLOAD_INVALID',
+        'Review内容が不正なため判断を取り消しました。'
+      );
+    }
+    if (reviewType === 'TARGET_UNRESOLVED' && decision === 'ACCEPT') {
+      return rejectedReviewResult(
+        context,
+        physicalRow,
+        task,
+        'REVIEW_TARGET_UNRESOLVED',
+        '対象Taskが未確定のため受入できません。'
       );
     }
     if (reviewType === 'PENDING_CONFLICT' && decision === 'ACCEPT') {
@@ -680,7 +1354,7 @@ var WorkOsTaskRepository = (function () {
           'E_SCHEMA_CONFLICT',
           'EDIT_HANDLER',
           false,
-          '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蛻玲焚縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+          'タスク一覧の列数がSchemaと一致しません。'
         );
       }
       var containsDecision = (rowEdits || []).some(function (edit) {
@@ -715,7 +1389,7 @@ var WorkOsTaskRepository = (function () {
               rowNumber,
               task,
               'REVIEW_EDIT_AMBIGUOUS',
-              '蛻､譁ｭ谺・・莉悶・鬆・岼縺ｨ蛻・￠縺ｦ謫堺ｽ懊＠縺ｦ縺上□縺輔＞縲・
+              '判断欄は他の項目と分けて操作してください。'
             ));
             return;
           }
@@ -790,7 +1464,7 @@ var WorkOsTaskRepository = (function () {
               'E_TASK_FIELD_NOT_UPDATABLE',
               'EDIT_HANDLER',
               false,
-              '邱ｨ髮・ｭ｣隕丞喧field縺瑚ｨｱ蜿ｯ縺輔ｌ縺ｦ縺・∪縺帙ｓ縲・
+              '編集正規化fieldが許可されていません。'
             );
           }
           var index = map[field];
@@ -858,7 +1532,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_DUPLICATE_KEY',
         'TASK_REPOSITORY',
         false,
-        '譌｢蟄狼ask縺ｫ荳ｻ繧ｭ繝ｼ驥崎､・′縺ゅｋ縺溘ａ譖ｸ霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        '既存Taskに主キー重複があるため書込みを停止しました。'
       );
     }
 
@@ -868,7 +1542,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_ID_SUPPLIED',
         'TASK_REPOSITORY',
         false,
-        '譁ｰ隕週ask縺ｮtask_id縺ｯRepository縺檎匱陦後＠縺ｾ縺吶・
+        '新規Taskのtask_idはRepositoryが発行します。'
       );
     }
     var validation = WorkOsSchemas.validateTaskForWrite(target, !existingRow);
@@ -877,7 +1551,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_VALIDATION',
         'TASK_REPOSITORY',
         false,
-        'Task蜈･蜉帙′莉墓ｧ倥ｒ貅縺溘＠縺ｾ縺帙ｓ: ' + validation.errors.join(', ')
+        'Task入力が仕様を満たしません: ' + validation.errors.join(', ')
       );
     }
     if (existingRow) {
@@ -900,7 +1574,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         true,
-        'Task縺御ｻ悶・謫堺ｽ懊〒螟画峩縺輔ｌ縺溘◆繧∵嶌霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        'Taskが他の操作で変更されたため書込みを停止しました。'
       );
     }
     var currentTaskId = String(existing[context.columnMap.task_id] || '');
@@ -909,7 +1583,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         false,
-        '譌｢蟄椀rigin_key陦後↓task_id縺後↑縺・◆繧∬・蜍墓峩譁ｰ繧貞●豁｢縺励∪縺励◆縲・
+        '既存origin_key行にtask_idがないため自動更新を停止しました。'
       );
     }
     if (task.task_id && String(task.task_id) !== currentTaskId) {
@@ -917,7 +1591,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         false,
-        '蜷後§origin_key縺ｫ逡ｰ縺ｪ繧逆ask_id縺梧欠螳壹＆繧後∪縺励◆縲・
+        '同じorigin_keyに異なるtask_idが指定されました。'
       );
     }
     var updated = existing.slice();
@@ -937,7 +1611,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_IMMUTABLE_FIELD',
           'TASK_REPOSITORY',
           false,
-          id + '縺ｯ蜷御ｸorigin_key縺ｮ蜀榊・逅・〒縺ｯ螟画峩縺ｧ縺阪∪縺帙ｓ縲・
+          id + 'は同一origin_keyの再処理では変更できません。'
         );
       }
       if (!SAFE_REPLAY_UPDATE_FIELDS[id]) {
@@ -945,7 +1619,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_FIELD_NOT_UPDATABLE',
           'TASK_REPOSITORY',
           false,
-          id + '縺ｯ蜷御ｸorigin_key縺ｮ蜀榊・逅・〒縺ｯ閾ｪ蜍墓峩譁ｰ縺ｧ縺阪∪縺帙ｓ縲・
+          id + 'は同一origin_keyの再処理では自動更新できません。'
         );
       }
       updated[columnIndex] = candidate;
@@ -1004,7 +1678,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_DUPLICATE_KEY',
         'TASK_REPOSITORY',
         false,
-        '譁ｰ隕週ask ID縺梧里蟄狼ask縺ｨ陦晉ｪ√＠縺溘◆繧∵嶌霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        '新規Task IDが既存Taskと衝突したため書込みを停止しました。'
       );
     }
     var validation = WorkOsSchemas.validateTaskForWrite(prepared, true);
@@ -1013,7 +1687,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_VALIDATION',
         'TASK_REPOSITORY',
         false,
-        'Task蜈･蜉帙′莉墓ｧ倥ｒ貅縺溘＠縺ｾ縺帙ｓ: ' + validation.errors.join(', ')
+        'Task入力が仕様を満たしません: ' + validation.errors.join(', ')
       );
     }
     var physicalRow = findLogicalEmptyRow(
@@ -1070,7 +1744,7 @@ var WorkOsTaskRepository = (function () {
             : 'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          item.id + '縺ｮ菫晏ｭ伜､縺御ｸ肴ｭ｣縺ｧ縺吶・
+          item.id + 'の保存値が不正です。'
         );
       }
     });
@@ -1109,7 +1783,7 @@ var WorkOsTaskRepository = (function () {
         'E_TARGET_NOT_RESOLVED',
         'CALENDAR_SYNC',
         false,
-        'Calendar蜷梧悄蟇ｾ雎｡Task繧定ｧ｣豎ｺ縺ｧ縺阪∪縺帙ｓ縲・
+        'Calendar同期対象Taskを解決できません。'
       );
     }
     var allowed = {
@@ -1124,7 +1798,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_FIELD_NOT_UPDATABLE',
           'CALENDAR_SYNC',
           false,
-          'Calendar蜷梧悄縺悟､画峩縺ｧ縺阪↑縺Уask field縺ｧ縺吶・
+          'Calendar同期が変更できないTask fieldです。'
         );
       }
     });
@@ -1142,7 +1816,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_VALIDATION',
         'CALENDAR_SYNC',
         false,
-        'Calendar Task patch縺御ｻ墓ｧ倥ｒ貅縺溘＠縺ｾ縺帙ｓ縲・
+        'Calendar Task patchが仕様を満たしません。'
       );
     }
     var result = updateRowWithPatch(
@@ -1165,12 +1839,12 @@ var WorkOsTaskRepository = (function () {
         'E_SCHEMA_MISSING_SHEET',
         'TASK_REPOSITORY',
         false,
-        '蜈医↓Phase 1繧ｻ繝・ヨ繧｢繝・・繧貞ｮ溯｡後＠縺ｦ縺上□縺輔＞縲・
+        '先にPhase 1セットアップを実行してください。'
       );
     }
     return upsertTask({
       origin_key: WorkOsUtilities.makeOriginKey('synthetic-message-phase1', 0),
-      task_title: '譫ｶ遨ｺ雉・侭縺ｮ謠仙・貅門ｙ',
+      task_title: '架空資料の提出準備',
       status: 'OPEN',
       priority: 'MEDIUM',
       needs_review: false,
@@ -1205,4 +1879,3 @@ var WorkOsTaskRepository = (function () {
     upsertPhase1MockTask: upsertPhase1MockTask
   });
 }());
-

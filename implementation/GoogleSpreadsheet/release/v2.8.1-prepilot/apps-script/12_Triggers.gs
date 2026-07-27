@@ -13,7 +13,7 @@ var WorkOsAutomation = (function () {
         'E_TEST_MODE_DISABLED',
         'AUTOMATION',
         false,
-        'Automation萓晏ｭ俶ｳｨ蜈･縺ｯTest mode縺縺代〒蛻ｩ逕ｨ縺ｧ縺阪∪縺吶・
+        'Automation依存注入はTest modeだけで利用できます。'
       );
     }
     return settings;
@@ -144,7 +144,7 @@ var WorkOsAutomation = (function () {
         'E_EDIT_TRIGGER_OWNER_REQUIRED',
         'EDIT_TRIGGER',
         false,
-        'Spreadsheet謇譛芽・悽莠ｺ縺縺代′Task邱ｨ髮・rigger繧剃ｽ懈・縺ｧ縺阪∪縺吶・
+        'Spreadsheet所有者本人だけがTask編集Triggerを作成できます。'
       );
     }
     return true;
@@ -194,7 +194,7 @@ var WorkOsAutomation = (function () {
         'E_SETUP_NOT_BOUND',
         'EDIT_TRIGGER',
         false,
-        'Bound Spreadsheet繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        'Bound Spreadsheetを確認できません。'
       );
     }
     assertSpreadsheetOwner(settings, spreadsheet);
@@ -228,7 +228,7 @@ var WorkOsAutomation = (function () {
           'E_EDIT_TRIGGER_CREATE',
           'EDIT_TRIGGER',
           false,
-          'Task邱ｨ髮・rigger繧貞ｮ牙・縺ｫ菴懈・縺ｧ縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+          'Task編集Triggerを安全に作成できませんでした。'
         );
       }
     }
@@ -244,7 +244,7 @@ var WorkOsAutomation = (function () {
         'E_EDIT_TRIGGER_CREATE',
         'EDIT_TRIGGER',
         false,
-        'Task邱ｨ髮・rigger縺ｮ謇譛画ュ蝣ｱ繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Task編集Triggerの所有情報を確認できませんでした。'
       );
     }
     props.setProperty(
@@ -276,7 +276,7 @@ var WorkOsAutomation = (function () {
         'E_LOCK_UNAVAILABLE',
         'AUTOMATION_TRIGGER',
         false,
-        'Automation Trigger邂｡逅・ock繧貞茜逕ｨ縺ｧ縺阪∪縺帙ｓ縲・
+        'Automation Trigger管理Lockを利用できません。'
       );
     }
     var lock = LockService.getDocumentLock();
@@ -286,7 +286,7 @@ var WorkOsAutomation = (function () {
         'E_LOCK_TIMEOUT',
         'AUTOMATION_TRIGGER',
         true,
-        '蛻･縺ｮTrigger邂｡逅・・逅・′螳溯｡御ｸｭ縺ｧ縺吶・
+        '別のTrigger管理処理が実行中です。'
       );
     }
     try {
@@ -715,7 +715,7 @@ var WorkOsAutomation = (function () {
         'E_AUTOMATION_PREREQUISITES',
         'AUTOMATION_ENABLE',
         false,
-        '閾ｪ蜍募・逅・・蜑肴署譚｡莉ｶ縺梧悴螳御ｺ・〒縺吶・
+        '自動処理の前提条件が未完了です。'
       );
     }
     var existing = handlerTriggers(scriptApp);
@@ -759,7 +759,7 @@ var WorkOsAutomation = (function () {
         'E_AUTOMATION_TRIGGER_CREATE',
         'AUTOMATION_ENABLE',
         false,
-        'Automation Trigger繧貞ｮ牙・縺ｫ菴懈・縺ｧ縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Automation Triggerを安全に作成できませんでした。'
       );
     }
   }
@@ -880,7 +880,7 @@ var WorkOsAutomation = (function () {
         'E_AUTOMATION_ENABLE_COMMIT',
         'AUTOMATION_ENABLE',
         false,
-        'Automation譛牙柑蛹也憾諷九ｒ螳牙・縺ｫ遒ｺ螳壹〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Automation有効化状態を安全に確定できませんでした。'
       );
     }
     if (props.getProperty(
@@ -1149,4 +1149,3 @@ function removeDuplicateAutomationTriggers() {
 function runScheduledWorker(event) {
   return WorkOsAutomation.runScheduledWorker(event || null);
 }
-

@@ -41,7 +41,7 @@ var WorkOsDashboard = (function () {
         'E_DASHBOARD_BUDGET',
         'DASHBOARD',
         true,
-        'Dashboard譖ｴ譁ｰ繧貞ｮ溯｡御ｺ育ｮ怜・縺ｧ蛛懈ｭ｢縺励∪縺励◆: ' + stage
+        'Dashboard更新を実行予算内で停止しました: ' + stage
       );
     }
   }
@@ -54,7 +54,7 @@ var WorkOsDashboard = (function () {
         'E_SCHEMA_MISSING_SHEET',
         'DASHBOARD',
         false,
-        'Dashboard髮・ｨ医↓蠢・ｦ√↑Sheet縺後≠繧翫∪縺帙ｓ縲・
+        'Dashboard集計に必要なSheetがありません。'
       );
     }
     return sheet.getDataRange().getValues();
@@ -68,7 +68,7 @@ var WorkOsDashboard = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'DASHBOARD',
         false,
-        'Dashboard髮・ｨ亥・縺ｮ蜀・Κ蛻悠D縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+        'Dashboard集計元の内部列IDが一致しません。'
       );
     }
     return WorkOsSchemas.buildColumnMapFromIds(expected);
@@ -97,7 +97,7 @@ var WorkOsDashboard = (function () {
       );
     }
     var text = String(value == null ? '' : value).trim();
-    return text ? WorkOsUtilities.redact(text).slice(0, 32) : '譛ｪ險倬鹸';
+    return text ? WorkOsUtilities.redact(text).slice(0, 32) : '未記録';
   }
 
   function addDaysIso(iso, days) {
@@ -143,7 +143,7 @@ var WorkOsDashboard = (function () {
       return Boolean(value);
     });
     if (!candidates.length) {
-      return '譛ｪ險倬鹸';
+      return '未記録';
     }
     candidates.sort(function (left, right) {
       return new Date(left).getTime() - new Date(right).getTime();
@@ -266,28 +266,28 @@ var WorkOsDashboard = (function () {
     var provider = String(aiReadiness.provider || '');
     var values = {
       AUTOMATION_STATUS: [automation.status || 'UNKNOWN',
-        '蛻晄悄蛛懈ｭ｢縲よ・遉ｺ逧・↑譛牙柑蛹悶→蜈ｨGate騾夐℃縺悟ｿ・ｦ√〒縺吶・],
-      LAST_SUCCESS_AT: [metrics.last_success_at, '蜃ｦ逅・ｱ･豁ｴ縺九ｉ髮・ｨ・],
-      LAST_FAILURE_AT: [metrics.last_failure_at, '蜃ｦ逅・ｱ･豁ｴ縺九ｉ髮・ｨ・],
-      PROCESSED_TODAY: [metrics.processed_today, '譛ｬ譌･髢句ｧ脚un縺ｮ蜃ｦ逅・ｻｶ謨ｰ'],
-      REVIEW_OPEN: [metrics.review_open, '隕∫｢ｺ隱阪・譛ｪ遒ｺ隱控ask'],
-      OVERDUE: [metrics.overdue, '譛ｪ螳御ｺ・°縺､譛滄剞雜・℃'],
-      DUE_TODAY: [metrics.due_today, '譛ｬ譌･譛滄剞'],
-      DUE_NEXT_7_DAYS: [metrics.due_next_7_days, '譏取律縺九ｉ7譌･蠕後∪縺ｧ'],
-      WAITING_REPLY: [metrics.waiting_reply, '譛ｪ螳御ｺ・・霑比ｿ｡蠕・■'],
-      RETRY_WAITING: [metrics.retry_waiting, '蜀崎ｩｦ陦悟ｾ・■蜷郁ｨ・],
-      DEAD_LETTER: [metrics.dead_letter, '謇句虚遒ｺ隱阪′蠢・ｦ・],
-      CALENDAR_PENDING: [metrics.calendar_pending, 'Calendar outbox蠕・ｩ・],
-      UNRESOLVED_ERRORS: [metrics.unresolved_errors, '譛ｪ隗｣豎ｺerror陦・],
+        '初期停止。明示的な有効化と全Gate通過が必要です。'],
+      LAST_SUCCESS_AT: [metrics.last_success_at, '処理履歴から集計'],
+      LAST_FAILURE_AT: [metrics.last_failure_at, '処理履歴から集計'],
+      PROCESSED_TODAY: [metrics.processed_today, '本日開始runの処理件数'],
+      REVIEW_OPEN: [metrics.review_open, '要確認・未確認Task'],
+      OVERDUE: [metrics.overdue, '未完了かつ期限超過'],
+      DUE_TODAY: [metrics.due_today, '本日期限'],
+      DUE_NEXT_7_DAYS: [metrics.due_next_7_days, '明日から7日後まで'],
+      WAITING_REPLY: [metrics.waiting_reply, '未完了の返信待ち'],
+      RETRY_WAITING: [metrics.retry_waiting, '再試行待ち合計'],
+      DEAD_LETTER: [metrics.dead_letter, '手動確認が必要'],
+      CALENDAR_PENDING: [metrics.calendar_pending, 'Calendar outbox待機'],
+      UNRESOLVED_ERRORS: [metrics.unresolved_errors, '未解決error行'],
       SYSTEM_HEALTH: [health.status, health.note],
-      AI_PROVIDER: [provider || '譛ｪ險ｭ螳・,
+      AI_PROVIDER: [provider || '未設定',
         aiReadiness.ready ? 'code readiness READY' :
-          '螳蘖rovider謗･邯壹・NOT EXECUTED'],
+          '実Provider接続はNOT EXECUTED'],
       QUICK_DIAGNOSTIC: [quick.status || 'NOT_EXECUTED',
-        'Dashboard譖ｴ譁ｰ譎ゅ↓隱ｭ蜿門ｰら畑縺ｧ螳溯｡・],
+        'Dashboard更新時に読取専用で実行'],
       LAST_REFRESHED_AT: [
         dateTimeText(WorkOsUtilities.now()),
-        '譏守､ｺ譖ｴ譁ｰ縲り・蜍瓶efresh縺ｪ縺・
+        '明示更新。自動refreshなし'
       ]
     };
     return METRIC_ORDER.map(function (key) {
@@ -300,7 +300,7 @@ var WorkOsDashboard = (function () {
       'E_DASHBOARD_LAYOUT_CONFLICT',
       'DASHBOARD',
       false,
-      'Dashboard縺ｮsystem鬆伜沺縺ｨ蛻ｩ逕ｨ閠・伜沺繧貞ｮ牙・縺ｫ蛹ｺ蛻･縺ｧ縺阪↑縺・◆繧∵峩譁ｰ繧貞●豁｢縺励∪縺励◆縲・
+      'Dashboardのsystem領域と利用者領域を安全に区別できないため更新を停止しました。'
     );
   }
 
@@ -1115,7 +1115,7 @@ var WorkOsDashboard = (function () {
         'E_TEST_MODE_DISABLED',
         'DASHBOARD',
         false,
-        'Dashboard縺ｸ縺ｮ萓晏ｭ俶ｳｨ蜈･縺ｯTest mode縺縺代〒蛻ｩ逕ｨ縺ｧ縺阪∪縺吶・
+        'Dashboardへの依存注入はTest modeだけで利用できます。'
       );
     }
     var target = spreadsheet || SpreadsheetApp.getActiveSpreadsheet();
@@ -1124,7 +1124,7 @@ var WorkOsDashboard = (function () {
         'E_SETUP_NOT_BOUND',
         'DASHBOARD',
         false,
-        'Bound Spreadsheet縺九ｉ螳溯｡後＠縺ｦ縺上□縺輔＞縲・
+        'Bound Spreadsheetから実行してください。'
       );
     }
     var budget = settings.budget ||
@@ -1154,7 +1154,7 @@ var WorkOsDashboard = (function () {
           : 'E_DASHBOARD_DIAGNOSTIC_FAILED',
         'DASHBOARD',
         false,
-        'Quick Diagnostic FAIL縺ｮ縺溘ａDashboard譖ｴ譁ｰ繧貞●豁｢縺励∪縺励◆縲・
+        'Quick Diagnostic FAILのためDashboard更新を停止しました。'
       );
     }
     var metrics = collectOperationalMetrics(target, boundedSettings);
@@ -1201,4 +1201,3 @@ function refreshOperationalDashboard() {
     SpreadsheetApp.getActiveSpreadsheet()
   );
 }
-

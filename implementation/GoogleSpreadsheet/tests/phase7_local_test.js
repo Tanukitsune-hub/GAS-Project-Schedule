@@ -641,7 +641,7 @@ test('P7-L14_SOURCE_SECURITY_AND_SIDE_EFFECT_GUARDRAILS', () => {
     ),
     false
   );
-  assert.strictEqual(/Dashboard|繝繝・す繝･繝懊・繝・.test(worker), false);
+  assert.strictEqual(/Dashboard|ダッシュボード/.test(worker), false);
 });
 
 test('P7-L15_CALENDAR_DEAD_LETTER_RESUMES_WITHOUT_AI_TASK_OR_EVENT_DUPLICATE',
@@ -817,4 +817,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

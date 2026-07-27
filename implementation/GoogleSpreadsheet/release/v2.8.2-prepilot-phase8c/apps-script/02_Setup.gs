@@ -9,7 +9,7 @@ var WorkOsSetup = (function () {
         'E_SETUP_NOT_BOUND',
         'S00_VALIDATE_ENV',
         false,
-        'Bound Spreadsheet縺九ｉ螳溯｡後＠縺ｦ縺上□縺輔＞縲・
+        'Bound Spreadsheetから実行してください。'
       );
     }
     return spreadsheet;
@@ -117,7 +117,7 @@ var WorkOsSetup = (function () {
           'E_SETUP_NO_EDIT_ACCESS',
           'S00_VALIDATE_ENV',
           false,
-          'Spreadsheet縺ｮ邱ｨ髮・ｨｩ髯舌ｒ遒ｺ隱阪〒縺阪∪縺帙ｓ縲・
+          'Spreadsheetの編集権限を確認できません。'
         );
       }
       return { checked: true, reason: '' };
@@ -129,7 +129,7 @@ var WorkOsSetup = (function () {
         'E_SETUP_EDIT_CHECK_UNAVAILABLE',
         'S00_VALIDATE_ENV',
         false,
-        'Spreadsheet縺ｮ邱ｨ髮・ｨｩ髯舌ｒ螳牙・縺ｫ遒ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        'Spreadsheetの編集権限を安全に確認できません。'
       );
     }
   }
@@ -138,8 +138,8 @@ var WorkOsSetup = (function () {
     var classification = classifyEnvironmentDescriptors(snapshotEnvironment(spreadsheet));
     if (!classification.allowed) {
       var message = classification.code === 'E_V1_DETECTED'
-        ? 'v1繧峨＠縺・腸蠅・ｒ讀懷・縺励∪縺励◆縲り・蜍募､画鋤縺帙★蛛懈ｭ｢縺励∪縺吶・
-        : '譁ｰ隕冗ｩｺSheet縺ｾ縺溘・蜀埼幕蜿ｯ閭ｽ縺ｪv2迺ｰ蠅・〒縺ｯ縺ｪ縺・◆繧∝●豁｢縺励∪縺吶・;
+        ? 'v1らしい環境を検出しました。自動変換せず停止します。'
+        : '新規空Sheetまたは再開可能なv2環境ではないため停止します。';
       throw new WorkOsAppError(
         classification.code,
         'S00_VALIDATE_ENV',
@@ -184,7 +184,7 @@ var WorkOsSetup = (function () {
         'E_SETUP_STATE_INVALID',
         'SETUP',
         false,
-        'Setup迥ｶ諷九′荳肴ｭ｣縺ｧ縺吶り・蜍穂ｿｮ蠕ｩ縺ｯ陦後＞縺ｾ縺帙ｓ縲・
+        'Setup状態が不正です。自動修復は行いません。'
       );
     }
   }
@@ -200,7 +200,7 @@ var WorkOsSetup = (function () {
           'E_SETUP_STATE_CONFLICT',
           'SETUP',
           false,
-          'Setup迥ｶ諷九→菴懈・貂医∩Sheet縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+          'Setup状態と作成済みSheetが一致しません。'
         );
       }
     }
@@ -215,7 +215,7 @@ var WorkOsSetup = (function () {
             'E_SETUP_STATE_CONFLICT',
             'SETUP',
             false,
-            'Setup迥ｶ諷九→Sheet Grid縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+            'Setup状態とSheet Gridが一致しません。'
           );
         }
         var ids = sheet.getRange(1, 1, 1, expectedIds.length).getValues()[0];
@@ -226,7 +226,7 @@ var WorkOsSetup = (function () {
             'E_SETUP_STATE_CONFLICT',
             'SETUP',
             false,
-            'Setup迥ｶ諷九→Schema縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+            'Setup状態とSchemaが一致しません。'
           );
         }
       });
@@ -244,7 +244,7 @@ var WorkOsSetup = (function () {
             'E_SETUP_STATE_CONFLICT',
             'SETUP',
             false,
-            'Setup迥ｶ諷九→Checkbox Validation縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+            'Setup状態とCheckbox Validationが一致しません。'
           );
         }
         if (item.validation === 'ENUM' &&
@@ -253,7 +253,7 @@ var WorkOsSetup = (function () {
             'E_SETUP_STATE_CONFLICT',
             'SETUP',
             false,
-            'Setup迥ｶ諷九→Enum Validation縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+            'Setup状態とEnum Validationが一致しません。'
           );
         }
       });
@@ -272,7 +272,7 @@ var WorkOsSetup = (function () {
             'E_SETUP_STATE_CONFLICT',
             'SETUP',
             false,
-            'Setup迥ｶ諷九→螳牙・縺ｪ蛻晄悄險ｭ螳壹′荳閾ｴ縺励∪縺帙ｓ縲・
+            'Setup状態と安全な初期設定が一致しません。'
           );
         }
       });
@@ -288,7 +288,7 @@ var WorkOsSetup = (function () {
           'E_SETUP_STATE_CONFLICT',
           'SETUP',
           false,
-          'Setup迥ｶ諷九→豁｣蠑秀mail繝ｩ繝吶Ν縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+          'Setup状態と正式Gmailラベルが一致しません。'
         );
       }
     }
@@ -306,7 +306,7 @@ var WorkOsSetup = (function () {
           'E_SETUP_STATE_CONFLICT',
           'SETUP',
           false,
-          'Setup迥ｶ諷九→蟆ら畑Calendar讒区・縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+          'Setup状態と専用Calendar構成が一致しません。'
         );
       }
     }
@@ -350,7 +350,7 @@ var WorkOsSetup = (function () {
         'E_BUDGET_EXHAUSTED',
         stage,
         true,
-        'Setup繧貞ｮ溯｡御ｺ育ｮ怜・縺ｧ螳牙・縺ｫ蛛懈ｭ｢縺励∪縺励◆縲・
+        'Setupを実行予算内で安全に停止しました。'
       );
     }
   }
@@ -423,7 +423,7 @@ var WorkOsSetup = (function () {
         'E_BUDGET_EXHAUSTED',
         stage,
         true,
-        'Setup縺ｮsoft execution budget縺ｫ驕斐＠縺溘◆繧《tage髢句ｧ句燕縺ｫ蛛懈ｭ｢縺励∪縺励◆縲・
+        'Setupのsoft execution budgetに達したためstage開始前に停止しました。'
       );
     }
     if (stage === 'S00_VALIDATE_ENV') {
@@ -490,7 +490,7 @@ var WorkOsSetup = (function () {
           'E_EDIT_TRIGGER_MODULE_MISSING',
           stage,
           false,
-          'Task邱ｨ髮・rigger module繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+          'Task編集Trigger moduleを確認できません。'
         );
       }
       return WorkOsAutomation.ensureEditTrigger();
@@ -512,7 +512,7 @@ var WorkOsSetup = (function () {
       'SETUP_STAGE_NOT_IMPLEMENTED',
       stage,
       false,
-      stage + '縺ｯ迴ｾ蝨ｨ縺ｮPhase縺ｧ縺ｯ譛ｪ螳溯｣・〒縺吶ょ､夜Κ蜑ｯ菴懃畑縺ｯ螳溯｡後＠縺ｦ縺・∪縺帙ｓ縲・
+      stage + 'は現在のPhaseでは未実装です。外部副作用は実行していません。'
     );
   }
 
@@ -582,7 +582,7 @@ var WorkOsSetup = (function () {
             next_stage: stage,
             completed_stages: getCompletedStages(),
             duration_ms: Date.now() - startedAt,
-            safe_message: stage + '縺ｯ蠕檎ｶ啀hase縺ｮ縺溘ａ螳溯｡後＠縺ｦ縺・∪縺帙ｓ縲・
+            safe_message: stage + 'は後続Phaseのため実行していません。'
           };
           storeLastResult(phaseBoundaryResult);
           return phaseBoundaryResult;
@@ -601,7 +601,7 @@ var WorkOsSetup = (function () {
             'E_QUICK_DIAGNOSTIC_FAILED',
             stage,
             false,
-            'Quick Diagnostic縺御ｸ榊粋譬ｼ縺ｮ縺溘ａSetup繧貞ｮ御ｺ・＠縺ｾ縺帙ｓ縲・
+            'Quick Diagnosticが不合格のためSetupを完了しません。'
           );
         }
         recordCompletedStage(stage);
@@ -654,7 +654,7 @@ var WorkOsSetup = (function () {
         'E_TEST_MODE_DISABLED',
         stage,
         false,
-        'Test mode縺檎┌蜉ｹ縺ｧ縺吶・
+        'Test modeが無効です。'
       );
     }
     var spreadsheet = getBoundSpreadsheet();
@@ -674,7 +674,7 @@ var WorkOsSetup = (function () {
         'E_QUICK_DIAGNOSTIC_FAILED',
         stage,
         false,
-        'Quick Diagnostic縺御ｸ榊粋譬ｼ縺ｮ縺溘ａstage繧貞ｮ御ｺ・＠縺ｾ縺帙ｓ縲・
+        'Quick Diagnosticが不合格のためstageを完了しません。'
       );
     }
     return result;
@@ -689,7 +689,7 @@ var WorkOsSetup = (function () {
         'E_TEST_MODE_DISABLED',
         'SETUP_VERSION_REFRESH',
         false,
-        'Test mode縺檎┌蜉ｹ縺ｧ縺吶・
+        'Test modeが無効です。'
       );
     }
     return refreshCompletedVersionMetadata(
@@ -704,20 +704,20 @@ var WorkOsSetup = (function () {
       return completed.indexOf(stage) === -1;
     }) || 'COMPLETE';
     var descriptions = {
-      S00_VALIDATE_ENV: '譌｢蟄倡腸蠅・ｒ隱ｭ蜿匁､懈渊縺励∪縺吶ょ､画峩縺励∪縺帙ｓ縲・,
-      S10_CREATE_SHEETS: 'v2縺ｮ蠢・・heet繧剃ｽ懈・縺励∪縺吶・,
-      S20_CREATE_SCHEMAS: '蛻励∬ｦ句・縺励￣rotection繧定ｨｭ螳壹＠縺ｾ縺吶・,
-      S30_APPLY_SMALL_VALIDATIONS: '蜈･蜉幄ｦ丞援縲∬｡ｨ遉ｺ蠖｢蠑上∬｡ｨ遉ｺ迥ｶ諷九ｒ險ｭ螳壹＠縺ｾ縺吶・,
-      S40_SEED_SAFE_SETTINGS: '螳牙・縺ｪ蛻晄悄險ｭ螳壹→菴ｿ縺・婿繧呈兜蜈･縺励∪縺吶・,
-      S50_CREATE_GMAIL_LABELS: '豁｣蠑秀mail繝ｩ繝吶Ν7莉ｶ縺ｮ荳崎ｶｳ蛻・ｒ菴懈・縺励∪縺吶・,
+      S00_VALIDATE_ENV: '既存環境を読取検査します。変更しません。',
+      S10_CREATE_SHEETS: 'v2の必須Sheetを作成します。',
+      S20_CREATE_SCHEMAS: '列、見出し、Protectionを設定します。',
+      S30_APPLY_SMALL_VALIDATIONS: '入力規則、表示形式、表示状態を設定します。',
+      S40_SEED_SAFE_SETTINGS: '安全な初期設定と使い方を投入します。',
+      S50_CREATE_GMAIL_LABELS: '正式Gmailラベル7件の不足分を作成します。',
       S60_CREATE_DEADLINE_CALENDAR:
-        '蟆ら畑secondary Calendar縲瑚・蜍墓悄譌･邂｡逅・阪ｒ遒ｺ隱阪∪縺溘・菴懈・縺励∪縺吶・,
-      S70_STORE_PROPERTIES: '髱樊ｩ溷ｯ・・version/instance迥ｶ諷九ｒ菫晏ｭ倥＠縺ｾ縺吶・,
+        '専用secondary Calendar「自動期日管理」を確認または作成します。',
+      S70_STORE_PROPERTIES: '非機密のversion/instance状態を保存します。',
       S80_CREATE_EDIT_TRIGGER:
-        '謇譛芽・nstallable edit Trigger繧・莉ｶ遒ｺ隱阪∪縺溘・菴懈・縺励∪縺吶・,
-      S90_QUICK_DIAGNOSTIC: '隱ｭ蜿門ｰら畑Quick Diagnostic繧貞ｮ溯｡後＠縺ｾ縺吶・,
-      S99_COMPLETE: 'Setup螳御ｺ・憾諷九ｒ險倬鹸縺励∪縺吶・,
-      COMPLETE: 'Setup縺ｯ螳御ｺ・＠縺ｦ縺・∪縺吶ょ､夜Κvalidation縺ｯ蛻･騾泌ｿ・ｦ√〒縺吶・
+        '所有者installable edit Triggerを1件確認または作成します。',
+      S90_QUICK_DIAGNOSTIC: '読取専用Quick Diagnosticを実行します。',
+      S99_COMPLETE: 'Setup完了状態を記録します。',
+      COMPLETE: 'Setupは完了しています。外部validationは別途必要です。'
     };
     return {
       next_stage: nextStage,
@@ -749,4 +749,3 @@ function setupSystem() {
 function continueSetup() {
   return WorkOsSetup.executeSetup();
 }
-

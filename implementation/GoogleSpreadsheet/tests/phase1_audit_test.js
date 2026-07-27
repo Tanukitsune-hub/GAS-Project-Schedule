@@ -79,6 +79,21 @@ class FakeRange {
     return this;
   }
 
+  setNumberFormat(format) {
+    for (let rowOffset = 0; rowOffset < this.rowCount; rowOffset += 1) {
+      for (
+        let columnOffset = 0;
+        columnOffset < this.columnCount;
+        columnOffset += 1
+      ) {
+        this.sheet.formats[this.row - 1 + rowOffset][
+          this.column - 1 + columnOffset
+        ] = String(format || '');
+      }
+    }
+    return this;
+  }
+
   getNumberFormats() {
     return this.matrixFrom(this.sheet.formats);
   }
@@ -309,12 +324,26 @@ class FakeProtection {
     return this.range;
   }
 
+  setRange(range) {
+    this.range = range;
+    return this;
+  }
+
   getUnprotectedRanges() {
     return this.unprotectedRanges;
   }
 
   setUnprotectedRanges(ranges) {
     this.unprotectedRanges = ranges.slice();
+    return this;
+  }
+
+  remove() {
+    if (!this.range) {
+      return this;
+    }
+    this.range.sheet.rangeProtections =
+      this.range.sheet.rangeProtections.filter((item) => item !== this);
     return this;
   }
 }
@@ -349,6 +378,31 @@ const sandbox = {
     DataValidationCriteria: {
       CHECKBOX: 'CHECKBOX',
       VALUE_IN_LIST: 'VALUE_IN_LIST'
+    },
+    newDataValidation: () => {
+      let criteriaType = null;
+      let criteriaValues = [];
+      return {
+        requireCheckbox() {
+          criteriaType = 'CHECKBOX';
+          criteriaValues = [];
+          return this;
+        },
+        requireValueInList(values) {
+          criteriaType = 'VALUE_IN_LIST';
+          criteriaValues = [Array.from(values)];
+          return this;
+        },
+        setAllowInvalid() {
+          return this;
+        },
+        build() {
+          return {
+            getCriteriaType: () => criteriaType,
+            getCriteriaValues: () => criteriaValues
+          };
+        }
+      };
     }
   },
   PropertiesService: {
@@ -437,20 +491,20 @@ const expectedTaskIds = [
   'calendar_category', 'calendar_importance', 'calendar_event_id',
   'calendar_sync_status', 'schedule_state', 'manual_fields', 'row_version',
   'pending_action_type', 'pending_changes_json', 'created_at', 'updated_at',
-  'last_calendar_sync_at'
+  'last_calendar_sync_at', 'authoritative_snapshot_json'
 ];
 
 const expectedTaskHeaders = [
-  '隕∫｢ｺ隱・, '蛻､譁ｭ', '蟇ｾ蠢懃憾豕・, '螳御ｺ・, '蟇ｾ雎｡螟・, '繧ｿ繧ｹ繧ｯ蜀・ｮｹ', '譛滄剞',
-  '謗ｨ螂ｨ譛滄剞', '譛滄剞譬ｹ諡', '蜆ｪ蜈亥ｺｦ', '霑比ｿ｡蠕・■', 'Calendar逋ｻ骭ｲ', '繧ｳ繝｡繝ｳ繝・,
-  '騾∽ｿ｡閠・, '莉ｶ蜷・, '蜿嶺ｿ｡譌･譎・, '蜈・Γ繝ｼ繝ｫ', '遒ｺ隱咲憾諷・, '遒ｺ隱咲ｨｮ蛻･',
+  '要確認', '判断', '対応状況', '完了', '対象外', 'タスク内容', '期限',
+  '推奨期限', '期限根拠', '優先度', '返信待ち', 'Calendar登録', 'コメント',
+  '送信者', '件名', '受信日時', '元メール', '確認状態', '確認種別',
   'task_id', 'origin_key', 'source_message_id', 'source_thread_id',
   'stable_thread_key', 'source_action_index', 'ai_action_type', 'ai_reason',
   'ai_confidence', 'ai_provider', 'ai_model', 'ai_prompt_version',
   'calendar_category', 'calendar_importance', 'calendar_event_id',
   'calendar_sync_status', 'schedule_state', 'manual_fields', 'row_version',
   'pending_action_type', 'pending_changes_json', 'created_at', 'updated_at',
-  'last_calendar_sync_at'
+  'last_calendar_sync_at', 'authoritative_snapshot_json'
 ];
 
 test('P1-AUD-01_LITERAL_SCHEMA_CONTRACT', () => {
@@ -471,7 +525,7 @@ test('P1-AUD-01_LITERAL_SCHEMA_CONTRACT', () => {
 });
 
 test('P1-AUD-02_FORMULA_EMPTY_IS_NOT_EMPTY', () => {
-  const sheet = new FakeSheet('繧ｷ繝ｼ繝・', 100, 26);
+  const sheet = new FakeSheet('シート1', 100, 26);
   sheet.formulas[0][0] = '=""';
   const snapshot = sandbox.WorkOsSetup.snapshotEnvironment(
     new FakeSpreadsheet([sheet])
@@ -485,7 +539,7 @@ test('P1-AUD-02_FORMULA_EMPTY_IS_NOT_EMPTY', () => {
 
 test('P1-AUD-03_NOTE_VALIDATION_PROTECTION_NOT_EMPTY', () => {
   ['note', 'validation', 'protection'].forEach((kind) => {
-    const sheet = new FakeSheet('繧ｷ繝ｼ繝・', 100, 26);
+    const sheet = new FakeSheet('シート1', 100, 26);
     if (kind === 'note') sheet.notes[0][0] = 'synthetic note';
     if (kind === 'validation') sheet.validations[0][0] = {};
     if (kind === 'protection') sheet.getProtections = () => [{}];
@@ -497,7 +551,7 @@ test('P1-AUD-03_NOTE_VALIDATION_PROTECTION_NOT_EMPTY', () => {
 });
 
 test('P1-AUD-03B_VISIBLE_CONTENT_SHORT_CIRCUITS_SETUP_READS', () => {
-  const sheet = new FakeSheet('繧ｷ繝ｼ繝・', 100, 26);
+  const sheet = new FakeSheet('シート1', 100, 26);
   sheet.cells[0][0] = 'occupied';
   const baseRange = sheet.getDataRange();
   const reads = { values: 0, formulas: 0, notes: 0, validations: 0 };
@@ -537,8 +591,8 @@ test('P1-AUD-04_EXTRA_SCHEMA_COLUMN_STOPS', () => {
       name: sandbox.WorkOsConfig.SHEETS.TASKS,
       isEmpty: false,
       firstRow: expectedTaskIds.concat(['unknown_column']),
-      secondRow: expectedTaskHeaders.concat(['譛ｪ遏･']),
-      maxColumns: 44
+      secondRow: expectedTaskHeaders.concat(['未知']),
+      maxColumns: 45
     }
   ]);
   assert.strictEqual(result.allowed, false);
@@ -549,7 +603,7 @@ test('P1-AUD-05_INVALID_CALENDAR_DATES_REJECTED', () => {
   const validation = sandbox.WorkOsSchemas.validateTaskForWrite(
     {
       origin_key: 'org_00000000000000000000000000000011',
-      task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+      task_title: '架空タスク',
       due_date: '2026-02-30'
     },
     true
@@ -566,7 +620,7 @@ test('P1-AUD-06_STRICT_TYPED_READ', () => {
   const row = Array.from({ length: schema.length }, () => '');
   row[map.task_id] = 'tsk_00000000000000000000000000000011';
   row[map.origin_key] = 'org_00000000000000000000000000000011';
-  row[map.task_title] = '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ';
+  row[map.task_title] = '架空タスク';
   row[map.needs_review] = 'FALSE';
   row[map.row_version] = 'not-a-number';
   sheet.getRange(3, 1, 1, schema.length).setValues([row]);
@@ -601,20 +655,20 @@ test('P1-AUD-07_STALE_CONTEXT_PRESERVES_USER_EDIT', () => {
   sandbox.WorkOsTaskRepository.upsertTask(
     {
       origin_key: originKey,
-      task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+      task_title: '架空タスク',
       ai_confidence: 0.5
     },
     { sheet }
   );
   const map = sandbox.WorkOsSchemas.buildColumnMapFromIds(expectedTaskIds);
   sandbox.WorkOsTaskRepository.withLockedContext(sheet, (context) => {
-    sheet.cells[2][map.comment] = '蛻ｩ逕ｨ閠・・蜷梧凾邱ｨ髮・;
+    sheet.cells[2][map.comment] = '利用者の同時編集';
     assert.throws(
       () =>
         sandbox.WorkOsTaskRepository.upsertTask(
           {
             origin_key: originKey,
-            task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+            task_title: '架空タスク',
             ai_confidence: 0.9
           },
           context
@@ -622,7 +676,7 @@ test('P1-AUD-07_STALE_CONTEXT_PRESERVES_USER_EDIT', () => {
       (error) => error.code === 'E_TASK_CONFLICT'
     );
   });
-  assert.strictEqual(sheet.cells[2][map.comment], '蛻ｩ逕ｨ閠・・蜷梧凾邱ｨ髮・);
+  assert.strictEqual(sheet.cells[2][map.comment], '利用者の同時編集');
 });
 
 test('P1-AUD-08_UPDATE_WRITES_CHANGED_CELLS_ONLY', () => {
@@ -631,7 +685,7 @@ test('P1-AUD-08_UPDATE_WRITES_CHANGED_CELLS_ONLY', () => {
   sandbox.WorkOsTaskRepository.upsertTask(
     {
       origin_key: originKey,
-      task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+      task_title: '架空タスク',
       ai_confidence: 0.5
     },
     { sheet }
@@ -640,13 +694,13 @@ test('P1-AUD-08_UPDATE_WRITES_CHANGED_CELLS_ONLY', () => {
   sandbox.WorkOsTaskRepository.upsertTask(
     {
       origin_key: originKey,
-      task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+      task_title: '架空タスク',
       ai_confidence: 0.9
     },
     { sheet }
   );
   assert.ok(sheet.writeLog.length >= 1);
-  assert.ok(sheet.writeLog.every((entry) => entry.columnCount < 43));
+  assert.ok(sheet.writeLog.every((entry) => entry.columnCount < 44));
 });
 
 test('P1-AUD-09_NEW_TASK_ID_IS_REPOSITORY_OWNED', () => {
@@ -657,7 +711,7 @@ test('P1-AUD-09_NEW_TASK_ID_IS_REPOSITORY_OWNED', () => {
         {
           origin_key: 'org_00000000000000000000000000000014',
           task_id: 'tsk_00000000000000000000000000000014',
-          task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ'
+          task_title: '架空タスク'
         },
         { sheet }
       ),
@@ -669,13 +723,13 @@ test('P1-AUD-10_USER_FIELD_REPLAY_REJECTED', () => {
   const sheet = taskSheet();
   const originKey = 'org_00000000000000000000000000000015';
   sandbox.WorkOsTaskRepository.upsertTask(
-    { origin_key: originKey, task_title: '螟画峩蜑・ },
+    { origin_key: originKey, task_title: '変更前' },
     { sheet }
   );
   assert.throws(
     () =>
       sandbox.WorkOsTaskRepository.upsertTask(
-        { origin_key: originKey, task_title: '螟画峩蠕・ },
+        { origin_key: originKey, task_title: '変更後' },
         { sheet }
       ),
     (error) => error.code === 'E_TASK_FIELD_NOT_UPDATABLE'
@@ -688,7 +742,7 @@ test('P1-AUD-10B_SOURCE_IDENTITY_REPLAY_REJECTED', () => {
   sandbox.WorkOsTaskRepository.upsertTask(
     {
       origin_key: originKey,
-      task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+      task_title: '架空タスク',
       source_message_id: 'synthetic-message-a',
       source_thread_id: 'synthetic-thread-a',
       stable_thread_key: 'root:synthetic-message-a',
@@ -701,7 +755,7 @@ test('P1-AUD-10B_SOURCE_IDENTITY_REPLAY_REJECTED', () => {
       sandbox.WorkOsTaskRepository.upsertTask(
         {
           origin_key: originKey,
-          task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+          task_title: '架空タスク',
           source_message_id: 'synthetic-message-b'
         },
         { sheet }
@@ -719,7 +773,7 @@ test('P1-AUD-11_LOCK_CONTENTION_STOPS_WRITE', () => {
         sandbox.WorkOsTaskRepository.upsertTask(
           {
             origin_key: 'org_00000000000000000000000000000016',
-            task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ'
+            task_title: '架空タスク'
           },
           { sheet }
         ),
@@ -735,7 +789,7 @@ test('P1-AUD-12_STABLE_THREAD_INDEX', () => {
   sandbox.WorkOsTaskRepository.upsertTask(
     {
       origin_key: 'org_00000000000000000000000000000017',
-      task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+      task_title: '架空タスク',
       stable_thread_key: 'root:synthetic-root'
     },
     { sheet }
@@ -992,6 +1046,142 @@ test('P1-AUD-18_ERROR_ROW_EXPANSION_EXTENDS_ONLY_OPERATOR_SURFACE', () => {
   assert.ok(source.includes('E_ERROR_PROTECTION_MISSING'));
 });
 
+test('P1-R2-05_COMPLETED_SCHEMA_CONTROLS_REFRESH_IDEMPOTENTLY', () => {
+  assert.strictEqual(
+    typeof sandbox.WorkOsSheetBuilder.refreshValidationsAndProtections,
+    'function'
+  );
+  const sheets = Array.from(sandbox.WorkOsSheetOrder, (name) => {
+    const schema = sandbox.WorkOsSchemas.getSheetSchema(name);
+    return new FakeSheet(name, 100, schema.length);
+  });
+  const spreadsheet = new FakeSpreadsheet(sheets);
+  sandbox.WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+  const task = spreadsheet.getSheetByName(sandbox.WorkOsConfig.SHEETS.TASKS);
+  const errors = spreadsheet.getSheetByName(sandbox.WorkOsConfig.SHEETS.ERRORS);
+  task.insertRowsAfter(100, 75);
+  errors.insertRowsAfter(100, 75);
+  const taskMap = sandbox.WorkOsSchemas.buildColumnMapFromIds(
+    sandbox.WorkOsSchemas.getInternalIds(sandbox.WorkOsConfig.SHEETS.TASKS)
+  );
+  const staleDeadlineRule = {
+    getCriteriaType: () => 'VALUE_IN_LIST',
+    getCriteriaValues: () => [[
+      '明示', '相対', '推測', '曖昧', 'なし'
+    ]]
+  };
+  task.getRange(
+    sandbox.WorkOsConfig.DATA_START_ROW,
+    taskMap.deadline_basis + 1,
+    task.getMaxRows() - sandbox.WorkOsConfig.DATA_START_ROW + 1,
+    1
+  ).setDataValidation(staleDeadlineRule);
+  [
+    sandbox.WorkOsConfig.SHEETS.DASHBOARD,
+    sandbox.WorkOsConfig.SHEETS.RUN_HISTORY,
+    sandbox.WorkOsConfig.SHEETS.GUIDE
+  ].forEach((name) => {
+    spreadsheet.getSheetByName(name).sheetProtections = [];
+  });
+  errors.sheetProtections = [];
+  const valuesBefore = spreadsheet.getSheets().map((sheet) =>
+    structuredClone(sheet.cells)
+  );
+
+  sandbox.WorkOsSheetBuilder.refreshValidationsAndProtections(spreadsheet);
+  sandbox.WorkOsSheetBuilder.refreshValidationsAndProtections(spreadsheet);
+
+  assert.deepStrictEqual(
+    spreadsheet.getSheets().map((sheet) => sheet.cells),
+    valuesBefore
+  );
+  const refreshedDeadline = task.getRange(
+    task.getMaxRows(),
+    taskMap.deadline_basis + 1,
+    1,
+    1
+  ).getDataValidation();
+  assert.strictEqual(refreshedDeadline.getCriteriaType(), 'VALUE_IN_LIST');
+  assert.deepStrictEqual(
+    Array.from(refreshedDeadline.getCriteriaValues()[0]),
+    ['明示', '相対', '手動確認', '推測', '曖昧', 'なし']
+  );
+  const management = task.rangeProtections.find((item) =>
+    item.getDescription().endsWith('_MANAGEMENT_COLUMNS')
+  );
+  assert.strictEqual(management.getRange().getNumRows(), 175);
+  [
+    sandbox.WorkOsConfig.SHEETS.DASHBOARD,
+    sandbox.WorkOsConfig.SHEETS.RUN_HISTORY,
+    sandbox.WorkOsConfig.SHEETS.GUIDE,
+    sandbox.WorkOsConfig.SHEETS.ERRORS
+  ].forEach((name) => {
+    const sheet = spreadsheet.getSheetByName(name);
+    const protections = sheet.sheetProtections.filter((item) =>
+      item.getDescription().endsWith('_SYSTEM_OWNED_EDIT_POLICY')
+    );
+    assert.strictEqual(protections.length, 1, name);
+    if (name === sandbox.WorkOsConfig.SHEETS.ERRORS) {
+      const ranges = protections[0].getUnprotectedRanges();
+      const errorMap = sandbox.WorkOsSchemas.buildColumnMapFromIds(
+        sandbox.WorkOsSchemas.getInternalIds(name)
+      );
+      assert.strictEqual(ranges.length, 1);
+      assert.strictEqual(ranges[0].getColumn(), errorMap.retry_requested + 1);
+      assert.strictEqual(ranges[0].getNumRows(), 173);
+    } else {
+      assert.strictEqual(protections[0].getUnprotectedRanges().length, 0);
+    }
+  });
+});
+
+test('P1-R2-05B_TASK_RUNTIME_EXPANSION_EXTENDS_CONTROLS', () => {
+  const sheets = Array.from(sandbox.WorkOsSheetOrder, (name) => {
+    const schema = sandbox.WorkOsSchemas.getSheetSchema(name);
+    return new FakeSheet(name, 100, schema.length);
+  });
+  const spreadsheet = new FakeSpreadsheet(sheets);
+  sandbox.WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+  const task = spreadsheet.getSheetByName(sandbox.WorkOsConfig.SHEETS.TASKS);
+  const taskMap = sandbox.WorkOsSchemas.buildColumnMapFromIds(
+    sandbox.WorkOsSchemas.getInternalIds(sandbox.WorkOsConfig.SHEETS.TASKS)
+  );
+  task.cells[2][taskMap.task_title] = 'preserved';
+
+  assert.strictEqual(
+    sandbox.WorkOsTaskRepository.ensureCapacityForRow(task, 101),
+    100
+  );
+  assert.strictEqual(task.getMaxRows(), 200);
+  assert.strictEqual(task.cells[2][taskMap.task_title], 'preserved');
+  const deadlineRule = task.getRange(
+    200,
+    taskMap.deadline_basis + 1,
+    1,
+    1
+  ).getDataValidation();
+  assert.strictEqual(deadlineRule.getCriteriaType(), 'VALUE_IN_LIST');
+  assert.deepStrictEqual(
+    Array.from(deadlineRule.getCriteriaValues()[0]),
+    ['明示', '相対', '手動確認', '推測', '曖昧', 'なし']
+  );
+  const management = task.rangeProtections.find((item) =>
+    item.getDescription().endsWith('_MANAGEMENT_COLUMNS')
+  );
+  assert.ok(management);
+  assert.strictEqual(management.getRange().getNumRows(), 200);
+  const editPolicy = task.sheetProtections.find((item) =>
+    item.getDescription().endsWith('_EDIT_POLICY')
+  );
+  assert.ok(editPolicy);
+  assert.strictEqual(
+    editPolicy.getUnprotectedRanges().every((range) =>
+      range.getNumRows() === 198
+    ),
+    true
+  );
+});
+
 const summary = {
   phase: 1,
   suite: 'independent_audit',
@@ -1004,4 +1194,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

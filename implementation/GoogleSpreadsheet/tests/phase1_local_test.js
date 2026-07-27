@@ -139,7 +139,7 @@ test('P1-L01_SCHEMA_DEFINITIONS', () => {
   assert.strictEqual(validation.ok, true, validation.errors.join('; '));
   assert.strictEqual(
     sandbox.WorkOsSchemas.getSheetSchema(sandbox.WorkOsConfig.SHEETS.TASKS).length,
-    43
+    44
   );
 });
 
@@ -153,14 +153,14 @@ test('P1-L02_DUPLICATE_COLUMN_ID', () => {
 test('P1-L03_ENUM_ROUND_TRIP', () => {
   assert.strictEqual(
     sandbox.WorkOsSchemas.toSheetEnum('TaskStatus', 'OPEN'),
-    '譛ｪ蟇ｾ蠢・
+    '未対応'
   );
   assert.strictEqual(
-    sandbox.WorkOsSchemas.toInternalEnum('TaskStatus', '譛ｪ蟇ｾ蠢・),
+    sandbox.WorkOsSchemas.toInternalEnum('TaskStatus', '未対応'),
     'OPEN'
   );
   assert.throws(
-    () => sandbox.WorkOsSchemas.toInternalEnum('TaskStatus', ' 譛ｪ蟇ｾ蠢・' + 'x'),
+    () => sandbox.WorkOsSchemas.toInternalEnum('TaskStatus', ' 未対応 ' + 'x'),
     /E_INVALID_ENUM/
   );
 });
@@ -213,7 +213,7 @@ test('P1-L07_IDEMPOTENT_UPSERT_AND_TYPED_READ', () => {
   const context = sandbox.WorkOsTaskRepository.createContext(sheet);
   const task = {
     origin_key: 'org_00000000000000000000000000000001',
-    task_title: '譫ｶ遨ｺ繧ｿ繧ｹ繧ｯ',
+    task_title: '架空タスク',
     status: 'OPEN',
     priority: 'MEDIUM',
     needs_review: false,
@@ -245,14 +245,14 @@ test('P1-L08_LIMITED_EXISTING_UPDATE', () => {
   const context = sandbox.WorkOsTaskRepository.createContext(sheet);
   const base = {
     origin_key: 'org_00000000000000000000000000000002',
-    task_title: '螟画峩蜑・,
+    task_title: '変更前',
     status: 'OPEN',
     ai_confidence: 0.5
   };
   sandbox.WorkOsTaskRepository.upsertTask(base, { sheet });
   const update = sandbox.WorkOsTaskRepository.upsertTask({
     origin_key: base.origin_key,
-    task_title: '螟画峩蜑・,
+    task_title: '変更前',
     status: 'OPEN',
     ai_confidence: 0.9
   }, { sheet });
@@ -262,13 +262,13 @@ test('P1-L08_LIMITED_EXISTING_UPDATE', () => {
   );
   const after = sandbox.WorkOsTaskRepository.createContext(sheet);
   const read = sandbox.WorkOsTaskRepository.findByOriginKey(after, base.origin_key);
-  assert.strictEqual(read.task_title, '螟画峩蜑・);
+  assert.strictEqual(read.task_title, '変更前');
   assert.strictEqual(read.ai_confidence, 0.9);
   assert.strictEqual(read.row_version, 2);
 });
 
 test('P1-L09_ROW_EXPANSION_BY_100', () => {
-  const sheet = new FakeSheet(100, 43);
+  const sheet = new FakeSheet(100, 44);
   assert.strictEqual(
     sandbox.WorkOsTaskRepository.calculateRowsToAppend(100, 101),
     100
@@ -280,13 +280,13 @@ test('P1-L09_ROW_EXPANSION_BY_100', () => {
 
 test('P1-L10_ENVIRONMENT_SAFETY', () => {
   const empty = sandbox.WorkOsSetup.classifyEnvironmentDescriptors([
-    { name: '繧ｷ繝ｼ繝・', isEmpty: true, firstRow: [''], secondRow: [''] }
+    { name: 'シート1', isEmpty: true, firstRow: [''], secondRow: [''] }
   ]);
   assert.strictEqual(empty.allowed, true);
   assert.strictEqual(empty.kind, 'NEW_EMPTY');
 
   const unknown = sandbox.WorkOsSetup.classifyEnvironmentDescriptors([
-    { name: '譌｢蟄俶･ｭ蜍・, isEmpty: false, firstRow: ['data'], secondRow: [] }
+    { name: '既存業務', isEmpty: false, firstRow: ['data'], secondRow: [] }
   ]);
   assert.strictEqual(unknown.allowed, false);
   assert.strictEqual(unknown.code, 'E_SETUP_NOT_EMPTY');
@@ -427,4 +427,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

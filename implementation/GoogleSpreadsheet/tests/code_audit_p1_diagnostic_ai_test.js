@@ -166,4 +166,3 @@ process.stdout.write(`${JSON.stringify({
 if (failed.length) {
   process.exitCode = 1;
 }
-

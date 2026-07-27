@@ -1,31 +1,31 @@
 function onOpen() {
   var menu = SpreadsheetApp.getUi()
-    .createMenu('讌ｭ蜍儖S v2')
-    .addItem('蛻晄悄繧ｻ繝・ヨ繧｢繝・・', 'menuSetupSystem')
-    .addItem('繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡・, 'menuContinueSetup')
+    .createMenu('業務OS v2')
+    .addItem('初期セットアップ', 'menuSetupSystem')
+    .addItem('セットアップを続行', 'menuContinueSetup')
     .addSeparator()
     .addItem('Quick Diagnostic', 'menuQuickDiagnostic')
-    .addItem('Deep Diagnostic・域・遉ｺ繝ｻ隱ｭ蜿門ｰら畑・・, 'menuDeepDiagnostic')
-    .addItem('驕狗畑Dashboard繧呈峩譁ｰ', 'menuRefreshDashboard')
-    .addItem('閾ｪ蜍募・逅・・迥ｶ諷九ｒ遒ｺ隱・, 'menuAutomationStatus')
-    .addItem('閾ｪ蜍募・逅・ｒ譏守､ｺ逧・↓譛牙柑蛹・, 'menuEnableAutomation')
-    .addItem('閾ｪ蜍募・逅・ｒ蛛懈ｭ｢', 'menuDisableAutomation')
-    .addItem('謇句虚/蜿冶ｾｼ繧・莉ｶ蜑榊・逅・, 'menuRunManualImport')
-    .addItem('Task邱ｨ髮・ｒ謇句虚蜿肴丐・・allback・・, 'menuApplySelectedTaskEdits')
-    .addItem('Calendar蜷梧悄繧・莉ｶ蜃ｦ逅・, 'menuSyncPendingCalendarJobs')
-    .addItem('驕ｸ謚槭＠縺櫂ead Letter繧貞・螳溯｡御ｺ育ｴ・, 'menuRetrySelectedDeadLetters');
+    .addItem('Deep Diagnostic（明示・読取専用）', 'menuDeepDiagnostic')
+    .addItem('運用Dashboardを更新', 'menuRefreshDashboard')
+    .addItem('自動処理の状態を確認', 'menuAutomationStatus')
+    .addItem('自動処理を明示的に有効化', 'menuEnableAutomation')
+    .addItem('自動処理を停止', 'menuDisableAutomation')
+    .addItem('手動/取込を1件前処理', 'menuRunManualImport')
+    .addItem('Task編集を手動反映（fallback）', 'menuApplySelectedTaskEdits')
+    .addItem('Calendar同期を1件処理', 'menuSyncPendingCalendarJobs')
+    .addItem('選択したDead Letterを再実行予約', 'menuRetrySelectedDeadLetters');
   if (WorkOsConfig.TEST_MODE === true) {
     menu
       .addSeparator()
-      .addItem('Phase 1 Mock Task繧置psert', 'menuUpsertPhase1MockTask')
-      .addItem('Phase 3/4 Mock邵ｦ繝輔Ο繝ｼ繧・莉ｶ蜃ｦ逅・, 'menuRunMockVertical')
-      .addItem('Phase 1繝・せ繝医ｒ螳溯｡・, 'menuRunPhase1Tests')
-      .addItem('Phase 2繝・せ繝医ｒ螳溯｡・, 'menuRunPhase2Tests')
-      .addItem('Phase 3繝・せ繝医ｒ螳溯｡・, 'menuRunPhase3Tests')
-      .addItem('Phase 4繝・せ繝医ｒ螳溯｡・, 'menuRunPhase4Tests')
-      .addItem('Phase 5繝・せ繝医ｒ螳溯｡・, 'menuRunPhase5Tests')
-      .addItem('Phase 6繝・せ繝医ｒ螳溯｡・, 'menuRunPhase6Tests')
-      .addItem('Phase 7繝・せ繝医ｒ螳溯｡・, 'menuRunPhase7Tests');
+      .addItem('Phase 1 Mock Taskをupsert', 'menuUpsertPhase1MockTask')
+      .addItem('Phase 3/4 Mock縦フローを1件処理', 'menuRunMockVertical')
+      .addItem('Phase 1テストを実行', 'menuRunPhase1Tests')
+      .addItem('Phase 2テストを実行', 'menuRunPhase2Tests')
+      .addItem('Phase 3テストを実行', 'menuRunPhase3Tests')
+      .addItem('Phase 4テストを実行', 'menuRunPhase4Tests')
+      .addItem('Phase 5テストを実行', 'menuRunPhase5Tests')
+      .addItem('Phase 6テストを実行', 'menuRunPhase6Tests')
+      .addItem('Phase 7テストを実行', 'menuRunPhase7Tests');
   }
   menu.addToUi();
 }
@@ -33,30 +33,30 @@ function onOpen() {
 function menuSetupSystem() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'v2 蛻晄悄繧ｻ繝・ヨ繧｢繝・・',
-    '譁ｰ縺励＞遨ｺ縺ｮSpreadsheet縺ｾ縺溘・蜀埼幕蜿ｯ閭ｽ縺ｪv2迺ｰ蠅・□縺代′蟇ｾ雎｡縺ｧ縺吶よ里蟄倥ョ繝ｼ繧ｿ縺ｮMigration繝ｻ蜑企勁縺ｯ陦後＞縺ｾ縺帙ｓ縲よｮｵ髫主・逅・〒縺ｯSheet/Protection縲∵ｭ｣蠑秀mail繝ｩ繝吶Ν7莉ｶ縲∝ｰら畑secondary Calendar縲∵園譛芽・nstallable edit Trigger繧剃ｽ懈・縺励∪縺吶る壼ｸｸInbox蜃ｦ逅・∝ｮ蘗I謗･邯壹・蛻・rigger縺ｯ髢句ｧ九○縺壹∬・蜍募・逅・・蛛懈ｭ｢縺ｮ縺ｾ縺ｾ縺ｧ縺吶らｶ夊｡後＠縺ｾ縺吶°縲・,
+    'v2 初期セットアップ',
+    '新しい空のSpreadsheetまたは再開可能なv2環境だけが対象です。既存データのMigration・削除は行いません。段階処理ではSheet/Protection、正式Gmailラベル7件、専用secondary Calendar、所有者installable edit Triggerを作成します。通常Inbox処理、実AI接続、5分Triggerは開始せず、自動処理は停止のままです。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('蛻晄悄繧ｻ繝・ヨ繧｢繝・・', setupSystem());
+  showSafeResult_('初期セットアップ', setupSystem());
 }
 
 function menuContinueSetup() {
   var ui = SpreadsheetApp.getUi();
   var preview = WorkOsSetup.getNextStagePreview();
   var response = ui.alert(
-    '繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡・,
-    '谺｡縺ｮstage: ' + preview.next_stage + '\n' +
+    'セットアップを続行',
+    '次のstage: ' + preview.next_stage + '\n' +
       preview.description + '\n\n' +
-      '騾壼ｸｸInbox蜃ｦ逅・∝ｮ蘗I謗･邯壹・蛻・rigger縺ｯ髢句ｧ九＠縺ｾ縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+      '通常Inbox処理、実AI接続、5分Triggerは開始しません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡・, continueSetup());
+  showSafeResult_('セットアップを続行', continueSetup());
 }
 
 function menuQuickDiagnostic() {
@@ -69,39 +69,39 @@ function menuDeepDiagnostic() {
 
 function menuRefreshDashboard() {
   showSafeResult_(
-    '驕狗畑Dashboard繧呈峩譁ｰ',
+    '運用Dashboardを更新',
     refreshOperationalDashboard()
   );
 }
 
 function menuAutomationStatus() {
-  showSafeResult_('閾ｪ蜍募・逅・・迥ｶ諷・, getAutomationStatus());
+  showSafeResult_('自動処理の状態', getAutomationStatus());
 }
 
 function menuEnableAutomation() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    '閾ｪ蜍募・逅・ｒ譛牙柑蛹・,
-    '5蛻・俣髫斐・騾壼ｸｸInbox蜃ｦ逅・ｒ譛牙柑蛹悶＠縺ｾ縺吶ょｮ蘖rovider縲∽ｼ夂､ｾ謇ｿ隱阪…redential菫晉ｮ｡縲＾Auth縲∝ｰら畑Calendar縺ｮ蜈ｨ譚｡莉ｶ縺梧悴螳御ｺ・↑繧牙ｮ牙・縺ｫ諡貞凄縺輔ｌ縺ｾ縺吶４etup縺九ｉ縺ｯ譛牙柑蛹悶＆繧後∪縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+    '自動処理を有効化',
+    '5分間隔の通常Inbox処理を有効化します。実Provider、会社承認、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否されます。Setupからは有効化されません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('閾ｪ蜍募・逅・ｒ譛牙柑蛹・, enableAutomation());
+  showSafeResult_('自動処理を有効化', enableAutomation());
 }
 
 function menuDisableAutomation() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    '閾ｪ蜍募・逅・ｒ蛛懈ｭ｢',
-    'Automation繧貞・縺ｫdisabled縺ｸ螟画峩縺励√％縺ｮsystem縺ｮrunScheduledWorker Trigger縺縺代ｒ蜑企勁縺励∪縺吶ら┌髢｢菫５rigger縺ｯ蜑企勁縺励∪縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+    '自動処理を停止',
+    'Automationを先にdisabledへ変更し、このsystemのrunScheduledWorker Triggerだけを削除します。無関係Triggerは削除しません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('閾ｪ蜍募・逅・ｒ蛛懈ｭ｢', disableAutomation());
+  showSafeResult_('自動処理を停止', disableAutomation());
 }
 
 function menuUpsertPhase1MockTask() {
@@ -111,126 +111,126 @@ function menuUpsertPhase1MockTask() {
 
 function menuRunPhase1Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE1_TESTS');
-  showSafeResult_('Phase 1繝・せ繝・, runPhase1AcceptanceTests());
+  showSafeResult_('Phase 1テスト', runPhase1AcceptanceTests());
 }
 
 function menuRunManualImport() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'Gmail謇句虚蜿冶ｾｼ',
-    '謇句虚/蜿冶ｾｼ繝ｩ繝吶Ν莉倥″縺ｮ髱樊ｩ溷ｯ・ユ繧ｹ繝医Γ繝ｼ繝ｫ繧呈怙螟ｧ1莉ｶ縺縺大燕蜃ｦ逅・＠縺ｾ縺吶５ask繧Гalendar縺ｯ螟画峩縺励∪縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+    'Gmail手動取込',
+    '手動/取込ラベル付きの非機密テストメールを最大1件だけ前処理します。TaskやCalendarは変更しません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('Gmail謇句虚蜿冶ｾｼ', runManualImport());
+  showSafeResult_('Gmail手動取込', runManualImport());
 }
 
 function menuRunPhase2Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE2_TESTS');
-  showSafeResult_('Phase 2繝・せ繝・, runPhase2AcceptanceTests());
+  showSafeResult_('Phase 2テスト', runPhase2AcceptanceTests());
 }
 
 function menuRunMockVertical() {
   WorkOsUtilities.assertTestMode('MENU_MOCK_VERTICAL');
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'Phase 3/4 Mock邵ｦ繝輔Ο繝ｼ',
-    'PREPROCESSED縺ｮ繝繝溘・繝・せ繝・essage繧呈怙螟ｧ1莉ｶ縲∵ｱｺ螳夂噪Mock AI縺九ｉCalendar Outbox縺ｾ縺ｧ蜃ｦ逅・＠縺ｾ縺吶ょ､夜ΚAI縺ｯ蜻ｼ縺ｳ縺ｾ縺帙ｓ縲ょｰら畑Calendar縺ｸ縺ｯ譛螟ｧ1 Job縺縺大酔譛溘＠縺ｾ縺吶らｶ夊｡後＠縺ｾ縺吶°縲・,
+    'Phase 3/4 Mock縦フロー',
+    'PREPROCESSEDのダミーテストMessageを最大1件、決定的Mock AIからCalendar Outboxまで処理します。外部AIは呼びません。専用Calendarへは最大1 Jobだけ同期します。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('Phase 3/4 Mock邵ｦ繝輔Ο繝ｼ', processMockVerticalOnce());
+  showSafeResult_('Phase 3/4 Mock縦フロー', processMockVerticalOnce());
 }
 
 function menuApplySelectedTaskEdits() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'Task邱ｨ髮・・蛻､譁ｭ縺ｮ蜿肴丐',
-    '騾壼ｸｸ縺ｯ謇譛芽・nstallable edit Trigger縺後そ繝ｫ邱ｨ髮・凾縺ｫ閾ｪ蜍募渚譏縺励∪縺吶ゅ％縺ｮfallback縺ｧ縺ｯ縲√ち繧ｹ繧ｯ荳隕ｧ縺ｧ邱ｨ髮・＠縺溘そ繝ｫ・域怙螟ｧ20陦鯉ｼ峨ｒ驕ｸ謚槭＠縺ｦ縺上□縺輔＞縲・mail縲、I縲，alendar API縺ｯ蜻ｼ縺ｳ縺ｾ縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+    'Task編集・判断の反映',
+    '通常は所有者installable edit Triggerがセル編集時に自動反映します。このfallbackでは、タスク一覧で編集したセル（最大20行）を選択してください。Gmail、AI、Calendar APIは呼びません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('Task邱ｨ髮・・蛻､譁ｭ縺ｮ蜿肴丐', applySelectedTaskEdits());
+  showSafeResult_('Task編集・判断の反映', applySelectedTaskEdits());
 }
 
 function menuRunPhase3Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE3_TESTS');
-  showSafeResult_('Phase 3繝・せ繝・, runPhase3AcceptanceTests());
+  showSafeResult_('Phase 3テスト', runPhase3AcceptanceTests());
 }
 
 function menuSyncPendingCalendarJobs() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    '蟆ら畑Calendar蜷梧悄',
-    '蜷梧悄迥ｶ諷九・蠕・ｩ櫟ob繧呈怙螟ｧ1莉ｶ縺縺大・逅・＠縺ｾ縺吶よ嶌霎ｼ縺ｿ蜈医・蟆ら畑Calendar縲瑚・蜍墓悄譌･邂｡逅・阪□縺代〒縺吶・mail繝ｻAI繝ｻTask縺ｮ讌ｭ蜍咎・岼縺ｯ蜀榊・逅・＠縺ｾ縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+    '専用Calendar同期',
+    '同期状態の待機Jobを最大1件だけ処理します。書込み先は専用Calendar「自動期日管理」だけです。Gmail・AI・Taskの業務項目は再処理しません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
-  showSafeResult_('蟆ら畑Calendar蜷梧悄', syncPendingCalendarJobs());
+  showSafeResult_('専用Calendar同期', syncPendingCalendarJobs());
 }
 
 function menuRetrySelectedDeadLetters() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'Dead Letter繧貞・螳溯｡御ｺ育ｴ・,
-    '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡郡heet縺ｧ縲悟・螳溯｡後阪↓繝√ぉ繝・け縺励◆DEAD陦後ｒ譛螟ｧ5莉ｶ縺縺台ｺ育ｴ・＠縺ｾ縺吶よ悴隗｣豎ｺ縺ｮ險ｭ螳壹］on-retryable縲・㍾隍・ｺ育ｴ・・諡貞凄縺輔ｌ縺ｾ縺吶・mail ID縺ｯ陦ｨ遉ｺ縺励∪縺帙ｓ縲らｶ夊｡後＠縺ｾ縺吶°縲・,
+    'Dead Letterを再実行予約',
+    'エラー・再実行Sheetで「再実行」にチェックしたDEAD行を最大5件だけ予約します。未解決の設定、non-retryable、重複予約は拒否されます。Gmail IDは表示しません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
     return;
   }
   showSafeResult_(
-    'Dead Letter繧貞・螳溯｡御ｺ育ｴ・,
+    'Dead Letterを再実行予約',
     retrySelectedDeadLetters()
   );
 }
 
 function menuRunPhase4Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE4_TESTS');
-  showSafeResult_('Phase 4繝・せ繝・, runPhase4AcceptanceTests());
+  showSafeResult_('Phase 4テスト', runPhase4AcceptanceTests());
 }
 
 function menuRunPhase5Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE5_TESTS');
-  showSafeResult_('Phase 5繝・せ繝・, runPhase5AcceptanceTests());
+  showSafeResult_('Phase 5テスト', runPhase5AcceptanceTests());
 }
 
 function menuRunPhase6Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE6_TESTS');
-  showSafeResult_('Phase 6繝・せ繝・, runPhase6AcceptanceTests());
+  showSafeResult_('Phase 6テスト', runPhase6AcceptanceTests());
 }
 
 function menuRunPhase7Tests() {
   WorkOsUtilities.assertTestMode('MENU_PHASE7_TESTS');
-  showSafeResult_('Phase 7繝・せ繝・, runPhase7AcceptanceTests());
+  showSafeResult_('Phase 7テスト', runPhase7AcceptanceTests());
 }
 
 function nextActionForResult_(title, value) {
   var result = value || {};
-  var status = String(result.status || '螳御ｺ・);
+  var status = String(result.status || '完了');
   if (status === 'PAUSED') {
-    if (result.next_stage || /繧ｻ繝・ヨ繧｢繝・・/.test(String(title || ''))) {
-      return '谺｡縺ｮ謫堺ｽ・ 繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡後＠縺ｦ縺上□縺輔＞縲・;
+    if (result.next_stage || /セットアップ/.test(String(title || ''))) {
+      return '次の操作: セットアップを続行してください。';
     }
-    return '谺｡縺ｮ謫堺ｽ・ 蜷後§繝｡繝九Η繝ｼ謫堺ｽ懊ｒ蜀榊ｮ溯｡後＠縺ｦ縺上□縺輔＞縲ゆｿ晏ｭ俶ｸ医∩checkpoint縺九ｉ蜀埼幕縺励∪縺吶・;
+    return '次の操作: 同じメニュー操作を再実行してください。保存済みcheckpointから再開します。';
   }
   if (status === 'FAILED' || status === 'FAIL') {
-    return '谺｡縺ｮ謫堺ｽ・ error code繧堤｢ｺ隱阪＠縲＿uick Diagnostic繧貞ｮ溯｡後＠縺ｦ縺上□縺輔＞縲・;
+    return '次の操作: error codeを確認し、Quick Diagnosticを実行してください。';
   }
-  return '谺｡縺ｮ謫堺ｽ・ 蠢・ｦ√↓蠢懊§縺ｦDashboard縺ｾ縺溘・迥ｶ諷狗｢ｺ隱阪ｒ螳溯｡後＠縺ｦ縺上□縺輔＞縲・;
+  return '次の操作: 必要に応じてDashboardまたは状態確認を実行してください。';
 }
 
 function showSafeResult_(title, result) {
   var value = result || {};
-  var status = String(value.status || '螳御ｺ・);
+  var status = String(value.status || '完了');
   var action = nextActionForResult_(title, value);
   var counts = '';
   if (Array.isArray(value.checks)) {
@@ -244,10 +244,10 @@ function showSafeResult_(title, result) {
         return key + '=' + statusCounts[key];
       }).join(', ');
   }
-  var summary = '迥ｶ諷・ ' + status +
+  var summary = '状態: ' + status +
     (value.code ? '\nCode: ' + String(value.code) : '') +
     (value.next_stage
-      ? '\n谺｡stage: ' + String(value.next_stage)
+      ? '\n次stage: ' + String(value.next_stage)
       : '') +
     counts + '\n' + action;
   var details = WorkOsUtilities.redact(
@@ -256,12 +256,11 @@ function showSafeResult_(title, result) {
   var maxDetails = 10500;
   if (details.length > maxDetails) {
     details = details.slice(0, maxDetails) +
-      '\n\n[隧ｳ邏ｰ縺ｯ陦ｨ遉ｺ荳企剞縺ｮ縺溘ａ蛻・ｊ隧ｰ繧√∪縺励◆]';
+      '\n\n[詳細は表示上限のため切り詰めました]';
   }
   SpreadsheetApp.getUi().alert(
     title,
-    summary + '\n\n--- 螳牙・縺ｪ隧ｳ邏ｰ ---\n' + details,
+    summary + '\n\n--- 安全な詳細 ---\n' + details,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
-

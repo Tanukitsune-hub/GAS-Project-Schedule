@@ -288,4 +288,3 @@ process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (failed.length) {
   process.exitCode = 1;
 }
-

@@ -44,7 +44,7 @@ var WorkOsDiagnostics = (function () {
         mockHealth.status === 'READY' ? 'PASS' : 'WARN',
         mockHealth.status === 'READY'
           ? ''
-          : 'Mock AI縺ｮ繝ｭ繝ｼ繧ｫ繝ｫ貅門ｙ迥ｶ諷九ｒ遒ｺ隱阪〒縺阪∪縺帙ｓ縲・,
+          : 'Mock AIのローカル準備状態を確認できません。',
         {
           test_mode: true,
           provider: String(mockHealth.provider || 'MOCK'),
@@ -58,8 +58,8 @@ var WorkOsDiagnostics = (function () {
         'MOCK_AI_LOCAL_READINESS',
         WorkOsConfig.TEST_MODE ? 'WARN' : 'NOT_EXECUTED',
         WorkOsConfig.TEST_MODE
-          ? 'Mock AI module繧貞茜逕ｨ縺ｧ縺阪∪縺帙ｓ縲・
-          : 'TEST_MODE=false縺ｮ縺溘ａMock AI縺ｯ辟｡蜉ｹ縺ｧ縺吶・,
+          ? 'Mock AI moduleを利用できません。'
+          : 'TEST_MODE=falseのためMock AIは無効です。',
         {
           test_mode: WorkOsConfig.TEST_MODE === true,
           health_status: WorkOsConfig.TEST_MODE
@@ -83,7 +83,7 @@ var WorkOsDiagnostics = (function () {
       configurationReasons.length === 0 ? 'PASS' : 'WARN',
       configurationReasons.length === 0
         ? ''
-        : '螳蘖rovider縺ｮ險ｭ螳壹∪縺溘・逋ｻ骭ｲ縺梧悴螳御ｺ・〒縺吶・,
+        : '実Providerの設定または登録が未完了です。',
       {
         provider: String(productionReadiness.provider || ''),
         model_configured:
@@ -110,7 +110,7 @@ var WorkOsDiagnostics = (function () {
       policyReasons.length === 0 ? 'PASS' : 'WARN',
       policyReasons.length === 0
         ? ''
-        : 'Production AI縺ｮ遉ｾ蜀・・繝・・繧ｿ繝ｻcredential菫晉ｮ｡謇ｿ隱阪′譛ｪ遒ｺ隱阪〒縺吶・,
+        : 'Production AIの社内・データ・credential保管承認が未確認です。',
       {
         reasons: policyReasons,
         external_http_called: false
@@ -129,7 +129,7 @@ var WorkOsDiagnostics = (function () {
       authReasons.length === 0 ? 'PASS' : 'WARN',
       authReasons.length === 0
         ? ''
-        : 'Production AI縺ｮ隱崎ｨｼ縺ｾ縺溘・opaque credential蜿ら・縺梧悴險ｭ螳壹〒縺吶・,
+        : 'Production AIの認証またはopaque credential参照が未設定です。',
       {
         credential_reference_present:
           productionReadiness.credential_reference_present === true,
@@ -158,7 +158,7 @@ var WorkOsDiagnostics = (function () {
         'E_DIAGNOSTIC_BUDGET',
         'QUICK_DIAGNOSTIC',
         true,
-        'Quick Diagnostic縺ｮ螳牙・縺ｪ螳溯｡御ｺ育ｮ励↓驕斐＠縺ｾ縺励◆縲・
+        'Quick Diagnosticの安全な実行予算に達しました。'
       );
     }
   }
@@ -198,12 +198,12 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'TASK_SCHEMA_IDS',
       comparison.idsMatch ? 'PASS' : 'FAIL',
-      comparison.idsMatch ? '' : '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜀・Κ蛻悠D縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+      comparison.idsMatch ? '' : 'タスク一覧の内部列IDが一致しません。'
     ));
     checks.push(check(
       'TASK_SCHEMA_HEADERS',
       comparison.headersMatch ? 'PASS' : 'FAIL',
-      comparison.headersMatch ? '' : '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ隕句・縺励′荳閾ｴ縺励∪縺帙ｓ縲・
+      comparison.headersMatch ? '' : 'タスク一覧の見出しが一致しません。'
     ));
 
     var context;
@@ -211,7 +211,7 @@ var WorkOsDiagnostics = (function () {
       context = WorkOsTaskRepository.createContext(sheet);
       checks.push(check('TASK_COLUMN_MAP', 'PASS', ''));
     } catch (error) {
-      checks.push(check('TASK_COLUMN_MAP', 'FAIL', 'Column Map繧呈ｧ狗ｯ峨〒縺阪∪縺帙ｓ縲・));
+      checks.push(check('TASK_COLUMN_MAP', 'FAIL', 'Column Mapを構築できません。'));
       return;
     }
 
@@ -294,14 +294,14 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'TASK_VALIDATION_TYPES',
       validationFailures.length ? 'FAIL' : 'PASS',
-      validationFailures.length ? '蜈･蜉幄ｦ丞援縺ｮ蝙九′荳閾ｴ縺励∪縺帙ｓ縲・ : '',
+      validationFailures.length ? '入力規則の型が一致しません。' : '',
       { failures: validationFailures.slice(0, 50), failure_count: validationFailures.length }
     ));
 
     checks.push(check(
       'TASK_DATE_FORMATS',
       formatFailures.length ? 'FAIL' : 'PASS',
-      formatFailures.length ? '譌･莉倩｡ｨ遉ｺ蠖｢蠑上′荳閾ｴ縺励∪縺帙ｓ縲・ : '',
+      formatFailures.length ? '日付表示形式が一致しません。' : '',
       { failures: formatFailures.slice(0, 50), failure_count: formatFailures.length }
     ));
 
@@ -316,7 +316,7 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'TASK_MANAGEMENT_COLUMNS_HIDDEN',
       managementColumnFailures.length ? 'FAIL' : 'PASS',
-      managementColumnFailures.length ? '邂｡逅・・縺碁撼陦ｨ遉ｺ縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・ : '',
+      managementColumnFailures.length ? '管理列が非表示ではありません。' : '',
       { failures: managementColumnFailures }
     ));
 
@@ -356,7 +356,7 @@ var WorkOsDiagnostics = (function () {
       checks.push(check(
         'TASK_PROTECTIONS',
         protectionFailures.length ? 'FAIL' : 'PASS',
-        protectionFailures.length ? 'Task邂｡逅・ｯ・峇縺ｮ菫晁ｭｷ縺御ｸ崎ｶｳ縺励※縺・∪縺吶・ : '',
+        protectionFailures.length ? 'Task管理範囲の保護が不足しています。' : '',
         { failures: protectionFailures }
       ));
       var taskSheetProtections = sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET);
@@ -389,7 +389,7 @@ var WorkOsDiagnostics = (function () {
       checks.push(check(
         'TASK_EDIT_POLICY',
         taskPolicyValid ? 'PASS' : 'FAIL',
-        taskPolicyValid ? '' : 'Task蛻励・邱ｨ髮・庄蜷ｦProtection縺御ｻ墓ｧ倥→荳閾ｴ縺励∪縺帙ｓ縲・,
+        taskPolicyValid ? '' : 'Task列の編集可否Protectionが仕様と一致しません。',
         {
           expected_editable_ranges: expectedEditableRanges,
           actual_editable_ranges: actualEditableRanges
@@ -415,7 +415,7 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'BLANK_ROW_BOOLEAN_VALUES',
       blankBooleanRows.length ? 'FAIL' : 'PASS',
-      blankBooleanRows.length ? '隲也炊遨ｺ陦後↓Boolean蛟､縺後≠繧翫∪縺吶・ : '',
+      blankBooleanRows.length ? '論理空行にBoolean値があります。' : '',
       { rows: blankBooleanRows.slice(0, 20) }
     ));
 
@@ -423,7 +423,7 @@ var WorkOsDiagnostics = (function () {
       'TASK_PRIMARY_KEY_DUPLICATES',
       context.duplicateTaskIds.length || context.duplicateOriginKeys.length ? 'FAIL' : 'PASS',
       context.duplicateTaskIds.length || context.duplicateOriginKeys.length
-        ? 'Task荳ｻ繧ｭ繝ｼ縺ｫ驥崎､・′縺ゅｊ縺ｾ縺吶・
+        ? 'Task主キーに重複があります。'
         : '',
       {
         task_id_duplicates: context.duplicateTaskIds,
@@ -438,7 +438,7 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'TASK_PRIMARY_KEY_COMPLETENESS',
       incompleteKeyRows.length ? 'FAIL' : 'PASS',
-      incompleteKeyRows.length ? 'Task陦後・蠢・井ｸｻ繧ｭ繝ｼ縺御ｸ崎ｶｳ縺励※縺・∪縺吶・ : '',
+      incompleteKeyRows.length ? 'Task行の必須主キーが不足しています。' : '',
       { rows: incompleteKeyRows.slice(0, 20) }
     ));
 
@@ -470,7 +470,7 @@ var WorkOsDiagnostics = (function () {
       'TASK_STATE_INVARIANTS',
       invariantFailures.length ? 'FAIL' : 'PASS',
       invariantFailures.length
-        ? 'Task迥ｶ諷九・field髢捺紛蜷域ｧ縺ｫ蝠城｡後′縺ゅｊ縺ｾ縺吶・
+        ? 'Task状態のfield間整合性に問題があります。'
         : '',
       { failures: invariantFailures.slice(0, 20) }
     ));
@@ -501,7 +501,7 @@ var WorkOsDiagnostics = (function () {
       comparison.idsMatch && comparison.headersMatch ? 'PASS' : 'FAIL',
       comparison.idsMatch && comparison.headersMatch
         ? ''
-        : sheetName + '縺ｮSchema縺御ｸ閾ｴ縺励∪縺帙ｓ縲・,
+        : sheetName + 'のSchemaが一致しません。',
       { sheet_name: sheetName }
     ));
     if (WorkOsHiddenSheets.indexOf(sheetName) !== -1 &&
@@ -515,14 +515,344 @@ var WorkOsDiagnostics = (function () {
       checks.push(check(
         'PROTECTION_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8),
         enforced ? 'PASS' : 'FAIL',
-        enforced ? '' : sheetName + '縺ｮ邂｡逅・heet菫晁ｭｷ縺御ｸ崎ｶｳ縺励※縺・∪縺吶・,
+        enforced ? '' : sheetName + 'の管理Sheet保護が不足しています。',
         { sheet_name: sheetName }
       ));
     }
   }
 
   function scanLogicalRows(
-    sprea…3108 tokens truncated…ies();
+    spreadsheet,
+    sheetName,
+    primaryId,
+    budget,
+    rowLimit,
+    visitor
+  ) {
+    assertBudgetAvailable(budget);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MISSING_SHEET',
+        'DIAGNOSTIC',
+        false,
+        'Recovery診断に必要なSheetがありません。'
+      );
+    }
+    var ids = WorkOsSchemas.getInternalIds(sheetName);
+    if (sheet.getMaxColumns() !== ids.length) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_CONFLICT',
+        'DIAGNOSTIC',
+        false,
+        'Recovery診断対象Sheetの列数が一致しません。'
+      );
+    }
+    var actualIds = sheet.getRange(1, 1, 1, ids.length).getValues()[0];
+    if (JSON.stringify(actualIds) !== JSON.stringify(ids)) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MISSING_COLUMN',
+        'DIAGNOSTIC',
+        false,
+        'Recovery診断対象Sheetの内部列IDが一致しません。'
+      );
+    }
+    var map = WorkOsSchemas.buildColumnMapFromIds(ids);
+    var availableRows = Math.max(
+      0,
+      sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1
+    );
+    var scanRows = rowLimit == null
+      ? availableRows
+      : Math.min(availableRows, Math.max(0, Number(rowLimit || 0)));
+    var logicalCount = 0;
+    var chunkSize = WorkOsConfig.QUICK_DIAGNOSTIC_CHUNK_ROWS;
+    for (var offset = 0; offset < scanRows; offset += chunkSize) {
+      assertBudgetAvailable(budget);
+      var chunkLength = Math.min(chunkSize, scanRows - offset);
+      var rows = sheet.getRange(
+        WorkOsConfig.DATA_START_ROW + offset,
+        1,
+        chunkLength,
+        ids.length
+      ).getValues();
+      rows.forEach(function (row) {
+        if (WorkOsUtilities.isBlank(row[map[primaryId]])) {
+          return;
+        }
+        var record = {};
+        ids.forEach(function (id) {
+          record[id] = row[map[id]];
+        });
+        logicalCount += 1;
+        visitor(record);
+      });
+    }
+    return {
+      physical_rows_scanned: scanRows,
+      logical_rows_scanned: logicalCount
+    };
+  }
+
+  function inspectRecoveryState(spreadsheet, budget, nowValue, options) {
+    assertBudgetAvailable(budget);
+    var settings = options || {};
+    var rowLimit = settings.row_limit == null
+      ? null
+      : Math.max(0, Number(settings.row_limit || 0));
+    var timestamp = nowValue instanceof Date
+      ? nowValue
+      : WorkOsUtilities.now();
+    var messageCounts = {
+      stale_claim_count: 0,
+      due_retry_count: 0,
+      dead_message_count: 0,
+      checkpoint_count: 0
+    };
+    var messageScan = scanLogicalRows(
+      spreadsheet,
+      WorkOsConfig.SHEETS.MESSAGE_STATE,
+      'message_id',
+      budget,
+      rowLimit,
+      function (record) {
+        if (record.processing_status ===
+            WorkOsMessageStateRepository.STATUSES.CLAIMED &&
+            WorkOsMessageStateRepository.isStaleClaim(record, timestamp)) {
+          messageCounts.stale_claim_count += 1;
+        }
+        if (record.processing_status ===
+            WorkOsMessageStateRepository.STATUSES.RETRY &&
+            (!(record.next_retry_at instanceof Date) ||
+             record.next_retry_at.getTime() <= timestamp.getTime())) {
+          messageCounts.due_retry_count += 1;
+        }
+        if (record.processing_status ===
+            WorkOsMessageStateRepository.STATUSES.DEAD) {
+          messageCounts.dead_message_count += 1;
+        }
+        if ([
+          WorkOsMessageStateRepository.STATUSES.CLAIMED,
+          WorkOsMessageStateRepository.STATUSES.PREPROCESSED,
+          WorkOsMessageStateRepository.STATUSES.CLASSIFIED,
+          WorkOsMessageStateRepository.STATUSES.TASKS_WRITTEN,
+          WorkOsMessageStateRepository.STATUSES.CALENDAR_PENDING
+        ].indexOf(record.processing_status) !== -1) {
+          messageCounts.checkpoint_count += 1;
+        }
+      }
+    );
+    var outboxCounts = {
+      pending_count: 0,
+      retry_count: 0,
+      due_retry_count: 0,
+      dead_count: 0
+    };
+    var outboxScan = scanLogicalRows(
+      spreadsheet,
+      WorkOsConfig.SHEETS.SYNC_STATE,
+      'sync_id',
+      budget,
+      rowLimit,
+      function (record) {
+        if (record.status === 'PENDING') {
+          outboxCounts.pending_count += 1;
+        } else if (record.status === 'RETRY') {
+          outboxCounts.retry_count += 1;
+          if (!(record.next_retry_at instanceof Date) ||
+              record.next_retry_at.getTime() <= timestamp.getTime()) {
+            outboxCounts.due_retry_count += 1;
+          }
+        } else if (record.status === 'DEAD') {
+          outboxCounts.dead_count += 1;
+        }
+      }
+    );
+    var errorCounts = WorkOsLogAndDeadLetter.operationalCounts(
+      spreadsheet,
+      timestamp,
+      budget,
+      null,
+      { row_limit: rowLimit }
+    );
+    var props = PropertiesService.getScriptProperties();
+    var providerSuppression =
+      WorkOsLogAndDeadLetter.providerSuppressionStatus(
+        props,
+        timestamp
+      );
+    return {
+      messages: messageCounts,
+      errors: errorCounts,
+      calendar_outbox: outboxCounts,
+      provider_suppression: {
+        active: providerSuppression.active === true,
+        invalid_state: providerSuppression.invalid_state === true,
+        until_present: Boolean(providerSuppression.until)
+      },
+      scan: {
+        row_limit: rowLimit,
+        message_state: messageScan,
+        calendar_outbox: outboxScan
+      }
+    };
+  }
+
+  function runQuickDiagnostic(spreadsheet, options) {
+    var startedAt = Date.now();
+    var settings = options || {};
+    var budget = settings.budget ||
+      WorkOsUtilities.createSoftBudget(
+        WorkOsConfig.QUICK_DIAGNOSTIC_TARGET_MS,
+        startedAt
+      );
+    var target = spreadsheet || SpreadsheetApp.getActiveSpreadsheet();
+    var checks = [];
+    if (!target) {
+      return {
+        status: 'FAIL',
+        code_version: WorkOsConfig.CODE_VERSION,
+        schema_version: WorkOsConfig.SCHEMA_VERSION,
+        duration_ms: Date.now() - startedAt,
+        checks: [check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheetがありません。')]
+      };
+    }
+
+    for (var sheetIndex = 0; sheetIndex < WorkOsSheetOrder.length; sheetIndex += 1) {
+      if (budget.isExhausted(WorkOsConfig.QUICK_DIAGNOSTIC_RESERVE_MS)) {
+        checks.push(check(
+          'QUICK_DIAGNOSTIC_BUDGET',
+          'FAIL',
+          '実行予算に達したため未検査のSheetを残して安全に停止しました。',
+          { remaining_sheet_count: WorkOsSheetOrder.length - sheetIndex }
+        ));
+        break;
+      }
+      var sheetName = WorkOsSheetOrder[sheetIndex];
+      var sheet = target.getSheetByName(sheetName);
+      if (!sheet) {
+        checks.push(check('SHEET_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8), 'FAIL', '必須Sheetがありません。', {
+          sheet_name: sheetName
+        }));
+        continue;
+      }
+      var minimumRows = WorkOsSheetBuilder.initialRowsForSheet(sheetName);
+      var rowCount = sheet.getMaxRows();
+      var columnCount = sheet.getMaxColumns();
+      var expectedColumns = WorkOsSchemas.getSheetSchema(sheetName).length;
+      var rowCountValid = rowCount >= minimumRows &&
+        (rowCount - minimumRows) % WorkOsConfig.ROW_EXPANSION_UNIT === 0;
+      checks.push(check(
+        'ROWS_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8),
+        rowCountValid ? 'PASS' : 'FAIL',
+        rowCountValid ? '' : '行数が初期値または100行単位の拡張と一致しません。',
+        {
+          sheet_name: sheetName,
+          rows: rowCount,
+          minimum_rows: minimumRows,
+          expansion_unit: WorkOsConfig.ROW_EXPANSION_UNIT
+        }
+      ));
+      checks.push(check(
+        'COLUMNS_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8),
+        columnCount === expectedColumns ? 'PASS' : 'FAIL',
+        columnCount === expectedColumns ? '' : '列数がv2 Schemaと一致しません。',
+        {
+          sheet_name: sheetName,
+          columns: columnCount,
+          expected_columns: expectedColumns
+        }
+      ));
+      if (rowCount < WorkOsConfig.DATA_START_ROW || columnCount < expectedColumns) {
+        checks.push(check(
+          'READABLE_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8),
+          'FAIL',
+          'Gridが小さすぎるためSchema検査を安全に継続できません。',
+          { sheet_name: sheetName }
+        ));
+      } else {
+        try {
+          if (sheetName === WorkOsConfig.SHEETS.TASKS) {
+            validateTaskSheet(sheet, checks, budget);
+          } else {
+            validateSheetSchema(sheet, sheetName, checks, budget);
+            if (sheetName === WorkOsConfig.SHEETS.DASHBOARD &&
+                typeof WorkOsDashboard !== 'undefined' &&
+                WorkOsDashboard &&
+                typeof WorkOsDashboard.inspectLayout === 'function') {
+              try {
+                var dashboardLayout =
+                  WorkOsDashboard.inspectLayout(target);
+                var dashboardLayoutStatus =
+                  dashboardLayout.status === 'OWNED'
+                    ? 'PASS'
+                    : (dashboardLayout.writable ? 'WARN' : 'FAIL');
+                checks.push(check(
+                  'DASHBOARD_LAYOUT_OWNERSHIP',
+                  dashboardLayoutStatus,
+                  dashboardLayoutStatus === 'PASS'
+                    ? ''
+                    : (dashboardLayoutStatus === 'WARN'
+                      ? 'Dashboard system blockは次回の明示更新で安全に所有markerを設定できます。'
+                      : 'Dashboardに安全なsystem blockを確保できません。'),
+                  {
+                    layout_status: dashboardLayout.status,
+                    writable: dashboardLayout.writable === true,
+                    external_services_called: false,
+                    repair_performed: false
+                  }
+                ));
+              } catch (dashboardLayoutError) {
+                checks.push(check(
+                  'DASHBOARD_LAYOUT_OWNERSHIP',
+                  'FAIL',
+                  'Dashboard layout conflictを検出しました。修復や更新は行っていません。',
+                  {
+                    error_code: WorkOsUtilities.safeError(
+                      dashboardLayoutError,
+                      'DIAGNOSTIC'
+                    ).code,
+                    external_services_called: false,
+                    repair_performed: false
+                  }
+                ));
+              }
+            }
+          }
+        } catch (error) {
+          var budgetError = error instanceof WorkOsAppError &&
+            error.code === 'E_DIAGNOSTIC_BUDGET';
+          checks.push(check(
+            budgetError
+              ? 'QUICK_DIAGNOSTIC_BUDGET'
+              : 'VALIDATION_ERROR_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8),
+            'FAIL',
+            budgetError
+              ? '実行予算に達したため現在の検査を安全に停止しました。'
+              : 'Sheet検査中に安全に処理できない構成を検出しました。',
+            {
+              sheet_name: sheetName,
+              error_code: WorkOsUtilities.safeError(
+                error,
+                'DIAGNOSTIC'
+              ).code
+            }
+          ));
+          if (budgetError) {
+            break;
+          }
+        }
+      }
+      var expectedHidden = WorkOsHiddenSheets.indexOf(sheetName) !== -1;
+      checks.push(check(
+        'VISIBILITY_' + WorkOsUtilities.sha256Hex(sheetName).slice(0, 8),
+        sheet.isSheetHidden() === expectedHidden ? 'PASS' : 'FAIL',
+        sheet.isSheetHidden() === expectedHidden ? '' : 'Sheet表示状態が仕様と一致しません。',
+        { sheet_name: sheetName, expected_hidden: expectedHidden }
+      ));
+    }
+
+    var props = PropertiesService.getScriptProperties();
     var completedRaw = props.getProperty(WorkOsConfig.PROPERTIES.SETUP_COMPLETED_STAGES);
     var instanceProperty = props.getProperty(WorkOsConfig.PROPERTIES.INSTANCE_ID);
     var deadlineCalendarProperty = props.getProperty(
@@ -555,7 +885,7 @@ var WorkOsDiagnostics = (function () {
       completedRaw && instancePropertyValid ? 'PASS' : 'WARN',
       completedRaw && instancePropertyValid
         ? ''
-        : 'Setup Properties縺梧悴螳御ｺ・°instance蠖｢蠑上′荳肴ｭ｣縺ｧ縺吶・,
+        : 'Setup Propertiesが未完了かinstance形式が不正です。',
       {
         completed_stages_recorded: Boolean(completedRaw),
         instance_id_recorded: Boolean(instanceProperty),
@@ -568,8 +898,8 @@ var WorkOsDiagnostics = (function () {
       versionPropertiesMatch
         ? ''
         : (versionStageRecorded
-          ? '螳御ｺ・ｸ医∩v2迺ｰ蠅・・version metadata縺ｫdrift縺後≠繧翫∪縺吶４etup繧貞・螳溯｡後＠縺ｦ縺上□縺輔＞縲・
-          : 'S70譛ｪ螳溯｡後・縺溘ａversion Properties縺ｯ譛ｪ遒ｺ螳壹〒縺吶・),
+          ? '完了済みv2環境のversion metadataにdriftがあります。Setupを再実行してください。'
+          : 'S70未実行のためversion Propertiesは未確定です。'),
       {
         s70_recorded: versionStageRecorded,
         code_version_property_matches: codeProperty === WorkOsConfig.CODE_VERSION,
@@ -591,7 +921,7 @@ var WorkOsDiagnostics = (function () {
       editTriggerStatus &&
         editTriggerStatus.status === 'CONSISTENT'
         ? ''
-        : 'Task邱ｨ髮・rigger縺梧悴菴懈・縺ｾ縺溘・荳肴紛蜷医〒縺吶４etup繧貞・螳溯｡後＠縺ｦ縺上□縺輔＞縲・,
+        : 'Task編集Triggerが未作成または不整合です。Setupを再実行してください。',
       editTriggerStatus
         ? {
           setup_creates_trigger: true,
@@ -668,7 +998,7 @@ var WorkOsDiagnostics = (function () {
       automationStatus &&
         automationStatus.status === 'CONSISTENT'
         ? ''
-        : 'Automation Trigger迥ｶ諷九ｒ遒ｺ隱阪〒縺阪↑縺・°荳肴紛蜷医〒縺吶ゆｿｮ蠕ｩ縺ｯ陦後▲縺ｦ縺・∪縺帙ｓ縲・,
+        : 'Automation Trigger状態を確認できないか不整合です。修復は行っていません。',
       automationStatus
         ? {
           enabled: automationStatus.enabled,
@@ -698,7 +1028,7 @@ var WorkOsDiagnostics = (function () {
       editTriggerStatus ? 'PASS' : 'WARN',
       editTriggerStatus
         ? ''
-        : 'Google Workspace Trigger荳隕ｧ繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・,
+        : 'Google Workspace Trigger一覧を確認できませんでした。',
       {
         trigger_list_read:
           editTriggerStatus
@@ -733,24 +1063,24 @@ var WorkOsDiagnostics = (function () {
       'MANAGEMENT_COLUMN_DIRECT_EDIT',
       managementEditWarningRaw ? 'WARN' : 'PASS',
       managementEditWarningRaw
-        ? '邂｡逅・・縺ｮ逶ｴ謗･邱ｨ髮・ｱ･豁ｴ縺後≠繧翫∪縺吶ゅお繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡後ｒ遒ｺ隱阪＠縺ｦ縺上□縺輔＞縲・
+        ? '管理列の直接編集履歴があります。エラー・再実行を確認してください。'
         : '',
       managementEditDetails
     ));
     checks.push(check(
       'GMAIL_MANUAL_POLICY',
       WorkOsConfig.MANUAL_GMAIL_QUERY ===
-        'label:謇句虚/蜿冶ｾｼ -label:謇句虚/髯､螟・ &&
+        'label:手動/取込 -label:手動/除外' &&
         WorkOsConfig.MANUAL_MAX_THREADS === 10 &&
         WorkOsConfig.MANUAL_MAX_MESSAGES === 1
         ? 'PASS'
         : 'FAIL',
       WorkOsConfig.MANUAL_GMAIL_QUERY ===
-        'label:謇句虚/蜿冶ｾｼ -label:謇句虚/髯､螟・ &&
+        'label:手動/取込 -label:手動/除外' &&
         WorkOsConfig.MANUAL_MAX_THREADS === 10 &&
         WorkOsConfig.MANUAL_MAX_MESSAGES === 1
         ? ''
-        : 'Gmail謇句虚蜿冶ｾｼ縺ｮ螳牙・縺ｪ荳企剞縺ｾ縺溘・query縺御ｸ閾ｴ縺励∪縺帙ｓ縲・,
+        : 'Gmail手動取込の安全な上限またはqueryが一致しません。',
       {
         search_threads: WorkOsConfig.MANUAL_MAX_THREADS,
         processed_messages: WorkOsConfig.MANUAL_MAX_MESSAGES,
@@ -783,7 +1113,7 @@ var WorkOsDiagnostics = (function () {
       calendarStageRecorded && deadlineCalendarProperty &&
         instancePropertyValid
         ? ''
-        : 'S60縲∝ｰら畑Calendar ID縲√∪縺溘・instance property縺梧悴螳御ｺ・〒縺吶・,
+        : 'S60、専用Calendar ID、またはinstance propertyが未完了です。',
       {
         setup_stage_recorded: calendarStageRecorded,
         calendar_id_recorded: Boolean(deadlineCalendarProperty),
@@ -794,7 +1124,7 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'CALENDAR_REMOTE_VERIFICATION',
       'WARN',
-      'Google Workspace螳櫃alendar蛻ｰ驕疲ｧ繝ｻ髱柝rimary繝ｻ謇譛画ｨｩ: NOT EXECUTED縲よ焔蜍募女蜈･縺ｧ遒ｺ隱阪＠縺ｦ縺上□縺輔＞縲・,
+      'Google Workspace実Calendar到達性・非primary・所有権: NOT EXECUTED。手動受入で確認してください。',
       {
         calendar_api_called: false,
         real_calendar_verified: false,
@@ -821,7 +1151,7 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'CALENDAR_OUTBOX_SCHEMA',
       syncSchemaMatches ? 'PASS' : 'FAIL',
-      syncSchemaMatches ? '' : '蜷梧悄迥ｶ諷九・Outbox Schema縺御ｸ閾ｴ縺励∪縺帙ｓ縲・,
+      syncSchemaMatches ? '' : '同期状態のOutbox Schemaが一致しません。',
       {
         expected_column_count: expectedSyncIds.length
       }
@@ -845,7 +1175,7 @@ var WorkOsDiagnostics = (function () {
         'RETRY_DEAD_LETTER_STATE',
         recoveryWarning ? 'WARN' : 'PASS',
         recoveryWarning
-          ? '譛ｪ隗｣豎ｺError縲．ead Letter縲√∪縺溘・stale claim縺後≠繧翫∪縺吶・
+          ? '未解決Error、Dead Letter、またはstale claimがあります。'
           : '',
         recoveryState
       ));
@@ -872,9 +1202,9 @@ var WorkOsDiagnostics = (function () {
           ? 'FAIL'
           : (recoveryState.provider_suppression.active ? 'WARN' : 'PASS'),
         recoveryState.provider_suppression.invalid_state
-          ? 'Provider謚大宛迥ｶ諷九′荳肴ｭ｣縺ｧ縺吶ゆｿｮ蠕ｩ縺ｯ陦後▲縺ｦ縺・∪縺帙ｓ縲・
+          ? 'Provider抑制状態が不正です。修復は行っていません。'
           : (recoveryState.provider_suppression.active
-            ? 'Provider荳譎る囿螳ｳ縺ｮ蜀崎ｩｦ陦梧椛蛻ｶ荳ｭ縺ｧ縺吶・
+            ? 'Provider一時障害の再試行抑制中です。'
             : ''),
         recoveryState.provider_suppression
       ));
@@ -886,7 +1216,7 @@ var WorkOsDiagnostics = (function () {
         checks.push(check(
           'RETRY_DEAD_LETTER_STATE',
           'FAIL',
-          'Retry繝ｻDead Letter迥ｶ諷九ｒ螳牙・縺ｫ讀懈渊縺ｧ縺阪∪縺帙ｓ縺ｧ縺励◆縲・,
+          'Retry・Dead Letter状態を安全に検査できませんでした。',
           { error_code: recoverySafe.code }
         ));
       }
@@ -899,7 +1229,7 @@ var WorkOsDiagnostics = (function () {
       setupPhase4Complete ? 'PASS' : 'WARN',
       setupPhase4Complete
         ? ''
-        : 'S99縺ｯ譛ｪ螳御ｺ・〒縺吶４etup螳溯｡御ｸｭ縺ｮS90縺ｧ縺ｯ縺薙・隴ｦ蜻翫′諠ｳ螳壹＆繧後∪縺吶・,
+        : 'S99は未完了です。Setup実行中のS90ではこの警告が想定されます。',
       {
         s99_recorded:
           completedForCalendar.indexOf('S99_COMPLETE') !== -1
@@ -910,7 +1240,7 @@ var WorkOsDiagnostics = (function () {
     checks.push(check(
       'QUICK_DIAGNOSTIC_DURATION',
       duration <= WorkOsConfig.QUICK_DIAGNOSTIC_TARGET_MS ? 'PASS' : 'FAIL',
-      duration <= WorkOsConfig.QUICK_DIAGNOSTIC_TARGET_MS ? '' : 'Quick Diagnostic縺檎岼讓呎凾髢薙ｒ雜・℃縺励∪縺励◆縲・,
+      duration <= WorkOsConfig.QUICK_DIAGNOSTIC_TARGET_MS ? '' : 'Quick Diagnosticが目標時間を超過しました。',
       { duration_ms: duration, target_ms: WorkOsConfig.QUICK_DIAGNOSTIC_TARGET_MS }
     ));
     var hasFailure = checks.some(function (item) { return item.status === 'FAIL'; });
@@ -926,7 +1256,7 @@ var WorkOsDiagnostics = (function () {
         checks.push(check(
           'SETUP_PROPERTIES_PARSE',
           'FAIL',
-          'Setup谿ｵ髫弱・Properties繧定ｧ｣譫舌〒縺阪∪縺帙ｓ縲・
+          'Setup段階のPropertiesを解析できません。'
         ));
         hasFailure = true;
       }
@@ -950,7 +1280,7 @@ var WorkOsDiagnostics = (function () {
         'E_TEST_MODE_DISABLED',
         'DIAGNOSTIC',
         false,
-        'Deep Diagnostic縺ｸ縺ｮ萓晏ｭ俶ｳｨ蜈･縺ｯTest mode縺縺代〒蛻ｩ逕ｨ縺ｧ縺阪∪縺吶・
+        'Deep Diagnosticへの依存注入はTest modeだけで利用できます。'
       );
     }
     var startedAt = Date.now();
@@ -966,7 +1296,7 @@ var WorkOsDiagnostics = (function () {
         code_version: WorkOsConfig.CODE_VERSION,
         duration_ms: Date.now() - startedAt,
         checks: [
-          check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheet縺後≠繧翫∪縺帙ｓ縲・)
+          check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheetがありません。')
         ]
       };
     }
@@ -1009,8 +1339,8 @@ var WorkOsDiagnostics = (function () {
         'DEEP_RECOVERY_SAMPLE',
         safe.code === 'E_DIAGNOSTIC_BUDGET' ? 'WARN' : 'FAIL',
         safe.code === 'E_DIAGNOSTIC_BUDGET'
-          ? 'Deep Diagnostic繧痴oft budget縺ｧ螳牙・縺ｫ蛛懈ｭ｢縺励∪縺励◆縲・
-          : 'Deep Diagnostic縺ｧ荳肴紛蜷医ｒ讀懷・縺励∪縺励◆縲・,
+          ? 'Deep Diagnosticをsoft budgetで安全に停止しました。'
+          : 'Deep Diagnosticで不整合を検出しました。',
         { error_code: safe.code }
       ));
     }
@@ -1048,4 +1378,3 @@ function runDeepDiagnostic() {
     SpreadsheetApp.getActiveSpreadsheet()
   );
 }
-

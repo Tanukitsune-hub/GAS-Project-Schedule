@@ -1,17 +1,24 @@
-# Google Workspace Personal Work OS v2 隧ｳ邏ｰ螳溯｣・ｻ墓ｧ俶嶌
+# Google Workspace Personal Work OS v2 詳細実装仕様書
 
-- 譁・嶌迚・ 0.9.0-draft
-- 菴懈・譌･: 2026-07-23
+- 文書版: 0.9.0-draft
+- 作成日: 2026-07-23
 - Project ID: `google-workspace-personal-work-os`
-- 蟇ｾ雎｡: 譁ｰ縺励＞遨ｺ縺ｮGoogle Sheets縺ｫ邏舌▼縺代ｋApps Script v2
-- 蝓ｺ貅悶ち繧､繝繧ｾ繝ｼ繝ｳ: `Asia/Tokyo`
-- 諠ｳ螳夊ｪｭ閠・ Codex縲、pps Script螳溯｣・球蠖薙√Ξ繝薙Η繝ｼ諡・ｽ・- 迥ｶ諷・ Codex謚募・逕ｨDraft縲よｭ｣譛ｬ4繝輔ぃ繧､繝ｫ繧貞､画峩縺吶ｋ譁・嶌縺ｧ縺ｯ縺ｪ縺・- 螳溯｣・幕蟋区擅莉ｶ: 譛ｬ譖ｸ縺ｨ`V2_CODEX_IMPLEMENTATION_PLAN.md`繧貞酔譎ゅ↓隱ｭ繧縺薙→
+- 対象: 新しい空のGoogle Sheetsに紐づけるApps Script v2
+- 基準タイムゾーン: `Asia/Tokyo`
+- 想定読者: Codex、Apps Script実装担当、レビュー担当
+- 状態: Codex投入用Draft。正本4ファイルを変更する文書ではない
+- 実装開始条件: 本書と`V2_CODEX_IMPLEMENTATION_PLAN.md`を同時に読むこと
 
-## 1. 逶ｮ逧・
-譛ｬ譖ｸ縺ｯ縲；mail縺ｧ蜿励￠縺滉ｾ晞ｼ縲∵悄髯仙､画峩縲∝叙豸医∝ｮ御ｺ・∬ｿ比ｿ｡蠕・■遲峨ｒMessage ID蜊倅ｽ阪〒蜃ｦ逅・＠縲；oogle Sheets縺ｮ`繧ｿ繧ｹ繧ｯ荳隕ｧ`縺ｸ蜀ｪ遲峨↓蜿肴丐縺励・㍾隕√↑豁｣蠑乗悄髯舌□縺代ｒ蟆ら畑Google Calendar`閾ｪ蜍墓悄譌･邂｡逅・縺ｸ蜷梧悄縺吶ｋApps Script v2縺ｮ螳溯｣・･醍ｴ・ｒ螳壹ａ繧九・
-Codex縺ｯ譛ｬ譖ｸ繧偵悟ｮ梧・繧､繝｡繝ｼ繧ｸ縺ｮ蜿り・阪〒縺ｯ縺ｪ縺上￣hase縺斐→縺ｫ讀懆ｨｼ蜿ｯ閭ｽ縺ｪ螳溯｣・ｻ墓ｧ倥→縺励※謇ｱ縺・よ尠譏ｧ縺ｪ轤ｹ繧貞享謇九↓諡｡蠑ｵ縺帙★縲∝ｮ牙・蛛ｴ縺ｮ蛛懈ｭ｢縲∬ｦ∫｢ｺ隱阪：eature Flag縲∵悴螳溯｣・tub縺ｮ縺・★繧後°繧帝∈縺ｶ縲・
-## 2. Source of Truth縺ｨ蜆ｪ蜈磯・ｽ・
-螳溯｣・燕縺ｫ谺｡繧定ｪｭ繧縲・
+## 1. 目的
+
+本書は、Gmailで受けた依頼、期限変更、取消、完了、返信待ち等をMessage ID単位で処理し、Google Sheetsの`タスク一覧`へ冪等に反映し、重要な正式期限だけを専用Google Calendar`自動期日管理`へ同期するApps Script v2の実装契約を定める。
+
+Codexは本書を「完成イメージの参考」ではなく、Phaseごとに検証可能な実装仕様として扱う。曖昧な点を勝手に拡張せず、安全側の停止、要確認、Feature Flag、未実装stubのいずれかを選ぶ。
+
+## 2. Source of Truthと優先順位
+
+実装前に次を読む。
+
 1. `CURRENT_STATUS.md`
 2. `DECISIONS.md`
 3. `PROJECT_CONTEXT.md`
@@ -20,233 +27,993 @@ Codex縺ｯ譛ｬ譖ｸ繧偵悟ｮ梧・繧､繝｡繝ｼ繧ｸ縺ｮ蜿り�
 6. `INITIAL_IMPLEMENTATION_DEFAULTS.md`
 7. `PROTOTYPE_V1_LESSONS_LEARNED.md`
 8. `NAMING_AND_GMAIL_LABELS.md`
-9. 譛ｬ譖ｸ
+9. 本書
 10. `V2_CODEX_IMPLEMENTATION_PLAN.md`
 
-遏帷崟譎ゅ・蜆ｪ蜈磯・ｽ阪・縲√ｈ繧頑眠縺励＞Decision縲～CURRENT_STATUS.md`縺ｮ譏守､ｺ險よｭ｣縲～PROJECT_CONTEXT.md`縲～MASTER_PLAN.md`縲」2陬懷勧莉墓ｧ倥」1莉･蜑阪・雉・侭縺ｮ鬆・→縺吶ｋ縲・
-譛ｬ譖ｸ縺ｯ豁｣譛ｬ4繝輔ぃ繧､繝ｫ縺ｮ蜀・ｮｹ繧貞・菴灘喧縺吶ｋ縲よｭ｣譛ｬ縺ｨ遏帷崟縺吶ｋ蝣ｴ蜷医・譛ｬ譖ｸ繧剃ｿｮ豁｣縺励∵ｭ｣譛ｬ繧定・蜍慕噪縺ｫ荳頑嶌縺阪＠縺ｪ縺・・
-## 3. 縲隈oogle繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｫ邂｡逅・す繧ｹ繝・Β縲肴立隴ｰ隲悶・蜿悶ｊ霎ｼ縺ｿ
+矛盾時の優先順位は、より新しいDecision、`CURRENT_STATUS.md`の明示訂正、`PROJECT_CONTEXT.md`、`MASTER_PLAN.md`、v2補助仕様、v1以前の資料の順とする。
 
-譌ｧGoogle Workspace蛟倶ｺｺ讌ｭ蜍儖S・上せ繧ｱ繧ｸ繝･繝ｼ繝ｫ邂｡逅・ｭｰ隲悶・縲∬ｦ∽ｻｶ縺ｮ逕ｱ譚･縺ｨ蟆・擂諡｡蠑ｵ縺ｮ蜈･蜉帙→縺励※蜿ら・縺吶ｋ縲ゅ◆縺縺励」1縺ｮ繧ｳ繝ｼ繝峨ヽeview Queue縲｀anual繝｢繝ｼ繝峨∵立繝ｩ繝吶Ν縲∫黄逅・・縲｀igration縺ｯ螳溯｣・・蜉帙↓縺励↑縺・・
-| 譌ｧ隴ｰ隲悶・隕∫ｴ | 謇ｱ縺・| v2縺ｧ縺ｮ蜿肴丐 |
+本書は正本4ファイルの内容を具体化する。正本と矛盾する場合は本書を修正し、正本を自動的に上書きしない。
+
+## 3. 「Googleスケジュール管理システム」旧議論の取り込み
+
+旧Google Workspace個人業務OS／スケジュール管理議論は、要件の由来と将来拡張の入力として参照する。ただし、v1のコード、Review Queue、Manualモード、旧ラベル、物理列、Migrationは実装入力にしない。
+
+| 旧議論の要素 | 扱い | v2での反映 |
 | --- | --- | --- |
-| Sheets繧探ask/TODO縺ｮ豁｣譛ｬ縺ｨ縺吶ｋ | 謗｡逕ｨ | 迴ｾ陦後・`繧ｿ繧ｹ繧ｯ荳隕ｧ`縺ｸ邨ｱ蜷・|
-| Calendar繧剃ｼ夊ｭｰ繝ｻ蜃ｺ蠑ｵ繝ｻ螳滉ｽ懈･ｭ譎る俣繝ｻ驥崎ｦ∵悄髯舌↓髯仙ｮ壹☆繧・| 謗｡逕ｨ | 蛻晄悄v2縺梧嶌縺上・縺ｯ蟆ら畑`閾ｪ蜍墓悄譌･邂｡逅・縺縺代ゅΓ繧､繝ｳCalendar縺ｯ螟画峩縺励↑縺・|
-| 驥崎ｦ∵悄髯舌→騾壼ｸｸTask繧貞・髮｢縺吶ｋ | 謗｡逕ｨ | 豁｣蠑乗悄髯舌°縺､蠖ｱ髻ｿ螟ｧ縺ｮTask縺縺醍ｵよ律Event |
-| Stable Thread Key縺ｧ繧ｹ繝ｬ繝・ラ譖ｴ譁ｰ繧定ｿｽ霍｡縺吶ｋ | 謗｡逕ｨ | 蜈磯ｭMessage ID繧剃ｽｿ逕ｨ |
-| 譛滄剞螟画峩繝ｻ蜿匁ｶ医・螳御ｺ・・霑比ｿ｡蠕・■繝ｻ霑ｽ蜉萓晞ｼ繧定ｿｽ霍｡縺吶ｋ | 謗｡逕ｨ | AI Action縺ｨpending review縺ｧ螳溯｣・|
-| Review Queue繧貞挨繧ｿ繝悶↓縺吶ｋ | 鄂ｮ謠帶ｸ医∩ | `繧ｿ繧ｹ繧ｯ荳隕ｧ`縺ｮ蜷御ｸ陦後〒蜿怜・繝ｻ蜊ｴ荳・|
-| Manual繝｢繝ｼ繝峨ｒ迢ｬ遶矩°逕ｨ縺吶ｋ | 鄂ｮ謠帶ｸ医∩ | AI閾ｪ蜍募・鬘槭→莠ｺ髢楢｣懈ｭ｣縺ｮ蜊倅ｸ讒区・縲・ock縺ｯ蜿怜・隧ｦ鬨鍋畑Adapter |
-| OS/邉ｻGmail繝ｩ繝吶Ν | 鄂ｮ謠帶ｸ医∩ | 豁｣蠑・繝ｩ繝吶Ν縺ｸ邨ｱ荳 |
-| Workspace Studio繧剃ｽｿ縺・| 荳肴治逕ｨ | Apps Script荳ｭ蠢・|
-| 菴懈･ｭ繝悶Ο繝・け閾ｪ蜍募酔譛・| 蠕檎ｶ壽僑蠑ｵ | 蛻晄悄Phase 1・・縺ｧ縺ｯ螳溯｣・＠縺ｪ縺・よ・遉ｺ謫堺ｽ懷梛縺ｧ蜀崎ｨｭ險・|
-| 譌･谺｡繝悶Μ繝ｼ繝輔・騾ｱ谺｡繝ｬ繝薙Η繝ｼ | 蠕檎ｶ壽僑蠑ｵ | Task縺ｨCalendar縺ｮread-only髮・ｨ医→縺励※Phase 9蛟呵｣・|
-| 髱｢隲・燕繝悶Μ繝ｼ繝輔・髱｢隲・ｾ瑚ｭｰ莠矩鹸/TODO/霑比ｿ｡繝峨Λ繝輔ヨ | 蠕檎ｶ壽僑蠑ｵ | 閾ｪ蜍暮∽ｿ｡繝ｻ豁｣譛ｬ荳頑嶌縺阪ｒ遖∵ｭ｢縺励◆迢ｬ遶九Δ繧ｸ繝･繝ｼ繝ｫ縺ｨ縺励※讀懆ｨ・|
-| Projects / Meetings / Docs / Drive / NotebookLM騾｣謳ｺ | 蠕檎ｶ壽僑蠑ｵ | 蛻晄悄繧ｹ繧ｭ繝ｼ繝槭∈豺ｷ蝨ｨ縺輔○縺壹∝ｮ牙ｮ壼ｾ後↓蛻･Decision縺ｧ謗｡蜷ｦ繧堤｢ｺ螳・|
+| SheetsをTask/TODOの正本とする | 採用 | 現行の`タスク一覧`へ統合 |
+| Calendarを会議・出張・実作業時間・重要期限に限定する | 採用 | 初期v2が書くのは専用`自動期日管理`だけ。メインCalendarは変更しない |
+| 重要期限と通常Taskを分離する | 採用 | 正式期限かつ影響大のTaskだけ終日Event |
+| Stable Thread Keyでスレッド更新を追跡する | 採用 | 先頭Message IDを使用 |
+| 期限変更・取消・完了・返信待ち・追加依頼を追跡する | 採用 | AI Actionとpending reviewで実装 |
+| Review Queueを別タブにする | 置換済み | `タスク一覧`の同一行で受入・却下 |
+| Manualモードを独立運用する | 置換済み | AI自動分類と人間補正の単一構成。Mockは受入試験用Adapter |
+| OS/系Gmailラベル | 置換済み | 正式7ラベルへ統一 |
+| Workspace Studioを使う | 不採用 | Apps Script中心 |
+| 作業ブロック自動同期 | 後続拡張 | 初期Phase 1～8では実装しない。明示操作型で再設計 |
+| 日次ブリーフ・週次レビュー | 後続拡張 | TaskとCalendarのread-only集計としてPhase 9候補 |
+| 面談前ブリーフ・面談後議事録/TODO/返信ドラフト | 後続拡張 | 自動送信・正本上書きを禁止した独立モジュールとして検討 |
+| Projects / Meetings / Docs / Drive / NotebookLM連携 | 後続拡張 | 初期スキーマへ混在させず、安定後に別Decisionで採否を確定 |
 
-蛻晄悄v2縺ｮ譬ｸ蠢・・繝｡繝ｼ繝ｫ襍ｷ轤ｹTask縺ｨ驥崎ｦ∵悄髯舌〒縺ゅｋ縲ゆｼ夊ｭｰ縲∝・蠑ｵ縲∽ｽ懈･ｭ繝悶Ο繝・け縲∵律谺｡繝ｻ騾ｱ谺｡繝ｬ繝薙Η繝ｼ縲・擇隲・燕蠕悟・逅・・謐ｨ縺ｦ縺壹↓蠕檎ｶ壽僑蠑ｵ螂醍ｴ・∈蛻・ｊ蜃ｺ縺吶ゅ％繧後↓繧医ｊ縲∝・譛溽ｸｦ繝輔Ο繝ｼ繧貞ｰ上＆縺丈ｿ昴■縺ｪ縺後ｉ縲√せ繧ｱ繧ｸ繝･繝ｼ繝ｫ邂｡逅・す繧ｹ繝・Β蜈ｨ菴薙∈諡｡蠑ｵ縺ｧ縺阪ｋ縲・
-## 4. 蛻晄悄v2縺ｮ遽・峇
+初期v2の核心はメール起点Taskと重要期限である。会議、出張、作業ブロック、日次・週次レビュー、面談前後処理は捨てずに後続拡張契約へ切り出す。これにより、初期縦フローを小さく保ちながら、スケジュール管理システム全体へ拡張できる。
+
+## 4. 初期v2の範囲
 
 ### 4.1 In Scope
 
-- 譁ｰ縺励＞遨ｺ縺ｮGoogle Sheets縺九ｉ縺ｮ谿ｵ髫守噪繧ｻ繝・ヨ繧｢繝・・
-- 蛻ｩ逕ｨ閠・髄縺・繧ｿ繝悶・撼陦ｨ遉ｺ邂｡逅・繧ｿ繝・- 豁｣蠑秀mail繝ｩ繝吶Ν7蛟・- Gmail Message ID縺ｫ繧医ｋ譛ｪ蜃ｦ逅・ｮ｡逅・- `謇句虚/蜿冶ｾｼ`莉倥″譛譁ｰ繝｡繝ｼ繝ｫ縺ｮ髯仙ｮ壼叙霎ｼ
+- 新しい空のGoogle Sheetsからの段階的セットアップ
+- 利用者向け6タブ、非表示管理4タブ
+- 正式Gmailラベル7個
+- Gmail Message IDによる未処理管理
+- `手動/取込`付き最新メールの限定取込
 - Mock AI Adapter
 - Provider-neutral AI Adapter interface
-- 1繝｡繝ｼ繝ｫ縺九ｉ隍・焚Action繧呈歓蜃ｺ縺ｧ縺阪ｋ`actions[]`
-- `繧ｿ繧ｹ繧ｯ荳隕ｧ`縺ｸ縺ｮ蜀ｪ遲疫psert
-- 譁ｰ隕丞呵｣懊→譌｢蟄伜､画峩蛟呵｣懊・蜷御ｸ陦後Ξ繝薙Η繝ｼ
-- 譏守､ｺ譛滄剞・乗治逕ｨ貂医∩逶ｸ蟇ｾ譛滄剞縺ｨAI謗ｨ貂ｬ譛滄剞縺ｮ蛻・屬
-- 蟆ら畑Calendar`閾ｪ蜍墓悄譌･邂｡逅・縺ｸ縺ｮ驥崎ｦ∵悄髯仙酔譛・- 5蛻・・繝ｼ繝ｪ繝ｳ繧ｰ縺ｮ髢句ｧ九・蛛懈ｭ｢
-- Lock縲《oft execution budget縲…heckpoint縲〉etry縲．ead Letter
-- Quick Diagnostic縲∵・遉ｺ螳溯｡後・Dashboard譖ｴ譁ｰ
-- 譌･譛ｬ隱朸I縲∬恭隱槭・蜀・ΚID繝ｻEnum繝ｻ險ｭ螳壹く繝ｼ
-- 髱樊ｩ溷ｯ・・繝・せ繝・arness縺ｨ蟆主・謇矩・
+- 1メールから複数Actionを抽出できる`actions[]`
+- `タスク一覧`への冪等upsert
+- 新規候補と既存変更候補の同一行レビュー
+- 明示期限／採用済み相対期限とAI推測期限の分離
+- 専用Calendar`自動期日管理`への重要期限同期
+- 5分ポーリングの開始・停止
+- Lock、soft execution budget、checkpoint、retry、Dead Letter
+- Quick Diagnostic、明示実行のDashboard更新
+- 日本語UI、英語の内部ID・Enum・設定キー
+- 非機密のテストHarnessと導入手順
+
 ### 4.2 Out of Scope
 
-- v1.x繧ｳ繝ｼ繝峨・繧ｳ繝斐・縲√ヱ繝・メ縲∫峩謗･Migration
-- v1繧ｷ繝ｼ繝医・譛ｬ逡ｪ蛻ｩ逕ｨ
-- 隕∫｢ｺ隱榊ｰら畑繧ｿ繝・- 迢ｬ遶九＠縺櫪anual繝｢繝ｼ繝・- 繝｡繝ｼ繝ｫ騾∽ｿ｡縲∬ｿ比ｿ｡縲∬ｻ｢騾・- 繝｡繝ｼ繝ｫ蜑企勁縲√い繝ｼ繧ｫ繧､繝悶∵里隱ｭ繝ｻ譛ｪ隱ｭ螟画峩
-- 豺ｻ莉倥ヵ繧｡繧､繝ｫ隗｣譫・- 騾∽ｿ｡貂医∩繝｡繝ｼ繝ｫ縺ｮ蟶ｸ譎ょｷ｡蝗・- AI縺ｫ繧医ｋ辟｡謇ｿ隱阪・螳御ｺ・∝叙豸医∵悄髯仙炎髯､縲・㍾隕∝､画峩
-- 繝｡繧､繝ｳCalendar荳翫・莨夊ｭｰ縲∝・蠑ｵ縲∽ｽ懈･ｭ繝悶Ο繝・け縺ｮ閾ｪ蜍募､画峩
-- Drive繝輔ぃ繧､繝ｫ蜑企勁縲∫ｧｻ蜍輔∝・譛画ｨｩ髯仙､画峩
-- Docs豁｣譛ｬ縺ｮ辟｡謇ｿ隱堺ｸ頑嶌縺・- NotebookLM繝√Ε繝・ヨ縺ｮ閾ｪ蜍募ｮ溯｡・- 邂｡逅・・ｨｩ髯舌↓繧医ｋ蜈ｨ蛻ｩ逕ｨ閠・mail髮・ｸｭ隱ｭ蜿・- API繧ｭ繝ｼ縲｝assword縲》oken縲∽ｼ夂､ｾ譛ｪ蜈ｬ陦ｨ諠・ｱ縲∝倶ｺｺ諠・ｱ縺ｮGitHub菫晏ｭ・
-## 5. 繧ｻ繧ｭ繝･繝ｪ繝・ぅ縺ｨ驕狗畑蠅・阜
+- v1.xコードのコピー、パッチ、直接Migration
+- v1シートの本番利用
+- 要確認専用タブ
+- 独立したManualモード
+- メール送信、返信、転送
+- メール削除、アーカイブ、既読・未読変更
+- 添付ファイル解析
+- 送信済みメールの常時巡回
+- AIによる無承認の完了、取消、期限削除、重要変更
+- メインCalendar上の会議、出張、作業ブロックの自動変更
+- Driveファイル削除、移動、共有権限変更
+- Docs正本の無承認上書き
+- NotebookLMチャットの自動実行
+- 管理者権限による全利用者Gmail集中読取
+- APIキー、password、token、会社未公表情報、個人情報のGitHub保存
 
-1. 蜷・茜逕ｨ閠・′閾ｪ蛻・・Google Workspace繧｢繧ｫ繧ｦ繝ｳ繝医〒OAuth繧呈価隱阪☆繧九・2. installable trigger縺ｯ菴懈・閠・・讓ｩ髯舌〒蜍輔￥縺溘ａ縲∝推蛻ｩ逕ｨ閠・・繧ｳ繝斐・縺斐→縺ｫ菴懈・縺吶ｋ縲・3. API繧ｭ繝ｼ縺ｯSheet縲√さ繝ｼ繝峨；itHub縲．ocs縺ｸ菫晏ｭ倥＠縺ｪ縺・・4. Script Properties縺ｸ縺ｮ遘伜ｯ・ｿ晏ｭ倥・莨夂､ｾ隕冗ｨ九〒險ｱ蜿ｯ縺輔ｌ縺溷ｴ蜷医□縺代→縺吶ｋ縲ゆｼ夂､ｾ邂｡逅・・Google Cloud隱崎ｨｼ縺ｾ縺溘・Proxy繧貞━蜈医☆繧九・5. 繝ｭ繧ｰ縺ｸ繝｡繝ｼ繝ｫ譛ｬ譁・∵ｷｻ莉倥∬ｪ崎ｨｼ諠・ｱ縲∝ｮ悟・縺ｪAI prompt縲？TTP Authorization header繧剃ｿ晏ｭ倥＠縺ｪ縺・・6. GitHub縺ｫ縺ｯ螳滄圀縺ｮSpreadsheet ID縲，alendar ID縲；mail Message ID縲∝・驛ｨURL繧剃ｿ晏ｭ倥＠縺ｪ縺・・7. 閾ｪ蜍募・逅・・蛻晄悄蛟､蛛懈ｭ｢縲・ock蜿怜・蠕後∵・遉ｺ逧・↑`startAutomation()`縺縺代〒髢句ｧ九☆繧九・8. 譌｢蟄倬撼遨ｺSheet繧ё1迺ｰ蠅・ｒ讀懷・縺励◆蝣ｴ蜷医∝炎髯､繝ｻ螟画鋤縺帙★蛛懈ｭ｢縺吶ｋ縲・9. 螳蘗I髢句ｧ句燕縺ｫ縲￣rovider縲∬ｪ崎ｨｼ縲∬ｪｲ驥代∽ｿ晄戟縲∝ｭｦ鄙貞茜逕ｨ縲∫屮譟ｻ縲＾Auth/UrlFetch蛻ｶ髯舌ｒ遒ｺ隱阪☆繧九・10. 莨夂､ｾ隕冗ｨ九′譛ｬ譖ｸ繧医ｊ蜴ｳ縺励＞蝣ｴ蜷医∽ｼ夂､ｾ隕冗ｨ九ｒ蜆ｪ蜈医☆繧九・
-## 6. 蜈ｨ菴薙い繝ｼ繧ｭ繝・け繝√Ε
+## 5. セキュリティと運用境界
+
+1. 各利用者が自分のGoogle WorkspaceアカウントでOAuthを承認する。
+2. installable triggerは作成者の権限で動くため、各利用者のコピーごとに作成する。
+3. APIキーはSheet、コード、GitHub、Docsへ保存しない。
+4. Script Propertiesへの秘密保存は会社規程で許可された場合だけとする。会社管理のGoogle Cloud認証またはProxyを優先する。
+5. ログへメール本文、添付、認証情報、完全なAI prompt、HTTP Authorization headerを保存しない。
+6. GitHubには実際のSpreadsheet ID、Calendar ID、Gmail Message ID、内部URLを保存しない。
+7. 自動処理は初期値停止。Mock受入後、明示的な`startAutomation()`だけで開始する。
+8. 既存非空Sheetやv1環境を検出した場合、削除・変換せず停止する。
+9. 実AI開始前に、Provider、認証、課金、保持、学習利用、監査、OAuth/UrlFetch制限を確認する。
+10. 会社規程が本書より厳しい場合、会社規程を優先する。
+
+## 6. 全体アーキテクチャ
 
 ```text
 Gmail
-  笏懌楳 蜿嶺ｿ｡Message
-  笏懌楳 AI/* labels
-  笏披楳 謇句虚/* labels
-        竊・GmailGateway
-        竊・MessageStateRepository
-        竊・EmailPreprocessor
-        竊・AiAdapter
-        竊・TaskReviewPolicy
-        竊・TaskRepository 笏笏竊・繧ｿ繧ｹ繧ｯ荳隕ｧ
-        竊・Calendar Outbox
-        竊・CalendarSync 笏笏竊・閾ｪ蜍墓悄譌･邂｡逅・
-讓ｪ譁ｭ讖溯・:
+  ├─ 受信Message
+  ├─ AI/* labels
+  └─ 手動/* labels
+        ↓
+GmailGateway
+        ↓
+MessageStateRepository
+        ↓
+EmailPreprocessor
+        ↓
+AiAdapter
+        ↓
+TaskReviewPolicy
+        ↓
+TaskRepository ──→ タスク一覧
+        ↓
+Calendar Outbox
+        ↓
+CalendarSync ──→ 自動期日管理
+
+横断機能:
 Setup / Triggers / EditHandler / Logs / Dead Letter
 Diagnostics / Dashboard / TestHarness
 ```
 
-### 6.1 豁｣譛ｬ
+### 6.1 正本
 
-- Task縲∵ｭ｣蠑乗悄髯舌∫憾諷九∫｢ｺ隱咲ｵ先棡: `繧ｿ繧ｹ繧ｯ荳隕ｧ`
-- 繝｡繝ｼ繝ｫ蜴滓枚: Gmail
-- Message蜃ｦ逅・ｲ謐・ `繝｡繝ｼ繝ｫ迥ｶ諷義
-- Calendar蜑ｯ菴懃畑騾ｲ謐・ `蜷梧悄迥ｶ諷義
-- 驥崎ｦ∵悄髯舌・陦ｨ遉ｺ: `閾ｪ蜍墓悄譌･邂｡逅・
-- 繧ｳ繝ｼ繝峨￣rompt縲ヾchema: GitHub荳翫・Apps Script v2繧ｳ繝ｼ繝・- API隱崎ｨｼ: 莨夂､ｾ謇ｿ隱肴ｸ医∩譁ｹ蠑・- Calendar縺ｯTask豁｣譛ｬ縺ｧ縺ｯ縺ｪ縺・・alendar蛛ｴ縺ｮ謇句虚螟画峩繧探ask縺ｸ騾・酔譛溘＠縺ｪ縺・・
-## 7. Codex縺御ｽ懈・縺吶ｋ繝ｪ繝昴ず繝医Μ讒区・
+- Task、正式期限、状態、確認結果: `タスク一覧`
+- メール原文: Gmail
+- Message処理進捗: `メール状態`
+- Calendar副作用進捗: `同期状態`
+- 重要期限の表示: `自動期日管理`
+- コード、Prompt、Schema: GitHub上のApps Script v2コード
+- API認証: 会社承認済み方式
+- CalendarはTask正本ではない。Calendar側の手動変更をTaskへ逆同期しない。
+
+## 7. Codexが作成するリポジトリ構成
 
 ```text
 projects/google-workspace-personal-work-os/
-笏懌楳 V2_IMPLEMENTATION_SPEC.md
-笏懌楳 V2_CODEX_IMPLEMENTATION_PLAN.md
-笏披楳 apps-script-v2/
-   笏懌楳 00_Config.gs
-   笏懌楳 01_TypesAndSchemas.gs
-   笏懌楳 02_Setup.gs
-   笏懌楳 03_SheetBuilder.gs
-   笏懌楳 04_MessageStateRepository.gs
-   笏懌楳 05_GmailGateway.gs
-   笏懌楳 06_EmailPreprocessor.gs
-   笏懌楳 07_AiAdapter.gs
-   笏懌楳 08_TaskRepository.gs
-   笏懌楳 09_TaskReviewPolicy.gs
-   笏懌楳 10_CalendarSync.gs
-   笏懌楳 11_EditHandler.gs
-   笏懌楳 12_Triggers.gs
-   笏懌楳 13_LogAndDeadLetter.gs
-   笏懌楳 14_Migrations.gs
-   笏懌楳 15_Dashboard.gs
-   笏懌楳 16_Diagnostics.gs
-   笏懌楳 17_Utilities.gs
-   笏懌楳 18_Worker.gs
-   笏懌楳 99_TestHarness.gs
-   笏懌楳 Menu.gs
-   笏懌楳 appsscript.json
-   笏懌楳 README.md
-   笏披楳 .clasp.json.example
+├─ V2_IMPLEMENTATION_SPEC.md
+├─ V2_CODEX_IMPLEMENTATION_PLAN.md
+└─ apps-script-v2/
+   ├─ 00_Config.gs
+   ├─ 01_TypesAndSchemas.gs
+   ├─ 02_Setup.gs
+   ├─ 03_SheetBuilder.gs
+   ├─ 04_MessageStateRepository.gs
+   ├─ 05_GmailGateway.gs
+   ├─ 06_EmailPreprocessor.gs
+   ├─ 07_AiAdapter.gs
+   ├─ 08_TaskRepository.gs
+   ├─ 09_TaskReviewPolicy.gs
+   ├─ 10_CalendarSync.gs
+   ├─ 11_EditHandler.gs
+   ├─ 12_Triggers.gs
+   ├─ 13_LogAndDeadLetter.gs
+   ├─ 14_Migrations.gs
+   ├─ 15_Dashboard.gs
+   ├─ 16_Diagnostics.gs
+   ├─ 17_Utilities.gs
+   ├─ 18_Worker.gs
+   ├─ 99_TestHarness.gs
+   ├─ Menu.gs
+   ├─ appsscript.json
+   ├─ README.md
+   └─ .clasp.json.example
 ```
 
-`.clasp.json.example`縺ｫ縺ｯplaceholder縺縺代ｒ鄂ｮ縺阪∝ｮ滄圀縺ｮScript ID繧偵さ繝溘ャ繝医＠縺ｪ縺・ょ・譛溽沿縺ｯApps Script V8 JavaScript縺ｨJSDoc繧剃ｽｿ逕ｨ縺励ゝypeScript縺ｮbuild step縺ｯ蟆主・縺励↑縺・・
-## 8. 繝｢繧ｸ繝･繝ｼ繝ｫ雋ｬ蜍・
-| 繝輔ぃ繧､繝ｫ | 雋ｬ蜍・| 遖∵ｭ｢莠矩・|
+`.clasp.json.example`にはplaceholderだけを置き、実際のScript IDをコミットしない。初期版はApps Script V8 JavaScriptとJSDocを使用し、TypeScriptのbuild stepは導入しない。
+
+## 8. モジュール責務
+
+| ファイル | 責務 | 禁止事項 |
 | --- | --- | --- |
-| 00_Config.gs | 螳壽焚縲∬ｨｭ螳壹く繝ｼ縲・num縲∝・譛溷､ | 螟夜Κ繧ｵ繝ｼ繝薙せ蜻ｼ蜃ｺ縺励ヾheet譖ｸ霎ｼ縺ｿ |
-| 01_TypesAndSchemas.gs | JSDoc蝙九、I Schema縲∵､懆ｨｼ縲∬｡ｨ遉ｺ蛟､繝槭ャ繝斐Φ繧ｰ | 讌ｭ蜍吝・逅・|
-| 02_Setup.gs | setupSystem縲…ontinueSetup縲」1讀懷・縲∵ｮｵ髫主宛蠕｡ | Runtime螳溯｡後∵里蟄倥ョ繝ｼ繧ｿ蜑企勁 |
-| 03_SheetBuilder.gs | Sheet/蛻・蜈･蜉幄ｦ丞援/譖ｸ蠑・髱櫁｡ｨ遉ｺ險ｭ螳・| 繝｡繝ｼ繝ｫ蜃ｦ逅・°繧峨・蜻ｼ蜃ｺ縺・|
-| 04_MessageStateRepository.gs | Message State縲…laim縲…heckpoint縲〉etry | Gmail讀懃ｴ｢縲ゝask譖ｴ譁ｰ |
-| 05_GmailGateway.gs | 讀懃ｴ｢縲｀essage/Thread蜿門ｾ励、I繝ｩ繝吶Ν蜷梧悄 | Task/Calendar逶ｴ謗･譖ｸ霎ｼ縺ｿ |
-| 06_EmailPreprocessor.gs | 譛ｬ譁・ｭ｣隕丞喧縲・聞縺募宛髯舌√せ繝ｬ繝・ラ譁・ц逕滓・ | AI騾壻ｿ｡縲ヾheet逶ｴ謗･譖ｸ霎ｼ縺ｿ |
-| 07_AiAdapter.gs | Mock縺ｨProvider-neutral interface縲∝ｿ懃ｭ疲､懆ｨｼ | Sheets逶ｴ謗･謫堺ｽ懊∫ｧ伜ｯ・ュ蝣ｱ繝ｭ繧ｰ |
-| 08_TaskRepository.gs | Task index縲∬ｫ也炊遨ｺ陦後∝・遲疫psert縲〉ow version | Gmail讀懃ｴ｢縲，alendar逶ｴ謗･謫堺ｽ・|
-| 09_TaskReviewPolicy.gs | 閾ｪ蜍慕｢ｺ螳壹∬ｦ∫｢ｺ隱阪∝女蜈･縲∝唆荳九∫ｫｶ蜷亥愛螳・| 螟夜Κ繧ｵ繝ｼ繝薙せ謗･邯・|
-| 10_CalendarSync.gs | 蟆ら畑Calendar縺ｮcreate/update/delete縲＾utbox蜃ｦ逅・| Task豁｣譛ｬ縺ｮ迢ｬ閾ｪ螟画峩縲√Γ繧､繝ｳCalendar螟画峩 |
-| 11_EditHandler.gs | 蛻ｩ逕ｨ閠・ｷｨ髮・［anual_fields縲∝愛譁ｭ驕ｩ逕ｨ縲＾utbox謚募・ | Gmail/AI蜻ｼ蜃ｺ縺励・㍾縺・・陦悟・逅・|
-| 12_Triggers.gs | installable edit縲・蛻・orker縲・幕蟋九・蛛懈ｭ｢ | 莉門茜逕ｨ閠・rigger縺ｮ蜑企勁 |
-| 13_LogAndDeadLetter.gs | 讒矩蛹悶Ο繧ｰ縲〉edaction縲〉etry縲．ead Letter | 譛ｬ譁・・token繝ｻAPI key縺ｮ菫晏ｭ・|
-| 14_Migrations.gs | 蟆・擂縺ｮv2 schema migration縺ｮ譫縺ｮ縺ｿ | v1竊致2螟画鋤縲∝・譛蘖hase縺ｧ縺ｮ螳溯｣・|
-| 15_Dashboard.gs | 譏守､ｺ螳溯｡後・髮・ｨ医∬ｻｽ驥剰｡ｨ遉ｺ | Worker譛ｫ蟆ｾ縺九ｉ縺ｮ閾ｪ蜍墓峩譁ｰ |
-| 16_Diagnostics.gs | Quick/Deep Diagnostic | 菫ｮ蠕ｩ縲∝・蜷梧悄縲；mail蜈ｨ讀懃ｴ｢ |
-| 17_Utilities.gs | 譌･莉倥”ash縲！D縲〉edaction縲∵凾髢謎ｺ育ｮ・| 讌ｭ蜍吝崋譛峨・蜑ｯ菴懃畑 |
-| 18_Worker.gs | 蜃ｦ逅・・´ock縲｜udget縲…heckpoint | 繝ｬ繧､繧｢繧ｦ繝井ｿｮ蠕ｩ |
-| 99_TestHarness.gs | Unit/Integration test縲《ynthetic fixture | 螳溘Γ繝ｼ繝ｫ縲∝ｮ櫑D縲∫ｧ伜ｯ・ュ蝣ｱ |
-| Menu.gs | 譌･譛ｬ隱槭き繧ｹ繧ｿ繝繝｡繝九Η繝ｼ縲∝・髢菊ntry point | 讌ｭ蜍吶Ο繧ｸ繝・け縺ｮ驥崎､・|
-| appsscript.json | V8縲》imezone縲∝ｿ・ｦ∵怙蟆衆Auth scope | 荳崎ｦ√↑鬮伜ｺｦ讓ｩ髯・|
+| 00_Config.gs | 定数、設定キー、Enum、初期値 | 外部サービス呼出し、Sheet書込み |
+| 01_TypesAndSchemas.gs | JSDoc型、AI Schema、検証、表示値マッピング | 業務処理 |
+| 02_Setup.gs | setupSystem、continueSetup、v1検出、段階制御 | Runtime実行、既存データ削除 |
+| 03_SheetBuilder.gs | Sheet/列/入力規則/書式/非表示設定 | メール処理からの呼出し |
+| 04_MessageStateRepository.gs | Message State、claim、checkpoint、retry | Gmail検索、Task更新 |
+| 05_GmailGateway.gs | 検索、Message/Thread取得、AIラベル同期 | Task/Calendar直接書込み |
+| 06_EmailPreprocessor.gs | 本文正規化、長さ制限、スレッド文脈生成 | AI通信、Sheet直接書込み |
+| 07_AiAdapter.gs | MockとProvider-neutral interface、応答検証 | Sheets直接操作、秘密情報ログ |
+| 08_TaskRepository.gs | Task index、論理空行、冪等upsert、row version | Gmail検索、Calendar直接操作 |
+| 09_TaskReviewPolicy.gs | 自動確定、要確認、受入、却下、競合判定 | 外部サービス接続 |
+| 10_CalendarSync.gs | 専用Calendarのcreate/update/delete、Outbox処理 | Task正本の独自変更、メインCalendar変更 |
+| 11_EditHandler.gs | 利用者編集、manual_fields、判断適用、Outbox投入 | Gmail/AI呼出し、重い全行処理 |
+| 12_Triggers.gs | installable edit、5分worker、開始・停止 | 他利用者triggerの削除 |
+| 13_LogAndDeadLetter.gs | 構造化ログ、redaction、retry、Dead Letter | 本文・token・API keyの保存 |
+| 14_Migrations.gs | 将来のv2 schema migrationの枠のみ | v1→v2変換、初期Phaseでの実装 |
+| 15_Dashboard.gs | 明示実行の集計、軽量表示 | Worker末尾からの自動更新 |
+| 16_Diagnostics.gs | Quick/Deep Diagnostic | 修復、全同期、Gmail全検索 |
+| 17_Utilities.gs | 日付、hash、ID、redaction、時間予算 | 業務固有の副作用 |
+| 18_Worker.gs | 処理順、Lock、budget、checkpoint | レイアウト修復 |
+| 99_TestHarness.gs | Unit/Integration test、synthetic fixture | 実メール、実ID、秘密情報 |
+| Menu.gs | 日本語カスタムメニュー、公開entry point | 業務ロジックの重複 |
+| appsscript.json | V8、timezone、必要最小OAuth scope | 不要な高度権限 |
 
-## 9. 繧ｳ繝ｼ繝・ぅ繝ｳ繧ｰ隕冗ｴ・
-- 迚ｩ逅・・逡ｪ蜿ｷ繧呈･ｭ蜍吶Ο繧ｸ繝・け縺ｸ逶ｴ譖ｸ縺阪＠縺ｪ縺・り｡・縺ｮ蜀・Κ蛻悠D縺九ｉMap繧剃ｽ懊ｋ縲・- 1螳溯｡悟・縺ｧ險ｭ螳壹ゝask index縲｀essage State繧貞次蜑・蝗槭□縺題ｪｭ縺ｿ霎ｼ繧縲・- Sheet蜈･蜃ｺ蜉帙・驟榊・蛹悶＠縲～getValues()`縺ｨ`setValues()`繧偵∪縺ｨ繧√ｋ縲・- `SpreadsheetApp.flush()`縺ｯSchema菴懈・蠕檎ｭ峨・蠢・ｦ√↑蠅・阜縺縺代〒菴ｿ縺・・- 螟夜Κ繧ｵ繝ｼ繝薙せ縺ｯGateway/Adapter邨檎罰縺ｨ縺励ヽepository縺九ｉ逶ｴ謗･蜻ｼ縺ｰ縺ｪ縺・・- 譌･莉倩ｨ育ｮ励・`Asia/Tokyo`繧呈・遉ｺ縺励゛SON縺ｧ縺ｯ`YYYY-MM-DD`縺ｾ縺溘・ISO 8601繧剃ｽｿ縺・・- `Date`縺ｮ證鈴ｻ冲imezone螟画鋤繧帝∩縺代ｋ縲らｵよ律譛滄剞縺ｯ蟷ｴ譛域律繧呈・遉ｺ逧・↓逕滓・縺吶ｋ縲・- 萓句､悶・`AppError(code, stage, retryable, safeMessage, cause)`縺ｸ豁｣隕丞喧縺吶ｋ縲・- `safeMessage`縺ｫ譛ｬ譁・》oken縲∝ｮ悟・URL query縲？TTP body繧貞性繧√↑縺・・- 蜈ｬ髢菊ntry point莉･螟悶・讖溯・蛻･Object縺ｾ縺溘・荳諢上↑髢｢謨ｰ蜷阪ｒ菴ｿ縺・“lobal蜷崎｡晉ｪ√ｒ驕ｿ縺代ｋ縲・- Runtime荳ｭ縺ｫSchema縲∝・蜉幄ｦ丞援縲∵嶌蠑上∝・鬆・￣rotection繧剃ｿｮ蠕ｩ縺励↑縺・・- Script縺ｫ繧医ｋSheet譖ｴ譁ｰ縺ｯedit trigger繧貞・逋ｺ轣ｫ縺輔○縺ｪ縺・燕謠舌〒繧ゅ∝・逅・・蜀ｪ遲画ｧ繧堤ｶｭ謖√☆繧九・- 繝・せ繝・ixture縺ｯ譫ｶ遨ｺ縺ｮ豌丞錐縲∽ｼ夂､ｾ縲√Γ繝ｼ繝ｫ縲！D縺縺代ｒ菴ｿ縺・・
-## 10. Google Sheets迚ｩ逅・ｧ矩
+## 9. コーディング規約
 
-### 10.1 蜈ｱ騾壹Ν繝ｼ繝ｫ
+- 物理列番号を業務ロジックへ直書きしない。行1の内部列IDからMapを作る。
+- 1実行内で設定、Task index、Message Stateを原則1回だけ読み込む。
+- Sheet入出力は配列化し、`getValues()`と`setValues()`をまとめる。
+- `SpreadsheetApp.flush()`はSchema作成後等の必要な境界だけで使う。
+- 外部サービスはGateway/Adapter経由とし、Repositoryから直接呼ばない。
+- 日付計算は`Asia/Tokyo`を明示し、JSONでは`YYYY-MM-DD`またはISO 8601を使う。
+- `Date`の暗黙timezone変換を避ける。終日期限は年月日を明示的に生成する。
+- 例外は`AppError(code, stage, retryable, safeMessage, cause)`へ正規化する。
+- `safeMessage`に本文、token、完全URL query、HTTP bodyを含めない。
+- 公開entry point以外は機能別Objectまたは一意な関数名を使い、global名衝突を避ける。
+- Runtime中にSchema、入力規則、書式、列順、Protectionを修復しない。
+- ScriptによるSheet更新はedit triggerを再発火させない前提でも、処理の冪等性を維持する。
+- テストfixtureは架空の氏名、会社、メール、IDだけを使う。
 
-- 陦・: 闍ｱ隱槫・驛ｨ蛻悠D縲る撼陦ｨ遉ｺ繝ｻ菫晁ｭｷ
-- 陦・: 譌･譛ｬ隱櫁ｦ句・縺励ょ崋螳・- 陦・莉･髯・ 繝・・繧ｿ
-- `繧ｿ繧ｹ繧ｯ荳隕ｧ`蛻晄悄100陦・- `險ｭ螳啻蛻晄悄50陦・- 螻･豁ｴ繝ｻ邂｡逅・ち繝門・譛・00陦・- 陦御ｸ崎ｶｳ譎ゅ・100陦悟腰菴阪〒霑ｽ蜉
-- 遨ｺ陦後∈Boolean蛟､繧剃ｺ句燕謚募・縺励↑縺・- Checkbox縺ｯData Validation縺縺代ｒ險ｭ螳壹＠縲∝､縺ｯ螳溘ョ繝ｼ繧ｿ陦御ｽ懈・譎ゅ↓蜈･繧後ｋ
-- Task縺ｮ隲也炊陦後・`task_id`縺ｾ縺溘・`origin_key`縺後≠繧玖｡後□縺・- Task霑ｽ險倅ｽ咲ｽｮ縺ｫ`getLastRow()`繧剃ｽｿ繧上↑縺・- 荳ｻ繧ｭ繝ｼ蛻励・譛蛻昴・隲也炊遨ｺ陦後ｒ菴ｿ縺・- 邂｡逅・・縺ｨ邂｡逅・ち繝悶・蜴溷援髱櫁｡ｨ遉ｺ繝ｻ菫晁ｭｷ
-- 螟ｧ驥上・蛻怜腰菴恒rotection繧剃ｽ懈・縺励↑縺・
-### 10.2 蛻ｩ逕ｨ閠・髄縺代ち繝・
+## 10. Google Sheets物理構造
+
+### 10.1 共通ルール
+
+- 行1: 英語内部列ID。非表示・保護
+- 行2: 日本語見出し。固定
+- 行3以降: データ
+- `タスク一覧`初期100行
+- `設定`初期50行
+- 履歴・管理タブ初期100行
+- 行不足時は100行単位で追加
+- 空行へBoolean値を事前投入しない
+- CheckboxはData Validationだけを設定し、値は実データ行作成時に入れる
+- Taskの論理行は`task_id`または`origin_key`がある行だけ
+- Task追記位置に`getLastRow()`を使わない
+- 主キー列の最初の論理空行を使う
+- 管理列と管理タブは原則非表示・保護
+- 大量の列単位Protectionを作成しない
+
+### 10.2 利用者向けタブ
+
 ```text
-繝繝・す繝･繝懊・繝・繧ｿ繧ｹ繧ｯ荳隕ｧ
-險ｭ螳・蜃ｦ逅・ｱ･豁ｴ
-繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡・菴ｿ縺・婿
+ダッシュボード
+タスク一覧
+設定
+処理履歴
+エラー・再実行
+使い方
 ```
 
-### 10.3 髱櫁｡ｨ遉ｺ邂｡逅・ち繝・
+### 10.3 非表示管理タブ
+
 ```text
-繝｡繝ｼ繝ｫ迥ｶ諷・繧ｷ繧ｹ繝・Β險ｭ螳・繝励Ο繝ｳ繝励ヨ迚育ｮ｡逅・蜷梧悄迥ｶ諷・```
+メール状態
+システム設定
+プロンプト版管理
+同期状態
+```
 
-### 10.4 繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜈ｨ蛻・
-| 蜀・ΚID | 譌･譛ｬ隱櫁｡ｨ遉ｺ | 蝙・| 邱ｨ髮・ｸｻ菴・| 蛻晄悄蛟､ | 讀懆ｨｼ繝ｻ諢丞袖 | 陦ｨ遉ｺ |
+### 10.4 タスク一覧の全列
+
+| 内部ID | 日本語表示 | 型 | 編集主体 | 初期値 | 検証・意味 | 表示 |
 | --- | --- | --- | --- | --- | --- | --- |
-| needs_review | 隕∫｢ｺ隱・| Boolean | 閾ｪ蜍・| 螳溘ョ繝ｼ繧ｿ陦後・縺ｿFALSE/TRUE | FALSE縺ｪ繧…7746 tokens truncated…stic隴ｦ蜻翫り・蜍穂ｸ頑嶌縺阪・谺｡縺ｮ豁｣隕乗峩譁ｰ譎・- 1蝗槭・隍・焚繧ｻ繝ｫedit縺ｯ隧ｲ蠖楢｡後ｒ驥崎､・賜髯､縺励※蜃ｦ逅・- Sheet-only縺ｮ豁｣隕丞喧縺ｨDecision驕ｩ逕ｨ縺ｯedit蜃ｦ逅・・縺ｧ蜿ｯ閭ｽ
-- Gmail縲、I縲，alendar繧弾dit蜃ｦ逅・°繧臥峩謗･蜻ｼ縺ｰ縺ｪ縺・- Calendar螟画峩縺ｯ`蜷梧悄迥ｶ諷義縺ｸOutbox謚募・
-- `row_version`縺ｨ`updated_at`繧呈峩譁ｰ
-- Script譖ｸ霎ｼ縺ｿ縺ｫ繧医ｋtrigger髱樒匱轣ｫ縺ｫ萓晏ｭ倥＠縺吶℃縺壹∝・逅・・蜀ｪ遲峨↓縺吶ｋ
+| needs_review | 要確認 | Boolean | 自動 | 実データ行のみFALSE/TRUE | FALSEなら通常。TRUEなら判断待ち | 可視 |
+| decision | 判断 | Enum | 利用者 | 未選択 | 未選択 / 受入 / 却下 | 可視 |
+| status | 対応状況 | Enum | 利用者 | 未対応または要確認 | 要確認 / 未対応 / 対応中 / 返信待ち / 完了 / 対象外 / 取消 | 可視 |
+| completed | 完了 | Boolean | 利用者 | FALSE | TRUEでstatus=完了へ正規化 | 可視 |
+| excluded | 対象外 | Boolean | 利用者 | FALSE | TRUEでstatus=対象外へ正規化 | 可視 |
+| task_title | タスク内容 | String(1..300) | 利用者 | 必須 | 空欄禁止 | 可視 |
+| due_date | 期限 | Date | 利用者 | 空欄可 | 正式期限のみ。AI推測を入れない | 可視 |
+| suggested_due_date | 推奨期限 | Date | 自動 | 空欄可 | AI推測期限。Calendar対象外 | 可視 |
+| deadline_basis | 期限根拠 | Enum | 原則自動 | なし | 明示 / 相対 / 推測 / 曖昧 / なし | 可視 |
+| priority | 優先度 | Enum | 利用者 | 中 | 高 / 中 / 低 | 可視 |
+| waiting_for_reply | 返信待ち | Boolean | 利用者 | FALSE | TRUEでstatus=返信待ちへ正規化 | 可視 |
+| calendar_sync_mode | Calendar登録 | Enum | 利用者 | 自動 | 自動 / 登録 / 対象外 | 可視 |
+| comment | コメント | String(0..2000) | 利用者 | 空欄 | 自由記述。Checkbox禁止 | 可視 |
+| sender | 送信者 | String | 自動 | 空欄可 | メール由来。利用者編集不可 | 可視 |
+| subject | 件名 | String | 自動 | 空欄可 | メール由来。利用者編集不可 | 可視 |
+| received_at | 受信日時 | DateTime | 自動 | 空欄可 | Asia/Tokyo表示 | 可視 |
+| source_email | 元メール | URL | 自動 | 空欄可 | Gmailへのリンク。利用者編集不可 | 可視 |
+| review_state | 確認状態 | Enum | 自動 | なし | なし / 未確認 / 適用済 / 却下済 | 可視 |
+| review_type | 確認種別 | Enum/String | 自動 | 空欄 | 新規 / 期限変更 / 完了 / 取消 / 返信待ち / 競合 / 判定不能等 | 可視 |
+| task_id | task_id | String | 自動 | 必須 | `tsk_` + UUID。作成後不変 | 非表示・保護 |
+| origin_key | origin_key | String | 自動 | 必須 | Message IDとAction indexから決定。重複禁止 | 非表示・保護 |
+| source_message_id | source_message_id | String | 自動 | 空欄可 | 元Gmail Message ID | 非表示・保護 |
+| source_thread_id | source_thread_id | String | 自動 | 空欄可 | 元Gmail Thread ID | 非表示・保護 |
+| stable_thread_key | stable_thread_key | String | 自動 | 空欄可 | スレッド先頭Message IDを基礎とする | 非表示・保護 |
+| source_action_index | source_action_index | Integer | 自動 | 0以上 | AI actions[]内の0始まりindex | 非表示・保護 |
+| ai_action_type | ai_action_type | Enum | 自動 | 空欄可 | AI Actionコード | 非表示・保護 |
+| ai_reason | ai_reason | String(0..1000) | 自動 | 空欄可 | 本文引用の長期保存は禁止 | 非表示・保護 |
+| ai_confidence | ai_confidence | Number | 自動 | 空欄可 | 0.0..1.0 | 非表示・保護 |
+| ai_provider | ai_provider | String | 自動 | MOCK | Provider識別子 | 非表示・保護 |
+| ai_model | ai_model | String | 自動 | 空欄可 | モデルID。秘密情報は禁止 | 非表示・保護 |
+| ai_prompt_version | ai_prompt_version | String | 自動 | 必須 | Prompt版 | 非表示・保護 |
+| calendar_category | calendar_category | Enum | 自動 | NONE | 重要期限カテゴリ | 非表示・保護 |
+| calendar_importance | calendar_importance | Enum | 自動 | LOW | LOW / MEDIUM / HIGH | 非表示・保護 |
+| calendar_event_id | calendar_event_id | String | 自動 | 空欄可 | 専用Calendar Event ID | 非表示・保護 |
+| calendar_sync_status | calendar_sync_status | Enum | 自動 | NOT_REQUIRED | NOT_REQUIRED / PENDING / SYNCED / DELETE_PENDING / ERROR | 非表示・保護 |
+| schedule_state | schedule_state | Enum | 自動 | NONE | NONE / FUTURE / UPCOMING / TODAY / OVERDUE | 非表示・保護 |
+| manual_fields | manual_fields | JSON Array | 自動 | [] | 利用者が編集した内部列IDの集合 | 非表示・保護 |
+| row_version | row_version | Integer | 自動 | 1 | 書込みごとに加算 | 非表示・保護 |
+| pending_action_type | pending_action_type | Enum | 自動 | 空欄 | 既存Taskへの未適用Action | 非表示・保護 |
+| pending_changes_json | pending_changes_json | JSON Object | 自動 | {} | 受入前の変更候補。メール本文は保存しない | 非表示・保護 |
+| created_at | created_at | DateTime | 自動 | 必須 | 作成時刻 | 非表示・保護 |
+| updated_at | updated_at | DateTime | 自動 | 必須 | 最終更新時刻 | 非表示・保護 |
+| last_calendar_sync_at | last_calendar_sync_at | DateTime | 自動 | 空欄可 | 最終Calendar同期時刻 | 非表示・保護 |
 
-### 21.1 迥ｶ諷区ｭ｣隕丞喧蜆ｪ蜈磯・ｽ・
-1. `excluded=TRUE` 竊・status=EXCLUDED縲…ompleted=FALSE縲『aiting=FALSE
-2. `completed=TRUE` 竊・status=DONE縲‘xcluded=FALSE縲『aiting=FALSE
-3. status=CANCELLED 竊・completed=FALSE縲‘xcluded=FALSE縲『aiting=FALSE
-4. `waiting_for_reply=TRUE` 竊・status=WAITING
-5. WAITING迥ｶ諷九〒waiting繧巽ALSE 竊・status=OPEN
-6. 縺昴・莉悶・蛻ｩ逕ｨ閠・・譛牙柑縺ｪstatus繧堤ｶｭ謖・
-REVIEW荳ｭ縺ｫcompleted/excluded縺檎ｷｨ髮・＆繧後◆蝣ｴ蜷医・縲∽ｺｺ縺ｮ譏守､ｺ謫堺ｽ懊→縺励※險ｱ蜿ｯ縺励∵悴驕ｩ逕ｨpending繧偵け繝ｪ繧｢縺励※螻･豁ｴ縺ｸ險倬鹸縺吶ｋ縲・
+### 10.5 補助タブSchema
+
+| タブ | 内部列ID | 要件 |
+| --- | --- | --- |
+| 設定 | setting_key, display_name, value, value_type, allowed_values, description, editable, updated_at | 安全な運用設定のみ。APIキー、token、実メール本文を置かない |
+| 処理履歴 | run_id, trigger_type, mode, started_at, finished_at, duration_ms, candidate_count, processed_count, created_task_count, updated_task_count, review_count, skipped_count, error_count, run_status, note | 1実行1行。noteは機密情報を除去 |
+| エラー・再実行 | error_id, status, retry_requested, stage, error_code, error_summary, source_message_id, source_thread_id, task_id, retry_count, next_retry_at, first_failed_at, last_failed_at, resolved_at, last_run_id | 利用者が再試行を指示できる。本文・認証情報を保存しない |
+| メール状態 | message_id, thread_id, stable_thread_key, received_at, discovered_at, source_mode, processing_status, resume_stage, claimed_at, claim_run_id, preprocess_hash, classification_json, classification_hash, action_count, retry_count, next_retry_at, completed_at, last_error_code, last_error_at, schema_version, updated_at | Message IDが主キー。分類JSONは副作用前に保存 |
+| システム設定 | config_key, config_value, value_type, updated_at, note | instance、version、setup stage等。秘密情報は原則Propertiesへも保存しない |
+| プロンプト版管理 | prompt_version, provider, schema_version, prompt_hash, active, effective_from, retired_at, note | Prompt本文はコード管理。Sheetには版・hash・状態だけ |
+| 同期状態 | sync_id, task_id, target_type, desired_action, event_id, status, retry_count, next_retry_at, last_attempt_at, last_success_at, error_code, updated_at | Calendar Outbox。Taskと外部副作用を分離 |
+
+### 10.6 表示値と内部Enum
+
+Google SheetsのDropdownは表示値と保存値を分離できないため、利用者向けセルは日本語を保存する。コード、AI JSON、管理状態では英語Enumを使用し、`01_TypesAndSchemas.gs`の双方向Mapだけを経由する。
+
+| Enum | 内部コード | Sheet表示 |
+| --- | --- | --- |
+| TaskStatus | REVIEW | 要確認 |
+| TaskStatus | OPEN | 未対応 |
+| TaskStatus | IN_PROGRESS | 対応中 |
+| TaskStatus | WAITING | 返信待ち |
+| TaskStatus | DONE | 完了 |
+| TaskStatus | EXCLUDED | 対象外 |
+| TaskStatus | CANCELLED | 取消 |
+| Decision | NONE | 未選択 |
+| Decision | ACCEPT | 受入 |
+| Decision | REJECT | 却下 |
+| Priority | HIGH | 高 |
+| Priority | MEDIUM | 中 |
+| Priority | LOW | 低 |
+| DeadlineBasis | EXPLICIT | 明示 |
+| DeadlineBasis | RELATIVE | 相対 |
+| DeadlineBasis | INFERRED | 推測 |
+| DeadlineBasis | AMBIGUOUS | 曖昧 |
+| DeadlineBasis | NONE | なし |
+| CalendarSyncMode | AUTO | 自動 |
+| CalendarSyncMode | FORCE | 登録 |
+| CalendarSyncMode | NONE | 対象外 |
+| ReviewState | NONE | なし |
+| ReviewState | OPEN | 未確認 |
+| ReviewState | APPLIED | 適用済 |
+| ReviewState | REJECTED | 却下済 |
+
+未知の表示値、空白を含む不正値、Map不能値は自動補完せず`E_INVALID_ENUM`として要確認またはエラーへ送る。
+
+## 11. Task不変条件
+
+1. `task_id`は一意で作成後不変。
+2. `origin_key`は一意で作成後不変。
+3. `source_message_id + source_action_index`から同じ`origin_key`を再生成できる。
+4. 同一`origin_key`の再処理は新規行を作らず既存行を返す。
+5. `due_date`は正式期限だけ。AI推測は`suggested_due_date`。
+6. `needs_review=TRUE`のTaskはCalendarへ登録しない。
+7. `DONE / EXCLUDED / CANCELLED`はCalendar Eventを持たない。
+8. 既存Task変更候補は現在値を変更せずpendingへ置く。
+9. `manual_fields`対象へのAI変更は自動適用しない。
+10. 空の物理行はTaskではない。
+11. `row_version`は書込みごとに1増やす。
+12. 管理列の利用者直接編集は受け付けず、Diagnosticで検出する。
+13. `completed / excluded / waiting_for_reply`と`status`の矛盾はEditHandlerで正規化する。
+14. AIやCalendarの失敗で既存Taskを削除しない。
+15. `comment`をAIが上書きしない。
+
+## 12. IDと冪等性
+
+### 12.1 ID形式
+
+```text
+task_id   = "tsk_"  + UUID without hyphens
+run_id    = "run_"  + UUID without hyphens
+error_id  = "err_"  + UUID without hyphens
+sync_id   = "syn_"  + UUID without hyphens
+origin_key = "org_" + first 32 hex chars of SHA-256(
+  "v2|" + source_message_id + "|" + source_action_index
+)
+stable_thread_key =
+  "root:" + first_message_id_in_thread
+  fallback "thread:" + source_thread_id
+```
+
+`source_action_index`は保存済みclassification JSONの配列順を使用する。AI再実行でAction順が変わることを避けるため、分類結果を副作用前に保存し、再試行では保存済みJSONを再利用する。
+
+### 12.2 Task解決順
+
+既存Task変更Actionの対象解決は次の順。
+
+1. `target_task_id`が入力Active Task内にあり、実在する
+2. `target_origin_key`が実在する
+3. 同一`stable_thread_key`のActive Taskが1件だけ
+4. それ以外は自動変更せず要確認
+
+AIが入力に存在しないTask IDを返した場合はfabricated IDとして扱い、自動適用しない。
+
+## 13. Setup仕様
+
+### 13.1 対象判定
+
+許可する初期状態は、1枚の完全に空の既定Sheetを持つ新規Spreadsheet、または途中まで正常に作成されたv2環境だけ。
+
+次の場合は停止する。
+
+- v1既知Sheet名、v1 version marker、Review Queue等を検出
+- 不明な非空Sheetを検出
+- 既存v2の内部列IDが仕様と衝突
+- Bound Spreadsheetでない
+- 実行者が編集権限を持たない
+
+停止時は削除、列移動、Migrationを行わない。
+
+### 13.2 段階
+
+```text
+S00_VALIDATE_ENV
+S10_CREATE_SHEETS
+S20_CREATE_SCHEMAS
+S30_APPLY_SMALL_VALIDATIONS
+S40_SEED_SAFE_SETTINGS
+S50_CREATE_GMAIL_LABELS
+S60_CREATE_DEADLINE_CALENDAR
+S70_STORE_PROPERTIES
+S80_CREATE_EDIT_TRIGGER
+S90_QUICK_DIAGNOSTIC
+S99_COMPLETE
+```
+
+各stageは冪等で、完了stageをPropertiesへ保存する。唯一の空の既定Sheetは削除せず`ダッシュボード`へrenameしてよい。非空Sheetはrenameしない。
+
+### 13.3 Trigger
+
+- Setup時にinstallable edit triggerを作成してよい。
+- 5分worker triggerはSetupで作成しない。
+- `startAutomation()`がQuick Diagnostic合格後に作成する。
+- `stopAutomation()`は本instanceが保存したtrigger IDだけを削除する。
+- Trigger重複を作らない。
+
+### 13.4 Setup性能
+
+- 1回のsetup soft limitは120秒
+- stage境界で安全に終了し、`continueSetup()`で継続
+- Sheetごとの所要時間を処理履歴へ記録
+- 2,000行の事前生成、大量Protection、全列再formatを禁止
+- SetupからGmail処理、AI分類、Calendar全同期を呼ばない
+
+## 14. 設定既定値
+
+| 設定キー | 初期値 | 編集 | 説明 |
+| --- | --- | --- | --- |
+| timezone | Asia/Tokyo | 不可 | 日付計算基準 |
+| automation_enabled | false | 明示操作 | 初期停止 |
+| ai_provider | MOCK | Phase 5で変更 | 会社承認前はMock |
+| manual_max_messages | 1 | 可 | 手動試験 |
+| auto_max_messages | 10 | 可 | 自動1回処理上限 |
+| manual_max_threads | 10 | 可 | 手動検索上限 |
+| auto_max_search_threads | 100 | 可 | 自動候補検索上限 |
+| gmail_search_page_size | 25 | 可 | 検索ページ |
+| manual_soft_limit_sec | 120 | 可 | 手動Worker budget |
+| auto_soft_limit_sec | 210 | 可 | 自動Worker budget |
+| lock_wait_ms | 5000 | 可 | Script Lock待機 |
+| stale_claim_min | 30 | 可 | claim再取得 |
+| body_char_limit | 20000 | 可 | AI入力本文上限 |
+| max_actions_per_message | 10 | 可 | AI Action上限 |
+| auto_confidence_threshold | 0.85 | 可 | 自動確定 |
+| review_confidence_threshold | 0.60 | 可 | 要確認下限 |
+| search_overlap_days | 1 | 可 | watermark遡及 |
+| max_retry_count | 3 | 不可 | 5分、15分、60分 |
+| message_state_retention_days | 365 | 会社規程優先 | 保持 |
+| history_retention_days | 365 | 会社規程優先 | 保持 |
+| resolved_error_retention_days | 90 | 会社規程優先 | 保持 |
+| deadline_calendar_name | 自動期日管理 | 不可 | 正式名称 |
+
+## 15. Gmail取得仕様
+
+### 15.1 処理単位
+
+- Message IDを主キーとする。
+- 既読・未読を判定に使わない。
+- 同一Threadの新着返信も別Messageとして処理する。
+- Threadの先頭Message IDからStable Thread Keyを作る。
+- Gmail Thread IDだけに依存しない。
+
+### 15.2 手動試験
+
+```text
+label:手動/取込 -label:手動/除外
+```
+
+- 最新候補から未処理Messageを最大1件
+- 最大10 Threads
+- 通常Inbox検索なし
+- Mock Adapter
+- 自分から自分へ送った非機密fixtureを許可
+- `手動/取込`ラベルは削除しない
+
+### 15.3 自動候補
+
+- `in:inbox`
+- setup watermark以後を対象とし、検索はwatermarkから1日戻す
+- 最終判定はMessage ID
+- spam、trash、promotions、social、明らかなnewsletter、Calendar自動通知を原則除外
+- 固定条件だけで業務メールを広く除外しない
+- `手動/除外`最優先、次に`手動/取込`
+- 候補数を制限し、soft limit到達前に新規claimを停止
+- 残件は次回へ繰り越す
+
+### 15.4 Gmailラベル
+
+正式ラベル。
+
+```text
+AI/要対応
+AI/期限
+AI/返信待
+AI/要確認
+手動/取込
+手動/除外
+SYS/失敗
+```
+
+Thread単位のaggregate状態として同期する。
+
+- Active Taskあり: `AI/要対応`
+- Formal dueあり: `AI/期限`
+- WAITINGあり: `AI/返信待`
+- needs_reviewあり: `AI/要確認`
+- 未解決errorあり: `SYS/失敗`
+- AIは`AI/*`と`SYS/失敗`だけを追加・除去できる
+- `手動/*`を削除しない
+- 処理済み、完了、対象外ラベルを作らない
+
+## 16. Email Preprocessor
+
+AIへ渡す。
+
+- Message ID、Thread ID、Stable Thread Key
+- 件名
+- 送信者または送信者domain
+- 受信日時
+- 新着Messageのplain body
+- 直前1～2Messageの短い文脈
+- 同一ThreadのActive Task要約
+- `today`
+- `timezone`
+
+AIへ渡さない。
+
+- 添付ファイル
+- 他ThreadのTask
+- Calendar全体
+- Logs / Dead Letter
+- API key、token、Cookie、Authorization header
+- 不要なHTML、tracking pixel、署名の過剰部分
+
+本文は正規化後20,000文字で打ち切る。打切りをwarningsへ記録し、元本文をSheetへ保存しない。
+
+## 17. AI Adapter
+
+### 17.1 interface
+
+```javascript
+class AiAdapter {
+  healthCheck() {}
+  classify(input) {}
+}
+```
+
+実装。
+
+- `MockAiAdapter`
+- 会社承認後の`GeminiApiAdapter`または代替Adapter
+
+Provider固有通信、認証、timeout、HTTP分類はAdapter内へ閉じ込める。TaskやSheetを直接操作しない。
+
+### 17.2 AI input
+
+```json
+{
+  "schema_version": "2.0",
+  "message": {
+    "message_id": "runtime value",
+    "thread_id": "runtime value",
+    "stable_thread_key": "runtime value",
+    "subject": "string",
+    "sender": "string",
+    "received_at": "ISO-8601",
+    "plain_body": "truncated string",
+    "prior_messages": []
+  },
+  "active_tasks": [
+    {
+      "task_id": "tsk_...",
+      "task_title": "string",
+      "status": "OPEN",
+      "due_date": "YYYY-MM-DD or null",
+      "manual_fields": []
+    }
+  ],
+  "context": {
+    "today": "YYYY-MM-DD",
+    "timezone": "Asia/Tokyo"
+  },
+  "constraints": {
+    "max_actions": 10,
+    "no_attachment_analysis": true,
+    "no_email_send": true
+  }
+}
+```
+
+### 17.3 AI output JSON Schema
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WorkOsClassificationV2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "overall_confidence",
+    "actions",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "overall_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "actions": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action_type",
+          "target_task_id",
+          "task_title",
+          "deadline",
+          "suggested_deadline",
+          "deadline_basis",
+          "priority",
+          "waiting_for_reply",
+          "needs_review",
+          "calendar_category",
+          "calendar_importance",
+          "confidence",
+          "reason",
+          "changes"
+        ],
+        "properties": {
+          "action_type": {
+            "enum": [
+              "NEW_TASK",
+              "ADD_TASK",
+              "UPDATE_DUE",
+              "CANCEL_TASK",
+              "MARK_COMPLETE",
+              "SET_WAITING",
+              "CLEAR_WAITING",
+              "INFORMATION_ONLY",
+              "UNCLEAR"
+            ]
+          },
+          "target_task_id": {
+            "type": ["string", "null"],
+            "maxLength": 80
+          },
+          "task_title": {
+            "type": ["string", "null"],
+            "maxLength": 300
+          },
+          "deadline": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "suggested_deadline": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "deadline_basis": {
+            "enum": [
+              "EXPLICIT",
+              "RELATIVE",
+              "INFERRED",
+              "AMBIGUOUS",
+              "NONE"
+            ]
+          },
+          "priority": {
+            "enum": ["HIGH", "MEDIUM", "LOW"]
+          },
+          "waiting_for_reply": {
+            "type": "boolean"
+          },
+          "needs_review": {
+            "type": "boolean"
+          },
+          "calendar_category": {
+            "enum": [
+              "EXTERNAL_SUBMISSION",
+              "FINAL_MATERIAL",
+              "CONTRACT_APPLICATION",
+              "BID",
+              "LEGAL_TAX_REGULATORY",
+              "OTHER_HIGH_IMPACT",
+              "NONE"
+            ]
+          },
+          "calendar_importance": {
+            "enum": ["HIGH", "MEDIUM", "LOW"]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "changes": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "task_title": {"type": ["string", "null"], "maxLength": 300},
+              "due_date": {"type": ["string", "null"], "format": "date"},
+              "priority": {"type": ["string", "null"]},
+              "waiting_for_reply": {"type": ["boolean", "null"]},
+              "calendar_category": {"type": ["string", "null"]},
+              "calendar_importance": {"type": ["string", "null"]}
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    }
+  }
+}
+```
+
+### 17.4 Semantic validation
+
+| Action | 必須条件 | 処理 |
+| --- | --- | --- |
+| NEW_TASK / ADD_TASK | task_title必須 | 新規Task候補 |
+| UPDATE_DUE | 対象Taskを一意に解決。deadline変更内容あり | 既存Taskのpendingへ |
+| CANCEL_TASK | 対象Taskを一意に解決 | 常に要確認 |
+| MARK_COMPLETE | 対象Taskを一意に解決 | 常に要確認 |
+| SET_WAITING / CLEAR_WAITING | 対象Taskを一意に解決 | manual field競合なら要確認 |
+| INFORMATION_ONLY | Task変更なし | 原則登録なし |
+| UNCLEAR | 理由必須 | 明示期限等があれば要確認Task、なければ履歴のみ |
+
+Schema warning、未知field、日付不正、Action過多、fabricated Task ID、空Task名は自動確定しない。
+
+### 17.5 Confidence policy
+
+- confidence >= 0.85、ActionがNEW_TASK/ADD_TASK、安全条件充足: 自動OPEN可
+- 0.60 <= confidence < 0.85: REVIEW
+- confidence < 0.60: 原則Task作成なし
+- confidence < 0.60でも明示期限、法務・税務等の高影響、手動/取込はREVIEWとして残す
+- `MARK_COMPLETE`、`CANCEL_TASK`、期限削除、過去日への変更、manual field競合はconfidenceに関係なくREVIEW
+
+## 18. MockAiAdapter
+
+件名prefixで決定的fixtureを返す。
+
+```text
+[MOCK:NEW_EXPLICIT]
+[MOCK:NEW_REVIEW]
+[MOCK:MULTI_ACTION]
+[MOCK:UPDATE_DUE]
+[MOCK:MARK_COMPLETE]
+[MOCK:INFORMATION_ONLY]
+[MOCK:SCHEMA_ERROR]
+[MOCK:TRANSIENT_ERROR]
+```
+
+Mockは外部通信しない。同じinputに同じJSONを返す。`TRANSIENT_ERROR`は最初の所定回数だけretryable errorを返せるよう、TestHarnessから注入したcounterを使う。実メール本文に依存する曖昧な自然言語解析はMockの責務にしない。
+
+## 19. Message State
+
+### 19.1 状態
+
+```text
+DISCOVERED
+CLAIMED
+PREPROCESSED
+CLASSIFIED
+TASKS_WRITTEN
+CALENDAR_PENDING
+DONE
+RETRY
+DEAD
+SKIPPED
+```
+
+### 19.2 遷移
+
+```text
+DISCOVERED
+  → CLAIMED
+  → PREPROCESSED
+  → CLASSIFIED
+  → TASKS_WRITTEN
+  → CALENDAR_PENDING
+  → DONE
+
+任意stageのretryable error
+  → RETRY
+  → resume_stageから再開
+
+3回失敗
+  → DEAD
+```
+
+Calendar不要なら`TASKS_WRITTEN → DONE`。Calendarだけ失敗した場合は保存済みTaskとclassificationを再利用し、AIを再実行しない。
+
+### 19.3 Claim
+
+- Script Lock取得後にclaim
+- Lock待機5秒
+- `claimed_at`から30分を超えたclaimはstaleとして再取得可能
+- claimには`run_id`を保存
+- soft limit到達後は新規claimしない
+- 現在Messageの安全なcheckpointまで処理して終了
+
+## 20. Task Review Policy
+
+### 20.1 新規候補
+
+```text
+自動確定:
+status=OPEN
+needs_review=FALSE
+decision=未選択
+review_state=なし
+
+要確認:
+status=REVIEW
+needs_review=TRUE
+decision=未選択
+review_state=未確認
+review_type=新規
+```
+
+受入。
+
+```text
+status=OPEN
+needs_review=FALSE
+decision=受入
+review_state=適用済
+```
+
+却下。
+
+```text
+status=EXCLUDED
+excluded=TRUE
+needs_review=FALSE
+decision=却下
+review_state=却下済
+Calendar削除をOutboxへ
+```
+
+### 20.2 既存Task変更候補
+
+現在のTask値とstatusを維持する。
+
+```text
+needs_review=TRUE
+decision=未選択
+review_state=未確認
+pending_action_type=<Action>
+pending_changes_json=<candidate changes>
+```
+
+受入時だけpendingを適用し、pendingを空にする。却下時は現在値を維持してpendingを空にする。
+
+Decision適用は冪等。`review_state`が既にAPPLIED/REJECTEDなら同じDecision再実行で副作用を重複させない。Decisionを後から変更しても自動的な逆操作を行わない。
+
+### 20.3 Manual field競合
+
+利用者が編集した次の列を`manual_fields`へ追加する。
+
+```text
+status
+completed
+excluded
+task_title
+due_date
+priority
+waiting_for_reply
+calendar_sync_mode
+comment
+```
+
+AIが`manual_fields`を変更しようとした場合、既存値を維持してpendingへ送る。`comment`はAI変更対象外。
+
+## 21. EditHandler
+
+- installable edit triggerを使用
+- 対象は`タスク一覧`行3以降
+- 行1内部ID Mapで編集列を解決
+- 管理列直接編集は元に戻さず、エラー記録とDiagnostic警告。自動上書きは次の正規更新時
+- 1回の複数セルeditは該当行を重複排除して処理
+- Sheet-onlyの正規化とDecision適用はedit処理内で可能
+- Gmail、AI、Calendarをedit処理から直接呼ばない
+- Calendar変更は`同期状態`へOutbox投入
+- `row_version`と`updated_at`を更新
+- Script書込みによるtrigger非発火に依存しすぎず、処理は冪等にする
+
+### 21.1 状態正規化優先順位
+
+1. `excluded=TRUE` → status=EXCLUDED、completed=FALSE、waiting=FALSE
+2. `completed=TRUE` → status=DONE、excluded=FALSE、waiting=FALSE
+3. status=CANCELLED → completed=FALSE、excluded=FALSE、waiting=FALSE
+4. `waiting_for_reply=TRUE` → status=WAITING
+5. WAITING状態でwaitingをFALSE → status=OPEN
+6. その他は利用者の有効なstatusを維持
+
+REVIEW中にcompleted/excludedが編集された場合は、人の明示操作として許可し、未適用pendingをクリアして履歴へ記録する。
+
 ## 22. TaskRepository
 
-### 22.1 隱ｭ蜿・
-- 陦・縺九ｉColumn Map繧・蝗樔ｽ懈・
-- `task_id`縺ｾ縺溘・`origin_key`縺檎ｩｺ縺ｮ陦後ｒ辟｡隕・- `task_id`, `origin_key`, `stable_thread_key`蛻･index繧偵Γ繝｢繝ｪ縺ｧ菴懈・
-- JSON field縺ｯparse error繧呈､懷・縺励∫ｩｺ縺ｧ陬懷ｮ後○縺啼rror縺ｸ
-- 迚ｩ逅・・菴咲ｽｮ縺ｫ萓晏ｭ倥＠縺ｪ縺・
-### 22.2 霑ｽ險・
-1. `task_id`蛻励・陦・莉･髯阪ｒ荳諡ｬ隱ｭ蜿・2. 譛蛻昴・遨ｺ繧ｻ繝ｫ陦後ｒ隲也炊遨ｺ陦後→縺吶ｋ
-3. 縺ｪ縺代ｌ縺ｰ100陦瑚ｿｽ蜉
-4. 1陦悟・繧帝・蛻励〒荳諡ｬ譖ｸ霎ｼ縺ｿ
-5. 螳溘ョ繝ｼ繧ｿBoolean縺縺代ｒ險ｭ螳・6. index繧偵Γ繝｢繝ｪ荳翫〒譖ｴ譁ｰ
-7. `getLastRow()`縺ｯ菴ｿ繧上↑縺・
+### 22.1 読取
+
+- 行1からColumn Mapを1回作成
+- `task_id`または`origin_key`が空の行を無視
+- `task_id`, `origin_key`, `stable_thread_key`別indexをメモリで作成
+- JSON fieldはparse errorを検出し、空で補完せずerrorへ
+- 物理列位置に依存しない
+
+### 22.2 追記
+
+1. `task_id`列の行3以降を一括読取
+2. 最初の空セル行を論理空行とする
+3. なければ100行追加
+4. 1行分を配列で一括書込み
+5. 実データBooleanだけを設定
+6. indexをメモリ上で更新
+7. `getLastRow()`は使わない
+
 ### 22.3 upsert
 
-- `origin_key`譌｢蟄・ 譁ｰ隕剰｡後ｒ菴懊ｉ縺壹∝酔縺歪lassification縺ｮ蜀埼←逕ｨ縺ｯno-op
-- `target_task_id`譌｢蟄・ Policy縺ｫ蠕薙▲縺ｦpending縺ｾ縺溘・螳牙・譖ｴ譁ｰ
-- 譁ｰ隕・ UUID謗｡逡ｪ縺励・陦御ｽ懈・
-- 蜷御ｸMessage縺ｫ隍・焚Action: action index縺斐→縺ｫ迢ｬ遶黍rigin key
-- 荳驛ｨAction螟ｱ謨・ classification縺ｨAction邨先棡繧剃ｿ晏ｭ倥＠縲∵悴螳御ｺ・ction縺縺大・髢・- Task譖ｸ霎ｼ縺ｿ蠕後↓Message State checkpoint繧剃ｿ晏ｭ・
-## 23. 譛滄剞隗｣驥・
-蝓ｺ貅釦imezone縺ｯ`Asia/Tokyo`縲・
-| 陦ｨ迴ｾ | 蛻晄悄蜃ｦ逅・|
+- `origin_key`既存: 新規行を作らず、同じclassificationの再適用はno-op
+- `target_task_id`既存: Policyに従ってpendingまたは安全更新
+- 新規: UUID採番し、1行作成
+- 同一Messageに複数Action: action indexごとに独立origin key
+- 一部Action失敗: classificationとAction結果を保存し、未完了Actionだけ再開
+- Task書込み後にMessage State checkpointを保存
+
+## 23. 期限解釈
+
+基準timezoneは`Asia/Tokyo`。
+
+| 表現 | 初期処理 |
 | --- | --- |
-| YYYY/MM/DD, YYYY-MM-DD, YYYY蟷ｴM譛・譌･ | 譏守､ｺ譛滄剞 |
-| 莉企ｱ荳ｭ | 蠖楢ｩｲ騾ｱ驥第屆譌･縲３ELATIVE |
-| 譚･騾ｱ荳ｭ | 鄙碁ｱ驥第屆譌･縲３ELATIVE |
-| 譛域忰 | 蠖楢ｩｲ證ｦ譛域忰縲３ELATIVE |
-| 譚･騾ｱ驥第屆譌･ | 鄙碁ｱ驥第屆譌･縲３ELATIVE |
-| 縺ｪ繧九∋縺乗掠縺上∵掠諤･縺ｫ縲∬ｿ第律荳ｭ | AMBIGUOUS縲りｦ∫｢ｺ隱・|
-| 蝟ｶ讌ｭ譌･謖・ｮ・| 蛻晄悄迚医〒閾ｪ蜍慕｢ｺ螳壹＠縺ｪ縺・りｦ∫｢ｺ隱・|
-| AI謗ｨ貂ｬ | suggested_due_date縺縺・|
+| YYYY/MM/DD, YYYY-MM-DD, YYYY年M月D日 | 明示期限 |
+| 今週中 | 当該週金曜日。RELATIVE |
+| 来週中 | 翌週金曜日。RELATIVE |
+| 月末 | 当該暦月末。RELATIVE |
+| 来週金曜日 | 翌週金曜日。RELATIVE |
+| なるべく早く、早急に、近日中 | AMBIGUOUS。要確認 |
+| 営業日指定 | 初期版で自動確定しない。要確認 |
+| AI推測 | suggested_due_dateだけ |
 
-驕主悉譌･縲∵悄髯仙炎髯､縲∬､・焚蛟呵｣懊》imezone荳肴・縲∝霧讌ｭ譌･險育ｮ励・隕∫｢ｺ隱阪・
-## 24. Calendar蜷梧悄
+過去日、期限削除、複数候補、timezone不明、営業日計算は要確認。
 
-### 24.1 蟆ら畑Calendar
+## 24. Calendar同期
 
-豁｣蠑丞錐遘ｰ縺ｯ`閾ｪ蜍墓悄譌･邂｡逅・縲ょ・譛殼2縺梧嶌霎ｼ縺ｿ蜿ｯ閭ｽ縺ｪCalendar縺ｯ縺薙ｌ縺縺代ゅΓ繧､繝ｳCalendar縺ｸ譖ｸ縺九↑縺・・
-### 24.2 逋ｻ骭ｲ蜿ｯ閭ｽ譚｡莉ｶ
+### 24.1 専用Calendar
+
+正式名称は`自動期日管理`。初期v2が書込み可能なCalendarはこれだけ。メインCalendarへ書かない。
+
+### 24.2 登録可能条件
 
 - `needs_review=FALSE`
-- `due_date`縺ゅｊ
-- `deadline_basis`縺窪XPLICIT縺ｾ縺溘・謗｡逕ｨ貂医∩RELATIVE
-- status縺轡ONE/EXCLUDED/CANCELLED縺ｧ縺ｪ縺・- `calendar_sync_mode`縺君ONE縺ｧ縺ｪ縺・- AUTO縺ｮ蝣ｴ蜷医・㍾隕√き繝・ざ繝ｪ縺九▽importance荳螳壻ｻ･荳・- FORCE縺ｮ蝣ｴ蜷医ｂ豁｣蠑乗悄髯仙ｿ・・- AI謗ｨ貂ｬ譛滄剞縺縺代〒縺ｯ逋ｻ骭ｲ縺励↑縺・
-AUTO蟇ｾ雎｡縲・
+- `due_date`あり
+- `deadline_basis`がEXPLICITまたは採用済みRELATIVE
+- statusがDONE/EXCLUDED/CANCELLEDでない
+- `calendar_sync_mode`がNONEでない
+- AUTOの場合、重要カテゴリかつimportance一定以上
+- FORCEの場合も正式期限必須
+- AI推測期限だけでは登録しない
+
+AUTO対象。
+
 ```text
 EXTERNAL_SUBMISSION
 FINAL_MATERIAL
@@ -258,11 +1025,14 @@ OTHER_HIGH_IMPACT
 
 ### 24.3 Event
 
-- 邨よ律Event
-- 繧ｿ繧､繝医Ν: `縲先悄髯舌・task_title>`
-- 隱ｬ譏・ sender縲《ubject縲‥eadline basis縲《ource email縲ゝask ID marker
+- 終日Event
+- タイトル: `【期限】<task_title>`
+- 説明: sender、subject、deadline basis、source email、Task ID marker
 - marker: `[WORKOS_TASK_ID:<task_id>]`
-- guest縺ｪ縺・- invite騾∽ｿ｡縺ｪ縺・- Event ID繧探ask縺ｨOutbox縺ｫ菫晏ｭ・
+- guestなし
+- invite送信なし
+- Event IDをTaskとOutboxに保存
+
 ### 24.4 desired action
 
 ```text
@@ -272,17 +1042,20 @@ DELETE
 NOOP
 ```
 
-- Event縺ｪ縺励・eligible 竊・CREATE
-- Event縺ゅｊ繝ｻeligible繝ｻ蜀・ｮｹ蟾ｮ蛻・竊・UPDATE
-- Event縺ゅｊ繝ｻineligible/terminal 竊・DELETE
-- 蟾ｮ蛻・↑縺・竊・NOOP
+- Eventなし・eligible → CREATE
+- Eventあり・eligible・内容差分 → UPDATE
+- Eventあり・ineligible/terminal → DELETE
+- 差分なし → NOOP
 
-Event ID縺瑚ｦ九▽縺九ｉ縺ｪ縺・ｴ蜷医∵悄髯先律莉倩ｿ代・蟆ら畑Calendar縺縺代ｒ髯仙ｮ壽､懃ｴ｢縺励ゝask marker荳閾ｴ繧堤｢ｺ隱阪☆繧九ょ・Calendar繝ｻ蜈ｨ譛滄俣繧定ｵｰ譟ｻ縺励↑縺・りｦ九▽縺九ｉ縺ｪ縺代ｌ縺ｰ譁ｰ隕丈ｽ懈・縺励・㍾隍・呵｣懊ｒerror縺ｸ險倬鹸縺吶ｋ縲・
-### 24.5 Calendar縺ｨMessage蜀崎ｩｦ陦・
-Calendar螟ｱ謨励・`蜷梧悄迥ｶ諷義縺ｸ谿九＠縲ゝask譖ｸ霎ｼ縺ｿ縺ｨAI蛻・｡槭ｒ繧・ｊ逶ｴ縺輔↑縺・よ怙螟ｧ3蝗槫ｾ後・Dead Letter縲５ask豁｣譛ｬ縺ｯ菫晄戟縺吶ｋ縲・
+Event IDが見つからない場合、期限日付近の専用Calendarだけを限定検索し、Task marker一致を確認する。全Calendar・全期間を走査しない。見つからなければ新規作成し、重複候補をerrorへ記録する。
+
+### 24.5 CalendarとMessage再試行
+
+Calendar失敗は`同期状態`へ残し、Task書込みとAI分類をやり直さない。最大3回後はDead Letter。Task正本は保持する。
+
 ## 25. Worker
 
-### 25.1 蜈ｬ髢矩未謨ｰ
+### 25.1 公開関数
 
 ```text
 runManualImport()
@@ -293,51 +1066,73 @@ syncPendingCalendarJobs()
 retrySelectedErrors()
 ```
 
-### 25.2 蜃ｦ逅・・
+### 25.2 処理順
+
 ```text
-1. Config隱ｭ霎ｼ
+1. Config読込
 2. Script Lock
-3. run_id菴懈・
-4. Message State / Task index隱ｭ霎ｼ
-5. 蛟呵｣懈､懃ｴ｢
+3. run_id作成
+4. Message State / Task index読込
+5. 候補検索
 6. Message claim
 7. preprocess
-8. 菫晏ｭ俶ｸ医∩classification遒ｺ隱・9. 蠢・ｦ√↑繧陰I classify
-10. classification菫晏ｭ・11. Policy蛻､螳・12. Task upsert
-13. Gmail AI label蜷梧悄
-14. Calendar Outbox謚募・
-15. Calendar蜃ｦ逅・16. Message checkpoint / DONE
-17. Run summary菫晏ｭ・18. Lock release
+8. 保存済みclassification確認
+9. 必要ならAI classify
+10. classification保存
+11. Policy判定
+12. Task upsert
+13. Gmail AI label同期
+14. Calendar Outbox投入
+15. Calendar処理
+16. Message checkpoint / DONE
+17. Run summary保存
+18. Lock release
 ```
 
-Dashboard譖ｴ譁ｰ縲〕ayout菫ｮ蠕ｩ縲．eep Diagnostic繧淡orker譛ｫ蟆ｾ縺ｧ螳溯｡後＠縺ｪ縺・・
+Dashboard更新、layout修復、Deep DiagnosticをWorker末尾で実行しない。
+
 ### 25.3 Soft budget
 
-- 謇句虚120遘・- 閾ｪ蜍・10遘・- 邨碁℃譎る俣繧貞推螟ｧstage蜑阪↓遒ｺ隱・- budget谿九′螳牙・菴呵｣墓悴貅縺ｪ繧画眠隕縦laim蛛懈ｭ｢
-- 迴ｾ蝨ｨMessage縺ｮcheckpoint繧剃ｿ晏ｭ倥＠縺ｦ邨ゆｺ・- Google縺ｮ譛螟ｧ螳溯｡梧凾髢薙ｒ菴ｿ縺・・繧峨↑縺・
-## 26. Retry縲．ead Letter縲√Ο繧ｰ
+- 手動120秒
+- 自動210秒
+- 経過時間を各大stage前に確認
+- budget残が安全余裕未満なら新規claim停止
+- 現在Messageのcheckpointを保存して終了
+- Googleの最大実行時間を使い切らない
+
+## 26. Retry、Dead Letter、ログ
 
 ### 26.1 Retry
 
 ```text
-retry 1: 5蛻・ｾ・retry 2: 15蛻・ｾ・retry 3: 60蛻・ｾ・retry 3螟ｱ謨怜ｾ・ DEAD
+retry 1: 5分後
+retry 2: 15分後
+retry 3: 60分後
+retry 3失敗後: DEAD
 ```
 
-Retryable萓九・
+Retryable例。
+
 - AI timeout
 - HTTP 429
 - HTTP 5xx
-- 荳譎ら噪Gmail/Sheets/Calendar service error
-- Lock遶ｶ蜷・
-Non-retryable萓九・
-- Schema荳肴ｭ｣
-- v1迺ｰ蠅・- 蠢・亥・谺關ｽ
-- 荳肴ｭ｣Enum
-- 隱崎ｨｼ譛ｪ險ｭ螳・- 莨夂､ｾ隕冗ｨ倶ｸ顔ｦ∵ｭ｢
-- 蟇ｾ雎｡Task隗｣豎ｺ荳崎・縺ｫ繧医ｋ閾ｪ蜍募､画峩
+- 一時的Gmail/Sheets/Calendar service error
+- Lock競合
 
-Non-retryable縺ｪ讌ｭ蜍呎尠譏ｧ諤ｧ縺ｯ隕∫｢ｺ隱阪∵ｧ区・荳榊ｙ縺ｯerror縺ｨ縺吶ｋ縲・
-### 26.2 Error code萓・
+Non-retryable例。
+
+- Schema不正
+- v1環境
+- 必須列欠落
+- 不正Enum
+- 認証未設定
+- 会社規程上禁止
+- 対象Task解決不能による自動変更
+
+Non-retryableな業務曖昧性は要確認、構成不備はerrorとする。
+
+### 26.2 Error code例
+
 ```text
 E_SETUP_NOT_EMPTY
 E_V1_DETECTED
@@ -359,103 +1154,145 @@ E_BUDGET_EXHAUSTED
 
 ### 26.3 Redaction
 
-繝ｭ繧ｰ縺ｸ谿九○繧九・
+ログへ残せる。
+
 - error code
 - stage
 - run_id
 - Message/Thread/Task ID
 - HTTP status
-- Provider蜷・- model蜷・- prompt version
-- 蜃ｦ逅・ｻｶ謨ｰ
+- Provider名
+- model名
+- prompt version
+- 処理件数
 - sanitized summary
 
-谿九＆縺ｪ縺・・
-- 繝｡繝ｼ繝ｫ譛ｬ譁・- 豺ｻ莉・- API key/token/password
+残さない。
+
+- メール本文
+- 添付
+- API key/token/password
 - Authorization header
 - Cookie
-- AI request蜈ｨ譁・- 莨夂､ｾ譛ｪ蜈ｬ陦ｨ諠・ｱ縺ｮ閾ｪ逕ｱ險倩ｿｰ
-- stack trace蜀・・request payload
+- AI request全文
+- 会社未公表情報の自由記述
+- stack trace内のrequest payload
 
 ## 27. Diagnostic
 
 ### 27.1 Quick Diagnostic
 
-60遘剃ｻ･蜀・ｒ逶ｮ讓吶・
-- 蠢・・heet
-- 陦・蜀・Κ蛻悠D
-- 隕句・縺励→蝙・- 譁・ｭ怜・蛻励↓Checkbox縺後↑縺・％縺ｨ
-- 遨ｺ陦後↓FALSE縺後↑縺・％縺ｨ
-- 豁｣蠑秀mail繝ｩ繝吶Ν
-- 蟆ら畑Calendar ID
-- installable edit trigger
-- automation trigger迥ｶ諷・- Properties
-- AI Adapter health
-- version謨ｴ蜷・- 驥崎､㏄ask_id / origin_key
+60秒以内を目標。
 
-陦後ｏ縺ｪ縺・・
-- Dashboard譖ｴ譁ｰ
-- Task蜈ｨ陦悟・險育ｮ励・譖ｸ謠帙∴
-- layout菫ｮ蠕ｩ
-- Calendar蜈ｨEvent蜷梧悄
-- Gmail蜈ｨ讀懃ｴ｢
+- 必須Sheet
+- 行1内部列ID
+- 見出しと型
+- 文字列列にCheckboxがないこと
+- 空行にFALSEがないこと
+- 正式Gmailラベル
+- 専用Calendar ID
+- installable edit trigger
+- automation trigger状態
+- Properties
+- AI Adapter health
+- version整合
+- 重複task_id / origin_key
+
+行わない。
+
+- Dashboard更新
+- Task全行再計算・書換え
+- layout修復
+- Calendar全Event同期
+- Gmail全検索
 
 ### 27.2 Deep Diagnostic
 
-Phase 7莉･髯阪∵・遉ｺ螳溯｡後・縺ｿ縲・
-- limited sample縺ｧTask/Message/Outbox謨ｴ蜷・- stale claim
+Phase 7以降、明示実行のみ。
+
+- limited sampleでTask/Message/Outbox整合
+- stale claim
 - unresolved error
-- Event ID縺ｨTask marker縺ｮ髯仙ｮ夂・蜷・- retention蟇ｾ雎｡莉ｶ謨ｰ
+- Event IDとTask markerの限定照合
+- retention対象件数
 - Schema/validation drift
 
-Deep Diagnostic繧り・蜍穂ｿｮ蠕ｩ縺励↑縺・ゆｿｮ蠕ｩ縺ｯ蛟句挨command縺ｨ縺吶ｋ縲・
-## 28. Dashboard縺ｨ繝｡繝九Η繝ｼ
+Deep Diagnosticも自動修復しない。修復は個別commandとする。
+
+## 28. Dashboardとメニュー
 
 ### 28.1 Dashboard
 
-Worker縺九ｉ譖ｴ譁ｰ縺励↑縺・ＡrefreshDashboard()`縺ｾ縺溘・迢ｬ遶逆rigger縺ｧ譖ｴ譁ｰ縺吶ｋ縲・
-譛菴手｡ｨ遉ｺ縲・
-- 隕∫｢ｺ隱堺ｻｶ謨ｰ
-- 莉頑律譛滄剞
-- 7譌･莉･蜀・悄髯・- 譛滄剞雜・℃
-- 霑比ｿ｡蠕・■
-- 譛ｪ隗｣豎ｺerror
-- 譛邨り・蜍募・逅・・蜉滓凾蛻ｻ
+Workerから更新しない。`refreshDashboard()`または独立triggerで更新する。
+
+最低表示。
+
+- 要確認件数
+- 今日期限
+- 7日以内期限
+- 期限超過
+- 返信待ち
+- 未解決error
+- 最終自動処理成功時刻
 - automation ON/OFF
 - AI Provider
-- Quick Diagnostic邨先棡
+- Quick Diagnostic結果
 
-### 28.2 繧ｫ繧ｹ繧ｿ繝繝｡繝九Η繝ｼ
+### 28.2 カスタムメニュー
 
 ```text
-讌ｭ蜍儖S v2
-笏懌楳 蛻晄悄繧ｻ繝・ヨ繧｢繝・・
-笏懌楳 繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡・笏懌楳 Quick Diagnostic
-笏懌楳 Mock蜿怜・繝・せ繝・笏懌楳 謇句虚/蜿冶ｾｼ繧・莉ｶ蜃ｦ逅・笏懌楳 Calendar蜷梧悄
-笏懌楳 驕ｸ謚槭お繝ｩ繝ｼ繧貞・隧ｦ陦・笏懌楳 Dashboard譖ｴ譁ｰ
-笏懌楳 閾ｪ蜍募・逅・ｒ髢句ｧ・笏懌楳 閾ｪ蜍募・逅・ｒ蛛懈ｭ｢
-笏披楳 蜈ｨ繝・せ繝亥ｮ溯｡・```
+業務OS v2
+├─ 初期セットアップ
+├─ セットアップを続行
+├─ Quick Diagnostic
+├─ Mock受入テスト
+├─ 手動/取込を1件処理
+├─ Calendar同期
+├─ 選択エラーを再試行
+├─ Dashboard更新
+├─ 自動処理を開始
+├─ 自動処理を停止
+└─ 全テスト実行
+```
 
-蜊ｱ髯ｺ縺ｪ謫堺ｽ懊・遒ｺ隱硬ialog繧定｡ｨ遉ｺ縺吶ｋ縲る幕蟋九・蛛懈ｭ｢縺ｯ迴ｾ蝨ｨ迥ｶ諷九→蟇ｾ雎｡trigger繧定｡ｨ遉ｺ縺吶ｋ縲・
-## 29. Manifest縺ｨOAuth
+危険な操作は確認dialogを表示する。開始・停止は現在状態と対象triggerを表示する。
 
-`appsscript.json`縺ｯV8縺ｨ`Asia/Tokyo`繧呈・遉ｺ縺吶ｋ縲０Auth scope縺ｯPhase縺斐→縺ｮ蠢・ｦ∵怙蟆城剞縺ｨ縺励∝・譛溘°繧吋rive縲．ocs縲｀ail send遲峨ｒ霑ｽ蜉縺励↑縺・・
-諠ｳ螳嘖cope鄒､縲・
+## 29. ManifestとOAuth
+
+`appsscript.json`はV8と`Asia/Tokyo`を明示する。OAuth scopeはPhaseごとの必要最小限とし、初期からDrive、Docs、Mail send等を追加しない。
+
+想定scope群。
+
 - Spreadsheet current file
 - Gmail read/modify labels
-- Calendar write for蟆ら畑Calendar
+- Calendar write for専用Calendar
 - Script trigger
-- External request縺ｯ螳蘗IPhase縺縺・
-Scope縺ｮ譛邨ょ､縺ｯ螳溯｣・凾縺ｫGoogle蜈ｬ蠑剰ｳ・侭縺ｨ莨夂､ｾ邂｡逅・・宛邏・ｒ蜀咲｢ｺ隱阪☆繧九・
-## 30. Apps Script quota險ｭ險・
-Google蜈ｬ蠑上・Apps Script螳溯｡御ｸ企剞縺ｯ螟画峩縺輔ｌ蠕励ｋ縺溘ａ縲∵怙螟ｧ蛟､繧呈･ｭ蜍吶Ο繧ｸ繝・け縺ｫ蝓九ａ霎ｼ縺ｾ縺ｪ縺・・026-07-23譎らせ縺ｮ蜈ｬ蠑剰ｳ・侭縺ｧ縺ｯscript runtime縺ｯ1螳溯｡・蛻・□縺後∵悽繧ｷ繧ｹ繝・Β縺ｯ謇句虚120遘偵∬・蜍・10遘偵・soft limit繧呈治逕ｨ縺励∝ｮ牙・縺ｪcheckpoint縺ｧ邨ゆｺ・☆繧九・
-- quota exception繧池etryable/non-retryable縺ｸ蛻・｡・- Gmail縲￣roperties縲》rigger遲峨・譌･谺｡quota繧堤屮隕・- 1螳溯｡後〒蜈ｨ谿倶ｻｶ繧貞・逅・＠繧医≧縺ｨ縺励↑縺・- trigger縺ｮ驥崎､・ｽ懈・繧帝亟縺・- provider timeout繧但pps Script縺ｮ谿区凾髢薙ｈ繧顔洒縺剰ｨｭ螳・- quota蛟､繧坦EADME縺ｸ蝗ｺ螳壹さ繝斐・縺帙★蜈ｬ蠑酋RL繧貞盾辣ｧ縺吶ｋ
+- External requestは実AIPhaseだけ
 
-## 31. 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｫ邂｡逅・僑蠑ｵ螂醍ｴ・
-譌ｧ縲隈oogle繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｫ邂｡逅・す繧ｹ繝・Β縲崎ｭｰ隲悶ｒ蟆・擂謗･邯壹☆繧九◆繧√∝・譛殼2縺ｯ谺｡繧貞ｮ医ｋ縲・
-### 31.1 繝｡繧､繝ｳCalendar
+Scopeの最終値は実装時にGoogle公式資料と会社管理者制約を再確認する。
 
-- 莨夊ｭｰ縲・擇隲・∝・蠑ｵ縲∵兜雉・ｧ泌藤莨壹∝ｮ滄圀縺ｮ菴懈･ｭ譎る俣縺ｯ繝｡繧､繝ｳCalendar縺ｧ莠ｺ縺檎ｮ｡逅・- 蛻晄悄v2縺ｯread/write縺励↑縺・- `閾ｪ蜍墓悄譌･邂｡逅・縺ｨ豺ｷ蝨ｨ縺輔○縺ｪ縺・
-### 31.2 Phase 9蛟呵｣彿nterface
+## 30. Apps Script quota設計
+
+Google公式のApps Script実行上限は変更され得るため、最大値を業務ロジックに埋め込まない。2026-07-23時点の公式資料ではscript runtimeは1実行6分だが、本システムは手動120秒、自動210秒のsoft limitを採用し、安全なcheckpointで終了する。
+
+- quota exceptionをretryable/non-retryableへ分類
+- Gmail、Properties、trigger等の日次quotaを監視
+- 1実行で全残件を処理しようとしない
+- triggerの重複作成を防ぐ
+- provider timeoutをApps Scriptの残時間より短く設定
+- quota値をREADMEへ固定コピーせず公式URLを参照する
+
+## 31. スケジュール管理拡張契約
+
+旧「Googleスケジュール管理システム」議論を将来接続するため、初期v2は次を守る。
+
+### 31.1 メインCalendar
+
+- 会議、面談、出張、投資委員会、実際の作業時間はメインCalendarで人が管理
+- 初期v2はread/writeしない
+- `自動期日管理`と混在させない
+
+### 31.2 Phase 9候補interface
 
 ```javascript
 class ScheduleContextGateway {
@@ -478,28 +1315,33 @@ class MeetingAutomation {
 }
 ```
 
-### 31.3 蠕檎ｶ壽僑蠑ｵ縺ｮ螳牙・譚｡莉ｶ
+### 31.3 後続拡張の安全条件
 
-- read-only daily/weekly brief縺九ｉ髢句ｧ・- 菴懈･ｭ繝悶Ο繝・け縺ｯ蛻ｩ逕ｨ閠・・譏守､ｺ謇ｿ隱榊ｾ後□縺台ｽ懈・
-- 譛滄剞Event縺ｨ菴懈･ｭEvent繧貞挨category繝ｻ蛻･蜷梧悄ID縺ｧ邂｡逅・- Meeting蠕後・Task縺ｯ騾壼ｸｸ縺ｮReview Policy繧帝壹☆
-- 霑比ｿ｡譁・・draft蛟呵｣懊∪縺ｧ縲り・蜍暮∽ｿ｡縺励↑縺・- Project Context縲．ecision Log縲｀eeting Note縺ｯ蛟呵｣懊ｒ菴懊ｋ縺縺代〒豁｣譛ｬ繧堤┌謇ｿ隱堺ｸ頑嶌縺阪＠縺ｪ縺・- NotebookLM縺ｯ繝ｪ繝ｳ繧ｯ縺ｨ莠ｺ謇区､懃ｴ｢縲・pps Script縺九ｉ繝√Ε繝・ヨ閾ｪ蜍募ｮ溯｡後＠縺ｪ縺・- Projects/Meetings譁ｰ繧ｿ繝冶ｿｽ蜉縺ｯ蛻･Decision縺ｨSchema migration縺ｧ陦後≧
+- read-only daily/weekly briefから開始
+- 作業ブロックは利用者の明示承認後だけ作成
+- 期限Eventと作業Eventを別category・別同期IDで管理
+- Meeting後のTaskは通常のReview Policyを通す
+- 返信文はdraft候補まで。自動送信しない
+- Project Context、Decision Log、Meeting Noteは候補を作るだけで正本を無承認上書きしない
+- NotebookLMはリンクと人手検索。Apps Scriptからチャット自動実行しない
+- Projects/Meetings新タブ追加は別DecisionとSchema migrationで行う
 
 ## 32. Test specification
 
 ### 32.1 Unit
 
 - Column Map
-- 譌･譛ｬ隱櫁｡ｨ遉ｺ蛟､縺ｨ闍ｱ隱昿num縺ｮ蜿梧婿蜷大､画鋤
+- 日本語表示値と英語Enumの双方向変換
 - UUID/Hash/Origin Key
-- 隲也炊遨ｺ陦梧､懃ｴ｢
-- Task index縺ｨ驥崎､・､懷・
+- 論理空行検索
+- Task indexと重複検出
 - JSON parse/validation
 - Action semantic validation
 - confidence policy
 - manual_fields conflict
 - Review accept/reject
-- status豁｣隕丞喧
-- date parse縺ｨrelative deadline
+- status正規化
+- date parseとrelative deadline
 - Calendar eligibility
 - desired action
 - Message state transition
@@ -510,50 +1352,75 @@ class MeetingAutomation {
 
 ### 32.2 Integration fixture
 
-| ID | 蜈･蜉・| 譛溷ｾ・ｵ先棡 |
+| ID | 入力 | 期待結果 |
 | --- | --- | --- |
-| IT-01 | [MOCK:NEW_EXPLICIT]縲∵・遉ｺ譛滄剞 | OPEN Task 1莉ｶ縲∝ｿ・ｦ√↑繧韻alendar CREATE |
-| IT-02 | [MOCK:NEW_REVIEW] | REVIEW Task 1莉ｶ縲，alendar縺ｪ縺・|
-| IT-03 | [MOCK:MULTI_ACTION] | 1 Message縺九ｉ隍・焚Task縲｛rigin_key蛻･ |
-| IT-04 | IT-01繧貞・螳溯｡・| Task/Event驥崎､・↑縺・|
-| IT-05 | [MOCK:UPDATE_DUE] | 譌｢蟄狼ask邯ｭ謖√｝ending縲∝女蜈･蠕後□縺租ue譖ｴ譁ｰ |
-| IT-06 | [MOCK:MARK_COMPLETE] | 閾ｪ蜍募ｮ御ｺ・○縺嗔ending |
-| IT-07 | 蛻ｩ逕ｨ閠・′due_date繧堤ｷｨ髮・ｾ窟I螟画峩 | manual_fields遶ｶ蜷医〒pending |
-| IT-08 | 謇句虚/髯､螟悶≠繧・| Task閾ｪ蜍穂ｽ懈・縺ｪ縺・|
-| IT-09 | Calendar CREATE竊旦PDATE竊奪ELETE | 蜷御ｸEvent ID繧呈峩譁ｰ縺励》erminal縺ｧ蜑企勁 |
-| IT-10 | [MOCK:TRANSIENT_ERROR] | 5/15/60 retry縲∽ｿ晏ｭ俶ｸ医∩stage縺九ｉ蜀埼幕 |
-| IT-11 | 遨ｺ陦靴heckbox Validation | 遨ｺ陦悟､縺ｯ遨ｺ縲５ask縺ｯ3陦檎岼莉倩ｿ・|
-| IT-12 | setup蜀榊ｮ溯｡・| Task豸亥､ｱ繝ｻSchema驥崎､・↑縺・|
-| IT-13 | v1譌｢遏･Sheet | 蛛懈ｭ｢縺励∝､画峩縺ｪ縺・|
-| IT-14 | Quick Diagnostic | 60遘剃ｻ･蜀・∵嶌謠帙∴縺ｪ縺・|
+| IT-01 | [MOCK:NEW_EXPLICIT]、明示期限 | OPEN Task 1件、必要ならCalendar CREATE |
+| IT-02 | [MOCK:NEW_REVIEW] | REVIEW Task 1件、Calendarなし |
+| IT-03 | [MOCK:MULTI_ACTION] | 1 Messageから複数Task、origin_key別 |
+| IT-04 | IT-01を再実行 | Task/Event重複なし |
+| IT-05 | [MOCK:UPDATE_DUE] | 既存Task維持、pending、受入後だけdue更新 |
+| IT-06 | [MOCK:MARK_COMPLETE] | 自動完了せずpending |
+| IT-07 | 利用者がdue_dateを編集後AI変更 | manual_fields競合でpending |
+| IT-08 | 手動/除外あり | Task自動作成なし |
+| IT-09 | Calendar CREATE→UPDATE→DELETE | 同一Event IDを更新し、terminalで削除 |
+| IT-10 | [MOCK:TRANSIENT_ERROR] | 5/15/60 retry、保存済みstageから再開 |
+| IT-11 | 空行Checkbox Validation | 空行値は空。Taskは3行目付近 |
+| IT-12 | setup再実行 | Task消失・Schema重複なし |
+| IT-13 | v1既知Sheet | 停止し、変更なし |
+| IT-14 | Quick Diagnostic | 60秒以内、書換えなし |
 
-### 32.3 諠・ｱ邂｡逅・ユ繧ｹ繝・
-- repository讀懃ｴ｢縺ｧtoken縲∝ｮ櫑D縲∝ｮ溘Γ繝ｼ繝ｫ譛ｬ譁・′縺ｪ縺・- Logs縺ｫ譛ｬ譁・、uthorization縲、PI key縺後↑縺・- test fixture縺悟ｮ悟・縺ｫ譫ｶ遨ｺ
-- Calendar description縺瑚ｨｱ螳ｹ遽・峇
-- AI provider縺ｸ騾√ｋfield縺御ｻ墓ｧ倅ｻ･蜀・- automation蛻晄悄蛟､OFF
+### 32.3 情報管理テスト
 
-## 33. 蛻晄悄v2 Definition of Done
+- repository検索でtoken、実ID、実メール本文がない
+- Logsに本文、Authorization、API keyがない
+- test fixtureが完全に架空
+- Calendar descriptionが許容範囲
+- AI providerへ送るfieldが仕様以内
+- automation初期値OFF
 
-- 譁ｰ縺励＞遨ｺ縺ｮSheet縺九ｉsetup螳御ｺ・- Task縺・陦檎岼莉倩ｿ代∈蜈･繧・- 遨ｺ陦後↓FALSE縺ｪ縺・- 繧ｳ繝｡繝ｳ繝亥・縺ｫCheckbox縺ｪ縺・- 蜷後§Message繧堤ｹｰ繧願ｿ斐＠縺ｦ繧５ask驥崎､・↑縺・- 蜷後§Task縺ｮEvent驥崎､・↑縺・- Review Queue縺ｪ縺励〒蜿怜・繝ｻ蜊ｴ荳句ｮ御ｺ・- AI螳御ｺ・・蜿匁ｶ医・驥崎ｦ∝､画峩縺檎┌謇ｿ隱咲｢ｺ螳壹＆繧後↑縺・- Calendar縺ｯ驥崎ｦ√↑豁｣蠑乗悄髯舌□縺・- Mock邵ｦ繝輔Ο繝ｼ蜷域ｼ
-- Quick Diagnostic 60遘剃ｻ･蜀・- manual worker 120遘偵∥uto worker 210遘剃ｻ･蜀・↓螳牙・邨ゆｺ・- retry縺茎tage縺九ｉ蜀埼幕
-- setup蜀榊ｮ溯｡後〒繝・・繧ｿ遐ｴ謳阪↑縺・- Logs縺ｫ讖溷ｯ・ュ蝣ｱ縺ｪ縺・- 蛻･縺ｮ譁ｰ隕集orkspace迺ｰ蠅・〒謇句ｼ墓嶌縺縺代°繧牙・迴ｾ蜿ｯ閭ｽ
-- 螳蘗I繝ｻ閾ｪ蜍募・逅・・莨夂､ｾ謇ｿ隱榊ｾ後↓譏守､ｺ髢句ｧ・
-## 34. 譛ｪ隗｣豎ｺ莠矩・
-谺｡縺ｯ譛ｬ譖ｸ縺ｧ遒ｺ螳壹＠縺ｪ縺・・
-- 莨夂､ｾ迺ｰ蠅・〒豁｣蠑丞茜逕ｨ縺ｧ縺阪ｋAI Provider
-- Gemini API縲〃ertex AI縲￣roxy遲峨・隱崎ｨｼ譁ｹ蠑・- API隱ｲ驥台ｸｻ菴薙［odel ID縲∝茜逕ｨ荳企剞
-- Provider縺ｮ菫晄戟縲∝ｭｦ鄙貞茜逕ｨ縲∫屮譟ｻ譚｡莉ｶ
-- Script Properties縺ｸ縺ｮsecret菫晏ｭ伜庄蜷ｦ
-- OAuth scope縲ゞrlFetch縲∝､夜Κ騾壻ｿ｡縺ｮ邂｡逅・・宛髯・- 閾ｪ蜍募・逅・・螳牙・縺ｪ譛邨Ｃatch莉ｶ謨ｰ
-- 蝟ｶ讌ｭ譌･險育ｮ励→莨夂､ｾ莨第律
-- 逶ｸ蟇ｾ譛滄剞繧定・蜍慕｢ｺ螳壹☆繧狗ｯ・峇
-- retention譌･謨ｰ縺ｮ莨夂､ｾ隕冗ｨ矩←蜷・- v2螳牙ｮ壼ｾ後・v1 Task遘ｻ陦瑚ｦ∝凄
-- Phase 9縺ｮ莨夊ｭｰ縲∽ｽ懈･ｭ繝悶Ο繝・け縲∵律谺｡/騾ｱ谺｡縲．ocs騾｣謳ｺ縺ｮ謗｡蜷ｦ
+## 33. 初期v2 Definition of Done
 
-螟夜Κ譚｡莉ｶ縺梧悴遒ｺ隱阪〒繧１hase 1・・縺ｯMock縺ｧ騾ｲ繧√ｉ繧後ｋ縲１hase 5莉･髯阪・譛ｪ遒ｺ隱堺ｺ矩・ｒ謐城縺帙★縲：eature Flag OFF縲《tub縲∵､懆ｨｼ繝ｬ繝昴・繝医・縺・★繧後°縺ｧ豁｢繧√ｋ縲・
-## 35. 蜈ｬ蠑丞盾辣ｧ
+- 新しい空のSheetからsetup完了
+- Taskが3行目付近へ入る
+- 空行にFALSEなし
+- コメント列にCheckboxなし
+- 同じMessageを繰り返してもTask重複なし
+- 同じTaskのEvent重複なし
+- Review Queueなしで受入・却下完了
+- AI完了・取消・重要変更が無承認確定されない
+- Calendarは重要な正式期限だけ
+- Mock縦フロー合格
+- Quick Diagnostic 60秒以内
+- manual worker 120秒、auto worker 210秒以内に安全終了
+- retryがstageから再開
+- setup再実行でデータ破損なし
+- Logsに機密情報なし
+- 別の新規Workspace環境で手引書だけから再現可能
+- 実AI・自動処理は会社承認後に明示開始
 
-螳溯｣・凾縺ｫ譛譁ｰ迚医ｒ遒ｺ隱阪☆繧九・
+## 34. 未解決事項
+
+次は本書で確定しない。
+
+- 会社環境で正式利用できるAI Provider
+- Gemini API、Vertex AI、Proxy等の認証方式
+- API課金主体、model ID、利用上限
+- Providerの保持、学習利用、監査条件
+- Script Propertiesへのsecret保存可否
+- OAuth scope、UrlFetch、外部通信の管理者制限
+- 自動処理の安全な最終batch件数
+- 営業日計算と会社休日
+- 相対期限を自動確定する範囲
+- retention日数の会社規程適合
+- v2安定後のv1 Task移行要否
+- Phase 9の会議、作業ブロック、日次/週次、Docs連携の採否
+
+外部条件が未確認でもPhase 1～4はMockで進められる。Phase 5以降は未確認事項を捏造せず、Feature Flag OFF、stub、検証レポートのいずれかで止める。
+
+## 35. 公式参照
+
+実装時に最新版を確認する。
+
 - Installable triggers
   https://developers.google.com/apps-script/guides/triggers/installable
 - Simple triggers
@@ -570,4 +1437,3 @@ class MeetingAutomation {
   https://developers.google.com/apps-script/reference/calendar/calendar
 - Spreadsheet Service
   https://developers.google.com/apps-script/reference/spreadsheet
-

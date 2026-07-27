@@ -22,7 +22,7 @@ var WorkOsMigrations = (function () {
       'E_V1_MIGRATION_UNSUPPORTED',
       'MIGRATION',
       false,
-      'v1迺ｰ蠅・・閾ｪ蜍募､画鋤縺ｧ縺阪∪縺帙ｓ縲よ眠縺励＞遨ｺ縺ｮSpreadsheet繧剃ｽｿ逕ｨ縺励※縺上□縺輔＞縲・
+      'v1環境は自動変換できません。新しい空のSpreadsheetを使用してください。'
     );
   }
 
@@ -108,7 +108,7 @@ var WorkOsMigrations = (function () {
         'E_V2_EXTENSION_STATE_INVALID',
         'V2_SCHEMA_EXTENSION',
         false,
-        '譌｢蟄歪lassification繧貞ｮ牙・縺ｫ讀懆ｨｼ縺ｧ縺阪↑縺・◆繧ヾchema諡｡蠑ｵ繧貞●豁｢縺励∪縺励◆縲・
+        '既存classificationを安全に検証できないためSchema拡張を停止しました。'
       );
     }
     return classification;
@@ -122,7 +122,7 @@ var WorkOsMigrations = (function () {
         'E_BUDGET_EXHAUSTED',
         'V2_SCHEMA_EXTENSION',
         true,
-        'v2 Schema諡｡蠑ｵ繧貞ｮ牙・縺ｪ蠅・阜縺ｧ荳譎ょ●豁｢縺励∪縺励◆縲・
+        'v2 Schema拡張を安全な境界で一時停止しました。'
       );
     }
   }
@@ -143,7 +143,7 @@ var WorkOsMigrations = (function () {
         'E_V2_EXTENSION_TOO_LARGE',
         'V2_SCHEMA_EXTENSION',
         false,
-        'Message State縺悟ｮ牙・縺ｪv2 Schema諡｡蠑ｵ荳企剞繧定ｶ・∴縺ｦ縺・∪縺吶・
+        'Message Stateが安全なv2 Schema拡張上限を超えています。'
       );
     }
     var nowValue = WorkOsUtilities.now();
@@ -168,7 +168,7 @@ var WorkOsMigrations = (function () {
           'E_V2_EXTENSION_STATE_INVALID',
           'V2_SCHEMA_EXTENSION',
           false,
-          '譌｢蟄弄essage State縺ｮSchema version縺計2諡｡蠑ｵ蟇ｾ雎｡螟悶〒縺吶・
+          '既存Message StateのSchema versionがv2拡張対象外です。'
         );
       }
       var classificationCell = sourceRow[map.classification_json];
@@ -183,7 +183,7 @@ var WorkOsMigrations = (function () {
             'E_V2_EXTENSION_STATE_INVALID',
             'V2_SCHEMA_EXTENSION',
             false,
-            '譛ｪ蛻・｡朞essage縺ｫclassification metadata縺後≠繧翫∪縺吶・
+            '未分類Messageにclassification metadataがあります。'
           );
         }
       } else {
@@ -209,7 +209,7 @@ var WorkOsMigrations = (function () {
             'E_V2_EXTENSION_STATE_INVALID',
             'V2_SCHEMA_EXTENSION',
             false,
-            '譌｢蟄歪lassification checkpoint縺ｮ謨ｴ蜷域ｧ繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+            '既存classification checkpointの整合性を確認できません。'
           );
         }
         output[currentMap.classification_hash] =
@@ -375,7 +375,7 @@ var WorkOsMigrations = (function () {
         'E_V2_EXTENSION_TOO_LARGE',
         'V2_SCHEMA_EXTENSION',
         false,
-        'Error險倬鹸縺悟ｮ牙・縺ｪv2 Schema諡｡蠑ｵ荳企剞繧定ｶ・∴縺ｦ縺・∪縺吶・
+        'Error記録が安全なv2 Schema拡張上限を超えています。'
       );
     }
     var changedRows = [];
@@ -540,7 +540,7 @@ var WorkOsMigrations = (function () {
           'E_V2_EXTENSION_CONFLICT',
           'V2_SCHEMA_EXTENSION',
           false,
-          'v2 Schema諡｡蠑ｵ荳ｭ縺ｫ迺ｰ蠅・ｧ区・縺悟､牙喧縺励◆縺溘ａ蛛懈ｭ｢縺励∪縺励◆縲・
+          'v2 Schema拡張中に環境構成が変化したため停止しました。'
         );
       }
       var prepared;
@@ -685,4 +685,3 @@ var WorkOsMigrations = (function () {
 function upgradeSystem() {
   return WorkOsMigrations.assertNoV1Migration();
 }
-

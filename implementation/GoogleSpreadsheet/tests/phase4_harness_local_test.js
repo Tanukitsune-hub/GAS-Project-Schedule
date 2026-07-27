@@ -117,4 +117,3 @@ if (summary.failed > 0 ||
     summary.skipped !== 5) {
   process.exitCode = 1;
 }
-

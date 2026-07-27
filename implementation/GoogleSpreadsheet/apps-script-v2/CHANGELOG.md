@@ -1,5 +1,66 @@
 # Changelog
 
+## 2.8.3-prepilot - 2026-07-27
+
+### Fixed
+
+- R-01: added a persistent Task-row authoritative snapshot and two-phase
+  manual-edit planning. Invalid checkbox/date/enum edits, multi-cell and
+  multi-row pastes, and edits over the 20-row handler limit are restored
+  before returning; rejected edits do not change version or timestamp.
+- R-02: a real manual value change now increments `row_version` and
+  `updated_at` on every edit, even when `manual_fields` already contains the
+  field. Review notes, Calendar reconciliation, and a payload-free Run History
+  audit are updated only for committed edits.
+- R-03: same-row `EXISTING_CHANGE` acceptance now validates the live target,
+  staged row version, current staged values, manual-field set, and open Review
+  state. Conflicts restore Decision to `NONE`, preserve human values, refresh
+  the note, and require explicit `restagePendingChange`.
+- R-04: manual Gmail selection now suppresses completion by exact Message ID,
+  advances to the next older exact `手動/取込` Message in the same Thread, keeps
+  `手動/除外` thread-wide, and excludes messages after the selected Message
+  from context.
+- R-05: Schema 2.2/2.3 Setup reruns migrate to Schema 2.4 before strict
+  integrity checks, refresh the exact Validation lists and owner-only
+  Protection geometry idempotently, and extend Task/Errors controls past 100
+  rows without changing existing data.
+
+### Added
+
+- `authoritative_snapshot_json` as the 44th protected Task column.
+- Schema 2.4 / Migration 1 append-only, resumable snapshot migration.
+- Round 2 pre-fix reproductions and post-fix regression coverage.
+- Deterministic packages `release/v2.8.3-prepilot/` and
+  `release/v2.8.3-prepilot-phase8c/`.
+- `AUDIT_REMEDIATION_ROUND2_IMPLEMENTATION_REPORT.md` and repeatable 2.8.3
+  build/verification scripts.
+
+### Version and validation
+
+- Code/Schema/AI Schema/Migration:
+  `2.8.3-prepilot` / `2.4` / `2.0` / `1`.
+- Pre-fix reproductions:
+  Phase 3 `45 PASS / 3 FAIL`, Phase 2 `29 PASS / 1 FAIL`, Phase 1 audit
+  `25 PASS / 1 FAIL`.
+- Post-fix local regression: 36 suites,
+  `509 PASS / 0 FAIL / 11 SKIPPED`; SKIPPED items remain real Provider and
+  real Google Workspace checks.
+- Static Apps Script validation: `10 PASS / 0 FAIL`, including 22 individual
+  `.gs` syntax checks, concatenated syntax, global evaluation, symbol/config/
+  namespace checks, and source secret scan.
+- Phase 8B: 23 payload / 27 package files, exact source parity, checksums and
+  secret scan PASS; canonical payload SHA-256
+  `423d4f6937c21909c1f88c6e81e264887611782aae98c3b6d3b2668443937f7a`.
+- Phase 8C candidate: 22 payload / 25 package files, parity except the audited
+  `TEST_MODE` transform, exact 7-scope and Advanced Service allow-lists,
+  Test Harness/`.clasp.json` exclusion, checksums and secret scan PASS;
+  canonical payload SHA-256
+  `5bbd3bc12c11b2463279352105cd97a0fe788b69055fd75a0b15f1b689c87e56`.
+- Real Provider, OAuth, Gmail/Calendar mutation, installable Trigger,
+  LockService contention, and real Workspace runtime: `NOT EXECUTED`.
+- Release status: `READY_FOR_INDEPENDENT_REAUDIT`; this is not a Phase 8B
+  Part D GO/PASS or a Phase 8C approval.
+
 ## 2.8.2-prepilot - 2026-07-26
 
 ### Fixed
@@ -16,7 +77,7 @@
 - F-06: added Task status/completed/excluded/waiting/Review/pending
   cross-field invariant validation at repository write boundaries.
 - F-07: manual Gmail import now selects the exact Message carrying
-  `謇句虚/蜿冶ｾｼ`; thread exclusion remains higher priority.
+  `手動/取込`; thread exclusion remains higher priority.
 - F-08: non-editable Review notes summarize action, current/new values,
   deadline basis, manual conflict and past-due warnings without raw payload,
   ID, URL or message content, and clear after decision.
@@ -147,8 +208,8 @@
 - Empty fail-closed production AI provider registry/factory boundary, opaque
   credential reference validation, lock-free classification transport stage,
   and re-lock CAS commit.
-- Automatic Gmail policy with `謇句虚/髯､螟冒 precedence, Message-scoped
-  `謇句虚/蜿冶ｾｼ` priority, system/promotions/social filtering, bounded call meter,
+- Automatic Gmail policy with `手動/除外` precedence, Message-scoped
+  `手動/取込` priority, system/promotions/social filtering, bounded call meter,
   and safe filter/call metrics.
 - Owner installable Task edit Trigger with canonical source/UID checks and
   selected-range menu fallback.
@@ -306,15 +367,15 @@
 - Credential storage approval: `NOT CONFIRMED`.
 - No provider, endpoint, model, auth method, credential value, `UrlFetchApp`, or external-request scope was guessed or added.
 - Real External AI transport requires a reviewed no-lock-during-HTTP execution boundary before it can be enabled.
-- Google Workspace schema extension, OAuth, LockService concurrency, execution duration, and prior Phase 1窶・ real-service cases remain `NOT_EXECUTED`.
+- Google Workspace schema extension, OAuth, LockService concurrency, execution duration, and prior Phase 1–4 real-service cases remain `NOT_EXECUTED`.
 
 ## 2.4.0-phase4 - 2026-07-24
 
 ### Added
 
-- Dedicated `閾ｪ蜍墓悄譌･邂｡逅・ Calendar provisioning in Setup S60 with owner and deployment-instance markers, same-name collision checks, and no Runtime provisioning path.
+- Dedicated `自動期日管理` Calendar provisioning in Setup S60 with owner and deployment-instance markers, same-name collision checks, and no Runtime provisioning path.
 - Calendar eligibility policy, private all-day Event create/update/delete/no-op behavior, deterministic valid Event IDs, bounded marker recovery, and owned-Event enforcement.
-- `蜷梧悄迥ｶ諷義 Calendar Outbox with one-Job-per-run processing, Calendar-only resume, and initial-attempt plus 5/15/60-minute retry scheduling.
+- `同期状態` Calendar Outbox with one-Job-per-run processing, Calendar-only resume, and initial-attempt plus 5/15/60-minute retry scheduling.
 - Durable `CALENDAR` Message checkpoint and Worker ordering from Task finalization through Gmail label synchronization to Calendar Outbox processing.
 - Phase 4 Apps Script harness, independent Worker integration tests, and a dedicated performance/reliability suite.
 - Phase 1 audit through Phase 4 traceability, real-Workspace manual acceptance guide, and consolidated implementation report.
@@ -360,7 +421,7 @@
 - Deterministic Mock fixtures for safe new Tasks, Review, relative/inferred dates, multiple actions, existing changes, waiting, information-only, malformed JSON/schema, unknown action, action overflow, transient failure, and prompt-injection-as-data.
 - Same-Sheet Task Review policy with safe-new auto-open threshold, pending existing changes, idempotent accept/reject, Active-input-bound target resolution, ambiguous/fabricated-target isolation, manual-field conflicts, and inferred-date separation.
 - Callable-only Task edit handler plus an explicit selected-range menu entry for edited rows, deterministic status normalization, `manual_fields`, decision application, row versioning, a 20-row bound, and management-column warning evidence.
-- Phase 3 vertical worker with classification-before-Task checkpoint, one non-nested Script Lock, idempotent Task effects, finalization-only retry, AI label synchronization, and Thread-aggregate `SYS/螟ｱ謨輿 error labeling.
+- Phase 3 vertical worker with classification-before-Task checkpoint, one non-nested Script Lock, idempotent Task effects, finalization-only retry, AI label synchronization, and Thread-aggregate `SYS/失敗` error labeling.
 - Phase 3 Apps Script acceptance harness and independent production-code local tests.
 
 ### Changed
@@ -392,7 +453,7 @@
 
 ### Added
 
-- Advanced Gmail Service gateway with the exact bounded `謇句虚/蜿冶ｾｼ` query, deterministic ordering, spam/trash race defense, and no Inbox or unread-state dependency.
+- Advanced Gmail Service gateway with the exact bounded `手動/取込` query, deterministic ordering, spam/trash race defense, and no Inbox or unread-state dependency.
 - Idempotent S50 setup for the seven formal Gmail labels without deleting or renaming human labels.
 - Message State repository keyed by Message ID with exact v2 schema, Script Lock claim, 30-minute stale-claim recovery, retry/dead checkpoints, and 100-row expansion.
 - Stable Thread Key generation from the first Message ID with Thread ID fallback.
@@ -404,7 +465,7 @@
 
 - Setup now proceeds through S50 and stops safely at the unimplemented S60 Calendar boundary.
 - Manifest enables Advanced Gmail v1 with Phase 2 minimum `gmail.readonly` and `gmail.labels`; no `gmail.modify`, `mail.google.com`, Calendar, external-request, Drive, Mail-send, or trigger scope is added.
-- Independent Gate fixes make `謇句虚/髯､螟冒 stop a prior `PREPROCESSED` checkpoint, send non-retryable failures directly to `DEAD`, serialize run-summary appends with Script Lock, and stop thread expansion when the soft budget is exhausted.
+- Independent Gate fixes make `手動/除外` stop a prior `PREPROCESSED` checkpoint, send non-retryable failures directly to `DEAD`, serialize run-summary appends with Script Lock, and stop thread expansion when the soft budget is exhausted.
 - Quick Diagnostic reports the static manual-import policy without searching Gmail.
 
 ### Validation
@@ -471,4 +532,3 @@
 - Google Workspace manual acceptance is not executed in the local environment.
 - Public setup intentionally stops at the unimplemented Phase 2 stage `S50_CREATE_GMAIL_LABELS`.
 - No production trigger, Gmail, Calendar, external AI, or v1 migration is implemented.
-

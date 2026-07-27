@@ -16,7 +16,8 @@ let baselineSource = fs.readFileSync(baselinePath, 'utf8');
 baselineSource = baselineSource.replace(
   "  '03_SheetBuilder.gs',\n  '02_Setup.gs'\n",
   "  '03_SheetBuilder.gs',\n  '02_Setup.gs',\n" +
-    "  '07_AiAdapter.gs',\n  '14_Migrations.gs'\n"
+    "  '07_AiAdapter.gs',\n  '08_TaskRepository.gs',\n" +
+    "  '14_Migrations.gs'\n"
 );
 const reportMarker = '\nconst summary = {\n';
 const reportIndex = baselineSource.lastIndexOf(reportMarker);
@@ -234,10 +235,31 @@ test('P5-S01_LEGACY_V2_EXTENSION_IS_APPEND_ONLY_AND_PRESERVES_DATA', () => {
   );
   assert.strictEqual(result.status, 'UPDATED');
   assert.strictEqual(result.appended_columns, 1);
+  assert.strictEqual(result.updated_task_rows, 1);
   assert.strictEqual(result.updated_message_rows, 1);
+  const taskSnapshotIndex =
+    state.environment.taskSheet.cells[0].indexOf(
+      'authoritative_snapshot_json'
+    );
+  assert.ok(taskSnapshotIndex >= 0);
+  state.environment.taskSheet.cells.forEach((row, index) => {
+    assert.strictEqual(
+      JSON.stringify(row.slice(0, taskSnapshotIndex)),
+      JSON.stringify(taskBefore[index].slice(0, taskSnapshotIndex))
+    );
+  });
+  const taskSnapshot = JSON.parse(
+    state.environment.taskSheet.cells[2][taskSnapshotIndex]
+  );
   assert.strictEqual(
-    JSON.stringify(state.environment.taskSheet.cells),
-    JSON.stringify(taskBefore)
+    taskSnapshot.schema_version,
+    sandbox.WorkOsConfig.SCHEMA_VERSION
+  );
+  assert.strictEqual(
+    taskSnapshot.task_id,
+    state.environment.taskSheet.cells[2][
+      state.environment.taskSheet.cells[0].indexOf('task_id')
+    ]
   );
   assert.strictEqual(
     JSON.stringify(state.environment.settingsSheet.cells),
@@ -294,7 +316,7 @@ test('P5-S02_SECOND_EXTENSION_RUN_IS_STRICT_NO_OP', () => {
   );
 });
 
-test('P5-S02B_SCHEMA_2_2_ROW_UPGRADES_TO_2_3_WITHOUT_DATA_LOSS', () => {
+test('P5-S02B_SCHEMA_2_2_ROW_UPGRADES_TO_2_4_WITHOUT_DATA_LOSS', () => {
   const state = legacyEnvironment();
   sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
@@ -314,7 +336,7 @@ test('P5-S02B_SCHEMA_2_2_ROW_UPGRADES_TO_2_3_WITHOUT_DATA_LOSS', () => {
   assert.strictEqual(result.updated_message_rows, 1);
   assert.strictEqual(
     rowById(state.messageSheet, 'schema_version'),
-    '2.3'
+    sandbox.WorkOsConfig.SCHEMA_VERSION
   );
   assert.strictEqual(
     rowById(state.messageSheet, 'classification_json'),
@@ -417,7 +439,7 @@ test('P5-S07_MULTI_CHUNK_PARTIAL_WRITE_RESUMES_TO_CURRENT', () => {
     {
       isExhausted: () => {
         budgetChecks += 1;
-        return budgetChecks >= 5;
+        return budgetChecks >= 10;
       }
     }
   );
@@ -468,4 +490,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

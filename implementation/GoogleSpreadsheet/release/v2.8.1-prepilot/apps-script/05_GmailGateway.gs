@@ -3,7 +3,7 @@
  * scheduled small-batch flow.
  *
  * Automatic discovery is limited by query window, pagination, thread count,
- * Message count, and soft budget. It never changes human-owned 謇句虚/* labels
+ * Message count, and soft budget. It never changes human-owned 手動/* labels
  * or fetches attachment bodies or URLs.
  */
 var WorkOsGmailGateway = (function () {
@@ -17,7 +17,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_SERVICE_UNAVAILABLE',
         'GMAIL',
         false,
-        'Advanced Gmail service繧貞茜逕ｨ縺ｧ縺阪∪縺帙ｓ縲・
+        'Advanced Gmail serviceを利用できません。'
       );
     }
   }
@@ -29,7 +29,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_CALL_BUDGET',
         'GMAIL',
         false,
-        'Gmail API call荳企剞縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'Gmail API call上限が不正です。'
       );
     }
     var count = 0;
@@ -40,7 +40,7 @@ var WorkOsGmailGateway = (function () {
             'E_GMAIL_CALL_BUDGET',
             WorkOsUtilities.safeIdentifier(stage, 'GMAIL'),
             true,
-            'Gmail API call荳企剞縺ｫ驕斐＠縺溘◆繧∝ｮ牙・縺ｫ蛛懈ｭ｢縺励∪縺励◆縲・
+            'Gmail API call上限に達したため安全に停止しました。'
           );
         }
         count += 1;
@@ -76,7 +76,7 @@ var WorkOsGmailGateway = (function () {
         'E_BUDGET_EXHAUSTED',
         WorkOsUtilities.safeIdentifier(stage, 'GMAIL'),
         true,
-        'soft execution budget縺ｫ驕斐＠縺溘◆繧；mail API call蜑阪↓蛛懈ｭ｢縺励∪縺励◆縲・
+        'soft execution budgetに達したためGmail API call前に停止しました。'
       );
     }
   }
@@ -93,7 +93,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_FETCH',
         'GMAIL_LABELS',
         true,
-        'Gmail繝ｩ繝吶Ν繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Gmailラベルを取得できませんでした。'
       );
     }
     return (response && response.labels) || [];
@@ -176,7 +176,7 @@ var WorkOsGmailGateway = (function () {
           'E_GMAIL_LABEL_CREATE',
           'S50_CREATE_GMAIL_LABELS',
           true,
-          '豁｣蠑秀mail繝ｩ繝吶Ν繧剃ｽ懈・縺ｧ縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+          '正式Gmailラベルを作成できませんでした。'
         );
       }
     });
@@ -190,7 +190,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_LABEL_CREATE',
         'S50_CREATE_GMAIL_LABELS',
         true,
-        '豁｣蠑秀mail繝ｩ繝吶Ν縺ｮ菴懈・螳御ｺ・ｒ遒ｺ隱阪〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        '正式Gmailラベルの作成完了を確認できませんでした。'
       );
     }
     return {
@@ -214,7 +214,7 @@ var WorkOsGmailGateway = (function () {
         'E_MESSAGE_METADATA',
         'GMAIL',
         false,
-        'Stable Thread Key繧堤函謌舌〒縺阪∪縺帙ｓ縲・
+        'Stable Thread Keyを生成できません。'
       );
     }
     return 'thread:' + fallback;
@@ -227,7 +227,7 @@ var WorkOsGmailGateway = (function () {
         'E_MESSAGE_METADATA',
         'GMAIL_MESSAGE_REFERENCE',
         false,
-        '蜈・Γ繝ｼ繝ｫ蜿ら・縺ｫ蠢・ｦ√↑Thread ID縺後≠繧翫∪縺帙ｓ縲・
+        '元メール参照に必要なThread IDがありません。'
       );
     }
     /*
@@ -256,7 +256,7 @@ var WorkOsGmailGateway = (function () {
         'E_MESSAGE_METADATA',
         'GMAIL',
         false,
-        'Gmail Message縺ｮ蜿嶺ｿ｡譌･譎ゅ′荳肴ｭ｣縺ｧ縺吶・
+        'Gmail Messageの受信日時が不正です。'
       );
     }
     return timestamp;
@@ -274,10 +274,10 @@ var WorkOsGmailGateway = (function () {
 
   function decideManualLabelAction(labelNames) {
     var names = labelNames || [];
-    if (names.indexOf('謇句虚/髯､螟・) !== -1) {
+    if (names.indexOf('手動/除外') !== -1) {
       return 'SKIP';
     }
-    if (names.indexOf('謇句虚/蜿冶ｾｼ') !== -1) {
+    if (names.indexOf('手動/取込') !== -1) {
       return 'PROCESS';
     }
     return 'IGNORE';
@@ -313,7 +313,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_FETCH',
         'GMAIL_THREAD_METADATA',
         true,
-        'Gmail Thread metadata繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Gmail Thread metadataを取得できませんでした。'
       );
     }
   }
@@ -348,7 +348,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_FETCH',
         'GMAIL_SEARCH',
         true,
-        '謇句虚蜿冶ｾｼ蛟呵｣懊ｒ蜿門ｾ励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        '手動取込候補を取得できませんでした。'
       );
     }
 
@@ -361,7 +361,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_LABEL_MISSING',
         'GMAIL_SEARCH',
         false,
-        '豁｣蠑秀mail繝ｩ繝吶Ν縺御ｸ崎ｶｳ縺励※縺・∪縺吶４etup S50繧貞ｮ溯｡後＠縺ｦ縺上□縺輔＞縲・
+        '正式Gmailラベルが不足しています。Setup S50を実行してください。'
       );
     }
     var labelById = labelCache.names_by_id || {};
@@ -376,7 +376,7 @@ var WorkOsGmailGateway = (function () {
           'E_BUDGET_EXHAUSTED',
           'GMAIL_THREAD_METADATA',
           true,
-          'soft execution budget縺ｫ驕斐＠縺溘◆繧∝呵｣懷ｱ暮幕繧貞●豁｢縺励∪縺励◆縲・
+          'soft execution budgetに達したため候補展開を停止しました。'
         );
       }
       var summary = summaries[summaryIndex];
@@ -495,13 +495,13 @@ var WorkOsGmailGateway = (function () {
     (message && message.labelIds || []).forEach(function (labelId) {
       system[String(labelId)] = true;
     });
-    if (names.indexOf('謇句虚/髯､螟・) !== -1) {
+    if (names.indexOf('手動/除外') !== -1) {
       return { process: false, reason: 'MANUAL_EXCLUDE', priority: 0 };
     }
     if (system.SPAM || system.TRASH || !system.INBOX) {
       return { process: false, reason: 'SYSTEM_SCOPE', priority: 0 };
     }
-    if (names.indexOf('謇句虚/蜿冶ｾｼ') !== -1) {
+    if (names.indexOf('手動/取込') !== -1) {
       return { process: true, reason: 'MANUAL_IMPORT', priority: 1 };
     }
     if (system.CATEGORY_PROMOTIONS) {
@@ -574,7 +574,7 @@ var WorkOsGmailGateway = (function () {
           'E_BUDGET_EXHAUSTED',
           'GMAIL_AUTOMATIC_SEARCH',
           true,
-          'soft execution budget縺ｫ驕斐＠縺溘◆繧∬・蜍募呵｣懈､懃ｴ｢繧貞●豁｢縺励∪縺励◆縲・
+          'soft execution budgetに達したため自動候補検索を停止しました。'
         );
       }
       var pageIdentity = pageToken || '__FIRST_PAGE__';
@@ -583,7 +583,7 @@ var WorkOsGmailGateway = (function () {
           'E_GMAIL_PAGINATION_LOOP',
           'GMAIL_AUTOMATIC_SEARCH',
           true,
-          'Gmail蛟呵｣懈､懃ｴ｢縺ｮpage token縺悟ｾｪ迺ｰ縺励∪縺励◆縲・
+          'Gmail候補検索のpage tokenが循環しました。'
         );
       }
       seenPageTokens[pageIdentity] = true;
@@ -606,7 +606,7 @@ var WorkOsGmailGateway = (function () {
           'E_GMAIL_FETCH',
           'GMAIL_AUTOMATIC_SEARCH',
           true,
-          'Gmail閾ｪ蜍募叙霎ｼ蛟呵｣懊ｒ蜿門ｾ励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+          'Gmail自動取込候補を取得できませんでした。'
         );
       }
       summaries = summaries.concat(
@@ -628,7 +628,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_LABEL_MISSING',
         'GMAIL_AUTOMATIC_SEARCH',
         false,
-        '豁｣蠑秀mail繝ｩ繝吶Ν縺御ｸ崎ｶｳ縺励※縺・∪縺吶４etup S50繧貞ｮ溯｡後＠縺ｦ縺上□縺輔＞縲・
+        '正式Gmailラベルが不足しています。Setup S50を実行してください。'
       );
     }
     var labelById = labelCache.names_by_id || {};
@@ -656,7 +656,7 @@ var WorkOsGmailGateway = (function () {
         continue;
       }
       var threadLabelNames = labelsForMessages(ordered, labelById);
-      if (threadLabelNames.indexOf('謇句虚/髯､螟・) !== -1) {
+      if (threadLabelNames.indexOf('手動/除外') !== -1) {
         filterCounts.MANUAL_EXCLUDE =
           Number(filterCounts.MANUAL_EXCLUDE || 0) + 1;
         continue;
@@ -666,7 +666,7 @@ var WorkOsGmailGateway = (function () {
         var messageId = String(message.id || '');
         var timestamp = messageTimestamp(message);
         /*
-         * 謇句虚/髯､螟・is intentionally Thread-wide, but 謇句虚/蜿冶ｾｼ applies only
+         * 手動/除外 is intentionally Thread-wide, but 手動/取込 applies only
          * to the exact Message carrying that label. Reusing a Thread label
          * union here would cause an older opted-in Message to broaden the
          * scope of a newer promotions/social Message.
@@ -784,7 +784,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_BODY_DECODE',
         'GMAIL_MESSAGE_BODY',
         false,
-        'Gmail譛ｬ譁・ｒ螳牙・縺ｫdecode縺ｧ縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Gmail本文を安全にdecodeできませんでした。'
       );
     }
   }
@@ -831,7 +831,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_FETCH',
         'GMAIL_MESSAGE_BODY',
         true,
-        'Gmail Message譛ｬ譁・ｒ蜿門ｾ励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Gmail Message本文を取得できませんでした。'
       );
     }
     var state = {
@@ -865,7 +865,7 @@ var WorkOsGmailGateway = (function () {
         'E_MESSAGE_METADATA',
         'GMAIL_MESSAGE_BODY',
         false,
-        '驕ｸ謚槭＆繧後◆Message metadata縺御ｸ肴ｭ｣縺ｧ縺吶・
+        '選択されたMessage metadataが不正です。'
       );
     }
     var target = loadMessageContent(
@@ -917,7 +917,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_FETCH',
         'GMAIL_MESSAGE_REFETCH',
         false,
-        'checkpoint蟇ｾ雎｡縺ｮGmail Message繧貞・蜿門ｾ励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'checkpoint対象のGmail Messageを再取得できませんでした。'
       );
     }
     var expectedStableKey = makeStableThreadKey(
@@ -931,7 +931,7 @@ var WorkOsGmailGateway = (function () {
         'E_MESSAGE_ID_CONFLICT',
         'GMAIL_MESSAGE_REFETCH',
         false,
-        'Stable Thread Key縺悟・蜿門ｾ礼ｵ先棡縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'Stable Thread Keyが再取得結果と一致しません。'
       );
     }
     var recent = ordered.slice(
@@ -970,7 +970,7 @@ var WorkOsGmailGateway = (function () {
           'E_GMAIL_LABEL_POLICY',
           stage,
           false,
-          '邂｡逅・ｯｾ雎｡螟悶・Gmail繝ｩ繝吶Ν螟画峩繧呈拠蜷ｦ縺励∪縺励◆縲・
+          '管理対象外のGmailラベル変更を拒否しました。'
         );
       }
     });
@@ -986,7 +986,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_LABEL_MISSING',
         stage,
         false,
-        '豁｣蠑秀mail繝ｩ繝吶Ν縺御ｸ崎ｶｳ縺励※縺・∪縺吶・
+        '正式Gmailラベルが不足しています。'
       );
     }
     var addIds = desired.map(function (name) {
@@ -1014,7 +1014,7 @@ var WorkOsGmailGateway = (function () {
         'E_GMAIL_LABEL_SYNC',
         stage,
         true,
-        'Gmail繝ｩ繝吶Ν繧貞酔譛溘〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・
+        'Gmailラベルを同期できませんでした。'
       );
     }
     return {
@@ -1028,7 +1028,7 @@ var WorkOsGmailGateway = (function () {
     return syncLabelSubset(
       threadId,
       desiredNames,
-      ['AI/隕∝ｯｾ蠢・, 'AI/譛滄剞', 'AI/霑比ｿ｡蠕・, 'AI/隕∫｢ｺ隱・],
+      ['AI/要対応', 'AI/期限', 'AI/返信待', 'AI/要確認'],
       'GMAIL_AI_LABEL_SYNC',
       options
     );
@@ -1037,8 +1037,8 @@ var WorkOsGmailGateway = (function () {
   function setSystemFailureLabel(threadId, enabled, options) {
     return syncLabelSubset(
       threadId,
-      enabled ? ['SYS/螟ｱ謨・] : [],
-      ['SYS/螟ｱ謨・],
+      enabled ? ['SYS/失敗'] : [],
+      ['SYS/失敗'],
       'GMAIL_ERROR_LABEL_SYNC',
       options
     );
@@ -1062,4 +1062,3 @@ var WorkOsGmailGateway = (function () {
     setSystemFailureLabel: setSystemFailureLabel
   });
 }());
-

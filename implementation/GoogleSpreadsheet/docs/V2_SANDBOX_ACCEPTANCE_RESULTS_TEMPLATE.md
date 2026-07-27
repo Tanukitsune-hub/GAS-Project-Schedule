@@ -1,8 +1,11 @@
 # Google Workspace Personal Work OS v2
 # Sandbox Acceptance Results
 
-> 縺薙・file縺ｸ螳欖preadsheet / Script / Gmail / Calendar / Event ID縲∝・驛ｨURL縲・> OAuth token縲…redential縲√Γ繝ｼ繝ｫ譛ｬ譁・∽ｻｶ蜷阪・∽ｿ｡閠・∵ｷｻ莉倥∝倶ｺｺ諠・ｱ縲∽ｼ夂､ｾ諠・ｱ繧・> 雋ｼ繧峨↑縺・〒縺上□縺輔＞縲りｨｼ霍｡縺ｯ髱樊ｩ溷ｯ・・screen蜷阪∝ｮ溯｡梧凾蛻ｻ縲∵園隕∵凾髢薙《afe error
-> code縲〉edaction貂医∩逕ｻ蜒上・蜿ら・縺縺代↓縺励∪縺吶・
+> このfileへ実Spreadsheet / Script / Gmail / Calendar / Event ID、内部URL、
+> OAuth token、credential、メール本文、件名、送信者、添付、個人情報、会社情報を
+> 貼らないでください。証跡は非機密のscreen名、実行時刻、所要時間、safe error
+> code、redaction済み画像の参照だけにします。
+
 ## 1. Environment
 
 | Field | Entry |
@@ -42,7 +45,7 @@
 | Setup result | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Setup resume result | PASS / FAIL / NOT EXECUTED |  |  |  |
 | 10 Sheet / visibility / order | PASS / FAIL / NOT EXECUTED |  |  |  |
-| `繧ｿ繧ｹ繧ｯ荳隕ｧ` 43 columns | PASS / FAIL / NOT EXECUTED |  |  |  |
+| `タスク一覧` 44 columns | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Validation / Checkbox / date format | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Protection / management columns | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Version metadata | PASS / FAIL / NOT EXECUTED |  |  |  |
@@ -57,8 +60,8 @@
 
 | Check | Result | Duration | Evidence reference | Safe notes |
 |---|---|---:|---|---|
-| `謇句虚/蜿冶ｾｼ` synthetic email | PASS / FAIL / NOT EXECUTED |  |  |  |
-| `謇句虚/髯､螟冒 precedence | PASS / FAIL / NOT EXECUTED |  |  |  |
+| `手動/取込` synthetic email | PASS / FAIL / NOT EXECUTED |  |  |  |
+| `手動/除外` precedence | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Bounded search / one new Message | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Read/unread independence | PASS / FAIL / NOT EXECUTED |  |  |  |
 | Message ID dedup | PASS / FAIL / NOT EXECUTED |  |  | Do not record ID |
@@ -100,7 +103,7 @@
 | Calendar CAS conflict | PASS / FAIL / NOT EXECUTED |  |  | Advanced |
 | Phase 4 Harness | PASS / FAIL / NOT EXECUTED |  |  |  |
 
-## 7. Phase 5窶・ Mock / Local path
+## 7. Phase 5–7 Mock / Local path
 
 | Check | Result | Duration | Evidence reference | Safe notes |
 |---|---|---:|---|---|
@@ -199,4 +202,3 @@ Required remediation:
 Decision owner:
 Decision date:
 ```
-

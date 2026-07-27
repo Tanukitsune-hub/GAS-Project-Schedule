@@ -654,8 +654,8 @@ test('P4-U10_RETRY_DOES_NOT_CALL_AI_OR_REWRITE_BUSINESS_FIELDS', () => {
 test('P4-U11_DUPLICATE_CALENDAR_NAME_STOPS_WITHOUT_CREATION', () => {
   const gateway = new FakeCalendarGateway({
     matches: [
-      { id: 'cal_duplicate_a', summary: '閾ｪ蜍墓悄譌･邂｡逅・ },
-      { id: 'cal_duplicate_b', summary: '閾ｪ蜍墓悄譌･邂｡逅・ }
+      { id: 'cal_duplicate_a', summary: '自動期日管理' },
+      { id: 'cal_duplicate_b', summary: '自動期日管理' }
     ]
   });
   scriptProperties.set(
@@ -674,7 +674,7 @@ test('P4-U11_DUPLICATE_CALENDAR_NAME_STOPS_WITHOUT_CREATION', () => {
 
 test('P4-U12_PRIMARY_AND_FOREIGN_EVENT_ARE_NEVER_MODIFIED', () => {
   const primary = new FakeCalendarGateway({
-    matches: [{ id: 'primary', summary: '閾ｪ蜍墓悄譌･邂｡逅・, primary: true }],
+    matches: [{ id: 'primary', summary: '自動期日管理', primary: true }],
     primary_ids: ['primary']
   });
   scriptProperties.set(
@@ -740,17 +740,17 @@ test('P4-U13_DESCRIPTION_AND_SOURCE_CONTAIN_NO_BODY_OR_CREDENTIAL', () => {
 
 test('P4-U13B_DEADLINE_BASIS_IS_LOCALIZED_IN_EVENT_DESCRIPTION', () => {
   [
-    ['EXPLICIT', '譏守､ｺ'],
-    ['RELATIVE', '逶ｸ蟇ｾ'],
-    ['MANUAL_CONFIRMED', '謇句虚遒ｺ隱・]
+    ['EXPLICIT', '明示'],
+    ['RELATIVE', '相対'],
+    ['MANUAL_CONFIRMED', '手動確認']
   ].forEach(([basis, label]) => {
     const event = sandbox.WorkOsCalendarSync.buildEventResource(
       task({ deadline_basis: basis }),
       'ins_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       'Asia/Tokyo'
     );
-    assert.match(event.description, new RegExp(`譛滄剞譬ｹ諡: ${label}`));
-    assert.strictEqual(event.description.includes(`譛滄剞譬ｹ諡: ${basis}`), false);
+    assert.match(event.description, new RegExp(`期限根拠: ${label}`));
+    assert.strictEqual(event.description.includes(`期限根拠: ${basis}`), false);
   });
 });
 
@@ -871,7 +871,7 @@ test('P4-G04_S60_LOCK_INSTANCE_OWNER_AND_INSTANCE_MARKER_GUARDS', () => {
   const adoptedGateway = new FakeCalendarGateway();
   adoptedGateway.matches = [{
     id: adoptedGateway.calendarId,
-    summary: '閾ｪ蜍墓悄譌･邂｡逅・,
+    summary: '自動期日管理',
     accessRole: 'owner'
   }];
   const adopted = sandbox.WorkOsCalendarSync.ensureDedicatedCalendar({
@@ -887,7 +887,7 @@ test('P4-G04_S60_LOCK_INSTANCE_OWNER_AND_INSTANCE_MARKER_GUARDS', () => {
   const foreignGateway = new FakeCalendarGateway();
   foreignGateway.matches = [{
     id: foreignGateway.calendarId,
-    summary: '閾ｪ蜍墓悄譌･邂｡逅・,
+    summary: '自動期日管理',
     accessRole: 'owner'
   }];
   foreignGateway.calendars.get(foreignGateway.calendarId).description =
@@ -907,7 +907,7 @@ test('P4-G04_S60_LOCK_INSTANCE_OWNER_AND_INSTANCE_MARKER_GUARDS', () => {
   const readOnlyGateway = new FakeCalendarGateway();
   readOnlyGateway.matches = [{
     id: readOnlyGateway.calendarId,
-    summary: '閾ｪ蜍墓悄譌･邂｡逅・,
+    summary: '自動期日管理',
     accessRole: 'reader'
   }];
   assert.throws(
@@ -970,7 +970,7 @@ test('P4-G06_RATE_LIMIT_403_IS_RETRYABLE_BUT_AUTH_403_IS_NOT', () => {
     makeService(quota)
   );
   assert.throws(
-    () => quotaGateway.listCalendarsBySummary('閾ｪ蜍墓悄譌･邂｡逅・),
+    () => quotaGateway.listCalendarsBySummary('自動期日管理'),
     (error) => error.retryable === true
   );
   const auth = new Error('forbidden');
@@ -979,7 +979,7 @@ test('P4-G06_RATE_LIMIT_403_IS_RETRYABLE_BUT_AUTH_403_IS_NOT', () => {
     makeService(auth)
   );
   assert.throws(
-    () => authGateway.listCalendarsBySummary('閾ｪ蜍墓悄譌･邂｡逅・),
+    () => authGateway.listCalendarsBySummary('自動期日管理'),
     (error) => error.retryable === false
   );
 });
@@ -1088,4 +1088,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed > 0) {
   process.exitCode = 1;
 }
-

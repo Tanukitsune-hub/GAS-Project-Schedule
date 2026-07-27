@@ -31,7 +31,7 @@ var WorkOsEmailPreprocessor = (function () {
         'E_PREPROCESS_INPUT',
         'PREPROCESS',
         false,
-        'Active Task隕∫ｴ・・驟榊・縺ｧ謖・ｮ壹＠縺ｦ縺上□縺輔＞縲・
+        'Active Task要約は配列で指定してください。'
       );
     }
     return tasks.slice(0, 20).map(function (task) {
@@ -68,7 +68,7 @@ var WorkOsEmailPreprocessor = (function () {
           'E_PREPROCESS_INPUT',
           'PREPROCESS',
           false,
-          '蜑榊・逅・↓蠢・ｦ√↑Message metadata縺後≠繧翫∪縺帙ｓ縲・
+          '前処理に必要なMessage metadataがありません。'
         );
       }
     });
@@ -78,7 +78,7 @@ var WorkOsEmailPreprocessor = (function () {
         'E_PREPROCESS_INPUT',
         'PREPROCESS',
         false,
-        '蜿嶺ｿ｡譌･譎ゅ′荳肴ｭ｣縺ｧ縺吶・
+        '受信日時が不正です。'
       );
     }
     var today = String(settings.today || '');
@@ -87,7 +87,7 @@ var WorkOsEmailPreprocessor = (function () {
         'E_PREPROCESS_INPUT',
         'PREPROCESS',
         false,
-        'today縺刑YYY-MM-DD蠖｢蠑上〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+        'todayがYYYY-MM-DD形式ではありません。'
       );
     }
     var timezone = String(settings.timezone || '').trim();
@@ -96,7 +96,7 @@ var WorkOsEmailPreprocessor = (function () {
         'E_PREPROCESS_INPUT',
         'PREPROCESS',
         false,
-        'timezone縺後≠繧翫∪縺帙ｓ縲・
+        'timezoneがありません。'
       );
     }
 
@@ -170,4 +170,3 @@ var WorkOsEmailPreprocessor = (function () {
     preprocess: preprocess
   });
 }());
-

@@ -30,7 +30,7 @@ var WorkOsUtilities = (function () {
         'E_TEST_MODE_DISABLED',
         'TEST_MODE_GUARD',
         false,
-        'Test mode縺檎┌蜉ｹ縺ｮ縺溘ａ縺薙・謫堺ｽ懊ｒ螳溯｡後〒縺阪∪縺帙ｓ: ' +
+        'Test modeが無効のためこの操作を実行できません: ' +
           String(operationName || 'TEST_OPERATION').slice(0, 80)
       );
     }
@@ -64,7 +64,7 @@ var WorkOsUtilities = (function () {
         'E_INVALID_ORIGIN_INPUT',
         'TASK_REPOSITORY',
         false,
-        'origin_key縺ｮ逕滓・縺ｫ蠢・ｦ√↑蜈･蜉帙′縺ゅｊ縺ｾ縺帙ｓ縲・
+        'origin_keyの生成に必要な入力がありません。'
       );
     }
     var index = Number(sourceActionIndex);
@@ -73,7 +73,7 @@ var WorkOsUtilities = (function () {
         'E_INVALID_ORIGIN_INPUT',
         'TASK_REPOSITORY',
         false,
-        'source_action_index縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'source_action_indexが不正です。'
       );
     }
     return 'org_' + sha256Hex('v2|' + sourceMessageId + '|' + index).slice(0, 32);
@@ -144,7 +144,7 @@ var WorkOsUtilities = (function () {
       code: 'E_UNEXPECTED',
       stage: safeIdentifier(fallbackStage, 'UNKNOWN'),
       retryable: false,
-      safe_message: '莠域悄縺励↑縺・お繝ｩ繝ｼ縺檎匱逕溘＠縺ｾ縺励◆縲りｩｳ邏ｰ縺ｪ蜈･蜉帛・螳ｹ縺ｯ險倬鹸縺励※縺・∪縺帙ｓ縲・
+      safe_message: '予期しないエラーが発生しました。詳細な入力内容は記録していません。'
     };
   }
 
@@ -166,7 +166,7 @@ var WorkOsUtilities = (function () {
         'E_LOCK_UNAVAILABLE',
         'LOCK',
         false,
-        'Script Lock繧貞茜逕ｨ縺ｧ縺阪∪縺帙ｓ縲・
+        'Script Lockを利用できません。'
       );
     }
     var lock = LockService.getScriptLock();
@@ -176,7 +176,7 @@ var WorkOsUtilities = (function () {
         'E_LOCK_TIMEOUT',
         'LOCK',
         true,
-        '蛻･縺ｮ蜃ｦ逅・′螳溯｡御ｸｭ縺ｧ縺吶よ凾髢薙ｒ鄂ｮ縺・※蜀榊ｮ溯｡後＠縺ｦ縺上□縺輔＞縲・
+        '別の処理が実行中です。時間を置いて再実行してください。'
       );
     }
     try {
@@ -309,4 +309,3 @@ var WorkOsUtilities = (function () {
     parseJson: parseJson
   });
 }());
-

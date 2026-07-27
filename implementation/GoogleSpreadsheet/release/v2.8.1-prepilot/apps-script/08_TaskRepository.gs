@@ -74,7 +74,7 @@ var WorkOsTaskRepository = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'TASK_REPOSITORY',
         false,
-        '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜀・Κ蛻悠D縺御ｻ墓ｧ倥→荳閾ｴ縺励∪縺帙ｓ縲・
+        'タスク一覧の内部列IDが仕様と一致しません。'
       );
     }
     var rowCount = Math.max(0, sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1);
@@ -223,7 +223,7 @@ var WorkOsTaskRepository = (function () {
           'E_INVALID_ENUM',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺ｮEnum蛟､縺御ｸ肴ｭ｣縺ｧ縺吶・
+          columnDefinition.id + 'のEnum値が不正です。'
         );
       }
       return value;
@@ -240,7 +240,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺栗nteger縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'がIntegerではありません。'
         );
       }
       return value;
@@ -251,7 +251,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺君umber縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'がNumberではありません。'
         );
       }
       return value;
@@ -262,7 +262,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺沓oolean縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'がBooleanではありません。'
         );
       }
       return value;
@@ -273,7 +273,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          columnDefinition.id + '縺梧怏蜉ｹ縺ｪ譌･莉倥〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+          columnDefinition.id + 'が有効な日付ではありません。'
         );
       }
       return value;
@@ -284,7 +284,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_TYPE',
         'TASK_REPOSITORY',
         false,
-        columnDefinition.id + '縺郡tring縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+        columnDefinition.id + 'がStringではありません。'
       );
     }
     return value;
@@ -388,7 +388,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_ROW_OUT_OF_RANGE',
         'TASK_REPOSITORY',
         false,
-        'Task陦後′隱ｭ蜿也ｯ・峇螟悶〒縺吶・
+        'Task行が読取範囲外です。'
       );
     }
     return context.values[index].slice();
@@ -461,7 +461,7 @@ var WorkOsTaskRepository = (function () {
         'E_LOCK_REQUIRED',
         'TASK_REPOSITORY',
         false,
-        '菫晄戟荳ｭ縺ｮScript Lock繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        '保持中のScript Lockを確認できません。'
       );
     }
     return createContext(sheet, LOCK_MARKER);
@@ -483,7 +483,7 @@ var WorkOsTaskRepository = (function () {
         'E_LOCK_REQUIRED',
         'TASK_REPOSITORY',
         false,
-        '菫晄戟荳ｭ縺ｮScript Lock繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        '保持中のScript Lockを確認できません。'
       );
     }
     var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
@@ -496,7 +496,7 @@ var WorkOsTaskRepository = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'TASK_REPOSITORY',
         false,
-        '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜀・Κ蛻悠D縺御ｻ墓ｧ倥→荳閾ｴ縺励∪縺帙ｓ縲・
+        'タスク一覧の内部列IDが仕様と一致しません。'
       );
     }
     var rowsByNumber = {};
@@ -552,7 +552,7 @@ var WorkOsTaskRepository = (function () {
         'E_LOCK_REQUIRED',
         'TASK_REPOSITORY',
         false,
-        'Task譖ｴ譁ｰ縺ｫ縺ｯScript Lock縺悟ｿ・ｦ√〒縺吶・
+        'Task更新にはScript Lockが必要です。'
       );
     }
   }
@@ -578,7 +578,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         true,
-        'Task縺御ｻ悶・謫堺ｽ懊〒螟画峩縺輔ｌ縺溘◆繧∵嶌霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        'Taskが他の操作で変更されたため書込みを停止しました。'
       );
     }
     var updated = current.slice();
@@ -590,7 +590,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_FIELD_NOT_UPDATABLE',
           'TASK_REPOSITORY',
           false,
-          '險ｱ蜿ｯ縺輔ｌ縺ｦ縺・↑縺Уask field螟画峩縺ｧ縺吶・
+          '許可されていないTask field変更です。'
         );
       }
       var index = context.columnMap[field];
@@ -632,11 +632,55 @@ var WorkOsTaskRepository = (function () {
         'E_TARGET_NOT_RESOLVED',
         'TASK_REPOSITORY',
         false,
-        '螟画峩蟇ｾ雎｡Task繧定ｧ｣豎ｺ縺ｧ縺阪∪縺帙ｓ縲・
+        '変更対象Taskを解決できません。'
       );
     }
-    if (WorkOsAiAdapter.ACTION_TYPES.indexOf(String(actionType || '')) === -1…378 tokens truncated…  false,
-        '譛ｪ蜃ｦ逅・・pending螟画峩縺後≠繧九◆繧∽ｸ頑嶌縺阪＠縺ｾ縺帙ｓ縲・
+    if (WorkOsAiAdapter.ACTION_TYPES.indexOf(String(actionType || '')) === -1) {
+      throw new WorkOsAppError(
+        'E_INVALID_ENUM',
+        'TASK_REPOSITORY',
+        false,
+        'pending Actionが不正です。'
+      );
+    }
+    var current = readTaskAtRow(context, physicalRow);
+    var payload = sanitizeStructuredValue(envelope || {});
+    if (!payload.origin_key ||
+        !payload.changes ||
+        typeof payload.changes !== 'object' ||
+        Array.isArray(payload.changes) ||
+        Object.prototype.hasOwnProperty.call(payload.changes, 'comment')) {
+      throw new WorkOsAppError(
+        'E_TASK_VALIDATION',
+        'TASK_REPOSITORY',
+        false,
+        'pending変更の構造が不正です。'
+      );
+    }
+    var provenance = WorkOsAiAdapter.validateProvenance(
+      payload.ai_provenance
+    );
+    var existingPayload = current.pending_changes_json &&
+      typeof current.pending_changes_json === 'object' &&
+      !Array.isArray(current.pending_changes_json)
+      ? current.pending_changes_json
+      : {};
+    if (current.pending_action_type) {
+      if (existingPayload.origin_key === payload.origin_key &&
+          current.pending_action_type === actionType &&
+          JSON.stringify(existingPayload) === JSON.stringify(payload)) {
+        return {
+          operation: 'NOOP',
+          row: physicalRow,
+          task_id: current.task_id,
+          changed_fields: []
+        };
+      }
+      throw new WorkOsAppError(
+        'E_TASK_PENDING_CONFLICT',
+        'TASK_REPOSITORY',
+        false,
+        '未処理のpending変更があるため上書きしません。'
       );
     }
     var result = updateRowWithPatch(
@@ -721,7 +765,7 @@ var WorkOsTaskRepository = (function () {
           'E_SCHEMA_CONFLICT',
           'EDIT_HANDLER',
           false,
-          '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蛻玲焚縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+          'タスク一覧の列数がSchemaと一致しません。'
         );
       }
       var ids = sheet.getRange(1, 1, 1, schema.length).getValues()[0];
@@ -733,7 +777,7 @@ var WorkOsTaskRepository = (function () {
           'E_SCHEMA_MISSING_COLUMN',
           'EDIT_HANDLER',
           false,
-          '繧ｿ繧ｹ繧ｯ荳隕ｧ縺ｮ蜀・Κ蛻悠D縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+          'タスク一覧の内部列IDが一致しません。'
         );
       }
       var map = WorkOsSchemas.buildColumnMapFromIds(ids);
@@ -810,7 +854,7 @@ var WorkOsTaskRepository = (function () {
               'E_TASK_FIELD_NOT_UPDATABLE',
               'EDIT_HANDLER',
               false,
-              '邱ｨ髮・ｭ｣隕丞喧field縺瑚ｨｱ蜿ｯ縺輔ｌ縺ｦ縺・∪縺帙ｓ縲・
+              '編集正規化fieldが許可されていません。'
             );
           }
           var index = map[field];
@@ -872,7 +916,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_DUPLICATE_KEY',
         'TASK_REPOSITORY',
         false,
-        '譌｢蟄狼ask縺ｫ荳ｻ繧ｭ繝ｼ驥崎､・′縺ゅｋ縺溘ａ譖ｸ霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        '既存Taskに主キー重複があるため書込みを停止しました。'
       );
     }
 
@@ -883,7 +927,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_VALIDATION',
         'TASK_REPOSITORY',
         false,
-        'Task蜈･蜉帙′莉墓ｧ倥ｒ貅縺溘＠縺ｾ縺帙ｓ: ' + validation.errors.join(', ')
+        'Task入力が仕様を満たしません: ' + validation.errors.join(', ')
       );
     }
     if (existingRow) {
@@ -894,7 +938,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_ID_SUPPLIED',
         'TASK_REPOSITORY',
         false,
-        '譁ｰ隕週ask縺ｮtask_id縺ｯRepository縺檎匱陦後＠縺ｾ縺吶・
+        '新規Taskのtask_idはRepositoryが発行します。'
       );
     }
     return insertTask(target, repositoryContext);
@@ -914,7 +958,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         true,
-        'Task縺御ｻ悶・謫堺ｽ懊〒螟画峩縺輔ｌ縺溘◆繧∵嶌霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        'Taskが他の操作で変更されたため書込みを停止しました。'
       );
     }
     var currentTaskId = String(existing[context.columnMap.task_id] || '');
@@ -923,7 +967,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         false,
-        '譌｢蟄椀rigin_key陦後↓task_id縺後↑縺・◆繧∬・蜍墓峩譁ｰ繧貞●豁｢縺励∪縺励◆縲・
+        '既存origin_key行にtask_idがないため自動更新を停止しました。'
       );
     }
     if (task.task_id && String(task.task_id) !== currentTaskId) {
@@ -931,7 +975,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
         false,
-        '蜷後§origin_key縺ｫ逡ｰ縺ｪ繧逆ask_id縺梧欠螳壹＆繧後∪縺励◆縲・
+        '同じorigin_keyに異なるtask_idが指定されました。'
       );
     }
     var updated = existing.slice();
@@ -951,7 +995,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_IMMUTABLE_FIELD',
           'TASK_REPOSITORY',
           false,
-          id + '縺ｯ蜷御ｸorigin_key縺ｮ蜀榊・逅・〒縺ｯ螟画峩縺ｧ縺阪∪縺帙ｓ縲・
+          id + 'は同一origin_keyの再処理では変更できません。'
         );
       }
       if (!SAFE_REPLAY_UPDATE_FIELDS[id]) {
@@ -959,7 +1003,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_FIELD_NOT_UPDATABLE',
           'TASK_REPOSITORY',
           false,
-          id + '縺ｯ蜷御ｸorigin_key縺ｮ蜀榊・逅・〒縺ｯ閾ｪ蜍墓峩譁ｰ縺ｧ縺阪∪縺帙ｓ縲・
+          id + 'は同一origin_keyの再処理では自動更新できません。'
         );
       }
       updated[columnIndex] = candidate;
@@ -1013,7 +1057,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_DUPLICATE_KEY',
         'TASK_REPOSITORY',
         false,
-        '譁ｰ隕週ask ID縺梧里蟄狼ask縺ｨ陦晉ｪ√＠縺溘◆繧∵嶌霎ｼ縺ｿ繧貞●豁｢縺励∪縺励◆縲・
+        '新規Task IDが既存Taskと衝突したため書込みを停止しました。'
       );
     }
     var validation = WorkOsSchemas.validateTaskForWrite(prepared, true);
@@ -1022,7 +1066,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_VALIDATION',
         'TASK_REPOSITORY',
         false,
-        'Task蜈･蜉帙′莉墓ｧ倥ｒ貅縺溘＠縺ｾ縺帙ｓ: ' + validation.errors.join(', ')
+        'Task入力が仕様を満たしません: ' + validation.errors.join(', ')
       );
     }
     var physicalRow = findLogicalEmptyRow(
@@ -1078,7 +1122,7 @@ var WorkOsTaskRepository = (function () {
             : 'E_TASK_TYPE',
           'TASK_REPOSITORY',
           false,
-          item.id + '縺ｮ菫晏ｭ伜､縺御ｸ肴ｭ｣縺ｧ縺吶・
+          item.id + 'の保存値が不正です。'
         );
       }
     });
@@ -1117,7 +1161,7 @@ var WorkOsTaskRepository = (function () {
         'E_TARGET_NOT_RESOLVED',
         'CALENDAR_SYNC',
         false,
-        'Calendar蜷梧悄蟇ｾ雎｡Task繧定ｧ｣豎ｺ縺ｧ縺阪∪縺帙ｓ縲・
+        'Calendar同期対象Taskを解決できません。'
       );
     }
     var allowed = {
@@ -1132,7 +1176,7 @@ var WorkOsTaskRepository = (function () {
           'E_TASK_FIELD_NOT_UPDATABLE',
           'CALENDAR_SYNC',
           false,
-          'Calendar蜷梧悄縺悟､画峩縺ｧ縺阪↑縺Уask field縺ｧ縺吶・
+          'Calendar同期が変更できないTask fieldです。'
         );
       }
     });
@@ -1150,7 +1194,7 @@ var WorkOsTaskRepository = (function () {
         'E_TASK_VALIDATION',
         'CALENDAR_SYNC',
         false,
-        'Calendar Task patch縺御ｻ墓ｧ倥ｒ貅縺溘＠縺ｾ縺帙ｓ縲・
+        'Calendar Task patchが仕様を満たしません。'
       );
     }
     var result = updateRowWithPatch(
@@ -1172,12 +1216,12 @@ var WorkOsTaskRepository = (function () {
         'E_SCHEMA_MISSING_SHEET',
         'TASK_REPOSITORY',
         false,
-        '蜈医↓Phase 1繧ｻ繝・ヨ繧｢繝・・繧貞ｮ溯｡後＠縺ｦ縺上□縺輔＞縲・
+        '先にPhase 1セットアップを実行してください。'
       );
     }
     return upsertTask({
       origin_key: WorkOsUtilities.makeOriginKey('synthetic-message-phase1', 0),
-      task_title: '譫ｶ遨ｺ雉・侭縺ｮ謠仙・貅門ｙ',
+      task_title: '架空資料の提出準備',
       status: 'OPEN',
       priority: 'MEDIUM',
       needs_review: false,
@@ -1211,4 +1255,3 @@ var WorkOsTaskRepository = (function () {
     upsertPhase1MockTask: upsertPhase1MockTask
   });
 }());
-

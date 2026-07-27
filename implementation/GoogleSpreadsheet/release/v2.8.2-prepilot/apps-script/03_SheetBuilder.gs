@@ -4,10 +4,10 @@
 var WorkOsSheetBuilder = (function () {
   var PROTECTION_PREFIX = 'WORK_OS_V2_PHASE1_';
   var SYSTEM_OWNED_SHEETS = Object.freeze({
-    '繝繝・す繝･繝懊・繝・: true,
-    '蜃ｦ逅・ｱ･豁ｴ': true,
-    '菴ｿ縺・婿': true,
-    '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡・: true
+    'ダッシュボード': true,
+    '処理履歴': true,
+    '使い方': true,
+    'エラー・再実行': true
   });
 
   function initialRowsForSheet(sheetName) {
@@ -152,7 +152,7 @@ var WorkOsSheetBuilder = (function () {
         'E_SCHEMA_CONFLICT',
         'S20_CREATE_SCHEMAS',
         false,
-        sheetName + '縺ｮ譌｢蟄牢chema縺計2莉墓ｧ倥→荳閾ｴ縺励↑縺・◆繧∝●豁｢縺励∪縺励◆縲・
+        sheetName + 'の既存Schemaがv2仕様と一致しないため停止しました。'
       );
     }
 
@@ -185,7 +185,7 @@ var WorkOsSheetBuilder = (function () {
         'E_PROTECTION_IDENTITY_UNAVAILABLE',
         'S20_CREATE_SCHEMAS',
         false,
-        'Protection險ｭ螳壹↓蠢・ｦ√↑螳溯｡瑚・ュ蝣ｱ繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        'Protection設定に必要な実行者情報を確認できません。'
       );
     }
     protection.addEditor(effectiveUser);
@@ -321,7 +321,7 @@ var WorkOsSheetBuilder = (function () {
           'E_SCHEMA_MISSING_SHEET',
           'S20_CREATE_SCHEMAS',
           false,
-          '蠢・・heet縺後≠繧翫∪縺帙ｓ: ' + sheetName
+          '必須Sheetがありません: ' + sheetName
         );
       }
       columnMaps[sheetName] = applySchemaToSheet(sheet, sheetName);
@@ -459,7 +459,7 @@ var WorkOsSheetBuilder = (function () {
           'E_SETUP_STATE_CONFLICT',
           'S40_SEED_SAFE_SETTINGS',
           false,
-          sheetName + '縺ｮsystem key縺碁㍾隍・＠縺ｦ縺・∪縺吶・
+          sheetName + 'のsystem keyが重複しています。'
         );
       }
       byKey[key] = {
@@ -527,16 +527,16 @@ var WorkOsSheetBuilder = (function () {
 
   function safeSettingsSeed(nowValue) {
     return [
-      ['timezone', '繧ｿ繧､繝繧ｾ繝ｼ繝ｳ', WorkOsConfig.TIMEZONE, 'STRING', WorkOsConfig.TIMEZONE, '蝗ｺ螳壹よ律莉倩ｨ育ｮ怜渕貅・, false],
-      ['automation_enabled', '閾ｪ蜍募・逅・・蛻晄悄蛟､', false, 'BOOLEAN', 'false', '蝗ｺ螳壹ら樟蝨ｨ迥ｶ諷九・Dashboard縺ｨ譏守､ｺmenu縺ｧ遒ｺ隱・, false],
-      ['ai_provider', 'Local AI Provider', WorkOsConfig.AI_PROVIDER, 'STRING', 'MOCK', '蝗ｺ螳壹ょｮ蘖rovider縺ｯ譛ｪ豎ｺ螳壹〒Settings縺ｸcredential繧剃ｿ晏ｭ倥＠縺ｪ縺・, false],
-      ['manual_max_messages', '謇句虚譛螟ｧ繝｡繝・そ繝ｼ繧ｸ謨ｰ', WorkOsConfig.MANUAL_MAX_MESSAGES, 'INTEGER', '1', '蝗ｺ螳壹よ焔蜍戊ｩｦ鬨薙・1蝗・莉ｶ', false],
-      ['auto_max_messages', '閾ｪ蜍墓怙螟ｧ繝｡繝・そ繝ｼ繧ｸ謨ｰ', WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN, 'INTEGER', '1..10', 'Runtime縺・ run縺ｫ蜃ｦ逅・☆繧倶ｸ企剞', true],
-      ['manual_soft_limit_sec', '謇句虚soft limit遘・, WorkOsConfig.MANUAL_WORKER_SOFT_LIMIT_MS / 1000, 'INTEGER', '30..120', 'Runtime縺ｮ謇句虚Worker budget', true],
-      ['auto_soft_limit_sec', '閾ｪ蜍不oft limit遘・, WorkOsConfig.AUTOMATION_WORKER_SOFT_LIMIT_MS / 1000, 'INTEGER', '60..210', 'Runtime縺ｮ閾ｪ蜍標orker budget', true],
-      ['lock_wait_ms', 'Lock蠕・ｩ殞s', WorkOsConfig.LOCK_WAIT_MS, 'INTEGER', String(WorkOsConfig.LOCK_WAIT_MS), '蝗ｺ螳壹ゅさ繝ｼ繝牙ｮ牙・蠅・阜', false],
-      ['max_actions_per_message', '譛螟ｧAction謨ｰ', WorkOsConfig.MAX_AI_ACTIONS, 'INTEGER', String(WorkOsConfig.MAX_AI_ACTIONS), '蝗ｺ螳壹・I Schema螳牙・蠅・阜', false],
-      ['deadline_calendar_name', '蟆ら畑Calendar蜷・, WorkOsConfig.DEADLINE_CALENDAR_NAME, 'STRING', WorkOsConfig.DEADLINE_CALENDAR_NAME, '蝗ｺ螳壹４etup縺ｧ蟆ら畑secondary Calendar繧剃ｽ懈・', false]
+      ['timezone', 'タイムゾーン', WorkOsConfig.TIMEZONE, 'STRING', WorkOsConfig.TIMEZONE, '固定。日付計算基準', false],
+      ['automation_enabled', '自動処理の初期値', false, 'BOOLEAN', 'false', '固定。現在状態はDashboardと明示menuで確認', false],
+      ['ai_provider', 'Local AI Provider', WorkOsConfig.AI_PROVIDER, 'STRING', 'MOCK', '固定。実Providerは未決定でSettingsへcredentialを保存しない', false],
+      ['manual_max_messages', '手動最大メッセージ数', WorkOsConfig.MANUAL_MAX_MESSAGES, 'INTEGER', '1', '固定。手動試験は1回1件', false],
+      ['auto_max_messages', '自動最大メッセージ数', WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN, 'INTEGER', '1..10', 'Runtimeが1 runに処理する上限', true],
+      ['manual_soft_limit_sec', '手動soft limit秒', WorkOsConfig.MANUAL_WORKER_SOFT_LIMIT_MS / 1000, 'INTEGER', '30..120', 'Runtimeの手動Worker budget', true],
+      ['auto_soft_limit_sec', '自動soft limit秒', WorkOsConfig.AUTOMATION_WORKER_SOFT_LIMIT_MS / 1000, 'INTEGER', '60..210', 'Runtimeの自動Worker budget', true],
+      ['lock_wait_ms', 'Lock待機ms', WorkOsConfig.LOCK_WAIT_MS, 'INTEGER', String(WorkOsConfig.LOCK_WAIT_MS), '固定。コード安全境界', false],
+      ['max_actions_per_message', '最大Action数', WorkOsConfig.MAX_AI_ACTIONS, 'INTEGER', String(WorkOsConfig.MAX_AI_ACTIONS), '固定。AI Schema安全境界', false],
+      ['deadline_calendar_name', '専用Calendar名', WorkOsConfig.DEADLINE_CALENDAR_NAME, 'STRING', WorkOsConfig.DEADLINE_CALENDAR_NAME, '固定。Setupで専用secondary Calendarを作成', false]
     ].map(function (item) {
       return {
         setting_key: item[0],
@@ -581,7 +581,7 @@ var WorkOsSheetBuilder = (function () {
           'E_SETUP_STATE_CONFLICT',
           'S40_SEED_SAFE_SETTINGS',
           false,
-          '險ｭ螳售heet縺ｮsetting_key縺碁㍾隍・＠縺ｦ縺・∪縺吶・
+          '設定Sheetのsetting_keyが重複しています。'
         );
       }
       rowsByKey[key] = {
@@ -697,17 +697,17 @@ var WorkOsSheetBuilder = (function () {
         {
           metric_key: 'AUTOMATION_STATUS',
           metric_value: 'OFF',
-          note: '蛻晄悄蛛懈ｭ｢縲よ・遉ｺ譖ｴ譁ｰ蠕後↓迴ｾ蝨ｨ迥ｶ諷九ｒ陦ｨ遉ｺ縺励∪縺吶・
+          note: '初期停止。明示更新後に現在状態を表示します。'
         },
         {
           metric_key: 'SYSTEM_HEALTH',
-          metric_value: '譛ｪ譖ｴ譁ｰ',
-          note: '繝｡繝九Η繝ｼ縺九ｉ驕狗畑Dashboard繧呈峩譁ｰ縺励※縺上□縺輔＞縲・
+          metric_value: '未更新',
+          note: 'メニューから運用Dashboardを更新してください。'
         },
         {
           metric_key: 'QUICK_DIAGNOSTIC',
           metric_value: 'NOT_EXECUTED',
-          note: 'Dashboard譛ｪ譖ｴ譁ｰ'
+          note: 'Dashboard未更新'
         }
       ]
     );
@@ -727,13 +727,13 @@ var WorkOsSheetBuilder = (function () {
       WorkOsConfig.SHEETS.GUIDE,
       'step_id',
       [
-        { step_id: '1', title: '蛻晄悄繧ｻ繝・ヨ繧｢繝・・', instruction: '繝｡繝九Η繝ｼ縺ｮ隱ｬ譏弱ｒ遒ｺ隱阪＠縺ｦ螳溯｡後＠縺ｾ縺吶４heet/Protection縲∵ｭ｣蠑秀mail繝ｩ繝吶Ν縲∝ｰら畑secondary Calendar縲∵園譛芽・dit Trigger繧呈ｮｵ髫惹ｽ懈・縺励∪縺吶よ里蟄倥ョ繝ｼ繧ｿ縺ｮMigration繝ｻ蜑企勁縺ｯ陦後＞縺ｾ縺帙ｓ縲・ },
-        { step_id: '2', title: '閾ｪ蜍募・逅・・蛻晄悄迥ｶ諷・, instruction: '騾壼ｸｸInbox蜃ｦ逅・∝ｮ蘗I謗･邯壹・蛻・rigger縺ｯSetup縺九ｉ髢句ｧ九＠縺ｾ縺帙ｓ縲ょ､夜Κ蛻､譁ｭ縺ｨ蜈ｨGate騾夐℃蠕後↓縺縺代√Γ繝九Η繝ｼ縺九ｉ譏守､ｺ逧・↓譛牙柑蛹悶＠縺ｾ縺吶・ },
-        { step_id: '3', title: 'Task縺ｮ譌･蟶ｸ謫堺ｽ・, instruction: '譌･蟶ｸ謫堺ｽ懊・繧ｿ繧ｹ繧ｯ荳隕ｧ縺縺代〒陦後＞縺ｾ縺吶る壼ｸｸ縺ｮ邱ｨ髮・・謇譛芽・nstallable edit Trigger縺瑚・蜍募渚譏縺励∝撫鬘梧凾縺縺第焔蜍蒜allback繧剃ｽｿ縺・∪縺吶・ },
-        { step_id: '4', title: '隕∫｢ｺ隱・, instruction: '隕∫｢ｺ隱阪∫｢ｺ隱咲憾諷九∝愛譁ｭ繧偵ち繧ｹ繧ｯ荳隕ｧ縺ｧ遒ｺ隱阪＠縺ｾ縺吶ょｰら畑縺ｮ隕∫｢ｺ隱阪ち繝悶・縺ゅｊ縺ｾ縺帙ｓ縲・ },
-        { step_id: '5', title: '驕狗畑Dashboard', instruction: '繝｡繝九Η繝ｼ縺九ｉ譏守､ｺ譖ｴ譁ｰ縺励∪縺吶ゆｻｶ謨ｰ縺ｨ螳牙・縺ｪ迥ｶ諷九□縺代ｒ陦ｨ遉ｺ縺励√Γ繝ｼ繝ｫ譛ｬ譁・ゝask蜷阪∝､夜ΚID縺ｯ陦ｨ遉ｺ縺励∪縺帙ｓ縲・ },
-        { step_id: '6', title: 'Diagnostic縺ｨ蜀榊ｮ溯｡・, instruction: 'Quick Diagnostic縺ｯ隱ｭ蜿門ｰら畑縺ｧ縺吶ゅお繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡後〒縺ｯ蜴溷屏繧定ｧ｣豸医＠縺ｦ縺九ｉ驕ｸ謚槭＠縺櫂ead Letter縺縺代ｒ蜀榊ｮ溯｡御ｺ育ｴ・＠縺ｾ縺吶・ },
-        { step_id: '7', title: 'Gmail謇句虚蜿冶ｾｼ', instruction: '髱樊ｩ溷ｯ・ユ繧ｹ繝・essage蜊倅ｽ阪↓謇句虚/蜿冶ｾｼ繝ｩ繝吶Ν繧剃ｻ倥￠縲√Γ繝九Η繝ｼ縺九ｉ1莉ｶ縺縺大燕蜃ｦ逅・＠縺ｾ縺吶よ焔蜍・髯､螟悶′譛蜆ｪ蜈医〒縺吶・ }
+        { step_id: '1', title: '初期セットアップ', instruction: 'メニューの説明を確認して実行します。Sheet/Protection、正式Gmailラベル、専用secondary Calendar、所有者edit Triggerを段階作成します。既存データのMigration・削除は行いません。' },
+        { step_id: '2', title: '自動処理の初期状態', instruction: '通常Inbox処理、実AI接続、5分TriggerはSetupから開始しません。外部判断と全Gate通過後にだけ、メニューから明示的に有効化します。' },
+        { step_id: '3', title: 'Taskの日常操作', instruction: '日常操作はタスク一覧だけで行います。通常の編集は所有者installable edit Triggerが自動反映し、問題時だけ手動fallbackを使います。' },
+        { step_id: '4', title: '要確認', instruction: '要確認、確認状態、判断をタスク一覧で確認します。専用の要確認タブはありません。' },
+        { step_id: '5', title: '運用Dashboard', instruction: 'メニューから明示更新します。件数と安全な状態だけを表示し、メール本文、Task名、外部IDは表示しません。' },
+        { step_id: '6', title: 'Diagnosticと再実行', instruction: 'Quick Diagnosticは読取専用です。エラー・再実行では原因を解消してから選択したDead Letterだけを再実行予約します。' },
+        { step_id: '7', title: 'Gmail手動取込', instruction: '非機密テストMessage単位に手動/取込ラベルを付け、メニューから1件だけ前処理します。手動/除外が最優先です。' }
       ]
     );
     ensureSafePromptMetadata(spreadsheet, nowValue);
@@ -758,7 +758,7 @@ var WorkOsSheetBuilder = (function () {
         'E_SCHEMA_MISSING_SHEET',
         'SETUP_VERSION_REFRESH',
         false,
-        '繧ｷ繧ｹ繝・Β險ｭ螳售heet縺後↑縺・◆繧」ersion metadata繧呈峩譁ｰ縺ｧ縺阪∪縺帙ｓ縲・
+        'システム設定Sheetがないためversion metadataを更新できません。'
       );
     }
     var expectedIds = WorkOsSchemas.getInternalIds(
@@ -769,7 +769,7 @@ var WorkOsSheetBuilder = (function () {
         'E_SCHEMA_CONFLICT',
         'SETUP_VERSION_REFRESH',
         false,
-        '繧ｷ繧ｹ繝・Β險ｭ螳售heet縺ｮ蛻玲焚縺計2 Schema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'システム設定Sheetの列数がv2 Schemaと一致しません。'
       );
     }
     var actualIds = sheet.getRange(
@@ -783,7 +783,7 @@ var WorkOsSheetBuilder = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'SETUP_VERSION_REFRESH',
         false,
-        '繧ｷ繧ｹ繝・Β險ｭ螳售heet縺ｮ蜀・Κ蛻悠D縺計2 Schema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'システム設定Sheetの内部列IDがv2 Schemaと一致しません。'
       );
     }
     var map = WorkOsSchemas.buildColumnMapFromIds(actualIds);
@@ -813,7 +813,7 @@ var WorkOsSheetBuilder = (function () {
             'E_SETUP_STATE_CONFLICT',
             'SETUP_VERSION_REFRESH',
             false,
-            'version metadata縺ｮ陦後′驥崎､・＠縺ｦ縺・∪縺吶・
+            'version metadataの行が重複しています。'
           );
         }
         rowsByKey[key] = {
@@ -830,7 +830,7 @@ var WorkOsSheetBuilder = (function () {
         'E_SETUP_STATE_CONFLICT',
         'SETUP_VERSION_REFRESH',
         false,
-        'version metadata縺ｮ蠢・郁｡後′荳崎ｶｳ縺励※縺・∪縺吶・
+        'version metadataの必須行が不足しています。'
       );
     }
     var changedKeys = [];
@@ -891,4 +891,3 @@ var WorkOsSheetBuilder = (function () {
     initialRowsForSheet: initialRowsForSheet
   });
 }());
-

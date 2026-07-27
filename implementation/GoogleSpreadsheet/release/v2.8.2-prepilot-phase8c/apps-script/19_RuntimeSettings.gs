@@ -94,7 +94,7 @@ var WorkOsRuntimeSettings = (function () {
           'E_RUNTIME_SETTING_TYPE',
           'RUNTIME_SETTINGS',
           false,
-          definition.key + '縺ｯ謨ｴ謨ｰ縺ｧ謖・ｮ壹＠縺ｦ縺上□縺輔＞縲・
+          definition.key + 'は整数で指定してください。'
         );
       }
       if (definition.editable &&
@@ -103,7 +103,7 @@ var WorkOsRuntimeSettings = (function () {
           'E_RUNTIME_SETTING_RANGE',
           'RUNTIME_SETTINGS',
           false,
-          definition.key + '縺悟ｮ牙・縺ｪ遽・峇螟悶〒縺吶・
+          definition.key + 'が安全な範囲外です。'
         );
       }
       return numeric;
@@ -119,7 +119,7 @@ var WorkOsRuntimeSettings = (function () {
         'E_RUNTIME_SETTING_TYPE',
         'RUNTIME_SETTINGS',
         false,
-        definition.key + '縺ｯBoolean縺ｧ謖・ｮ壹＠縺ｦ縺上□縺輔＞縲・
+        definition.key + 'はBooleanで指定してください。'
       );
     }
     return String(value == null ? '' : value);
@@ -133,7 +133,7 @@ var WorkOsRuntimeSettings = (function () {
         'E_RUNTIME_SETTINGS_MISSING',
         'RUNTIME_SETTINGS',
         false,
-        '險ｭ螳售heet縺後≠繧翫∪縺帙ｓ縲・
+        '設定Sheetがありません。'
       );
     }
     var schema = WorkOsSchemas.getSheetSchema(
@@ -147,7 +147,7 @@ var WorkOsRuntimeSettings = (function () {
         'E_RUNTIME_SETTINGS_SCHEMA',
         'RUNTIME_SETTINGS',
         false,
-        '險ｭ螳售heet縺ｮ蜀・Κ蛻悠D縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+        '設定Sheetの内部列IDが一致しません。'
       );
     }
     var rowCount = Math.max(
@@ -176,7 +176,7 @@ var WorkOsRuntimeSettings = (function () {
           'E_RUNTIME_SETTING_DUPLICATE',
           'RUNTIME_SETTINGS',
           false,
-          '險ｭ螳壹く繝ｼ縺碁㍾隍・＠縺ｦ縺・∪縺吶・
+          '設定キーが重複しています。'
         );
       }
       seen[key] = true;
@@ -188,7 +188,7 @@ var WorkOsRuntimeSettings = (function () {
           'E_RUNTIME_SETTING_CONTRACT',
           'RUNTIME_SETTINGS',
           false,
-          key + '縺ｮ險ｭ螳壼･醍ｴ・′荳閾ｴ縺励∪縺帙ｓ縲４etup繧貞・螳溯｡後＠縺ｦ縺上□縺輔＞縲・
+          key + 'の設定契約が一致しません。Setupを再実行してください。'
         );
       }
       var parsed = parseValue(row[map.value], definition);
@@ -198,7 +198,7 @@ var WorkOsRuntimeSettings = (function () {
           'E_RUNTIME_SETTING_FIXED',
           'RUNTIME_SETTINGS',
           false,
-          key + '縺ｯ邱ｨ髮・〒縺阪↑縺・ｨｭ螳壹〒縺吶４etup繧貞・螳溯｡後＠縺ｦ縺上□縺輔＞縲・
+          key + 'は編集できない設定です。Setupを再実行してください。'
         );
       }
       values[key] = parsed;
@@ -209,7 +209,7 @@ var WorkOsRuntimeSettings = (function () {
           'E_RUNTIME_SETTING_REQUIRED',
           'RUNTIME_SETTINGS',
           false,
-          '蠢・郁ｨｭ螳壹′荳崎ｶｳ縺励※縺・∪縺・ ' + definition.key
+          '必須設定が不足しています: ' + definition.key
         );
       }
     });
@@ -386,7 +386,7 @@ var WorkOsRuntimeSettings = (function () {
             'E_BUDGET_EXHAUSTED',
             'RUNTIME_PREFLIGHT',
             true,
-            'Shared preflight繧貞ｮ溯｡御ｺ育ｮ怜・縺ｧ蛛懈ｭ｢縺励∪縺励◆縲・
+            'Shared preflightを実行予算内で停止しました。'
           );
         }
         var taskMap = WorkOsSchemas.buildColumnMapFromIds(
@@ -480,24 +480,24 @@ var WorkOsRuntimeSettings = (function () {
     if (quick === 'FAIL') {
       return {
         status: 'ERROR',
-        note: 'Quick Diagnostic縺ｫFAIL縺後≠繧翫∪縺吶・
+        note: 'Quick DiagnosticにFAILがあります。'
       };
     }
     if (preflight && preflight.ready === false) {
       return {
         status: 'ACTION_REQUIRED',
-        note: '閾ｪ蜍募・逅・ate縺ｮ譛ｪ螳御ｺ・擅莉ｶ縺後≠繧翫∪縺吶・
+        note: '自動処理Gateの未完了条件があります。'
       };
     }
     if (quick === 'WARN' || automation !== 'CONSISTENT') {
       return {
         status: 'ATTENTION',
-        note: '隱ｭ蜿也ｵ先棡縺ｫ遒ｺ隱堺ｺ矩・′縺ゅｊ縺ｾ縺吶・
+        note: '読取結果に確認事項があります。'
       };
     }
     return {
       status: 'HEALTHY',
-      note: '繝ｭ繝ｼ繧ｫ繝ｫ讒区・遒ｺ隱阪・豁｣蟶ｸ縺ｧ縺吶ょ､夜Κ謗･邯壹・讀懆ｨｼ邨先棡縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+      note: 'ローカル構成確認は正常です。外部接続の検証結果ではありません。'
     };
   }
 
@@ -508,4 +508,3 @@ var WorkOsRuntimeSettings = (function () {
     summarizeHealth: summarizeHealth
   });
 }());
-

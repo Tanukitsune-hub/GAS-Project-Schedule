@@ -531,7 +531,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_SCHEMA_MISSING_SHEET',
         'LOG',
         false,
-        '驕狗畑險倬鹸Sheet縺後≠繧翫∪縺帙ｓ縲・
+        '運用記録Sheetがありません。'
       );
     }
     return sheet;
@@ -563,7 +563,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_SCHEMA_CONFLICT',
         'LOG',
         false,
-        '驕狗畑險倬鹸Sheet縺ｮ蛻玲焚縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        '運用記録Sheetの列数がSchemaと一致しません。'
       );
     }
     var ids = sheet.getRange(1, 1, 1, expectedIds.length).getValues()[0];
@@ -572,7 +572,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'LOG',
         false,
-        '驕狗畑險倬鹸Sheet縺ｮ蜀・Κ蛻悠D縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        '運用記録Sheetの内部列IDがSchemaと一致しません。'
       );
     }
     var map = WorkOsSchemas.buildColumnMapFromIds(ids);
@@ -597,7 +597,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_SCHEMA_CONFLICT',
         'STATE_WRITE',
         false,
-        '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡郡heet縺ｮ蛻玲焚縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'エラー・再実行Sheetの列数がSchemaと一致しません。'
       );
     }
     var actualIds = sheet.getRange(1, 1, 1, ids.length).getValues()[0];
@@ -606,7 +606,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'STATE_WRITE',
         false,
-        '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡郡heet縺ｮ蜀・Κ蛻悠D縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'エラー・再実行Sheetの内部列IDがSchemaと一致しません。'
       );
     }
     var map = WorkOsSchemas.buildColumnMapFromIds(ids);
@@ -625,7 +625,591 @@ var WorkOsLogAndDeadLetter = (function () {
     return {
       sheet: sheet,
       ids: ids,
-     …4741 tokens truncated…) === reference;
+      map: map,
+      rows: rows,
+      physical_row_count: rowCount
+    };
+  }
+
+  function errorRecordAt(context, physicalRow) {
+    var index = Number(physicalRow) - WorkOsConfig.DATA_START_ROW;
+    if (index < 0 || index >= context.rows.length) {
+      return null;
+    }
+    var row = context.rows[index];
+    if (WorkOsUtilities.isBlank(row[context.map.error_id])) {
+      return null;
+    }
+    var record = {};
+    context.ids.forEach(function (id) {
+      record[id] = row[context.map[id]];
+    });
+    record._row = physicalRow;
+    return record;
+  }
+
+  function writeErrorRecord(context, physicalRow, record) {
+    var output = context.ids.map(function (id) {
+      var value = Object.prototype.hasOwnProperty.call(record, id)
+        ? record[id]
+        : '';
+      return value == null ? '' : value;
+    });
+    context.sheet.getRange(
+      physicalRow,
+      1,
+      1,
+      output.length
+    ).setValues([output]);
+    var index = physicalRow - WorkOsConfig.DATA_START_ROW;
+    while (context.rows.length <= index) {
+      context.rows.push(new Array(context.ids.length).fill(''));
+    }
+    context.rows[index] = output;
+  }
+
+  function findErrorRecord(context, predicate) {
+    for (var index = 0; index < context.rows.length; index += 1) {
+      var physicalRow = WorkOsConfig.DATA_START_ROW + index;
+      var record = errorRecordAt(context, physicalRow);
+      if (record && predicate(record)) {
+        return record;
+      }
+    }
+    return null;
+  }
+
+  function logicalErrorRow(context) {
+    for (var index = 0; index < context.rows.length; index += 1) {
+      if (WorkOsUtilities.isBlank(
+        context.rows[index][context.map.error_id]
+      )) {
+        return WorkOsConfig.DATA_START_ROW + index;
+      }
+    }
+    var previousMax = context.sheet.getMaxRows();
+    context.sheet.insertRowsAfter(
+      previousMax,
+      WorkOsConfig.ROW_EXPANSION_UNIT
+    );
+    for (var rowOffset = 0;
+      rowOffset < WorkOsConfig.ROW_EXPANSION_UNIT;
+      rowOffset += 1) {
+      context.rows.push(new Array(context.ids.length).fill(''));
+    }
+    context.physical_row_count = context.rows.length;
+    return previousMax + 1;
+  }
+
+  function safeTaskReference(taskId) {
+    var normalized = String(taskId || '').trim();
+    return normalized
+      ? 'taskref_' + WorkOsUtilities.sha256Hex(
+        'v2|error-task-reference|' + normalized
+      )
+      : '';
+  }
+
+  function safeMessageReference(messageId) {
+    var value = String(messageId || '');
+    if (/^msgref_[0-9a-f]{64}$/.test(value)) {
+      return value;
+    }
+    return hashedExternalReference('msgref_', value);
+  }
+
+  function safeThreadReference(threadId) {
+    var value = String(threadId || '');
+    if (/^thrref_[0-9a-f]{64}$/.test(value)) {
+      return value;
+    }
+    return hashedExternalReference('thrref_', value);
+  }
+
+  function recordOperationalError(
+    error,
+    metadata,
+    runId,
+    spreadsheet,
+    errorContext
+  ) {
+    var value = metadata || {};
+    var policy = retryPolicy(error, value);
+    var timestamp = value.last_attempt_at instanceof Date
+      ? value.last_attempt_at
+      : WorkOsUtilities.now();
+    var messageReference = safeMessageReference(value.message_id);
+    var threadReference = safeThreadReference(value.thread_id);
+    var taskReference = safeTaskReference(value.task_id);
+    var safeReference = messageReference || threadReference || taskReference ||
+      'sysref_' + WorkOsUtilities.sha256Hex(
+        'v2|system-error|' + policy.subsystem + '|' + policy.code
+      );
+    var messageStateId = messageReference;
+    var requestedDead =
+      String(value.processing_status || value.status || '').toUpperCase() ===
+        'DEAD';
+    var hasExplicitRetryCount =
+      Object.prototype.hasOwnProperty.call(value, 'retry_count');
+    var retryCount = Math.max(0, Number(value.retry_count || 0));
+    var attemptCount = Math.max(
+      1,
+      Number(value.attempt_count || (
+        requestedDead && retryCount >=
+          WorkOsConfig.RETRY_DELAYS_MINUTES.length
+          ? retryCount + 1
+          : Math.max(1, retryCount)
+      ))
+    );
+    var context = errorContext || createErrorContext(spreadsheet);
+    var existing = findErrorRecord(context, function (record) {
+      if (String(record.status || '') === 'RESOLVED') {
+        return false;
+      }
+      return String(record.subsystem || '') === policy.subsystem &&
+        String(record.safe_reference || '') === safeReference;
+    });
+    var nextRetryAt = value.next_retry_at instanceof Date
+      ? value.next_retry_at
+      : '';
+    if (!hasExplicitRetryCount) {
+      attemptCount = Math.max(
+        1,
+        Number(existing && existing.attempt_count || 0) + 1
+      );
+      requestedDead = !policy.retryable ||
+        attemptCount >= WorkOsConfig.RETRY_MAX_ATTEMPTS;
+      retryCount = requestedDead
+        ? WorkOsConfig.RETRY_DELAYS_MINUTES.length
+        : attemptCount;
+      nextRetryAt = requestedDead
+        ? ''
+        : new Date(
+          timestamp.getTime() +
+            WorkOsConfig.RETRY_DELAYS_MINUTES[attemptCount - 1] *
+              60 * 1000
+        );
+    }
+    var existingWasDead =
+      existing && String(existing.status || '') === 'DEAD';
+    var record = existing || {};
+    var firstFailedAt = existing && existing.first_failed_at
+      ? existing.first_failed_at
+      : timestamp;
+    var deadLetterId = String(
+      existing && existing.dead_letter_id || ''
+    );
+    if (requestedDead && !deadLetterId) {
+      deadLetterId = WorkOsUtilities.makeId('dl_');
+    }
+    record.error_id = String(
+      existing && existing.error_id || WorkOsUtilities.makeId('err_')
+    );
+    record.status = requestedDead ? 'DEAD' : 'OPEN';
+    record.retry_requested = false;
+    record.stage = String(policy.stage).slice(0, 80);
+    record.error_code = String(policy.code).slice(0, 80);
+    record.error_summary = requestedDead
+      ? '再試行上限または非再試行エラーのため停止しました。本文・payload・credentialは保存していません。'
+      : '処理に失敗しました。本文・payload・credentialは保存していません。';
+    record.source_message_id = messageReference;
+    record.source_thread_id = threadReference;
+    record.task_id = String(value.task_id || '').slice(0, 80);
+    record.retry_count = retryCount;
+    record.next_retry_at = nextRetryAt;
+    record.first_failed_at = firstFailedAt;
+    record.last_failed_at = timestamp;
+    record.resolved_at = '';
+    record.last_run_id = String(runId || '').slice(0, 80);
+    record.dead_letter_id = deadLetterId;
+    record.subsystem = policy.subsystem;
+    /*
+     * Once a Dead Letter has captured the original retry taxonomy, a later
+     * checkpoint observation must not downgrade an exhausted transient error
+     * to non-retryable merely because the durable state is already DEAD.
+     */
+    record.error_category =
+      existingWasDead && String(existing.error_category || '')
+        ? String(existing.error_category)
+        : policy.error_category;
+    record.safe_reference = safeReference;
+    record.message_state_id = messageStateId;
+    record.resume_stage = policy.resume_stage;
+    record.attempt_count = attemptCount;
+    record.last_attempt_at = timestamp;
+    record.next_action =
+      existingWasDead && String(existing.next_action || '')
+        ? String(existing.next_action)
+        : (requestedDead
+          ? policy.user_action
+          : 'WAIT_FOR_AUTOMATIC_RETRY');
+    record.created_at = existing && existing.created_at
+      ? existing.created_at
+      : timestamp;
+    record.updated_at = timestamp;
+    var targetRow = existing
+      ? existing._row
+      : logicalErrorRow(context);
+    writeErrorRecord(context, targetRow, record);
+    return {
+      row: targetRow,
+      error_id: record.error_id,
+      dead_letter_id: record.dead_letter_id,
+      status: record.status,
+      subsystem: record.subsystem,
+      error_category: record.error_category,
+      retryable: policy.retryable,
+      safe_reference: record.safe_reference
+    };
+  }
+
+  function appendRunSummary(summary, spreadsheet, deferredError) {
+    var value = summary || {};
+    var allowedModes = {
+      GMAIL_PHASE2: true,
+      MOCK_PHASE3: true,
+      AI_PHASE5: true,
+      CALENDAR_PHASE4: true,
+      AUTO_PHASE6: true
+    };
+    var requestedMode = String(value.mode || 'GMAIL_PHASE2');
+    var noteParts = [
+      WorkOsUtilities.redact(String(value.note || 'Worker summary'))
+    ];
+    var gmailCallLimit = Number(value.gmail_api_call_limit || 0);
+    if (gmailCallLimit > 0) {
+      noteParts.push(
+        'GMAIL_CALLS=' +
+        Math.max(0, Number(value.gmail_api_call_count || 0)) +
+        '/' + gmailCallLimit
+      );
+    }
+    var safeFilterCounts = [];
+    [
+      'MANUAL_EXCLUDE',
+      'SYSTEM_SCOPE',
+      'CATEGORY_PROMOTIONS',
+      'CATEGORY_SOCIAL',
+      'CLEAR_NEWSLETTER',
+      'GOOGLE_CALENDAR_NOTIFICATION'
+    ].forEach(function (reason) {
+      var count = Math.max(
+        0,
+        Number(value.gmail_filter_counts &&
+          value.gmail_filter_counts[reason] || 0)
+      );
+      if (count) {
+        safeFilterCounts.push(reason + ':' + count);
+      }
+    });
+    if (safeFilterCounts.length) {
+      noteParts.push('GMAIL_FILTERS=' + safeFilterCounts.join(','));
+    }
+    return WorkOsUtilities.withScriptLock(function () {
+      var runId = String(value.run_id || '');
+      if (runId) {
+        var historySheet = sheetFor(
+          spreadsheet,
+          WorkOsConfig.SHEETS.RUN_HISTORY
+        );
+        var historyIds = WorkOsSchemas.getInternalIds(
+          WorkOsConfig.SHEETS.RUN_HISTORY
+        );
+        if (historySheet.getMaxColumns() !== historyIds.length) {
+          throw new WorkOsAppError(
+            'E_SCHEMA_CONFLICT',
+            'LOG',
+            false,
+            '運用記録Sheetの列数がSchemaと一致しません。'
+          );
+        }
+        var actualHistoryIds = historySheet.getRange(
+          1,
+          1,
+          1,
+          historyIds.length
+        ).getValues()[0];
+        if (JSON.stringify(actualHistoryIds) !==
+            JSON.stringify(historyIds)) {
+          throw new WorkOsAppError(
+            'E_SCHEMA_MISSING_COLUMN',
+            'LOG',
+            false,
+            '運用記録Sheetの内部列IDがSchemaと一致しません。'
+          );
+        }
+        var historyMap =
+          WorkOsSchemas.buildColumnMapFromIds(actualHistoryIds);
+        var historyRowCount = Math.max(
+          0,
+          historySheet.getMaxRows() -
+            WorkOsConfig.DATA_START_ROW + 1
+        );
+        var existingRunIds = historyRowCount
+          ? historySheet.getRange(
+            WorkOsConfig.DATA_START_ROW,
+            historyMap.run_id + 1,
+            historyRowCount,
+            1
+          ).getValues()
+          : [];
+        for (var runIndex = 0;
+          runIndex < existingRunIds.length;
+          runIndex += 1) {
+          if (String(existingRunIds[runIndex][0] || '') === runId) {
+            return WorkOsConfig.DATA_START_ROW + runIndex;
+          }
+        }
+      }
+      if (deferredError && deferredError.error) {
+        try {
+          recordOperationalError(
+            deferredError.error,
+            deferredError.metadata || {},
+            value.run_id,
+            spreadsheet,
+            deferredError.error_context || null
+          );
+        } catch (deferredErrorWriteFailure) {
+          // Run summary remains independently writable and contains no payload.
+        }
+      }
+      return appendRecord(
+        spreadsheet,
+        WorkOsConfig.SHEETS.RUN_HISTORY,
+        'run_id',
+        {
+          run_id: runId,
+          trigger_type: requestedMode === 'AUTO_PHASE6'
+            ? 'TIME_DRIVEN'
+            : 'MANUAL',
+          mode: allowedModes[requestedMode]
+            ? requestedMode
+            : 'GMAIL_PHASE2',
+          started_at: value.started_at,
+          finished_at: value.finished_at,
+          duration_ms: Number(value.duration_ms || 0),
+          candidate_count: Number(value.candidate_count || 0),
+          processed_count: Number(value.processed_count || 0),
+          created_task_count: Number(value.created_task_count || 0),
+          updated_task_count: Number(value.updated_task_count || 0),
+          review_count: Number(value.review_count || 0),
+          skipped_count: Number(value.skipped_count || 0),
+          error_count: Number(value.error_count || 0),
+          run_status: String(value.run_status || 'UNKNOWN').slice(0, 40),
+          note: noteParts.join(';').slice(0, 200)
+        }
+      );
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function recordManagementEditWarning(metadata, spreadsheet) {
+    var value = metadata || {};
+    var timestamp = value.detected_at instanceof Date
+      ? value.detected_at
+      : WorkOsUtilities.now();
+    return WorkOsUtilities.withScriptLock(function () {
+      var properties = PropertiesService.getScriptProperties();
+      var priorCount = 0;
+      var existing = properties.getProperty(
+        WorkOsConfig.PROPERTIES.MANAGEMENT_EDIT_WARNING
+      );
+      if (existing) {
+        try {
+          priorCount = Number(JSON.parse(existing).count || 0);
+        } catch (parseError) {
+          priorCount = 0;
+        }
+      }
+      var marker = {
+        count: priorCount + 1,
+        last_detected_at: timestamp.toISOString(),
+        management_column_count: Math.max(
+          0,
+          Number(value.management_column_count || 0)
+        )
+      };
+      properties.setProperty(
+        WorkOsConfig.PROPERTIES.MANAGEMENT_EDIT_WARNING,
+        JSON.stringify(marker)
+      );
+      var row = appendRecord(
+        spreadsheet,
+        WorkOsConfig.SHEETS.ERRORS,
+        'error_id',
+        {
+          error_id: WorkOsUtilities.makeId('err_'),
+          status: 'OPEN',
+          retry_requested: false,
+          stage: 'EDIT_HANDLER',
+          error_code: 'E_MANAGEMENT_COLUMN_EDIT',
+          error_summary:
+            '管理列の直接編集を検出しました。値は元に戻していません。',
+          source_message_id: '',
+          source_thread_id: '',
+          task_id: '',
+          retry_count: 0,
+          next_retry_at: '',
+          first_failed_at: timestamp,
+          last_failed_at: timestamp,
+          resolved_at: '',
+          last_run_id: ''
+        }
+      );
+      return {
+        marker: marker,
+        error_row: row
+      };
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function recordMessageError(
+    error,
+    metadata,
+    runId,
+    spreadsheet,
+    errorContext
+  ) {
+    var value = metadata || {};
+    return recordOperationalError(
+      error,
+      {
+        subsystem: value.subsystem,
+        fallback_stage: 'MANUAL_IMPORT',
+        resume_stage: value.resume_stage,
+        message_id: value.message_id,
+        thread_id: value.thread_id,
+        retry_count: value.retry_count,
+        attempt_count: value.attempt_count,
+        next_retry_at: value.next_retry_at,
+        processing_status: value.processing_status,
+        last_attempt_at: value.last_attempt_at
+      },
+      runId,
+      spreadsheet,
+      errorContext
+    );
+  }
+
+  function recordCalendarError(
+    error,
+    metadata,
+    runId,
+    spreadsheet,
+    errorContext
+  ) {
+    var value = metadata || {};
+    return recordOperationalError(
+      error,
+      {
+        subsystem: value.subsystem || (
+          String(value.desired_action || '').toUpperCase() === 'DELETE'
+            ? 'CALENDAR_DELETE'
+            : (String(value.desired_action || '').toUpperCase() === 'UPDATE'
+              ? 'CALENDAR_UPDATE'
+              : 'CALENDAR_CREATE')
+        ),
+        fallback_stage: 'CALENDAR_SYNC',
+        resume_stage: 'CALENDAR_PENDING',
+        message_id: value.message_id,
+        thread_id: value.thread_id,
+        task_id: value.task_id,
+        retry_count: value.retry_count,
+        attempt_count: value.attempt_count,
+        next_retry_at: value.next_retry_at,
+        status: value.status,
+        last_attempt_at: value.last_attempt_at
+      },
+      runId,
+      spreadsheet,
+      errorContext
+    );
+  }
+
+  function resolveErrorsForMessage(
+    messageId,
+    spreadsheet,
+    nowValue,
+    errorContext
+  ) {
+    var reference = safeMessageReference(messageId);
+    if (!reference) {
+      return { resolved_count: 0 };
+    }
+    var timestamp = nowValue instanceof Date
+      ? nowValue
+      : WorkOsUtilities.now();
+    var context = errorContext || createErrorContext(spreadsheet);
+    var resolved = 0;
+    for (var index = 0; index < context.rows.length; index += 1) {
+      var record = errorRecordAt(
+        context,
+        WorkOsConfig.DATA_START_ROW + index
+      );
+      if (!record || String(record.status || '') === 'RESOLVED') {
+        continue;
+      }
+      if (String(record.message_state_id || record.source_message_id || '') !==
+          reference) {
+        continue;
+      }
+      record.status = 'RESOLVED';
+      record.retry_requested = false;
+      record.next_retry_at = '';
+      record.next_action = 'NONE';
+      record.resolved_at = timestamp;
+      record.updated_at = timestamp;
+      writeErrorRecord(context, record._row, record);
+      resolved += 1;
+    }
+    return { resolved_count: resolved };
+  }
+
+  function resolveErrorsForTask(
+    taskId,
+    spreadsheet,
+    nowValue,
+    errorContext
+  ) {
+    var normalizedTaskId = String(taskId || '').trim();
+    if (!normalizedTaskId) {
+      return { resolved_count: 0 };
+    }
+    var timestamp = nowValue instanceof Date
+      ? nowValue
+      : WorkOsUtilities.now();
+    var context = errorContext || createErrorContext(spreadsheet);
+    var resolved = 0;
+    for (var index = 0; index < context.rows.length; index += 1) {
+      var record = errorRecordAt(
+        context,
+        WorkOsConfig.DATA_START_ROW + index
+      );
+      if (!record || String(record.status || '') === 'RESOLVED' ||
+          String(record.task_id || '') !== normalizedTaskId) {
+        continue;
+      }
+      record.status = 'RESOLVED';
+      record.retry_requested = false;
+      record.next_retry_at = '';
+      record.next_action = 'NONE';
+      record.resolved_at = timestamp;
+      record.updated_at = timestamp;
+      writeErrorRecord(context, record._row, record);
+      resolved += 1;
+    }
+    return { resolved_count: resolved };
+  }
+
+  function hasUnresolvedThreadError(threadId, spreadsheet, errorContext) {
+    var reference = safeThreadReference(threadId);
+    if (!reference) {
+      return false;
+    }
+    var context = errorContext || createErrorContext(spreadsheet);
+    return Boolean(findErrorRecord(context, function (record) {
+      return String(record.status || '') !== 'RESOLVED' &&
+        String(record.source_thread_id || '') === reference;
     }));
   }
 
@@ -665,7 +1249,7 @@ var WorkOsLogAndDeadLetter = (function () {
           'E_DIAGNOSTIC_BUDGET',
           'DIAGNOSTIC',
           true,
-          'Error險ｺ譁ｭ繧貞ｮ牙・縺ｪ螳溯｡御ｺ育ｮ励〒蛛懈ｭ｢縺励∪縺励◆縲・
+          'Error診断を安全な実行予算で停止しました。'
         );
       }
     }
@@ -888,7 +1472,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_DEAD_LETTER_ID_INVALID',
         'STATE_WRITE',
         false,
-        '蜀榊ｮ溯｡悟ｯｾ雎｡縺ｮ蜀・ΚID蠖｢蠑上′荳肴ｭ｣縺ｧ縺吶・
+        '再実行対象の内部ID形式が不正です。'
       );
     }
     return findErrorRecord(context, function (record) {
@@ -908,7 +1492,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_TEST_MODE_DISABLED',
         'STATE_WRITE',
         false,
-        '蜀榊ｮ溯｡悟・逅・∈縺ｮ萓晏ｭ俶ｳｨ蜈･縺ｯTest mode縺縺代〒蛻ｩ逕ｨ縺ｧ縺阪∪縺吶・
+        '再実行処理への依存注入はTest modeだけで利用できます。'
       );
     }
     var spreadsheet = settings.spreadsheet ||
@@ -924,7 +1508,7 @@ var WorkOsLogAndDeadLetter = (function () {
           'E_DEAD_LETTER_NOT_FOUND',
           'STATE_WRITE',
           false,
-          '謖・ｮ壹＆繧後◆Dead Letter縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縲・
+          '指定されたDead Letterが見つかりません。'
         );
       }
       if (String(record.status || '') === 'RETRY_QUEUED') {
@@ -939,7 +1523,7 @@ var WorkOsLogAndDeadLetter = (function () {
           'E_DEAD_LETTER_NOT_RETRYABLE_STATE',
           'STATE_WRITE',
           false,
-          'DEAD迥ｶ諷九・鬆・岼縺縺代ｒ謇句虚蜀榊ｮ溯｡後〒縺阪∪縺吶・
+          'DEAD状態の項目だけを手動再実行できます。'
         );
       }
       if ([
@@ -954,7 +1538,7 @@ var WorkOsLogAndDeadLetter = (function () {
           'E_DEAD_LETTER_NON_RETRYABLE',
           'STATE_WRITE',
           false,
-          '髱槫・隧ｦ陦後お繝ｩ繝ｼ縺ｯ蜴溷屏隗｣豎ｺ縺ｨ蛟句挨遒ｺ隱阪↑縺励↓蜀榊ｮ溯｡後〒縺阪∪縺帙ｓ縲・
+          '非再試行エラーは原因解決と個別確認なしに再実行できません。'
         );
       }
       var readiness = readinessChecker({
@@ -1008,7 +1592,7 @@ var WorkOsLogAndDeadLetter = (function () {
               'E_MESSAGE_STATE_NOT_FOUND',
               'STATE_WRITE',
               false,
-              'Calendar Dead Letter縺ｫ蟇ｾ蠢懊☆繧貴essage State縺後≠繧翫∪縺帙ｓ縲・
+              'Calendar Dead Letterに対応するMessage Stateがありません。'
             );
           }
           var calendarMessageRecord =
@@ -1026,7 +1610,7 @@ var WorkOsLogAndDeadLetter = (function () {
               'E_MESSAGE_CHECKPOINT_CONFLICT',
               'STATE_WRITE',
               false,
-              'Calendar Dead Letter縺ｮ蜀埼幕谿ｵ髫弱′荳閾ｴ縺励∪縺帙ｓ縲・
+              'Calendar Dead Letterの再開段階が一致しません。'
             );
           }
         }
@@ -1079,7 +1663,7 @@ var WorkOsLogAndDeadLetter = (function () {
             'E_MESSAGE_STATE_NOT_FOUND',
             'STATE_WRITE',
             false,
-            'Dead Letter縺ｫ蟇ｾ蠢懊☆繧貴essage State縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縲・
+            'Dead Letterに対応するMessage Stateが見つかりません。'
           );
         }
         queued =
@@ -1124,7 +1708,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_TEST_MODE_DISABLED',
         'STATE_WRITE',
         false,
-        '驕ｸ謚槫・螳溯｡後∈縺ｮ萓晏ｭ俶ｳｨ蜈･縺ｯTest mode縺縺代〒蛻ｩ逕ｨ縺ｧ縺阪∪縺吶・
+        '選択再実行への依存注入はTest modeだけで利用できます。'
       );
     }
     var spreadsheet = settings.spreadsheet ||
@@ -1139,7 +1723,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_DEAD_LETTER_SELECTION',
         'STATE_WRITE',
         false,
-        '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡郡heet縺ｮ蟇ｾ雎｡陦後ｒ驕ｸ謚槭＠縺ｦ縺上□縺輔＞縲・
+        'エラー・再実行Sheetの対象行を選択してください。'
       );
     }
     if (selection.getNumRows() > WorkOsConfig.MANUAL_RETRY_MAX_SELECTED) {
@@ -1147,7 +1731,7 @@ var WorkOsLogAndDeadLetter = (function () {
         'E_DEAD_LETTER_SELECTION_LIMIT',
         'STATE_WRITE',
         false,
-        '荳蠎ｦ縺ｫ蜀榊ｮ溯｡後〒縺阪ｋ莉ｶ謨ｰ荳企剞繧定ｶ・∴縺ｦ縺・∪縺吶・
+        '一度に再実行できる件数上限を超えています。'
       );
     }
     return WorkOsUtilities.withScriptLock(function (lock) {
@@ -1215,4 +1799,3 @@ function retrySelectedDeadLetters() {
 function retryDeadLetterById(deadLetterId) {
   return WorkOsLogAndDeadLetter.retryDeadLetterById(deadLetterId);
 }
-

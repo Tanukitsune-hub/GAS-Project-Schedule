@@ -76,8 +76,8 @@ var WorkOsTaskReviewPolicy = (function () {
       ),
       task_title: String(action.task_title ||
         (action.action_type === 'UNCLEAR'
-          ? '蜀・ｮｹ遒ｺ隱阪′蠢・ｦ√↑繝｡繝ｼ繝ｫ'
-          : '譌｢蟄倥ち繧ｹ繧ｯ螟画峩縺ｮ遒ｺ隱・)),
+          ? '内容確認が必要なメール'
+          : '既存タスク変更の確認')),
       status: safe ? 'OPEN' : 'REVIEW',
       needs_review: !safe,
       decision: 'NONE',
@@ -168,7 +168,7 @@ var WorkOsTaskReviewPolicy = (function () {
         'E_TASK_DEADLINE_PATCH',
         'TASK_REVIEW_POLICY',
         false,
-        '譛滄剞譬ｹ諡縺梧悄髯先律縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        '期限根拠が期限日と一致しません。'
       );
     }
     return {
@@ -479,20 +479,20 @@ var WorkOsTaskReviewPolicy = (function () {
     var active = (tasks || []).filter(isActiveTask);
     var labels = [];
     if (active.length) {
-      labels.push('AI/隕∝ｯｾ蠢・);
+      labels.push('AI/要対応');
     }
     if (active.some(function (task) { return Boolean(task.due_date); })) {
-      labels.push('AI/譛滄剞');
+      labels.push('AI/期限');
     }
     if (active.some(function (task) {
       return task.waiting_for_reply === true || task.status === 'WAITING';
     })) {
-      labels.push('AI/霑比ｿ｡蠕・);
+      labels.push('AI/返信待');
     }
     if ((tasks || []).some(function (task) {
       return task.needs_review === true;
     })) {
-      labels.push('AI/隕∫｢ｺ隱・);
+      labels.push('AI/要確認');
     }
     return labels;
   }
@@ -508,4 +508,3 @@ var WorkOsTaskReviewPolicy = (function () {
     computeAiLabels: computeAiLabels
   });
 }());
-

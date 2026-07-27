@@ -172,11 +172,11 @@ const historyIds = [
 const errorIds = ['error_id', 'status'];
 const outboxIds = ['sync_id', 'status'];
 const schemaIds = {
-  '繧ｿ繧ｹ繧ｯ荳隕ｧ': taskIds,
-  '蜃ｦ逅・ｱ･豁ｴ': historyIds,
-  '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡・: errorIds,
-  '蜷梧悄迥ｶ諷・: outboxIds,
-  '繝繝・す繝･繝懊・繝・: ['metric_key', 'metric_value', 'note']
+  'タスク一覧': taskIds,
+  '処理履歴': historyIds,
+  'エラー・再実行': errorIds,
+  '同期状態': outboxIds,
+  'ダッシュボード': ['metric_key', 'metric_value', 'note']
 };
 const dashboardContext = {
   console,
@@ -188,22 +188,22 @@ const dashboardContext = {
     LOCK_WAIT_MS: 5000,
     TEST_MODE: true,
     SHEETS: {
-      DASHBOARD: '繝繝・す繝･繝懊・繝・,
-      TASKS: '繧ｿ繧ｹ繧ｯ荳隕ｧ',
-      RUN_HISTORY: '蜃ｦ逅・ｱ･豁ｴ',
-      ERRORS: '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡・,
-      SYNC_STATE: '蜷梧悄迥ｶ諷・
+      DASHBOARD: 'ダッシュボード',
+      TASKS: 'タスク一覧',
+      RUN_HISTORY: '処理履歴',
+      ERRORS: 'エラー・再実行',
+      SYNC_STATE: '同期状態'
     }
   },
   WorkOsEnums: {
     TaskStatus: {
-      REVIEW: '隕∫｢ｺ隱・,
-      WAITING: '霑比ｿ｡蠕・■',
-      DONE: '螳御ｺ・,
-      EXCLUDED: '蟇ｾ雎｡螟・,
-      CANCELLED: '蜿匁ｶ・
+      REVIEW: '要確認',
+      WAITING: '返信待ち',
+      DONE: '完了',
+      EXCLUDED: '対象外',
+      CANCELLED: '取消'
     },
-    ReviewState: { OPEN: '譛ｪ遒ｺ隱・ }
+    ReviewState: { OPEN: '未確認' }
   },
   WorkOsSchemas: {
     getInternalIds: (name) => schemaIds[name],
@@ -239,18 +239,18 @@ vm.createContext(dashboardContext);
 vm.runInContext(source('15_Dashboard.gs'), dashboardContext);
 
 function matrix(ids, rows) {
-  return [ids, ids.map((id) => `隕句・縺・${id}`), ...rows];
+  return [ids, ids.map((id) => `見出し:${id}`), ...rows];
 }
 
 test('R-DASH-01_AGGREGATES_OPERATIONAL_COUNTS_WITHOUT_CONTENT', () => {
   const taskRows = [
-    ['t1', 'o1', '隕∫｢ｺ隱・, false, false, true, '譛ｪ遒ｺ隱・,
+    ['t1', 'o1', '要確認', false, false, true, '未確認',
       '2026-07-25', true],
-    ['t2', 'o2', '譛ｪ蟇ｾ蠢・, false, false, false, '縺ｪ縺・,
+    ['t2', 'o2', '未対応', false, false, false, 'なし',
       '2026-07-24', false],
-    ['t3', 'o3', '螳御ｺ・, true, false, false, '縺ｪ縺・,
+    ['t3', 'o3', '完了', true, false, false, 'なし',
       '2026-07-27', false],
-    ['t4', 'o4', '譛ｪ蟇ｾ蠢・, false, false, false, '縺ｪ縺・,
+    ['t4', 'o4', '未対応', false, false, false, 'なし',
       '2026-07-30', false]
   ];
   const historyRows = [
@@ -315,11 +315,11 @@ test('R-DASH-04_100_1000_10000_ROWS_REMAIN_LINEAR_AND_ACCURATE', () => {
     const rows = Array.from({ length: count }, (_, index) => [
       `t${index}`,
       `o${index}`,
-      '譛ｪ蟇ｾ蠢・,
+      '未対応',
       false,
       false,
       false,
-      '縺ｪ縺・,
+      'なし',
       index % 2 ? '2026-07-25' : '2026-07-30',
       false
     ]);
@@ -361,7 +361,7 @@ test('R-DASH-05_BUDGET_EXHAUSTION_STOPS_BEFORE_SOURCE_READ', () => {
 test('R-DASH-06_KEYED_UPSERT_IS_IDEMPOTENT_AND_PRESERVES_CUSTOM_ROW', () => {
   const cells = [
     ['metric_key', 'metric_value', 'note'],
-    ['鬆・岼', '蛟､', '豕ｨ險・],
+    ['項目', '値', '注記'],
     ['CUSTOM', 'keep', 'user row'],
     ['', '', '']
   ];
@@ -528,17 +528,17 @@ test('R-RUNTIME-07_SETTINGS_PROTECTION_AND_EDITABLE_PRESERVATION_EXIST', () => {
 
 test('R-UX-01_SETUP_CONSENT_NAMES_SIDE_EFFECTS_AND_NON_EFFECTS', () => {
   const menu = source('Menu.gs');
-  assert.match(menu, /豁｣蠑秀mail繝ｩ繝吶Ν7莉ｶ/);
-  assert.match(menu, /蟆ら畑secondary Calendar/);
-  assert.match(menu, /謇譛芽・nstallable edit Trigger/);
-  assert.match(menu, /騾壼ｸｸInbox蜃ｦ逅・∝ｮ蘗I謗･邯壹・蛻・rigger縺ｯ髢句ｧ・);
+  assert.match(menu, /正式Gmailラベル7件/);
+  assert.match(menu, /専用secondary Calendar/);
+  assert.match(menu, /所有者installable edit Trigger/);
+  assert.match(menu, /通常Inbox処理、実AI接続、5分Triggerは開始/);
   assert.match(menu, /WorkOsSetup\.getNextStagePreview/);
 });
 
 test('R-UX-02_RESULT_SUMMARY_HAS_NEXT_ACTION_AND_TRUNCATION_NOTICE', () => {
   const menu = source('Menu.gs');
-  assert.match(menu, /谺｡縺ｮ謫堺ｽ・/);
-  assert.match(menu, /隧ｳ邏ｰ縺ｯ陦ｨ遉ｺ荳企剞縺ｮ縺溘ａ蛻・ｊ隧ｰ繧√∪縺励◆/);
+  assert.match(menu, /次の操作:/);
+  assert.match(menu, /詳細は表示上限のため切り詰めました/);
   assert.match(menu, /Diagnostic:/);
 });
 
@@ -548,36 +548,36 @@ test('R-UX-03_PAUSED_ACTION_DEPENDS_ON_OPERATION', () => {
   vm.runInContext(source('Menu.gs'), menuContext);
   assert.match(
     menuContext.nextActionForResult_(
-      '謇句虚蜿冶ｾｼ',
+      '手動取込',
       { status: 'PAUSED' }
     ),
-    /蜷後§繝｡繝九Η繝ｼ謫堺ｽ懊ｒ蜀榊ｮ溯｡・
+    /同じメニュー操作を再実行/
   );
   assert.doesNotMatch(
     menuContext.nextActionForResult_(
-      '謇句虚蜿冶ｾｼ',
+      '手動取込',
       { status: 'PAUSED' }
     ),
-    /繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡・
+    /セットアップを続行/
   );
   assert.match(
     menuContext.nextActionForResult_(
-      '蛻晄悄繧ｻ繝・ヨ繧｢繝・・',
+      '初期セットアップ',
       { status: 'PAUSED', next_stage: 'S60_CREATE_DEADLINE_CALENDAR' }
     ),
-    /繧ｻ繝・ヨ繧｢繝・・繧堤ｶ夊｡・
+    /セットアップを続行/
   );
 });
 
 test('R-META-01_PHASE_BOUNDARY_AND_VERSIONS_ARE_CURRENT', () => {
   const config = source('00_Config.gs');
   const setup = source('02_Setup.gs');
-  assert.match(config, /CODE_VERSION:\s*'2\.8\.2-prepilot'/);
-  assert.match(config, /SCHEMA_VERSION:\s*'2\.3'/);
-  assert.match(config, /MIGRATION_VERSION:\s*'0'/);
+  assert.match(config, /CODE_VERSION:\s*'2\.8\.3-prepilot'/);
+  assert.match(config, /SCHEMA_VERSION:\s*'2\.4'/);
+  assert.match(config, /MIGRATION_VERSION:\s*'1'/);
   assert.match(
     setup,
-    /PHASE7_LOCAL_COMPLETE_EXTERNAL_VALIDATION_PENDING/
+    /READY_FOR_INDEPENDENT_REAUDIT/
   );
   assert(!setup.includes('STOP_BEFORE_PHASE7'));
 });
@@ -595,4 +595,3 @@ process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (failed.length) {
   process.exitCode = 1;
 }
-

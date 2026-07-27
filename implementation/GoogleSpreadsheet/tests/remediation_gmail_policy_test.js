@@ -84,7 +84,7 @@ function message({
 
 test('R-GMAIL-01_MANUAL_EXCLUDE_ALWAYS_WINS', () => {
   const result = Gateway.automaticCandidatePolicy(
-    ['謇句虚/髯､螟・, '謇句虚/蜿冶ｾｼ'],
+    ['手動/除外', '手動/取込'],
     message({ labels: ['INBOX', 'CATEGORY_PROMOTIONS'] })
   );
   assert.deepStrictEqual(
@@ -97,7 +97,7 @@ test('R-GMAIL-02_SPAM_TRASH_AND_NON_INBOX_FAIL_CLOSED', () => {
   ['SPAM', 'TRASH'].forEach((label) => {
     assert.strictEqual(
       Gateway.automaticCandidatePolicy(
-        ['謇句虚/蜿冶ｾｼ'],
+        ['手動/取込'],
         message({ labels: ['INBOX', label] })
       ).reason,
       'SYSTEM_SCOPE'
@@ -111,7 +111,7 @@ test('R-GMAIL-02_SPAM_TRASH_AND_NON_INBOX_FAIL_CLOSED', () => {
 
 test('R-GMAIL-03_MANUAL_IMPORT_OVERRIDES_LOW_VALUE_FILTERS', () => {
   const result = Gateway.automaticCandidatePolicy(
-    ['謇句虚/蜿冶ｾｼ'],
+    ['手動/取込'],
     message({
       labels: ['INBOX', 'CATEGORY_PROMOTIONS'],
       unsubscribe: '<mailto:unsubscribe@example.invalid>'
@@ -269,4 +269,3 @@ console.log(JSON.stringify({
 if (failed.length) {
   process.exitCode = 1;
 }
-

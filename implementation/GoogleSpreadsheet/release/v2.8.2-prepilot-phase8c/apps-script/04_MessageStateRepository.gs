@@ -52,7 +52,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_SCHEMA_MISSING_SHEET',
         'MESSAGE_STATE',
         false,
-        '繝｡繝ｼ繝ｫ迥ｶ諷鬼heet縺後≠繧翫∪縺帙ｓ縲・
+        'メール状態Sheetがありません。'
       );
     }
     return sheet;
@@ -67,7 +67,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_TYPE',
         'MESSAGE_STATE',
         false,
-        fieldName + '縺ｮ蝙九′荳肴ｭ｣縺ｧ縺吶・
+        fieldName + 'の型が不正です。'
       );
     }
     return value;
@@ -82,7 +82,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_TYPE',
         'MESSAGE_STATE',
         false,
-        fieldName + '縺ｮ蝙九′荳肴ｭ｣縺ｧ縺吶・
+        fieldName + 'の型が不正です。'
       );
     }
     return value;
@@ -99,7 +99,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_INVALID_JSON',
         'MESSAGE_STATE',
         false,
-        'classification_json縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'classification_jsonが不正です。'
       );
     }
   }
@@ -117,7 +117,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_AI_PROVENANCE',
         'MESSAGE_STATE',
         false,
-        'classification provenance縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'classification provenanceが不正です。'
       );
     }
   }
@@ -129,7 +129,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_INVALID_ENUM',
         'MESSAGE_STATE',
         false,
-        'Message State縺ｮ迥ｶ諷九′荳肴ｭ｣縺ｧ縺吶・
+        'Message Stateの状態が不正です。'
       );
     }
     var record = {
@@ -165,7 +165,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'Message State縺ｮerror code縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'Message Stateのerror codeが不正です。'
       );
     }
     if (!record.thread_id ||
@@ -180,7 +180,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'Message State縺ｮ蠢・・ield縺梧ｬ關ｽ縺励※縺・∪縺吶・
+        'Message Stateの必須fieldが欠落しています。'
       );
     }
     if (record.schema_version !== WorkOsConfig.SCHEMA_VERSION) {
@@ -188,7 +188,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_SCHEMA',
         'MESSAGE_STATE',
         false,
-        'Message State縺ｮSchema version縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+        'Message StateのSchema versionが一致しません。'
       );
     }
     if (record.processing_status === STATUSES.CLAIMED &&
@@ -197,7 +197,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'CLAIMED迥ｶ諷九・蠢・・ield縺梧ｬ關ｽ縺励※縺・∪縺吶・
+        'CLAIMED状態の必須fieldが欠落しています。'
       );
     }
     if (record.processing_status === STATUSES.PREPROCESSED &&
@@ -207,7 +207,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'PREPROCESSED checkpoint縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'PREPROCESSED checkpointが不正です。'
       );
     }
     var classificationRequired =
@@ -233,7 +233,7 @@ var WorkOsMessageStateRepository = (function () {
           'E_MESSAGE_STATE_CORRUPT',
           'MESSAGE_STATE',
           false,
-          'classification checkpoint縺御ｸ肴ｭ｣縺ｧ縺吶・
+          'classification checkpointが不正です。'
         );
       }
       if (typeof WorkOsAiAdapter !== 'undefined') {
@@ -250,7 +250,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'classification譛ｪ螳御ｺ・｡後↓蛻・｡枸etadata縺後≠繧翫∪縺吶・
+        'classification未完了行に分類metadataがあります。'
       );
     }
     if (record.processing_status === STATUSES.CALENDAR_PENDING &&
@@ -259,7 +259,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'CALENDAR_PENDING checkpoint縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'CALENDAR_PENDING checkpointが不正です。'
       );
     }
     if (record.processing_status === STATUSES.DONE &&
@@ -269,7 +269,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_CORRUPT',
         'MESSAGE_STATE',
         false,
-        'DONE checkpoint縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'DONE checkpointが不正です。'
       );
     }
     return record;
@@ -283,7 +283,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_SCHEMA_CONFLICT',
         'MESSAGE_STATE',
         false,
-        '繝｡繝ｼ繝ｫ迥ｶ諷鬼heet縺ｮ蛻玲焚縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'メール状態Sheetの列数がSchemaと一致しません。'
       );
     }
     var ids = sheet.getRange(1, 1, 1, expectedIds.length).getValues()[0];
@@ -292,7 +292,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_SCHEMA_MISSING_COLUMN',
         'MESSAGE_STATE',
         false,
-        '繝｡繝ｼ繝ｫ迥ｶ諷鬼heet縺ｮ蜀・Κ蛻悠D縺郡chema縺ｨ荳閾ｴ縺励∪縺帙ｓ縲・
+        'メール状態Sheetの内部列IDがSchemaと一致しません。'
       );
     }
     var map = WorkOsSchemas.buildColumnMapFromIds(ids);
@@ -320,7 +320,7 @@ var WorkOsMessageStateRepository = (function () {
           'E_MESSAGE_STATE_DUPLICATE',
           'MESSAGE_STATE',
           false,
-          '蜷後§Message ID縺ｮ迥ｶ諷玖｡後′驥崎､・＠縺ｦ縺・∪縺吶・
+          '同じMessage IDの状態行が重複しています。'
         );
       }
       var record = recordFromRow(
@@ -348,7 +348,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_LOCK_REQUIRED',
         'MESSAGE_STATE',
         false,
-        'Message State縺ｮ譖ｴ譁ｰ縺ｫ縺ｯScript Lock縺悟ｿ・ｦ√〒縺吶・
+        'Message Stateの更新にはScript Lockが必要です。'
       );
     }
   }
@@ -360,7 +360,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_RUN_ID',
         'MESSAGE_STATE',
         false,
-        'run_id縺御ｸ崎ｶｳ縺ｾ縺溘・荳肴ｭ｣縺ｧ縺吶・
+        'run_idが不足または不正です。'
       );
     }
     return value;
@@ -385,7 +385,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_LOCK_REQUIRED',
         'MESSAGE_STATE',
         false,
-        '菫晄戟荳ｭ縺ｮScript Lock繧堤｢ｺ隱阪〒縺阪∪縺帙ｓ縲・
+        '保持中のScript Lockを確認できません。'
       );
     }
     return createContext(sheet, LOCK_MARKER);
@@ -400,7 +400,7 @@ var WorkOsMessageStateRepository = (function () {
           'E_MESSAGE_METADATA',
           'MESSAGE_STATE',
           false,
-          'Message metadata縺御ｸ崎ｶｳ縺ｾ縺溘・荳肴ｭ｣縺ｧ縺吶・
+          'Message metadataが不足または不正です。'
         );
       }
     });
@@ -410,7 +410,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_METADATA',
         'MESSAGE_STATE',
         false,
-        'Message蜿嶺ｿ｡譌･譎ゅ′荳肴ｭ｣縺ｧ縺吶・
+        'Message受信日時が不正です。'
       );
     }
   }
@@ -510,7 +510,7 @@ var WorkOsMessageStateRepository = (function () {
           'E_MESSAGE_ID_CONFLICT',
           'MESSAGE_STATE',
           false,
-          'Message ID縺ｫ蟇ｾ蠢懊☆繧玖ｭ伜挨諠・ｱ縺御ｸ閾ｴ縺励∪縺帙ｓ縲・
+          'Message IDに対応する識別情報が一致しません。'
         );
       }
       return { operation: 'NOOP', record: existing };
@@ -591,7 +591,395 @@ var WorkOsMessageStateRepository = (function () {
         record: record
       };
     }
-    var updat…3234 tokens truncated…nction createClassificationLeaseInContext(
+    var updated = {};
+    Object.keys(record).forEach(function (key) { updated[key] = record[key]; });
+    updated.processing_status = STATUSES.CLAIMED;
+    updated.claimed_at = timestamp;
+    updated.claim_run_id = normalizedRunId;
+    updated.next_retry_at = '';
+    updated.updated_at = timestamp;
+    storeRecord(context, updated, false);
+    return {
+      claimed: true,
+      stale_reclaimed: record.processing_status === STATUSES.CLAIMED,
+      record: updated
+    };
+  }
+
+  function checkpointPreprocessedInContext(
+    messageId,
+    runId,
+    preprocessHash,
+    context,
+    nowValue
+  ) {
+    assertLocked(context);
+    var normalizedRunId = assertRunId(runId);
+    var normalizedHash = String(preprocessHash || '').toLowerCase();
+    if (!/^[0-9a-f]{64}$/.test(normalizedHash)) {
+      throw new WorkOsAppError(
+        'E_PREPROCESS_HASH',
+        'PREPROCESS',
+        false,
+        'preprocess_hashが不正です。'
+      );
+    }
+    var record = context.byMessageId[String(messageId || '')];
+    if (!record) {
+      throw new WorkOsAppError(
+        'E_MESSAGE_STATE_NOT_FOUND',
+        'PREPROCESS',
+        false,
+        'Message Stateがありません。'
+      );
+    }
+    if (record.processing_status === STATUSES.PREPROCESSED) {
+      if (record.preprocess_hash !== normalizedHash) {
+        throw new WorkOsAppError(
+          'E_MESSAGE_CHECKPOINT_CONFLICT',
+          'PREPROCESS',
+          false,
+          '既存の前処理checkpointとhashが一致しません。'
+        );
+      }
+      return { operation: 'NOOP', record: record };
+    }
+    if (record.processing_status !== STATUSES.CLAIMED ||
+        record.claim_run_id !== normalizedRunId) {
+      throw new WorkOsAppError(
+        'E_MESSAGE_CLAIM_CONFLICT',
+        'PREPROCESS',
+        true,
+        'Message claimが一致しないためcheckpointを保存しませんでした。'
+      );
+    }
+    var timestamp = nowValue || WorkOsUtilities.now();
+    var updated = {};
+    Object.keys(record).forEach(function (key) { updated[key] = record[key]; });
+    updated.processing_status = STATUSES.PREPROCESSED;
+    updated.resume_stage = RESUME_STAGES.CLASSIFY;
+    updated.preprocess_hash = normalizedHash;
+    updated.last_error_code = '';
+    updated.last_error_at = '';
+    updated.next_retry_at = '';
+    updated.updated_at = timestamp;
+    storeRecord(context, updated, false);
+    return { operation: 'UPDATED', record: updated };
+  }
+
+  function claimForResumeInContext(messageId, runId, context, nowValue) {
+    assertLocked(context);
+    var normalizedRunId = assertRunId(runId);
+    var record = context.byMessageId[String(messageId || '')];
+    if (!record) {
+      throw new WorkOsAppError(
+        'E_MESSAGE_STATE_NOT_FOUND',
+        'MESSAGE_RESUME',
+        false,
+        '再開対象のMessage Stateがありません。'
+      );
+    }
+    var timestamp = nowValue || WorkOsUtilities.now();
+    if (record.processing_status === STATUSES.DONE ||
+        record.processing_status === STATUSES.SKIPPED ||
+        record.processing_status === STATUSES.DEAD) {
+      return {
+        claimed: false,
+        reason: 'TERMINAL',
+        record: record
+      };
+    }
+    if (record.processing_status === STATUSES.CLAIMED &&
+        !isStaleClaim(record, timestamp)) {
+      return {
+        claimed: false,
+        reason: 'ACTIVE_CLAIM',
+        record: record
+      };
+    }
+    if (record.processing_status === STATUSES.RETRY &&
+        record.next_retry_at instanceof Date &&
+        record.next_retry_at.getTime() > timestamp.getTime()) {
+      return {
+        claimed: false,
+        reason: 'RETRY_NOT_READY',
+        record: record
+      };
+    }
+    if ([STATUSES.PREPROCESSED, STATUSES.CLASSIFIED,
+      STATUSES.TASKS_WRITTEN, STATUSES.CALENDAR_PENDING, STATUSES.RETRY,
+      STATUSES.CLAIMED].indexOf(record.processing_status) === -1 ||
+        record.resume_stage === RESUME_STAGES.PREPROCESS) {
+      return {
+        claimed: false,
+        reason: 'NOT_PHASE3_RESUMABLE',
+        record: record
+      };
+    }
+    var updated = {};
+    Object.keys(record).forEach(function (key) { updated[key] = record[key]; });
+    updated.processing_status = STATUSES.CLAIMED;
+    updated.claimed_at = timestamp;
+    updated.claim_run_id = normalizedRunId;
+    updated.next_retry_at = '';
+    updated.updated_at = timestamp;
+    storeRecord(context, updated, false);
+    return {
+      claimed: true,
+      stale_reclaimed: record.processing_status === STATUSES.CLAIMED,
+      record: updated
+    };
+  }
+
+  function checkpointClassificationInContext(
+    messageId,
+    runId,
+    classification,
+    context,
+    nowValue,
+    provenance
+  ) {
+    assertLocked(context);
+    var normalizedRunId = assertRunId(runId);
+    WorkOsAiAdapter.validateOutput(classification);
+    var record = context.byMessageId[String(messageId || '')];
+    if (!record) {
+      throw new WorkOsAppError(
+        'E_MESSAGE_STATE_NOT_FOUND',
+        'AI_CLASSIFY',
+        false,
+        'Message Stateがありません。'
+      );
+    }
+    var metadata = WorkOsAiAdapter.validateProvenance(
+      provenance || WorkOsAiAdapter.getMetadata(null)
+    );
+    var hash = WorkOsAiAdapter.classificationHash(
+      classification,
+      metadata
+    );
+    if (record.classification_json) {
+      if (record.classification_hash !== hash) {
+        throw new WorkOsAppError(
+          'E_MESSAGE_CHECKPOINT_CONFLICT',
+          'AI_CLASSIFY',
+          false,
+          '既存classification checkpointと一致しません。'
+        );
+      }
+      return { operation: 'NOOP', record: record };
+    }
+    if (record.processing_status !== STATUSES.CLAIMED ||
+        record.claim_run_id !== normalizedRunId ||
+        record.resume_stage !== RESUME_STAGES.CLASSIFY) {
+      throw new WorkOsAppError(
+        'E_MESSAGE_CLAIM_CONFLICT',
+        'AI_CLASSIFY',
+        true,
+        'classification保存時のMessage claimが一致しません。'
+      );
+    }
+    var timestamp = nowValue || WorkOsUtilities.now();
+    var updated = {};
+    Object.keys(record).forEach(function (key) { updated[key] = record[key]; });
+    updated.processing_status = STATUSES.CLASSIFIED;
+    updated.resume_stage = RESUME_STAGES.TASK_WRITE;
+    updated.classification_json = classification;
+    updated.classification_provenance_json = metadata;
+    updated.classification_hash = hash;
+    updated.action_count = classification.actions.length;
+    updated.updated_at = timestamp;
+    storeRecord(context, updated, false);
+    return { operation: 'UPDATED', record: updated };
+  }
+
+  function normalizeTaskVersions(taskVersions) {
+    var seen = {};
+    return (taskVersions || []).map(function (item) {
+      var taskId = String(item && item.task_id || '').trim();
+      var rowVersion = Number(item && item.row_version);
+      if (!taskId || seen[taskId] ||
+          !Number.isInteger(rowVersion) || rowVersion < 1) {
+        throw new WorkOsAppError(
+          'E_AI_INPUT_CONFLICT',
+          'AI_CLASSIFY',
+          true,
+          'AI分類leaseのTask version snapshotが不正です。'
+        );
+      }
+      seen[taskId] = true;
+      return {
+        task_id: taskId,
+        row_version: rowVersion
+      };
+    }).sort(function (left, right) {
+      return left.task_id.localeCompare(right.task_id);
+    });
+  }
+
+  function dateMilliseconds(value) {
+    var date = value instanceof Date ? value : new Date(value);
+    return isNaN(date.getTime()) ? -1 : date.getTime();
+  }
+
+  /**
+   * Capture the Message ownership/version boundary before Gmail content is
+   * read outside Script Lock. The lease is intentionally in-memory: durable
+   * ownership remains the Message State claim and is rechecked on commit.
+   */
+  function createPreprocessLeaseInContext(messageId, runId, context) {
+    assertLocked(context);
+    var normalizedRunId = assertRunId(runId);
+    var record = context.byMessageId[String(messageId || '')];
+    if (!record ||
+        record.processing_status !== STATUSES.CLAIMED ||
+        record.claim_run_id !== normalizedRunId ||
+        record.resume_stage !== RESUME_STAGES.PREPROCESS ||
+        dateMilliseconds(record.updated_at) < 0 ||
+        record.preprocess_hash) {
+      throw new WorkOsAppError(
+        'E_PREPROCESS_STALE_RESULT',
+        'PREPROCESS',
+        true,
+        'Stale PREPROCESS work was not started.'
+      );
+    }
+    return Object.freeze({
+      message_id: String(record.message_id),
+      run_id: normalizedRunId,
+      resume_stage: RESUME_STAGES.PREPROCESS,
+      claimed_updated_at_ms: dateMilliseconds(record.updated_at)
+    });
+  }
+
+  function inspectPreprocessLeaseInContext(lease, context) {
+    assertLocked(context);
+    var record = lease &&
+      context.byMessageId[String(lease.message_id || '')];
+    var reasons = [];
+    if (!record ||
+        record.processing_status !== STATUSES.CLAIMED ||
+        record.claim_run_id !== String(lease && lease.run_id || '') ||
+        record.resume_stage !== RESUME_STAGES.PREPROCESS) {
+      reasons.push('CLAIM_CHANGED');
+    }
+    if (record && dateMilliseconds(record.updated_at) !==
+        Number(lease && lease.claimed_updated_at_ms)) {
+      reasons.push('CLAIM_VERSION_CHANGED');
+    }
+    if (record && record.preprocess_hash) {
+      reasons.push('PREPROCESS_ALREADY_PRESENT');
+    }
+    return {
+      valid: reasons.length === 0,
+      reasons: reasons
+    };
+  }
+
+  function commitPreprocessedLeaseInContext(
+    lease,
+    preprocessHash,
+    context,
+    nowValue
+  ) {
+    var inspection = inspectPreprocessLeaseInContext(lease, context);
+    if (!inspection.valid) {
+      throw new WorkOsAppError(
+        'E_PREPROCESS_STALE_RESULT',
+        'PREPROCESS',
+        true,
+        'Message ownership changed while Gmail content was read; the stale ' +
+          'PREPROCESS result was not persisted (' +
+          inspection.reasons.join(',') +
+          ').'
+      );
+    }
+    return checkpointPreprocessedInContext(
+      lease.message_id,
+      lease.run_id,
+      preprocessHash,
+      context,
+      nowValue
+    );
+  }
+
+  /**
+   * Capture the ownership/version boundary before desired-state Gmail labels
+   * are synchronized outside Script Lock. TASKS_WRITTEN is accepted because
+   * that durable checkpoint retains the current run ID; CLAIMED is accepted
+   * for a resumed FINALIZE stage.
+   */
+  function createFinalizeLeaseInContext(messageId, runId, context) {
+    assertLocked(context);
+    var normalizedRunId = assertRunId(runId);
+    var record = context.byMessageId[String(messageId || '')];
+    if (!record ||
+        [STATUSES.TASKS_WRITTEN, STATUSES.CLAIMED]
+          .indexOf(record.processing_status) === -1 ||
+        record.claim_run_id !== normalizedRunId ||
+        record.resume_stage !== RESUME_STAGES.FINALIZE ||
+        dateMilliseconds(record.updated_at) < 0) {
+      throw new WorkOsAppError(
+        'E_FINALIZE_STALE_RESULT',
+        'FINALIZE',
+        true,
+        'Stale FINALIZE work was not started.'
+      );
+    }
+    return Object.freeze({
+      message_id: String(record.message_id),
+      run_id: normalizedRunId,
+      resume_stage: RESUME_STAGES.FINALIZE,
+      processing_status: String(record.processing_status),
+      claimed_updated_at_ms: dateMilliseconds(record.updated_at)
+    });
+  }
+
+  function inspectFinalizeLeaseInContext(lease, context) {
+    assertLocked(context);
+    var record = lease &&
+      context.byMessageId[String(lease.message_id || '')];
+    var reasons = [];
+    if (!record ||
+        record.processing_status !==
+          String(lease && lease.processing_status || '') ||
+        record.claim_run_id !== String(lease && lease.run_id || '') ||
+        record.resume_stage !== RESUME_STAGES.FINALIZE) {
+      reasons.push('CLAIM_CHANGED');
+    }
+    if (record && dateMilliseconds(record.updated_at) !==
+        Number(lease && lease.claimed_updated_at_ms)) {
+      reasons.push('CLAIM_VERSION_CHANGED');
+    }
+    return {
+      valid: reasons.length === 0,
+      reasons: reasons
+    };
+  }
+
+  /**
+   * FINALIZE has no separate durable write at the Gmail-label boundary.
+   * This method is the CAS barrier: callers must invoke it under a fresh Lock
+   * immediately before Calendar intent/checkpoint writes.
+   */
+  function commitFinalizeLeaseInContext(lease, context) {
+    var inspection = inspectFinalizeLeaseInContext(lease, context);
+    if (!inspection.valid) {
+      throw new WorkOsAppError(
+        'E_FINALIZE_STALE_RESULT',
+        'FINALIZE',
+        true,
+        'Message ownership changed while Gmail labels were synchronized; ' +
+          'the stale FINALIZE result was not committed.'
+      );
+    }
+    return {
+      operation: 'VERIFIED',
+      record: context.byMessageId[String(lease.message_id || '')]
+    };
+  }
+
+  function createClassificationLeaseInContext(
     messageId,
     runId,
     context,
@@ -611,7 +999,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_AI_STALE_RESULT',
         'AI_CLASSIFY',
         true,
-        'AI蛻・｡柩ease繧剃ｽ懈・縺ｧ縺阪ｋMessage checkpoint縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・
+        'AI分類leaseを作成できるMessage checkpointではありません。'
       );
     }
     return Object.freeze({
@@ -634,7 +1022,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_AI_INPUT_CONFLICT',
         'AI_CLASSIFY',
         true,
-        'AI蛻・｡柩ease縺ｮinput hash縺御ｸ肴ｭ｣縺ｧ縺吶・
+        'AI分類leaseのinput hashが不正です。'
       );
     }
     return Object.freeze({
@@ -725,7 +1113,7 @@ var WorkOsMessageStateRepository = (function () {
           : 'E_AI_STALE_RESULT',
         'AI_CLASSIFY',
         true,
-        'AI蛻・｡樔ｸｭ縺ｫ蜈･蜉帙∪縺溘・謇譛画ｨｩ縺悟､峨ｏ縺｣縺溘◆繧∫ｵ先棡繧剃ｿ晏ｭ倥＠縺ｾ縺帙ｓ縺ｧ縺励◆縲・
+        'AI分類中に入力または所有権が変わったため結果を保存しませんでした。'
       );
     }
     return checkpointClassificationInContext(
@@ -752,7 +1140,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_NOT_FOUND',
         'TASK_WRITE',
         false,
-        'Message State縺後≠繧翫∪縺帙ｓ縲・
+        'Message Stateがありません。'
       );
     }
     if (record.processing_status === STATUSES.TASKS_WRITTEN) {
@@ -766,7 +1154,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_CLAIM_CONFLICT',
         'TASK_WRITE',
         true,
-        'Task checkpoint菫晏ｭ俶凾縺ｮMessage迥ｶ諷九′荳閾ｴ縺励∪縺帙ｓ縲・
+        'Task checkpoint保存時のMessage状態が一致しません。'
       );
     }
     var timestamp = nowValue || WorkOsUtilities.now();
@@ -800,7 +1188,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_NOT_FOUND',
         'CALENDAR_CHECKPOINT',
         false,
-        'Message State縺後≠繧翫∪縺帙ｓ縲・
+        'Message Stateがありません。'
       );
     }
     if (record.processing_status === STATUSES.CALENDAR_PENDING &&
@@ -815,7 +1203,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_CLAIM_CONFLICT',
         'CALENDAR_CHECKPOINT',
         true,
-        'Calendar checkpoint菫晏ｭ俶凾縺ｮMessage迥ｶ諷九′荳閾ｴ縺励∪縺帙ｓ縲・
+        'Calendar checkpoint保存時のMessage状態が一致しません。'
       );
     }
     var timestamp = nowValue || WorkOsUtilities.now();
@@ -849,7 +1237,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_NOT_FOUND',
         'FINALIZE',
         false,
-        'Message State縺後≠繧翫∪縺帙ｓ縲・
+        'Message Stateがありません。'
       );
     }
     if (record.processing_status === STATUSES.DONE) {
@@ -864,7 +1252,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_CLAIM_CONFLICT',
         'FINALIZE',
         true,
-        'DONE菫晏ｭ俶凾縺ｮMessage迥ｶ諷九′荳閾ｴ縺励∪縺帙ｓ縲・
+        'DONE保存時のMessage状態が一致しません。'
       );
     }
     var timestamp = nowValue || WorkOsUtilities.now();
@@ -923,7 +1311,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_NOT_FOUND',
         'MESSAGE_FAILURE',
         false,
-        'Message State縺後↑縺・◆繧∝､ｱ謨幼heckpoint繧剃ｿ晏ｭ倥〒縺阪∪縺帙ｓ縲・
+        'Message Stateがないため失敗checkpointを保存できません。'
       );
     }
     if ([STATUSES.CLAIMED, STATUSES.PREPROCESSED, STATUSES.CLASSIFIED,
@@ -933,7 +1321,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_CLAIM_CONFLICT',
         'MESSAGE_FAILURE',
         true,
-        'Message claim縺御ｸ閾ｴ縺励↑縺・◆繧∝､ｱ謨幼heckpoint繧剃ｿ晏ｭ倥＠縺ｾ縺帙ｓ縺ｧ縺励◆縲・
+        'Message claimが一致しないため失敗checkpointを保存しませんでした。'
       );
     }
     var timestamp = nowValue || WorkOsUtilities.now();
@@ -981,7 +1369,7 @@ var WorkOsMessageStateRepository = (function () {
       'E_MESSAGE_CHECKPOINT_CONFLICT',
       'MESSAGE_BUDGET_PAUSE',
       false,
-      'soft budget蛛懈ｭ｢譎ゅ・resume stage縺御ｸ肴ｭ｣縺ｧ縺吶・
+      'soft budget停止時のresume stageが不正です。'
     );
   }
 
@@ -1008,7 +1396,7 @@ var WorkOsMessageStateRepository = (function () {
       'E_MESSAGE_CHECKPOINT_CONFLICT',
       'STATE_WRITE',
       false,
-      'Message State縺ｮresume stage縺御ｸ肴ｭ｣縺ｧ縺吶・
+      'Message Stateのresume stageが不正です。'
     );
   }
 
@@ -1025,7 +1413,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_NOT_FOUND',
         'STATE_WRITE',
         false,
-        '謇句虚蜀榊ｮ溯｡悟ｯｾ雎｡縺ｮMessage State縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縲・
+        '手動再実行対象のMessage Stateが見つかりません。'
       );
     }
     if (record.processing_status !== STATUSES.DEAD) {
@@ -1036,7 +1424,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_RETRY_CONFLICT',
         'STATE_WRITE',
         false,
-        'DEAD迥ｶ諷九〒縺ｯ縺ｪ縺Мessage縺ｯ謇句虚蜀榊ｮ溯｡後〒縺阪∪縺帙ｓ縲・
+        'DEAD状態ではないMessageは手動再実行できません。'
       );
     }
     var expectedCheckpoint = checkpointStageForResumeStage(
@@ -1048,7 +1436,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_CHECKPOINT_CONFLICT',
         'STATE_WRITE',
         false,
-        'Dead Letter縺ｨMessage State縺ｮ蜀埼幕谿ｵ髫弱′荳閾ｴ縺励∪縺帙ｓ縲・
+        'Dead LetterとMessage Stateの再開段階が一致しません。'
       );
     }
     var timestamp = nowValue instanceof Date
@@ -1087,7 +1475,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_STATE_NOT_FOUND',
         'MESSAGE_BUDGET_PAUSE',
         false,
-        'Message State縺後↑縺・◆繧｜udget蛛懈ｭ｢繧剃ｿ晏ｭ倥〒縺阪∪縺帙ｓ縲・
+        'Message Stateがないためbudget停止を保存できません。'
       );
     }
     if (record.processing_status !== STATUSES.CLAIMED ||
@@ -1096,7 +1484,7 @@ var WorkOsMessageStateRepository = (function () {
         'E_MESSAGE_CLAIM_CONFLICT',
         'MESSAGE_BUDGET_PAUSE',
         true,
-        'Message claim縺御ｸ閾ｴ縺励↑縺・◆繧｜udget蛛懈ｭ｢繧剃ｿ晏ｭ倥＠縺ｾ縺帙ｓ縺ｧ縺励◆縲・
+        'Message claimが一致しないためbudget停止を保存しませんでした。'
       );
     }
     var timestamp = nowValue || WorkOsUtilities.now();
@@ -1155,4 +1543,3 @@ var WorkOsMessageStateRepository = (function () {
     messageSheet: messageSheet
   });
 }());
-

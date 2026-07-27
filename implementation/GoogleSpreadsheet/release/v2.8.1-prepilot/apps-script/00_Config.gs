@@ -27,7 +27,7 @@ var WorkOsConfig = Object.freeze({
   LOCK_WAIT_MS: 5000,
   MANUAL_WORKER_SOFT_LIMIT_MS: 120000,
   MANUAL_WORKER_RESERVE_MS: 5000,
-  MANUAL_GMAIL_QUERY: 'label:謇句虚/蜿冶ｾｼ -label:謇句虚/髯､螟・,
+  MANUAL_GMAIL_QUERY: 'label:手動/取込 -label:手動/除外',
   MANUAL_MAX_THREADS: 10,
   MANUAL_MAX_MESSAGES: 1,
   MANUAL_GMAIL_API_CALL_LIMIT: 20,
@@ -72,7 +72,7 @@ var WorkOsConfig = Object.freeze({
   AUTOMATION_NEWSLETTER_FILTER_APPROVED: false,
   AUTOMATION_CALENDAR_NOTIFICATION_FILTER_APPROVED: false,
   AUTOMATION_GMAIL_QUERY:
-    'in:inbox -in:spam -in:trash -label:謇句虚/髯､螟・,
+    'in:inbox -in:spam -in:trash -label:手動/除外',
   RETRY_DELAYS_MINUTES: Object.freeze([5, 15, 60]),
   RETRY_MAX_ATTEMPTS: 4,
   RETRY_MAX_ITEMS_PER_RUN: 10,
@@ -80,36 +80,36 @@ var WorkOsConfig = Object.freeze({
   PROVIDER_FAILURE_SUPPRESSION_MS: 5 * 60 * 1000,
   DEEP_DIAGNOSTIC_SOFT_LIMIT_MS: 180000,
   DEEP_DIAGNOSTIC_SAMPLE_ROWS: 50,
-  DEADLINE_CALENDAR_NAME: '閾ｪ蜍墓悄譌･邂｡逅・,
+  DEADLINE_CALENDAR_NAME: '自動期日管理',
   GMAIL_LABELS: Object.freeze([
-    'AI/隕∝ｯｾ蠢・,
-    'AI/譛滄剞',
-    'AI/霑比ｿ｡蠕・,
-    'AI/隕∫｢ｺ隱・,
-    '謇句虚/蜿冶ｾｼ',
-    '謇句虚/髯､螟・,
-    'SYS/螟ｱ謨・
+    'AI/要対応',
+    'AI/期限',
+    'AI/返信待',
+    'AI/要確認',
+    '手動/取込',
+    '手動/除外',
+    'SYS/失敗'
   ]),
   SHEETS: Object.freeze({
-    DASHBOARD: '繝繝・す繝･繝懊・繝・,
-    TASKS: '繧ｿ繧ｹ繧ｯ荳隕ｧ',
-    SETTINGS: '險ｭ螳・,
-    RUN_HISTORY: '蜃ｦ逅・ｱ･豁ｴ',
-    ERRORS: '繧ｨ繝ｩ繝ｼ繝ｻ蜀榊ｮ溯｡・,
-    GUIDE: '菴ｿ縺・婿',
-    MESSAGE_STATE: '繝｡繝ｼ繝ｫ迥ｶ諷・,
-    SYSTEM_CONFIG: '繧ｷ繧ｹ繝・Β險ｭ螳・,
-    PROMPT_VERSIONS: '繝励Ο繝ｳ繝励ヨ迚育ｮ｡逅・,
-    SYNC_STATE: '蜷梧悄迥ｶ諷・
+    DASHBOARD: 'ダッシュボード',
+    TASKS: 'タスク一覧',
+    SETTINGS: '設定',
+    RUN_HISTORY: '処理履歴',
+    ERRORS: 'エラー・再実行',
+    GUIDE: '使い方',
+    MESSAGE_STATE: 'メール状態',
+    SYSTEM_CONFIG: 'システム設定',
+    PROMPT_VERSIONS: 'プロンプト版管理',
+    SYNC_STATE: '同期状態'
   }),
   V1_SHEET_NAMES: Object.freeze([
-    '隕∫｢ｺ隱・,
+    '要確認',
     'Review Queue',
     'review_queue',
     'system_config',
     'history',
     'task_master',
-    '繝｡繝ｼ繝ｫ荳隕ｧ'
+    'メール一覧'
   ]),
   PROPERTIES: Object.freeze({
     INSTANCE_ID: 'WORK_OS_V2_INSTANCE_ID',
@@ -165,41 +165,41 @@ var WorkOsConfig = Object.freeze({
 
 var WorkOsEnums = Object.freeze({
   TaskStatus: Object.freeze({
-    REVIEW: '隕∫｢ｺ隱・,
-    OPEN: '譛ｪ蟇ｾ蠢・,
-    IN_PROGRESS: '蟇ｾ蠢應ｸｭ',
-    WAITING: '霑比ｿ｡蠕・■',
-    DONE: '螳御ｺ・,
-    EXCLUDED: '蟇ｾ雎｡螟・,
-    CANCELLED: '蜿匁ｶ・
+    REVIEW: '要確認',
+    OPEN: '未対応',
+    IN_PROGRESS: '対応中',
+    WAITING: '返信待ち',
+    DONE: '完了',
+    EXCLUDED: '対象外',
+    CANCELLED: '取消'
   }),
   Decision: Object.freeze({
-    NONE: '譛ｪ驕ｸ謚・,
-    ACCEPT: '蜿怜・',
-    REJECT: '蜊ｴ荳・
+    NONE: '未選択',
+    ACCEPT: '受入',
+    REJECT: '却下'
   }),
   Priority: Object.freeze({
-    HIGH: '鬮・,
-    MEDIUM: '荳ｭ',
-    LOW: '菴・
+    HIGH: '高',
+    MEDIUM: '中',
+    LOW: '低'
   }),
   DeadlineBasis: Object.freeze({
-    EXPLICIT: '譏守､ｺ',
-    RELATIVE: '逶ｸ蟇ｾ',
-    INFERRED: '謗ｨ貂ｬ',
-    AMBIGUOUS: '譖匁乂',
-    NONE: '縺ｪ縺・
+    EXPLICIT: '明示',
+    RELATIVE: '相対',
+    INFERRED: '推測',
+    AMBIGUOUS: '曖昧',
+    NONE: 'なし'
   }),
   CalendarSyncMode: Object.freeze({
-    AUTO: '閾ｪ蜍・,
-    FORCE: '逋ｻ骭ｲ',
-    NONE: '蟇ｾ雎｡螟・
+    AUTO: '自動',
+    FORCE: '登録',
+    NONE: '対象外'
   }),
   ReviewState: Object.freeze({
-    NONE: '縺ｪ縺・,
-    OPEN: '譛ｪ遒ｺ隱・,
-    APPLIED: '驕ｩ逕ｨ貂・,
-    REJECTED: '蜊ｴ荳区ｸ・
+    NONE: 'なし',
+    OPEN: '未確認',
+    APPLIED: '適用済',
+    REJECTED: '却下済'
   }),
   CalendarImportance: Object.freeze({
     LOW: 'LOW',
@@ -241,4 +241,3 @@ var WorkOsHiddenSheets = Object.freeze([
   WorkOsConfig.SHEETS.PROMPT_VERSIONS,
   WorkOsConfig.SHEETS.SYNC_STATE
 ]);
-

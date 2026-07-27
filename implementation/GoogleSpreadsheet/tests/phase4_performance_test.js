@@ -346,8 +346,8 @@ test('P4-P02_EDIT_HANDLER_READS_ONLY_SELECTED_ROWS', () => {
   assert.strictEqual(result.processed_rows, 1);
   assert.strictEqual(
     harness.getLockAttemptCount() - lockAttemptsBefore,
-    2,
-    'EditHandler must use two sequential, non-nested locks'
+    3,
+    'EditHandler must use three sequential, non-nested locks'
   );
   const taskDataReads = taskSheet.readLog.filter(
     (read) => read.row >= sandbox.WorkOsConfig.DATA_START_ROW
@@ -699,4 +699,3 @@ console.log(JSON.stringify({
 if (failed.length) {
   process.exitCode = 1;
 }
-

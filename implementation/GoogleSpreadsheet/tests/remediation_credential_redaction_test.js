@@ -211,4 +211,3 @@ console.log(JSON.stringify({
 if (failed.length) {
   process.exitCode = 1;
 }
-

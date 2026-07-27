@@ -178,7 +178,7 @@ http://localhost:8000/
 - Ensure full-screen browser mode does not hide critical controls or chart areas.
 - Keep chart containers responsive to available width.
 - Do not remove useful accepted charts during redesign unless the task specifically says to remove them.
-- If a chart duplicates another chart窶冱 analytical meaning, flag it and remove or consolidate only when instructed.
+- If a chart duplicates another chart’s analytical meaning, flag it and remove or consolidate only when instructed.
 
 ## 6. Validation requirements
 
@@ -336,7 +336,7 @@ Every final chat report must include a short execution metrics block.
 - Be direct and specific.
 - Do not overstate certainty.
 - Separate facts, assumptions, and unresolved issues.
-- Avoid vague statements such as 窶彿mproved the UI窶・without saying what changed.
+- Avoid vague statements such as “improved the UI” without saying what changed.
 - Mention exact filenames, versions, commands, and validation outcomes.
 - If the task is incomplete, say exactly what remains.
 
@@ -355,4 +355,3 @@ Implement the requested changes with mandatory versioning, backup, CHANGELOG upd
 For HTML/CSS/JS work, keep the app fully local, avoid unnecessary external dependencies, and prefer a maintainable multi-file structure when file size or reviewability would benefit.
 After completion, report changes, files, versioning, validation results, local startup instructions, known limitations, execution metrics including elapsed time and exact token usage when available, and guardrail confirmations directly in chat.
 ```
-

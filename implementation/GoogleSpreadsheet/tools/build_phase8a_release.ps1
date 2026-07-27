@@ -410,4 +410,3 @@ foreach ($file in Get-ChildItem -LiteralPath $releaseRoot -File -Recurse) {
   TestMode = $true
   AutomationDefault = 'OFF'
 } | Format-List
-

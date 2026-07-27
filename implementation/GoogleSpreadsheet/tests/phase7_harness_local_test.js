@@ -83,4 +83,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed || summary.passed !== 10 || summary.skipped !== 3) {
   process.exitCode = 1;
 }
-

@@ -1,4 +1,4 @@
-# Google Workspace Personal Work OS v2 Phase 5窶・ Implementation Report
+# Google Workspace Personal Work OS v2 Phase 5–7 Implementation Report
 
 - Report date: 2026-07-24
 - Repository: `GoogleSpreadsheet`
@@ -9,7 +9,7 @@
 
 | Evidence | Result |
 |---|---|
-| Phase 1窶・ local Regression | 191 PASS / 0 FAIL |
+| Phase 1–4 local Regression | 191 PASS / 0 FAIL |
 | Phase 4 real Google Workspace cases | 5 NOT EXECUTED |
 | Existing-v2 metadata upgrade | 2 PASS / 0 FAIL |
 | Baseline Gate | PASS WITH EXTERNAL VALIDATION PENDING |
@@ -51,9 +51,9 @@ No Provider, endpoint, model, authentication method, credential value, `UrlFetch
 | Worker integration | 4 PASS / 0 FAIL | Local Mock HTTP only |
 | v2 Schema extension | 7 PASS / 0 FAIL | Real Google Workspace NOT EXECUTED |
 | Existing-v2 metadata upgrade | 2 PASS / 0 FAIL | Local fake Apps Script |
-| Phase 1窶・ Regression | 191 PASS / 0 FAIL | 5 real cases NOT EXECUTED |
+| Phase 1–4 Regression | 191 PASS / 0 FAIL | 5 real cases NOT EXECUTED |
 
-Phase 5 local total is 51 PASS / 0 FAIL, excluding the baseline upgrade and Phase 1窶・ Regression counts.
+Phase 5 local total is 51 PASS / 0 FAIL, excluding the baseline upgrade and Phase 1–4 Regression counts.
 
 ### Independent reviews
 
@@ -162,7 +162,7 @@ All local Unit, Integration, Negative, Security, Idempotency, Recovery, performa
 - Exact recovery allowlists for 14 subsystems and six semantic checkpoints.
 - Initial attempt plus 5/15/60-minute retries, maximum four attempts, max 10 retry items/run, due-first scheduling, stale claim handling, and provider-wide suppression.
 - Stable Error/Dead Letter upsert with exact recovery metadata and one-way `msgref_`/`thrref_` references.
-- Error resolution and Thread-level `SYS/螟ｱ謨輿 aggregation, including independently retryable Gmail label failures.
+- Error resolution and Thread-level `SYS/失敗` aggregation, including independently retryable Gmail label failures.
 - Manual selected-row retry by internal `err_`/`dl_` identifier under Script Lock, maximum five rows, prerequisite and checkpoint validation, non-retryable refusal, and idempotent `RETRY_QUEUED`.
 - Message and Calendar Outbox manual recovery from durable checkpoints without AI, Task, or Event duplication.
 - Quick Diagnostic recovery checks and a separate manual read-only Deep Diagnostic.
@@ -226,7 +226,7 @@ No Provider, endpoint, model, authentication method, credential, `UrlFetchApp`, 
 
 The lower `V2_CODEX_IMPLEMENTATION_PLAN.md` associates Dashboard aggregation with Phase 7, while the controlling `CODEX_PHASE5_TO_7_INSTRUCTIONS.md` defines Phase 7 as Retry, Dead Letter and diagnostics and instructs stopping before Phase 8. The minimum safe interpretation was adopted: no Dashboard aggregation, refresh, Worker write, or Diagnostic write was added. Dashboard scope requires a later explicit decision.
 
-## Final audit remediation addendum 窶・2026-07-25
+## Final audit remediation addendum — 2026-07-25
 
 The later final integrated audit resolved the earlier Dashboard scope conflict:
 the lightweight explicit-refresh operations Dashboard is a Phase 7 required
@@ -251,13 +251,13 @@ Validation boundaries:
 
 | Boundary | Result |
 |---|---|
-| Code implementation | LOCAL PASS 窶・29 suites, 444 PASS / 0 FAIL / 11 SKIPPED |
+| Code implementation | LOCAL PASS — 29 suites, 444 PASS / 0 FAIL / 11 SKIPPED |
 | Mock HTTP Transport | LOCAL PASS |
 | Real provider connection | NOT EXECUTED |
 | Company approval | NOT CONFIRMED |
 | Credential storage approval | NOT CONFIRMED |
 | Real Google Workspace acceptance | NOT EXECUTED |
-| Initial Git commit / remediation branch | NOT EXECUTED 窶・managed `.git` is read-only |
+| Initial Git commit / remediation branch | NOT EXECUTED — managed `.git` is read-only |
 
 Current versions are Code `2.8.0-prepilot`, Schema `2.2`, AI Schema `2.0`,
 Migration `0`. Phase 8 was not started.
@@ -284,4 +284,3 @@ All local Unit, Integration, Negative, Security, Idempotency, Recovery, performa
 ## Stop boundary
 
 After the Phase 7 Gate and final Regression, work stops without implementing Phase 8.
-

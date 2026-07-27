@@ -260,13 +260,13 @@ function automationSchemaSpreadsheet(corruptSheetName = '') {
 }
 
 const formalNames = [
-  'AI/隕∝ｯｾ蠢・,
-  'AI/譛滄剞',
-  'AI/霑比ｿ｡蠕・,
-  'AI/隕∫｢ｺ隱・,
-  '謇句虚/蜿冶ｾｼ',
-  '謇句虚/髯､螟・,
-  'SYS/螟ｱ謨・
+  'AI/要対応',
+  'AI/期限',
+  'AI/返信待',
+  'AI/要確認',
+  '手動/取込',
+  '手動/除外',
+  'SYS/失敗'
 ];
 
 function resetGmail() {
@@ -837,7 +837,7 @@ test('P6-L13_SETUP_NEVER_CREATES_OR_ENSURES_TRIGGER', () => {
   assert.strictEqual(/ensureSingleAutomationTrigger\s*\(/.test(source), false);
   assert.match(
     source,
-    /phase_boundary:[\s\S]*PHASE7_LOCAL_COMPLETE_EXTERNAL_VALIDATION_PENDING/
+    /phase_boundary:[\s\S]*READY_FOR_INDEPENDENT_REAUDIT/
   );
 });
 
@@ -1200,4 +1200,3 @@ process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 if (summary.failed) {
   process.exitCode = 1;
 }
-
