@@ -576,7 +576,7 @@ var WorkOsSetup = (function () {
       // was completed previously. A stale property must never bypass safety.
       validateEnvironment(spreadsheet);
       var completed = getCompletedStages();
-      // A completed pre-v2.4 installation may have structurally valid headers
+      // A completed pre-v2.5 installation may have structurally valid headers
       // while retaining stale validation lists or protection geometry. Repair
       // those idempotent controls before the strict completed-stage assertion.
       var layoutRefresh = refreshCompletedLayout(
