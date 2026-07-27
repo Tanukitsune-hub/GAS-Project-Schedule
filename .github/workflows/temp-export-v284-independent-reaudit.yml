@@ -1,0 +1,56 @@
+name: Temporary v2.8.4 independent reaudit export
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  export-exact-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Source commit A
+        uses: actions/checkout@v4
+        with:
+          ref: a7f66eb4ca5ef71dab6faaaa595964c7af73326e
+          path: source-a
+          persist-credentials: false
+
+      - name: Check out Release commit B
+        uses: actions/checkout@v4
+        with:
+          ref: 2c31ba8303b9988ac96c0ef29b81e64eaee0c84b
+          path: release-b
+          persist-credentials: false
+
+      - name: Stage exact repositories and manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p export/source-a export/release-b export/manifests
+          rsync -a --exclude='.git/' source-a/ export/source-a/
+          rsync -a --exclude='.git/' release-b/ export/release-b/
+          find export/source-a -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' path; do
+            sha256sum "export/source-a/$path"
+          done > export/manifests/source-a.sha256
+          find export/release-b -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' path; do
+            sha256sum "export/release-b/$path"
+          done > export/manifests/release-b.sha256
+          printf 'source_a_commit=%s\nrelease_b_commit=%s\nsource_a_files=%s\nrelease_b_files=%s\n' \
+            'a7f66eb4ca5ef71dab6faaaa595964c7af73326e' \
+            '2c31ba8303b9988ac96c0ef29b81e64eaee0c84b' \
+            "$(find export/source-a -type f | wc -l)" \
+            "$(find export/release-b -type f | wc -l)" \
+            > export/manifests/metadata.txt
+
+      - name: Upload private reaudit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gas-project-schedule-v284-independent-reaudit
+          path: export
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
