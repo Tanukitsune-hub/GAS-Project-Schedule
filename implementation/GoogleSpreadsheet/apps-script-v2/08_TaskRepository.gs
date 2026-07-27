@@ -15,6 +15,9 @@ var WorkOsTaskRepository = (function () {
     pending_action_type: true,
     pending_changes_json: true,
     authoritative_snapshot_json: true,
+    business_version: true,
+    calendar_reconcile_required: true,
+    calendar_intent_version: true,
     comment: true,
     source_message_id: true,
     source_thread_id: true,
@@ -61,7 +64,8 @@ var WorkOsTaskRepository = (function () {
   });
   var LOCK_MARKER = {};
   var SNAPSHOT_FIELD = 'authoritative_snapshot_json';
-  var SNAPSHOT_VALUE_FIELDS = Object.freeze({
+  var SNAPSHOT_MIRROR_PREFIX = 'WORK_OS_TASK_AUTHORITY_V2:';
+  var BUSINESS_GUARD_FIELDS = Object.freeze({
     needs_review: true,
     decision: true,
     status: true,
@@ -83,6 +87,55 @@ var WorkOsTaskRepository = (function () {
     pending_action_type: true,
     pending_changes_json: true
   });
+  var PENDING_BUSINESS_CHANGE_FIELDS = Object.freeze({
+    status: true,
+    completed: true,
+    excluded: true,
+    waiting_for_reply: true,
+    task_title: true,
+    due_date: true,
+    suggested_due_date: true,
+    deadline_basis: true,
+    priority: true,
+    calendar_sync_mode: true,
+    calendar_category: true,
+    calendar_importance: true
+  });
+  var CALENDAR_RECONCILE_FIELDS = Object.freeze({
+    status: true,
+    completed: true,
+    excluded: true,
+    waiting_for_reply: true,
+    task_title: true,
+    due_date: true,
+    deadline_basis: true,
+    priority: true,
+    calendar_sync_mode: true,
+    calendar_category: true,
+    calendar_importance: true
+  });
+  var SCHEMA_24_SNAPSHOT_FIELDS = Object.freeze([
+    'needs_review',
+    'decision',
+    'status',
+    'completed',
+    'excluded',
+    'task_title',
+    'due_date',
+    'suggested_due_date',
+    'deadline_basis',
+    'priority',
+    'waiting_for_reply',
+    'calendar_sync_mode',
+    'comment',
+    'review_state',
+    'review_type',
+    'calendar_category',
+    'calendar_importance',
+    'manual_fields',
+    'pending_action_type',
+    'pending_changes_json'
+  ]);
 
   function calculateRowsToAppend(currentMaxRows, requiredRow) {
     if (requiredRow <= currentMaxRows) {
@@ -567,6 +620,9 @@ var WorkOsTaskRepository = (function () {
       schedule_state: 'NONE',
       manual_fields: [],
       row_version: 1,
+      business_version: 1,
+      calendar_reconcile_required: false,
+      calendar_intent_version: 0,
       pending_action_type: '',
       pending_changes_json: {},
       created_at: nowValue,
@@ -786,7 +842,7 @@ var WorkOsTaskRepository = (function () {
     }
     if (value && typeof value === 'object') {
       var output = {};
-      Object.keys(value).sort().forEach(function (key) {
+      Object.keys(value).forEach(function (key) {
         output[key] = snapshotSafeValue(value[key]);
       });
       return output;
@@ -797,7 +853,7 @@ var WorkOsTaskRepository = (function () {
   function buildAuthoritativeSnapshot(row, schema, columnMap) {
     var values = {};
     schema.forEach(function (item, index) {
-      if (!SNAPSHOT_VALUE_FIELDS[item.id]) {
+      if (item.id === SNAPSHOT_FIELD) {
         return;
       }
       values[item.id] = snapshotSafeValue(
@@ -805,10 +861,61 @@ var WorkOsTaskRepository = (function () {
       );
     });
     return {
+      format: 'FULL_ROW_V1',
       schema_version: WorkOsConfig.SCHEMA_VERSION,
       task_id: String(row[columnMap.task_id] || ''),
       values: values
     };
+  }
+
+  function snapshotFieldIds(schema) {
+    return schema.filter(function (item) {
+      return item.id !== SNAPSHOT_FIELD;
+    }).map(function (item) {
+      return item.id;
+    });
+  }
+
+  function validateAuthoritativeSnapshot(snapshot, schema) {
+    if (!isPlainObject(snapshot) ||
+        snapshot.format !== 'FULL_ROW_V1' ||
+        snapshot.schema_version !== WorkOsConfig.SCHEMA_VERSION ||
+        !isPlainObject(snapshot.values)) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_INVALID',
+        'TASK_AUTHORITY',
+        false,
+        'Task authoritative snapshotの形式が一致しません。'
+      );
+    }
+    var expectedFields = snapshotFieldIds(schema).sort();
+    var actualFields = Object.keys(snapshot.values).sort();
+    if (JSON.stringify(expectedFields) !== JSON.stringify(actualFields) ||
+        String(snapshot.task_id || '') !==
+          String(snapshot.values.task_id || '')) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_INVALID',
+        'TASK_AUTHORITY',
+        false,
+        'Task authoritative snapshotの必須fieldが一致しません。'
+      );
+    }
+    return snapshot;
+  }
+
+  function parseAuthoritativeSnapshotText(text, schema) {
+    var value;
+    try {
+      value = typeof text === 'string' ? JSON.parse(text) : text;
+    } catch (error) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_INVALID',
+        'TASK_AUTHORITY',
+        false,
+        'Task authoritative snapshotを解析できません。'
+      );
+    }
+    return validateAuthoritativeSnapshot(value, schema);
   }
 
   function attachAuthoritativeSnapshot(row, schema, columnMap) {
@@ -841,6 +948,7 @@ var WorkOsTaskRepository = (function () {
       snapshot = null;
     }
     if (!isPlainObject(snapshot) ||
+        snapshot.format !== 'FULL_ROW_V1' ||
         snapshot.schema_version !== WorkOsConfig.SCHEMA_VERSION ||
         !isPlainObject(snapshot.values)) {
       throw new WorkOsAppError(
@@ -861,10 +969,7 @@ var WorkOsTaskRepository = (function () {
     }
     var restored = schema.map(function (item, index) {
       if (item.id === SNAPSHOT_FIELD) {
-        return row[index];
-      }
-      if (!SNAPSHOT_VALUE_FIELDS[item.id]) {
-        return row[index];
+        return valueForCell(item, snapshot);
       }
       if (!Object.prototype.hasOwnProperty.call(
         snapshot.values,
@@ -886,11 +991,116 @@ var WorkOsTaskRepository = (function () {
     return restored;
   }
 
+  function trustedSnapshotForRow(
+    row,
+    schema,
+    columnMap,
+    sheet,
+    physicalRow
+  ) {
+    var snapshotIndex = columnMap[SNAPSHOT_FIELD];
+    var mirrorText = '';
+    if (sheet && Number.isInteger(Number(physicalRow))) {
+      var mirrorRange = sheet.getRange(
+        Number(physicalRow),
+        snapshotIndex + 1,
+        1,
+        1
+      );
+      if (mirrorRange && typeof mirrorRange.getNote === 'function') {
+        var note = String(mirrorRange.getNote() || '');
+        if (note.indexOf(SNAPSHOT_MIRROR_PREFIX) === 0) {
+          mirrorText = note.slice(SNAPSHOT_MIRROR_PREFIX.length);
+        } else if (note) {
+          throw new WorkOsAppError(
+            'E_TASK_SNAPSHOT_INVALID',
+            'TASK_AUTHORITY',
+            false,
+            'Task trusted mirrorの形式が一致しません。'
+          );
+        }
+      }
+    }
+    var source = mirrorText || row[snapshotIndex];
+    if (!source) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_INVALID',
+        'TASK_AUTHORITY',
+        false,
+        'Task authoritative snapshotがありません。'
+      );
+    }
+    return parseAuthoritativeSnapshotText(source, schema);
+  }
+
+  function authoritativeRowFromTrustedState(
+    row,
+    schema,
+    columnMap,
+    sheet,
+    physicalRow
+  ) {
+    var snapshotIndex = columnMap[SNAPSHOT_FIELD];
+    var snapshot = trustedSnapshotForRow(
+      row,
+      schema,
+      columnMap,
+      sheet,
+      physicalRow
+    );
+    return schema.map(function (item) {
+      if (item.id === SNAPSHOT_FIELD) {
+        return valueForCell(item, snapshot);
+      }
+      if (!Object.prototype.hasOwnProperty.call(
+        snapshot.values,
+        item.id
+      )) {
+        throw new WorkOsAppError(
+          'E_TASK_SNAPSHOT_INVALID',
+          'TASK_AUTHORITY',
+          false,
+          'Task authoritative snapshotの必須fieldがありません。'
+        );
+      }
+      return valueForCell(item, snapshot.values[item.id]);
+    });
+  }
+
+  function syncAuthoritativeMirror(
+    sheet,
+    physicalRow,
+    row,
+    schema,
+    columnMap
+  ) {
+    var map = columnMap || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var snapshotIndex = map[SNAPSHOT_FIELD];
+    var range = sheet.getRange(
+      physicalRow,
+      snapshotIndex + 1,
+      1,
+      1
+    );
+    if (range && typeof range.setNote === 'function') {
+      var snapshotText = String(row[snapshotIndex] || '');
+      range.setNote(
+        snapshotText ? SNAPSHOT_MIRROR_PREFIX + snapshotText : ''
+      );
+    }
+  }
+
   function migrateLegacyRowToSnapshot(sourceRow) {
     var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
     if (!Array.isArray(sourceRow) ||
-        sourceRow.length !== schema.length - 1 ||
-        schema[schema.length - 1].id !== SNAPSHOT_FIELD) {
+        sourceRow.length !== schema.length - 4 ||
+        schema[schema.length - 4].id !== SNAPSHOT_FIELD ||
+        schema[schema.length - 3].id !== 'business_version' ||
+        schema[schema.length - 2].id !==
+          'calendar_reconcile_required' ||
+        schema[schema.length - 1].id !== 'calendar_intent_version') {
       throw new WorkOsAppError(
         'E_TASK_SNAPSHOT_SCHEMA',
         'V2_SCHEMA_EXTENSION',
@@ -899,15 +1109,145 @@ var WorkOsTaskRepository = (function () {
       );
     }
     var row = sourceRow.slice();
-    row.push('');
+    row.push('', 1, false, 0);
+    var map = WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    row = initializeMigratedBusinessGuard(row, schema, map);
     row = attachAuthoritativeSnapshot(
       row,
       schema,
-      WorkOsSchemas.buildColumnMapFromIds(
-        WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
-      )
+      map
     );
     return row;
+  }
+
+  function taskIdentity(task) {
+    return {
+      task_id: String(task.task_id || ''),
+      origin_key: String(task.origin_key || ''),
+      stable_thread_key: String(task.stable_thread_key || ''),
+      source_message_id: String(task.source_message_id || ''),
+      source_thread_id: String(task.source_thread_id || '')
+    };
+  }
+
+  function initializeMigratedBusinessGuard(row, schema, map) {
+    var output = row.slice();
+    var task = directTaskFromRow(output, schema);
+    var businessVersion = 1;
+    if (task.needs_review === true &&
+        task.review_state === 'OPEN' &&
+        task.review_type === 'EXISTING_CHANGE' &&
+        task.pending_action_type &&
+        isPlainObject(task.pending_changes_json) &&
+        isPlainObject(task.pending_changes_json.changes)) {
+      var pending = sanitizeStructuredValue(task.pending_changes_json);
+      pending.expected_target_business_version = 1;
+      pending.target_identity = taskIdentity(task);
+      output[map.pending_changes_json] = valueForCell(
+        schema[map.pending_changes_json],
+        pending
+      );
+      businessVersion = 2;
+    }
+    output[map.business_version] = businessVersion;
+    output[map.calendar_reconcile_required] = false;
+    output[map.calendar_intent_version] = 0;
+    return output;
+  }
+
+  function migrateSchema24RowTo25(sourceRow) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var currentIds = WorkOsSchemas.getInternalIds(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var sourceIds = currentIds.slice(0, -3);
+    if (!Array.isArray(sourceRow) ||
+        sourceRow.length !== sourceIds.length ||
+        sourceIds[sourceIds.length - 1] !== SNAPSHOT_FIELD) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_SCHEMA',
+        'V2_SCHEMA_EXTENSION',
+        false,
+        'Schema 2.4 Task rowの列構造が一致しません。'
+      );
+    }
+    var sourceMap = WorkOsSchemas.buildColumnMapFromIds(sourceIds);
+    var currentMap = WorkOsSchemas.buildColumnMapFromIds(currentIds);
+    var snapshot;
+    try {
+      snapshot = valueFromCell(
+        schema[currentMap[SNAPSHOT_FIELD]],
+        sourceRow[sourceMap[SNAPSHOT_FIELD]]
+      );
+    } catch (error) {
+      snapshot = null;
+    }
+    if (!isPlainObject(snapshot) ||
+        snapshot.schema_version !== '2.4' ||
+        !isPlainObject(snapshot.values) ||
+        String(snapshot.task_id || '') !==
+          String(sourceRow[sourceMap.task_id] || '') ||
+        JSON.stringify(Object.keys(snapshot.values).sort()) !==
+          JSON.stringify(SCHEMA_24_SNAPSHOT_FIELDS.slice().sort())) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_INVALID',
+        'V2_SCHEMA_EXTENSION',
+        false,
+        'Schema 2.4 Task snapshotのtrust anchorが不正です。'
+      );
+    }
+    SCHEMA_24_SNAPSHOT_FIELDS.forEach(function (field) {
+      var index = sourceMap[field];
+      var canonical = valueForCell(
+        schema[currentMap[field]],
+        snapshot.values[field]
+      );
+      if (!cellsEqual(sourceRow[index], canonical)) {
+        throw new WorkOsAppError(
+          'E_TASK_SNAPSHOT_INVALID',
+          'V2_SCHEMA_EXTENSION',
+          false,
+          'Schema 2.4 Task snapshotとlive business値が一致しません。'
+        );
+      }
+    });
+    var output = sourceRow.concat([1, false, 0]);
+    output = initializeMigratedBusinessGuard(
+      output,
+      schema,
+      currentMap
+    );
+    output = attachAuthoritativeSnapshot(
+      output,
+      schema,
+      currentMap
+    );
+    validateCandidateRow(output, schema, 'V2_SCHEMA_EXTENSION');
+    return output;
+  }
+
+  function assertCurrentAuthoritativeRow(row) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var map = WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var authoritative = authoritativeRowFromSnapshot(
+      row,
+      schema,
+      map
+    );
+    if (!rowsEqual(row, authoritative)) {
+      throw new WorkOsAppError(
+        'E_TASK_SNAPSHOT_INVALID',
+        'V2_SCHEMA_EXTENSION',
+        false,
+        'Task live rowがauthoritative snapshotと一致しません。'
+      );
+    }
+    validateCandidateRow(row, schema, 'V2_SCHEMA_EXTENSION');
+    return true;
   }
 
   function rowForPhysicalRow(context, physicalRow) {
@@ -940,35 +1280,6 @@ var WorkOsTaskRepository = (function () {
       }
     }
     return true;
-  }
-
-  function writeChangedCells(sheet, physicalRow, changes) {
-    var sorted = changes.slice().sort(function (left, right) {
-      return left.columnIndex - right.columnIndex;
-    });
-    var groups = [];
-    sorted.forEach(function (change) {
-      var current = groups.length ? groups[groups.length - 1] : null;
-      if (!current || change.columnIndex !== current.lastColumnIndex + 1) {
-        current = {
-          firstColumnIndex: change.columnIndex,
-          lastColumnIndex: change.columnIndex,
-          values: [change.value]
-        };
-        groups.push(current);
-      } else {
-        current.lastColumnIndex = change.columnIndex;
-        current.values.push(change.value);
-      }
-    });
-    groups.forEach(function (group) {
-      sheet.getRange(
-        physicalRow,
-        group.firstColumnIndex + 1,
-        1,
-        group.values.length
-      ).setValues([group.values]);
-    });
   }
 
   function withLockedContext(sheet, callback) {
@@ -1125,9 +1436,29 @@ var WorkOsTaskRepository = (function () {
         'Taskが他の操作で変更されたため書込みを停止しました。'
       );
     }
+    var trustedCurrent = authoritativeRowFromTrustedState(
+      current,
+      schema,
+      context.columnMap,
+      context.sheet,
+      physicalRow
+    );
+    if (!rowsEqual(current, trustedCurrent)) {
+      var authorityDriftFields = schema.filter(function (item, index) {
+        return !cellsEqual(current[index], trustedCurrent[index]);
+      }).map(function (item) {
+        return item.id;
+      });
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_DRIFT',
+        'TASK_REPOSITORY',
+        false,
+        'Task rowがtrusted authoritative stateと一致しません: ' +
+          authorityDriftFields.join(',')
+      );
+    }
     var updated = current.slice();
-    var changes = [];
-    var snapshotChanged = false;
+    var changedFields = [];
     Object.keys(patch || {}).forEach(function (field) {
       if (!allowedFields[field] ||
           !Object.prototype.hasOwnProperty.call(context.columnMap, field)) {
@@ -1142,50 +1473,64 @@ var WorkOsTaskRepository = (function () {
       var cellValue = valueForCell(schema[index], patch[field]);
       if (!cellsEqual(updated[index], cellValue)) {
         updated[index] = cellValue;
-        changes.push({ columnIndex: index, value: cellValue });
-        if (SNAPSHOT_VALUE_FIELDS[field]) {
-          snapshotChanged = true;
-        }
+        changedFields.push(field);
       }
     });
-    if (!changes.length) {
+    if (!changedFields.length) {
       return { operation: 'NOOP', row: physicalRow, changed_fields: [] };
     }
     var versionIndex = context.columnMap.row_version;
     var updatedAtIndex = context.columnMap.updated_at;
-    updated[versionIndex] = Number(current[versionIndex] || 0) + 1;
-    updated[updatedAtIndex] = nowValue || WorkOsUtilities.now();
-    changes.push({
-      columnIndex: versionIndex,
-      value: updated[versionIndex]
+    var businessVersionIndex = context.columnMap.business_version;
+    var intentRequiredIndex =
+      context.columnMap.calendar_reconcile_required;
+    var intentVersionIndex = context.columnMap.calendar_intent_version;
+    var businessChanged = changedFields.some(function (field) {
+      return BUSINESS_GUARD_FIELDS[field] === true;
     });
-    changes.push({
-      columnIndex: updatedAtIndex,
-      value: updated[updatedAtIndex]
+    var calendarReconcileChanged = changedFields.some(function (field) {
+      return CALENDAR_RECONCILE_FIELDS[field] === true;
     });
-    if (snapshotChanged) {
-      updated = attachAuthoritativeSnapshot(
-        updated,
-        schema,
-        context.columnMap
+    if (businessChanged) {
+      updated[businessVersionIndex] =
+        Number(current[businessVersionIndex] || 0) + 1;
+      changedFields.push('business_version');
+    }
+    if (calendarReconcileChanged) {
+      updated[intentRequiredIndex] = true;
+      updated[intentVersionIndex] =
+        Number(current[intentVersionIndex] || 0) + 1;
+      changedFields.push(
+        'calendar_reconcile_required',
+        'calendar_intent_version'
       );
     }
+    updated[versionIndex] = Number(current[versionIndex] || 0) + 1;
+    updated[updatedAtIndex] = nowValue || WorkOsUtilities.now();
+    updated = attachAuthoritativeSnapshot(
+      updated,
+      schema,
+      context.columnMap
+    );
     var previousTask = directTaskFromRow(current, schema);
     var candidateTask = validateCandidateRow(
       updated,
       schema,
       'TASK_REPOSITORY'
     );
-    if (snapshotChanged) {
-      context.sheet.getRange(
-        physicalRow,
-        1,
-        1,
-        schema.length
-      ).setValues([updated]);
-    } else {
-      writeChangedCells(context.sheet, physicalRow, changes);
-    }
+    context.sheet.getRange(
+      physicalRow,
+      1,
+      1,
+      schema.length
+    ).setValues([updated]);
+    syncAuthoritativeMirror(
+      context.sheet,
+      physicalRow,
+      updated,
+      schema,
+      context.columnMap
+    );
     syncReviewNote(
       context.sheet,
       physicalRow,
@@ -1196,7 +1541,7 @@ var WorkOsTaskRepository = (function () {
     return {
       operation: 'UPDATE',
       row: physicalRow,
-      changed_fields: Object.keys(patch).concat(['row_version', 'updated_at'])
+      changed_fields: changedFields.concat(['row_version', 'updated_at'])
     };
   }
 
@@ -1251,6 +1596,15 @@ var WorkOsTaskRepository = (function () {
     payload.action_type = String(actionType);
     payload.target_task_id = current.task_id;
     payload.expected_target_row_version = Number(current.row_version);
+    payload.expected_target_business_version =
+      Number(current.business_version);
+    payload.target_identity = {
+      task_id: String(current.task_id || ''),
+      origin_key: String(current.origin_key || ''),
+      stable_thread_key: String(current.stable_thread_key || ''),
+      source_message_id: String(current.source_message_id || ''),
+      source_thread_id: String(current.source_thread_id || '')
+    };
     payload.target_resolution = 'RESOLVED';
     if (!Array.isArray(payload.manual_conflicts)) {
       payload.manual_conflicts = [];
@@ -1281,6 +1635,9 @@ var WorkOsTaskRepository = (function () {
         payload.target_task_id = existingPayload.target_task_id;
         payload.expected_target_row_version =
           existingPayload.expected_target_row_version;
+        payload.expected_target_business_version =
+          existingPayload.expected_target_business_version;
+        payload.target_identity = existingPayload.target_identity;
         payload.target_resolution = existingPayload.target_resolution;
       }
       if (existingPayload.origin_key === payload.origin_key &&
@@ -1362,6 +1719,15 @@ var WorkOsTaskRepository = (function () {
     pending.target_task_id = task.task_id;
     pending.target_resolution = 'RESOLVED';
     pending.expected_target_row_version = Number(task.row_version);
+    pending.expected_target_business_version =
+      Number(task.business_version);
+    pending.target_identity = {
+      task_id: String(task.task_id || ''),
+      origin_key: String(task.origin_key || ''),
+      stable_thread_key: String(task.stable_thread_key || ''),
+      source_message_id: String(task.source_message_id || ''),
+      source_thread_id: String(task.source_thread_id || '')
+    };
     pending.current_values = {};
     Object.keys(pending.changes).forEach(function (field) {
       pending.current_values[field] =
@@ -1404,6 +1770,43 @@ var WorkOsTaskRepository = (function () {
     return withLockedContext(sheet, function (context) {
       return restagePendingChangeUnlocked(
         settings.reviewTaskId,
+        context,
+        settings.now
+      );
+    });
+  }
+
+  function restagePendingChangeAtRow(options) {
+    var settings = options || {};
+    var sheet = settings.sheet || SpreadsheetApp.getActiveSpreadsheet()
+      .getSheetByName(WorkOsConfig.SHEETS.TASKS);
+    var physicalRow = Number(settings.physicalRow);
+    if (!Number.isInteger(physicalRow) ||
+        physicalRow < WorkOsConfig.DATA_START_ROW) {
+      throw new WorkOsAppError(
+        'REVIEW_RESTAGE_SELECTION',
+        'TASK_REVIEW',
+        false,
+        'Review再stage対象はTaskの1行だけです。'
+      );
+    }
+    return withLockedContext(sheet, function (context) {
+      var task = readTaskAtRow(context, physicalRow);
+      if (!task ||
+          (settings.expectedTaskId &&
+           String(settings.expectedTaskId) !== String(task.task_id)) ||
+          (settings.expectedBusinessVersion != null &&
+           Number(settings.expectedBusinessVersion) !==
+             Number(task.business_version))) {
+        throw new WorkOsAppError(
+          'REVIEW_RESTAGE_CONFLICT',
+          'TASK_REVIEW',
+          false,
+          'Review対象が変更されたため再stageを停止しました。'
+        );
+      }
+      return restagePendingChangeUnlocked(
+        task.task_id,
         context,
         settings.now
       );
@@ -1520,7 +1923,7 @@ var WorkOsTaskRepository = (function () {
       return false;
     }
     return Object.keys(changes).every(function (field) {
-      return field !== 'comment' && REVIEW_WRITE_FIELDS[field] === true;
+      return PENDING_BUSINESS_CHANGE_FIELDS[field] === true;
     });
   }
 
@@ -1580,11 +1983,16 @@ var WorkOsTaskRepository = (function () {
     var expectedTargetVersion = Number(
       pending.expected_target_row_version
     );
+    var expectedTargetBusinessVersion = Number(
+      pending.expected_target_business_version
+    );
     if (!targetTaskId ||
         targetTaskId === reviewTask.task_id ||
         !targetRow ||
         !Number.isInteger(expectedTargetVersion) ||
         expectedTargetVersion < 1 ||
+        !Number.isInteger(expectedTargetBusinessVersion) ||
+        expectedTargetBusinessVersion < 1 ||
         !assertReviewChanges(pending.changes)) {
       return rejectedReviewResult(
         context,
@@ -1595,6 +2003,15 @@ var WorkOsTaskRepository = (function () {
       );
     }
     var target = readTaskAtRow(context, targetRow);
+    if (!targetIdentityMatches(target, pending.target_identity)) {
+      return rejectedReviewResult(
+        context,
+        reviewRow,
+        reviewTask,
+        'REVIEW_TARGET_CONFLICT',
+        '対象Task identityが変更されたため受入を拒否しました。'
+      );
+    }
     var checkpoint = String(pending.application_checkpoint || '');
     var targetMatches = changesMatchTask(
       context,
@@ -1602,10 +2019,10 @@ var WorkOsTaskRepository = (function () {
       pending.changes
     );
     var targetAlreadyApplied = checkpoint === 'TARGET_APPLYING' &&
-      target.row_version === expectedTargetVersion + 1 &&
+      target.business_version === expectedTargetBusinessVersion + 1 &&
       targetMatches;
     if (!targetAlreadyApplied &&
-        (target.row_version !== expectedTargetVersion ||
+        (target.business_version !== expectedTargetBusinessVersion ||
          target.pending_action_type ||
          (isPlainObject(target.pending_changes_json) &&
           isPlainObject(target.pending_changes_json.changes)))) {
@@ -1701,16 +2118,35 @@ var WorkOsTaskRepository = (function () {
     }
   }
 
+  function targetIdentityMatches(task, identity) {
+    if (!isPlainObject(identity)) {
+      return false;
+    }
+    return [
+      'task_id',
+      'origin_key',
+      'stable_thread_key',
+      'source_message_id',
+      'source_thread_id'
+    ].every(function (field) {
+      return String(identity[field] || '') === String(task[field] || '');
+    });
+  }
+
   function sameRowReviewConflicts(task, pending) {
     var conflicts = [];
-    var expectedVersion = Number(pending.expected_target_row_version);
-    if (!Number.isInteger(expectedVersion) ||
-        expectedVersion < 1 ||
-        Number(task.row_version) !== expectedVersion + 1) {
-      conflicts.push('row_version');
+    var expectedBusinessVersion = Number(
+      pending.expected_target_business_version
+    );
+    if (!Number.isInteger(expectedBusinessVersion) ||
+        expectedBusinessVersion < 1 ||
+        Number(task.business_version) !==
+          expectedBusinessVersion + 1) {
+      conflicts.push('business_version');
     }
     if (String(pending.target_task_id || '') !== String(task.task_id || '') ||
-        pending.target_resolution !== 'RESOLVED') {
+        pending.target_resolution !== 'RESOLVED' ||
+        !targetIdentityMatches(task, pending.target_identity)) {
       conflicts.push('target');
     }
     var currentValues = isPlainObject(pending.current_values)
@@ -1868,7 +2304,12 @@ var WorkOsTaskRepository = (function () {
         assertReviewChanges(pending.changes);
     if (structureValid && reviewType === 'EXISTING_CHANGE') {
       structureValid = pending.target_resolution === 'RESOLVED' &&
-        pending.target_task_id === task.task_id;
+        pending.target_task_id === task.task_id &&
+        Number.isInteger(Number(
+          pending.expected_target_business_version
+        )) &&
+        Number(pending.expected_target_business_version) >= 1 &&
+        targetIdentityMatches(task, pending.target_identity);
     } else if (structureValid && reviewType === 'TARGET_UNRESOLVED') {
       structureValid = pending.target_resolution === 'UNRESOLVED';
     } else if (structureValid && reviewType === 'PENDING_CONFLICT') {
@@ -1977,6 +2418,18 @@ var WorkOsTaskRepository = (function () {
         schema.length
       ).setValues(group.values);
     });
+    var map = WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    ordered.forEach(function (plan) {
+      syncAuthoritativeMirror(
+        sheet,
+        plan.row,
+        plan.output_row,
+        schema,
+        map
+      );
+    });
   }
 
   function restoreUserEditRows(sheet, rowEdits) {
@@ -2028,7 +2481,7 @@ var WorkOsTaskRepository = (function () {
           };
         }
         (edit.column_ids || []).forEach(function (fieldId) {
-          if (SNAPSHOT_VALUE_FIELDS[fieldId]) {
+          if (Object.prototype.hasOwnProperty.call(map, fieldId)) {
             byRow[row].column_ids[fieldId] = true;
           }
         });
@@ -2041,16 +2494,27 @@ var WorkOsTaskRepository = (function () {
           1,
           schema.length
         ).getValues()[0];
-        var hasIdentity = !WorkOsUtilities.isBlank(raw[map.task_id]) ||
-          !WorkOsUtilities.isBlank(raw[map.origin_key]);
         var restored;
-        if (hasIdentity) {
-          restored = authoritativeRowFromSnapshot(raw, schema, map);
-        } else {
-          restored = raw.slice();
+        try {
+          restored = authoritativeRowFromTrustedState(
+            raw,
+            schema,
+            map,
+            sheet,
+            row
+          );
+        } catch (authorityError) {
+          var cleared = raw.slice();
           Object.keys(byRow[row].column_ids).forEach(function (fieldId) {
-            restored[map[fieldId]] = '';
+            cleared[map[fieldId]] = '';
           });
+          var wasBlankBeforeEvent = cleared.every(function (value) {
+            return WorkOsUtilities.isBlank(value);
+          });
+          if (!wasBlankBeforeEvent) {
+            throw authorityError;
+          }
+          restored = new Array(schema.length).fill('');
         }
         return {
           row: row,
@@ -2151,10 +2615,12 @@ var WorkOsTaskRepository = (function () {
         )
       };
     }
-    var authoritative = authoritativeRowFromSnapshot(
+    var authoritative = authoritativeRowFromTrustedState(
       rawRow,
       schema,
-      map
+      map,
+      lockedContext.sheet,
+      rowNumber
     );
     var priorTask = directTaskFromRow(authoritative, schema);
     var editedFields = (edit.column_ids || []).filter(function (
@@ -2282,6 +2748,23 @@ var WorkOsTaskRepository = (function () {
     });
     var versionIndex = map.row_version;
     var updatedAtIndex = map.updated_at;
+    var businessVersionIndex = map.business_version;
+    var intentRequiredIndex = map.calendar_reconcile_required;
+    var intentVersionIndex = map.calendar_intent_version;
+    candidateRow[businessVersionIndex] =
+      Number(authoritative[businessVersionIndex] || 0) + 1;
+    normalizedFields.push('business_version');
+    if (normalizedFields.some(function (field) {
+      return CALENDAR_RECONCILE_FIELDS[field] === true;
+    })) {
+      candidateRow[intentRequiredIndex] = true;
+      candidateRow[intentVersionIndex] =
+        Number(authoritative[intentVersionIndex] || 0) + 1;
+      normalizedFields.push(
+        'calendar_reconcile_required',
+        'calendar_intent_version'
+      );
+    }
     candidateRow[versionIndex] =
       Number(authoritative[versionIndex] || 0) + 1;
     candidateRow[updatedAtIndex] =
@@ -2376,10 +2859,12 @@ var WorkOsTaskRepository = (function () {
               return;
             }
             var rawRow = rowForPhysicalRow(lockedContext, rowNumber);
-            var authoritative = authoritativeRowFromSnapshot(
+            var authoritative = authoritativeRowFromTrustedState(
               rawRow,
               schema,
-              map
+              map,
+              sheet,
+              rowNumber
             );
             var task = directTaskFromRow(authoritative, schema);
             var fields = edit.column_ids || [];
@@ -2461,10 +2946,12 @@ var WorkOsTaskRepository = (function () {
           } catch (error) {
             firstError = firstError || error;
             var rawRow = rowForPhysicalRow(lockedContext, rowNumber);
-            var authoritative = authoritativeRowFromSnapshot(
+            var authoritative = authoritativeRowFromTrustedState(
               rawRow,
               schema,
-              lockedContext.columnMap
+              lockedContext.columnMap,
+              sheet,
+              rowNumber
             );
             var priorTask = directTaskFromRow(authoritative, schema);
             plans.push({
@@ -2597,6 +3084,21 @@ var WorkOsTaskRepository = (function () {
         'Taskが他の操作で変更されたため書込みを停止しました。'
       );
     }
+    var trustedExisting = authoritativeRowFromTrustedState(
+      existing,
+      schema,
+      context.columnMap,
+      context.sheet,
+      physicalRow
+    );
+    if (!rowsEqual(existing, trustedExisting)) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_DRIFT',
+        'TASK_REPOSITORY',
+        false,
+        'Task rowがtrusted authoritative stateと一致しません。'
+      );
+    }
     var currentTaskId = String(existing[context.columnMap.task_id] || '');
     if (!currentTaskId) {
       throw new WorkOsAppError(
@@ -2616,7 +3118,6 @@ var WorkOsTaskRepository = (function () {
     }
     var updated = existing.slice();
     var changedFields = [];
-    var changedCells = [];
     Object.keys(task).forEach(function (id) {
       if (!Object.prototype.hasOwnProperty.call(context.columnMap, id)) {
         return;
@@ -2644,7 +3145,6 @@ var WorkOsTaskRepository = (function () {
       }
       updated[columnIndex] = candidate;
       changedFields.push(id);
-      changedCells.push({ columnIndex: columnIndex, value: candidate });
     });
     if (!changedFields.length) {
       return {
@@ -2659,20 +3159,29 @@ var WorkOsTaskRepository = (function () {
     var updatedAtIndex = context.columnMap.updated_at;
     updated[rowVersionIndex] = Number(existing[rowVersionIndex] || 0) + 1;
     updated[updatedAtIndex] = WorkOsUtilities.now();
-    changedCells.push({
-      columnIndex: rowVersionIndex,
-      value: updated[rowVersionIndex]
-    });
-    changedCells.push({
-      columnIndex: updatedAtIndex,
-      value: updated[updatedAtIndex]
-    });
+    updated = attachAuthoritativeSnapshot(
+      updated,
+      schema,
+      context.columnMap
+    );
     validateCandidateRow(
       updated,
       schema,
       'TASK_REPOSITORY'
     );
-    writeChangedCells(context.sheet, physicalRow, changedCells);
+    context.sheet.getRange(
+      physicalRow,
+      1,
+      1,
+      schema.length
+    ).setValues([updated]);
+    syncAuthoritativeMirror(
+      context.sheet,
+      physicalRow,
+      updated,
+      schema,
+      context.columnMap
+    );
     context.values[physicalRow - WorkOsConfig.DATA_START_ROW] = updated;
     changedFields.push('row_version', 'updated_at');
     return {
@@ -2723,6 +3232,13 @@ var WorkOsTaskRepository = (function () {
     }
     var output = makeRow(prepared);
     context.sheet.getRange(physicalRow, 1, 1, output.length).setValues([output]);
+    syncAuthoritativeMirror(
+      context.sheet,
+      physicalRow,
+      output,
+      WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS),
+      context.columnMap
+    );
     syncReviewNote(context.sheet, physicalRow, prepared, null);
     var valueIndex = physicalRow - WorkOsConfig.DATA_START_ROW;
     context.values[valueIndex] = output;
@@ -2853,6 +3369,63 @@ var WorkOsTaskRepository = (function () {
     return result;
   }
 
+  function acknowledgeCalendarIntent(
+    taskId,
+    expectedIntentVersion,
+    syncStatus,
+    context,
+    nowValue
+  ) {
+    assertLockedContext(context);
+    var normalizedTaskId = String(taskId || '');
+    var physicalRow = context.byTaskId[normalizedTaskId];
+    if (!physicalRow) {
+      throw new WorkOsAppError(
+        'E_TARGET_NOT_RESOLVED',
+        'CALENDAR_INTENT',
+        false,
+        'Calendar intent対象Taskを解決できません。'
+      );
+    }
+    var task = readTaskAtRow(context, physicalRow);
+    var expected = Number(expectedIntentVersion);
+    if (!Number.isInteger(expected) ||
+        expected < 0 ||
+        Number(task.calendar_intent_version) !== expected) {
+      return {
+        operation: 'STALE_INTENT',
+        row: physicalRow,
+        task_id: normalizedTaskId,
+        current_intent_version: Number(task.calendar_intent_version)
+      };
+    }
+    if (task.calendar_reconcile_required !== true) {
+      return {
+        operation: 'NOOP',
+        row: physicalRow,
+        task_id: normalizedTaskId,
+        current_intent_version: expected
+      };
+    }
+    var allowed = {
+      calendar_reconcile_required: true,
+      calendar_sync_status: true
+    };
+    var result = updateRowWithPatch(
+      context,
+      physicalRow,
+      {
+        calendar_reconcile_required: false,
+        calendar_sync_status: String(syncStatus || 'NOT_REQUIRED')
+      },
+      allowed,
+      nowValue
+    );
+    result.task_id = normalizedTaskId;
+    result.acknowledged_intent_version = expected;
+    return result;
+  }
+
   function upsertPhase1MockTask() {
     WorkOsUtilities.assertTestMode('PHASE1_MOCK_TASK');
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -2897,9 +3470,14 @@ var WorkOsTaskRepository = (function () {
     findByStableThreadKey: findByStableThreadKey,
     sanitizeTaskForPersistence: sanitizeTaskForPersistence,
     migrateLegacyRowToSnapshot: migrateLegacyRowToSnapshot,
+    migrateSchema24RowTo25: migrateSchema24RowTo25,
+    assertCurrentAuthoritativeRow: assertCurrentAuthoritativeRow,
+    syncAuthoritativeMirror: syncAuthoritativeMirror,
     applyCalendarPatch: applyCalendarPatch,
+    acknowledgeCalendarIntent: acknowledgeCalendarIntent,
     stagePendingChange: stagePendingChange,
     restagePendingChange: restagePendingChange,
+    restagePendingChangeAtRow: restagePendingChangeAtRow,
     applyReviewDecision: applyReviewDecision,
     applyUserEdits: applyUserEdits,
     restoreUserEditRows: restoreUserEditRows,
