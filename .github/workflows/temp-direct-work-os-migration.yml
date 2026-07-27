@@ -14,23 +14,16 @@ jobs:
   migrate-subtree:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out staged migration branch
-        uses: actions/checkout@v4
-        with:
-          ref: migration/import-work-os-20260727
-          path: staging
-          token: ${{ github.token }}
-
-      - name: Reconstruct and verify private export artifact
+      - name: Download and verify private export artifact
         shell: bash
         run: |
           set -euo pipefail
-          test -f "$GITHUB_WORKSPACE/staging/.migration/READY"
-          test "$(find "$GITHUB_WORKSPACE/staging/.migration/archive" -type f -name 'chunk-*.b64' | wc -l)" -eq 27
-          cat "$GITHUB_WORKSPACE"/staging/.migration/archive/chunk-*.b64 | base64 --decode > /tmp/source.tar.xz
-          echo "6353fc260d7589a9ae55582446197abcbeb0229774f64d026ac450b24f6b04fd  /tmp/source.tar.xz" | sha256sum --check --strict
+          curl --fail --location --retry 3 --retry-all-errors \
+            'https://sdmntprkoreacentral.oaiusercontent.com/files/00000000-cac4-8206-bdca-9c1910fe4d25/raw?se=2026-07-27T00:44:38Z&sp=r&sv=2026-02-06&sr=b&scid=4be85d5e-7ff5-5345-af7a-4b3bc9bcc06c&skoid=1e4bb9ed-6bb5-424a-a3aa-79f21566e722&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-07-27T00:27:41Z&ske=2026-07-29T00:27:41Z&sks=b&skv=2026-02-06&sig=IdRCxQ5OSqQJYT9daLfcXLhzHMV0i6ow4sugFjdoYOA%3D' \
+            --output /tmp/source.zip
+          echo 'bc28c30a64e8f9ddcf1664ce8b1ee72026493ada9db59134307b8ea761090449  /tmp/source.zip' | sha256sum --check --strict
           mkdir -p /tmp/export
-          tar -xJf /tmp/source.tar.xz -C /tmp/export
+          unzip -q /tmp/source.zip -d /tmp/export
           test "$(find /tmp/export -type f | wc -l)" -eq 188
 
       - name: Check out target main
@@ -68,9 +61,9 @@ jobs:
         working-directory: target
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --quiet && exit 1
-          git commit -m "chore: migrate Google Workspace Work OS project"
+          git commit -m 'chore: migrate Google Workspace Work OS project'
           git push origin HEAD:main
