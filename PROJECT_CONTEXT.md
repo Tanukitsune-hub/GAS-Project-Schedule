@@ -1,9 +1,9 @@
 # Project Context
 
-最終更新日: 2026-07-27  
+最終更新日: 2026-07-28  
 Project ID: google-workspace-personal-work-os  
 Owner: Repository owner  
-Status: Active - Code 2.8.4-prepilot / READY_FOR_INDEPENDENT_REAUDIT  
+Status: Active - Code 2.8.4-prepilot / REAUDIT_NO_GO  
 Timezone: Asia/Tokyo
 
 ## 1. 目的
@@ -52,6 +52,7 @@ Gmail Message IDで未処理を確認
 - 自動処理は初期停止とし、Sandbox受入後に明示的に有効化する
 - 実Provider、認証、credential保管方式は会社承認なしに確定しない
 - Phase 8はSandbox準備、TEST_MODE Sandbox、実接続Sandbox、個人パイロットの順に進める
+- ChatGPTとCodexの情報連携はGitHubを介して行い、ChatGPTが生成するCodex指示書は毎回`instructions/`へ保存し、GitHub URL付きの短い貼付文を同時に出力する
 
 ## 3. 対象範囲
 
@@ -141,8 +142,25 @@ Workspace Studioは使用しない。
 - tests and tools: `implementation/GoogleSpreadsheet/tests/`、`implementation/GoogleSpreadsheet/tools/`
 - release and reports: `implementation/GoogleSpreadsheet/release/`、実装報告
 - audit and instructions: `audits/`、`instructions/`
+- ChatGPT–Codex handoff policy: `CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md`
 
 別Repositoryを参照・更新・同期先として使用しない。
+
+### ChatGPT / Codex handoff
+
+ChatGPTとCodexの間の正式な作業引継ぎは、このRepositoryを介して行う。
+
+ChatGPTがCodex向け作業指示書を生成する場合は、毎回、次を実施する。
+
+1. 完成した指示書を回答前に`instructions/`へ保存する。
+2. 長文はindexと番号付き分割ファイルへ分けてよい。
+3. GitHubから保存内容を再取得し、branch、path、内容、参照URLを確認する。
+4. Codexのチャット欄へ貼り付ける短い指示文を同時に出力する。
+5. 短い指示文へ完全なGitHub URL、Repository、branch、path、status gate、主要禁止事項を含める。
+6. GitHub保存に失敗した場合は保存済みと報告せず、正式な引継ぎ完了と扱わない。
+7. Codexは実装、test、report、releaseおよび証跡を同じRepositoryへ戻し、ChatGPTはGitHub上の確定成果物を再監査する。
+
+詳細は`CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md`および`DECISIONS.md`のD-036を正とする。
 
 詳細資料。
 
