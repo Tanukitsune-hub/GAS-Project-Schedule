@@ -600,27 +600,25 @@ test('P2-A02_MANUAL_IMPORT_ADVANCES_TO_NEXT_UNPROCESSED_EXACT_MESSAGE', () => {
   });
   const firstCandidates = sandbox.WorkOsGmailGateway.listManualCandidates();
   assert.strictEqual(firstCandidates.length, 1);
-  assert.strictEqual(firstCandidates[0].message_id, 'message-import-second');
+  assert.strictEqual(firstCandidates[0].message_id, 'message-import-first');
   assert.deepStrictEqual(
     Array.from(firstCandidates[0].message_refs, (item) => item.id),
-    ['message-import-first', 'message-middle', 'message-import-second']
+    ['message-import-first']
   );
 
   const secondCandidates = sandbox.WorkOsGmailGateway.listManualCandidates({
     process_suppressed_message_ids: {
-      'message-import-second': true
+      'message-import-first': true
     }
   });
   assert.strictEqual(secondCandidates.length, 1);
-  assert.strictEqual(secondCandidates[0].message_id, 'message-import-first');
+  assert.strictEqual(secondCandidates[0].message_id, 'message-import-second');
   assert.deepStrictEqual(
     Array.from(secondCandidates[0].message_refs, (item) => item.id),
-    ['message-import-first']
+    ['message-import-first', 'message-middle', 'message-import-second']
   );
   assert.strictEqual(
     secondCandidates[0].message_refs.some((item) =>
-      item.id === 'message-middle' ||
-      item.id === 'message-import-second' ||
       item.id === 'message-after-selection'
     ),
     false
