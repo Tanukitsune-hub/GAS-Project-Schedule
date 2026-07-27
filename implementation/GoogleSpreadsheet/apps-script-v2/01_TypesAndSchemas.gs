@@ -6,6 +6,9 @@
  * @property {string=} status
  * @property {boolean=} needs_review
  * @property {number=} row_version
+ * @property {number=} business_version
+ * @property {boolean=} calendar_reconcile_required
+ * @property {number=} calendar_intent_version
  */
 
 /**
@@ -136,6 +139,19 @@ var WorkOsSchemas = (function () {
     column('updated_at', 'updated_at', 'DateTime', { visible: false, protected: true }),
     column('last_calendar_sync_at', 'last_calendar_sync_at', 'DateTime', { visible: false, protected: true }),
     column('authoritative_snapshot_json', 'authoritative_snapshot_json', 'JsonObject', {
+      visible: false,
+      protected: true
+    }),
+    column('business_version', 'business_version', 'Integer', {
+      visible: false,
+      protected: true
+    }),
+    column('calendar_reconcile_required', 'calendar_reconcile_required', 'Boolean', {
+      visible: false,
+      protected: true,
+      validation: 'CHECKBOX'
+    }),
+    column('calendar_intent_version', 'calendar_intent_version', 'Integer', {
       visible: false,
       protected: true
     })
@@ -546,12 +562,23 @@ var WorkOsSchemas = (function () {
     } else if (value.task_title != null && String(value.task_title).length > 300) {
       errors.push('task_title exceeds 300 characters');
     }
-    ['needs_review', 'completed', 'excluded', 'waiting_for_reply'].forEach(function (id) {
+    [
+      'needs_review',
+      'completed',
+      'excluded',
+      'waiting_for_reply',
+      'calendar_reconcile_required'
+    ].forEach(function (id) {
       if (value[id] != null && typeof value[id] !== 'boolean') {
         errors.push(id + ' must be Boolean');
       }
     });
-    ['source_action_index', 'row_version'].forEach(function (id) {
+    [
+      'source_action_index',
+      'row_version',
+      'business_version',
+      'calendar_intent_version'
+    ].forEach(function (id) {
       if (value[id] != null && (!Number.isInteger(Number(value[id])) || Number(value[id]) < 0)) {
         errors.push(id + ' must be a non-negative Integer');
       }
