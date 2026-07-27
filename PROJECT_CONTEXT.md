@@ -1,9 +1,9 @@
 # Project Context
 
-最終更新日: 2026-07-26  
+最終更新日: 2026-07-27  
 Project ID: google-workspace-personal-work-os  
 Owner: Repository owner  
-Status: Active - v2.8.1 Prepilot / Phase 8B Sandbox Acceptance  
+Status: Active - Code 2.8.4-prepilot / READY_FOR_INDEPENDENT_REAUDIT  
 Timezone: Asia/Tokyo
 
 ## 1. 目的
@@ -132,15 +132,17 @@ Workspace Studioは使用しない。
 
 ### GitHub / Git
 
-- `Tanukitsune-hub/context-hub`: 目的、前提、計画、Decision、Current Statusの正本
-- `GoogleSpreadsheet`: Apps Script v2、テスト、release package、実装報告の作業Repository
+`Tanukitsune-hub/GAS-Project-Schedule`を唯一のGitHub正本とする。
 
-本リポジトリの正本。
+このRepositoryで一体管理するもの。
 
-- `PROJECT_CONTEXT.md`
-- `MASTER_PLAN.md`
-- `DECISIONS.md`
-- `CURRENT_STATUS.md`
+- context: `PROJECT_CONTEXT.md`、`MASTER_PLAN.md`、`DECISIONS.md`、`CURRENT_STATUS.md`
+- implementation: `implementation/GoogleSpreadsheet/apps-script-v2/`
+- tests and tools: `implementation/GoogleSpreadsheet/tests/`、`implementation/GoogleSpreadsheet/tools/`
+- release and reports: `implementation/GoogleSpreadsheet/release/`、実装報告
+- audit and instructions: `audits/`、`instructions/`
+
+別Repositoryを参照・更新・同期先として使用しない。
 
 詳細資料。
 
@@ -156,7 +158,8 @@ Workspace Studioは使用しない。
 - Requirements Traceability
 - Manual Acceptance Guide
 - Phase別実装・監査報告
-- `release/v2.8.1-prepilot/`
+- `release/v2.8.4-prepilot/`
+- `release/v2.8.4-prepilot-phase8c/`
 
 ## 6. v2の基本原則
 
@@ -171,7 +174,10 @@ Workspace Studioは使用しない。
 - 設定、Task index、Message Stateは1実行内で原則1回だけ読み込む
 - すべての長時間処理にsoft execution budgetを設ける
 - 長時間のGmail、AI、Calendar外部I/Oをmain Script Lock内へ置かない
-- claim、ownership、row version、CAS、checkpointにより冪等性と競合安全性を確保する
+- claim、ownership、physical row version、business version、CAS、checkpointにより冪等性と競合安全性を確保する
+- management列を含むeditはevent全体を拒否し、trusted full-row stateから完全復元する
+- Setupはcurrent Schemaのdriftをsilent repairまたはsilent rebaselineしない
+- Task editのCalendar reconcile intentをdurableに保存し、Outboxを再構築可能にする
 - 診断は読取中心とし、Dashboard更新や全行書換えを行わない
 - Dashboardは利用者領域を上書きせず、layout conflict時はfail-closedとする
 - AI推測期限と正式期限を分離する
@@ -217,14 +223,16 @@ SYS/失敗
 - 完了・対象外・確認結果はGoogle Sheetsで管理する
 - AIは人間が付与した`手動/*`を削除しない
 - `手動/除外`を最優先し、次にMessage単位の`手動/取込`を優先する
+- 未処理のexact `手動/取込` MessageはThread間・Thread内とも受信時刻の古い順に処理する
 
 ## 9. 現在の展開段階
 
 ```text
-Phase 8A: Sandbox準備 - 完了
-Phase 8B: TEST_MODE=true非機密Sandbox - 開始前Gate PASS、実Workspace操作待ち
-Phase 8C: TEST_MODE=false Sandbox - 未着手
-Phase 8D: 本人による実業務パイロット - 未着手
+Phase 8A: Sandbox準備 - 履歴上完了
+Code 2.8.4 Round 3 remediation - local完了、独立再監査待ち
+Phase 8B: GO/PASS未宣言、実Workspace受入未実施
+Phase 8C: GO未宣言
+Phase 8D: Pilot ready未宣言
 少人数限定展開 - 未着手
 部内展開 - 未着手
 ```
