@@ -1,0 +1,40 @@
+name: Temporary v2.8.3 independent reaudit export
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Stage independent reaudit package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p export
+          cp -a PROJECT_CONTEXT.md MASTER_PLAN.md DECISIONS.md CURRENT_STATUS.md README.md export/
+          cp -a instructions export/
+          cp -a audits export/
+          cp -a implementation/GoogleSpreadsheet export/
+          find export -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' path; do
+            sha256sum "export/$path"
+          done > export/EXPORT_SHA256SUMS.txt
+          echo "Exported file count: $(find export -type f | wc -l)"
+          echo "Exported byte count: $(du -sb export | cut -f1)"
+
+      - name: Upload private reaudit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gas-project-schedule-v283-reaudit
+          path: export
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
