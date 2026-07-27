@@ -1,9 +1,11 @@
-name: Temporary direct Work OS repository migration
+name: Temporary Work OS artifact migration
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - migration/import-work-os-20260727
+    paths:
+      - .migration/READY
 
 permissions:
   contents: write
@@ -12,6 +14,25 @@ jobs:
   migrate-subtree:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out staged migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: migration/import-work-os-20260727
+          path: staging
+          token: ${{ github.token }}
+
+      - name: Reconstruct and verify private export artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$GITHUB_WORKSPACE/staging/.migration/READY"
+          test "$(find "$GITHUB_WORKSPACE/staging/.migration/archive" -type f -name 'chunk-*.b64' | wc -l)" -eq 79
+          cat "$GITHUB_WORKSPACE"/staging/.migration/archive/chunk-*.b64 | base64 --decode > /tmp/source.zip
+          echo "bc28c30a64e8f9ddcf1664ce8b1ee72026493ada9db59134307b8ea761090449  /tmp/source.zip" | sha256sum --check --strict
+          mkdir -p /tmp/export
+          unzip -q /tmp/source.zip -d /tmp/export
+          test "$(find /tmp/export -type f | wc -l)" -eq 188
+
       - name: Check out target main
         uses: actions/checkout@v4
         with:
@@ -19,31 +40,19 @@ jobs:
           path: target
           token: ${{ github.token }}
 
-      - name: Check out source private repository
-        uses: actions/checkout@v4
-        with:
-          repository: Tanukitsune-hub/context-hub
-          ref: main
-          path: source
-          token: ${{ github.token }}
-          sparse-checkout: |
-            projects/google-workspace-personal-work-os
-          sparse-checkout-cone-mode: false
-          persist-credentials: false
-
-      - name: Copy and verify exact subtree
+      - name: Replace target root and verify every file
         shell: bash
         run: |
           set -euo pipefail
-          source_dir="$GITHUB_WORKSPACE/source/projects/google-workspace-personal-work-os"
+          source_dir=/tmp/export
           target_dir="$GITHUB_WORKSPACE/target"
-          test -d "$source_dir"
 
           find "$source_dir" -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' path; do
             sha256sum "$source_dir/$path"
           done > /tmp/source.sha256
 
-          rsync -a --delete --exclude='.git/' "$source_dir/" "$target_dir/"
+          find "$target_dir" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a "$source_dir"/. "$target_dir"/
 
           find "$target_dir" -path "$target_dir/.git" -prune -o -type f -printf '%P\0' | sort -z | while IFS= read -r -d '' path; do
             sha256sum "$target_dir/$path"
@@ -52,8 +61,7 @@ jobs:
           sed "s#  $source_dir/#  #" /tmp/source.sha256 > /tmp/source.normalized
           sed "s#  $target_dir/#  #" /tmp/target.sha256 > /tmp/target.normalized
           diff -u /tmp/source.normalized /tmp/target.normalized
-
-          echo "Migrated file count: $(wc -l < /tmp/source.normalized)"
+          test "$(wc -l < /tmp/target.normalized)" -eq 188
 
       - name: Commit exact migrated tree to target main
         shell: bash
@@ -63,6 +71,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet && exit 0
+          git diff --cached --quiet && exit 1
           git commit -m "chore: migrate Google Workspace Work OS project"
           git push origin HEAD:main
