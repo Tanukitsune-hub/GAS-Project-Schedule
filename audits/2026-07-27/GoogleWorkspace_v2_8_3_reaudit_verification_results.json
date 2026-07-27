@@ -1,0 +1,73 @@
+{
+  "audit_date": "2026-07-27",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "audited_ref": "main",
+  "audited_commit": "beeb1e55ef2b5afa04bb89ff0b75a75c85dff87e",
+  "artifact": {
+    "filename": "gas-project-schedule-v283-reaudit.zip",
+    "sha256": "37d9bca55a5f10f5e7a497c9f6dfee6831173a3154c85202b871df58079a87a0",
+    "artifact_files": 270,
+    "canonical_files_excluding_export_manifest": 269,
+    "google_spreadsheet_files": 259
+  },
+  "source": {
+    "code_version": "2.8.3-prepilot",
+    "schema_version": "2.4",
+    "ai_schema_version": "2.0",
+    "migration_version": "1",
+    "gs_files": 22,
+    "test_suites": 36
+  },
+  "independent_regression": {
+    "suites": 36,
+    "passed": 509,
+    "failed": 0,
+    "skipped": 11,
+    "failing_suites": 0
+  },
+  "static_validation": {
+    "passed": 10,
+    "failed": 0,
+    "individual_gs_syntax": "22/22 PASS",
+    "concatenated_syntax": "PASS",
+    "global_evaluation": "PASS",
+    "unresolved_config_references": 0,
+    "unresolved_namespaces": 0,
+    "real_secret_hits": 0
+  },
+  "release_verification": {
+    "phase8b": {
+      "package_files": 27,
+      "payload_files": 23,
+      "checksum": "PASS",
+      "source_parity": "PASS"
+    },
+    "phase8c_candidate": {
+      "package_files": 25,
+      "payload_files": 22,
+      "checksum": "PASS",
+      "source_parity": "PASS except audited TEST_MODE transform and Test Harness exclusion"
+    }
+  },
+  "gate": {
+    "local_regression_and_static": "PASS",
+    "phase8b_part_a_c": "HOLD pending remediation and fresh release",
+    "phase8b_part_d_acceptance": "NO-GO",
+    "phase8c": "NO-GO",
+    "phase8d": "NO-GO"
+  },
+  "open_findings": {
+    "high": 4,
+    "medium": 3,
+    "external_not_executed": [
+      "real Google Workspace",
+      "OAuth",
+      "Gmail API",
+      "Calendar API",
+      "installable Trigger",
+      "time-driven Trigger",
+      "LockService contention",
+      "real AI Provider"
+    ]
+  }
+}
