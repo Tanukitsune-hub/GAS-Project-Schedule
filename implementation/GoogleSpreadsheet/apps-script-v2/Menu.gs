@@ -14,6 +14,10 @@ function onOpen() {
     .addItem('Task編集を手動反映（fallback）', 'menuApplySelectedTaskEdits')
     .addItem('Calendar同期を1件処理', 'menuSyncPendingCalendarJobs')
     .addItem('選択したDead Letterを再実行予約', 'menuRetrySelectedDeadLetters');
+  menu.addItem(
+    '選択したReviewを再stage',
+    'menuRestageSelectedReview'
+  );
   if (WorkOsConfig.TEST_MODE === true) {
     menu
       .addSeparator()
@@ -157,6 +161,30 @@ function menuApplySelectedTaskEdits() {
     return;
   }
   showSafeResult_('Task編集・判断の反映', applySelectedTaskEdits());
+}
+
+function menuRestageSelectedReview() {
+  var ui = SpreadsheetApp.getUi();
+  var range = SpreadsheetApp.getActiveRange();
+  var preview = WorkOsEditHandler.inspectRestageSelection(range);
+  var response = ui.alert(
+    '選択したReviewを再stage',
+    'Task一覧の行 ' + String(preview.physical_row) +
+      ' にあるOPEN Reviewを、現在の業務状態を基準に再stageします。\n' +
+      '確認後に対象が変わった場合は安全のため中止します。続行しますか？',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_(
+    '選択したReviewを再stage',
+    WorkOsEditHandler.restageSelectedReviewRange(
+      range,
+      WorkOsUtilities.now(),
+      preview
+    )
+  );
 }
 
 function menuRunPhase3Tests() {
