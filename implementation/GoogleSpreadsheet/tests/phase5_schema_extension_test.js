@@ -148,6 +148,77 @@ function legacyEnvironment(options = {}) {
   return { environment, messageSheet, classification };
 }
 
+const schema24SnapshotFields = [
+  'needs_review',
+  'decision',
+  'status',
+  'completed',
+  'excluded',
+  'task_title',
+  'due_date',
+  'suggested_due_date',
+  'deadline_basis',
+  'priority',
+  'waiting_for_reply',
+  'calendar_sync_mode',
+  'comment',
+  'review_state',
+  'review_type',
+  'calendar_category',
+  'calendar_importance',
+  'manual_fields',
+  'pending_action_type',
+  'pending_changes_json'
+];
+
+function snapshotValue(column, value) {
+  if (value === '' || value == null) {
+    return '';
+  }
+  if (value instanceof sandbox.Date) {
+    return value.toISOString();
+  }
+  if (column.enumName) {
+    return sandbox.WorkOsSchemas.toInternalEnum(
+      column.enumName,
+      value
+    );
+  }
+  if (column.type === 'JsonArray' ||
+      column.type === 'JsonObject') {
+    return JSON.parse(String(value));
+  }
+  return value;
+}
+
+function schema24Environment() {
+  const state = legacyEnvironment();
+  const taskSheet = state.environment.taskSheet;
+  const schema = sandbox.WorkOsSchemas.getSheetSchema(
+    sandbox.WorkOsConfig.SHEETS.TASKS
+  );
+  const ids = Array.from(sandbox.WorkOsSchemas.getInternalIds(
+    sandbox.WorkOsConfig.SHEETS.TASKS
+  ));
+  const map = sandbox.WorkOsSchemas.buildColumnMapFromIds(ids);
+  const row = taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1];
+  const values = {};
+  schema24SnapshotFields.forEach((id) => {
+    values[id] = snapshotValue(schema[map[id]], row[map[id]]);
+  });
+  row[map.authoritative_snapshot_json] = JSON.stringify({
+    schema_version: '2.4',
+    task_id: row[map.task_id],
+    values
+  });
+  taskSheet.cells.forEach((taskRow) => {
+    taskRow.splice(taskRow.length - 3, 3);
+  });
+  taskSheet.maxColumns -= 3;
+  taskSheet.writeCount = 0;
+  return state;
+}
+
 function rowById(sheet, internalId) {
   const ids = sheet.cells[0];
   return sheet.cells[2][ids.indexOf(internalId)];
@@ -475,6 +546,228 @@ test('P5-S07_MULTI_CHUNK_PARTIAL_WRITE_RESUMES_TO_CURRENT', () => {
     assert.strictEqual(row[schemaIndex], sandbox.WorkOsConfig.SCHEMA_VERSION);
     assert.notStrictEqual(row[provenanceIndex], '');
   }
+});
+
+test('R3-02F_SCHEMA_2_4_TO_2_5_USES_SNAPSHOT_TRUST_ANCHOR', () => {
+  const state = schema24Environment();
+  const taskSheet = state.environment.taskSheet;
+  const titleBefore = rowById(taskSheet, 'task_title');
+  const commentBefore = rowById(taskSheet, 'comment');
+  const taskIdBefore = rowById(taskSheet, 'task_id');
+
+  const result = sandbox.WorkOsMigrations
+    .ensureV2ExtensionsBeforeValidation(state.environment.spreadsheet);
+  assert.strictEqual(result.status, 'UPDATED');
+  assert.strictEqual(result.updated_task_rows, 1);
+  assert.strictEqual(result.appended_columns, 4);
+  assert.strictEqual(rowById(taskSheet, 'task_title'), titleBefore);
+  assert.strictEqual(rowById(taskSheet, 'comment'), commentBefore);
+  assert.strictEqual(rowById(taskSheet, 'task_id'), taskIdBefore);
+  assert.strictEqual(rowById(taskSheet, 'business_version'), 1);
+  assert.strictEqual(
+    rowById(taskSheet, 'calendar_reconcile_required'),
+    false
+  );
+  assert.strictEqual(rowById(taskSheet, 'calendar_intent_version'), 0);
+  const snapshot = JSON.parse(
+    rowById(taskSheet, 'authoritative_snapshot_json')
+  );
+  assert.strictEqual(snapshot.format, 'FULL_ROW_V1');
+  assert.strictEqual(snapshot.schema_version, '2.5');
+  assert.strictEqual(snapshot.task_id, taskIdBefore);
+});
+
+test('R3-02G_SCHEMA_2_4_DRIFT_FAILS_BEFORE_ANY_MUTATION', () => {
+  const state = schema24Environment();
+  const taskSheet = state.environment.taskSheet;
+  const titleIndex = taskSheet.cells[0].indexOf('task_title');
+  taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1][titleIndex] =
+    'Schema 2.4 live drift';
+  const beforeCells = state.environment.spreadsheet.getSheets()
+    .map((sheet) => fixture.snapshotCells(sheet));
+  const beforeWrites = totalWrites(state.environment.spreadsheet);
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet
+    ),
+    (error) => error.code === 'E_TASK_SNAPSHOT_INVALID'
+  );
+  assert.deepStrictEqual(
+    state.environment.spreadsheet.getSheets()
+      .map((sheet) => fixture.snapshotCells(sheet)),
+    beforeCells
+  );
+  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
+});
+
+test('R3-02I_SCHEMA_2_4_MANAGEMENT_STATE_IS_VALIDATED_SEPARATELY', () => {
+  const state = schema24Environment();
+  const taskSheet = state.environment.taskSheet;
+  const originIndex = taskSheet.cells[0].indexOf('origin_key');
+  taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1][originIndex] =
+    'invalid-origin-key';
+  const beforeCells = state.environment.spreadsheet.getSheets()
+    .map((sheet) => fixture.snapshotCells(sheet));
+  const beforeWrites = totalWrites(state.environment.spreadsheet);
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet
+    ),
+    (error) => error.code === 'E_TASK_VALIDATION'
+  );
+  assert.deepStrictEqual(
+    state.environment.spreadsheet.getSheets()
+      .map((sheet) => fixture.snapshotCells(sheet)),
+    beforeCells
+  );
+  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
+});
+
+test('R3-02H_TASK_MIGRATION_PAUSES_RESUMES_AND_IS_IDEMPOTENT', () => {
+  const state = legacyEnvironment();
+  const taskSheet = state.environment.taskSheet;
+  const currentIds = Array.from(sandbox.WorkOsSchemas.getInternalIds(
+    sandbox.WorkOsConfig.SHEETS.TASKS
+  ));
+  const sourceIds = currentIds.slice(0, -4);
+  const taskCount = sandbox.WorkOsConfig.V2_EXTENSION_CHUNK_ROWS + 1;
+  const requiredMaxRow =
+    sandbox.WorkOsConfig.DATA_START_ROW + taskCount - 1;
+  if (taskSheet.getMaxRows() < requiredMaxRow) {
+    taskSheet.insertRowsAfter(
+      taskSheet.getMaxRows(),
+      requiredMaxRow - taskSheet.getMaxRows()
+    );
+  }
+  const base = taskSheet.cells[
+    sandbox.WorkOsConfig.DATA_START_ROW - 1
+  ].slice(0, sourceIds.length);
+  const taskIdIndex = sourceIds.indexOf('task_id');
+  const originIndex = sourceIds.indexOf('origin_key');
+  const titleIndex = sourceIds.indexOf('task_title');
+  const rows = Array.from({ length: taskCount }, (_unused, index) => {
+    const row = base.slice();
+    const suffix = (index + 1).toString(16).padStart(32, '0');
+    row[taskIdIndex] = `tsk_${suffix}`;
+    row[originIndex] = `org_${suffix}`;
+    row[titleIndex] = `Migration Task ${index + 1}`;
+    return row;
+  });
+  taskSheet.getRange(
+    sandbox.WorkOsConfig.DATA_START_ROW,
+    1,
+    taskCount,
+    sourceIds.length
+  ).setValues(rows);
+  taskSheet.cells.forEach((row) => row.splice(row.length - 4, 4));
+  taskSheet.maxColumns -= 4;
+  taskSheet.writeCount = 0;
+
+  let budgetChecks = 0;
+  const paused = sandbox.WorkOsMigrations
+    .ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet,
+      {
+        isExhausted: () => {
+          budgetChecks += 1;
+          return budgetChecks >= 9;
+        }
+      }
+    );
+  assert.strictEqual(paused.status, 'PAUSED');
+  assert.strictEqual(paused.appended_columns, 4);
+  assert.strictEqual(
+    paused.updated_task_rows,
+    sandbox.WorkOsConfig.V2_EXTENSION_CHUNK_ROWS
+  );
+  assert.strictEqual(paused.remaining_task_rows, 1);
+
+  const resumed = sandbox.WorkOsMigrations
+    .ensureV2ExtensionsBeforeValidation(state.environment.spreadsheet);
+  assert.strictEqual(resumed.status, 'UPDATED');
+  assert.strictEqual(resumed.updated_task_rows, 1);
+  const current = sandbox.WorkOsMigrations
+    .ensureV2ExtensionsBeforeValidation(state.environment.spreadsheet);
+  assert.strictEqual(current.status, 'CURRENT');
+  assert.strictEqual(current.changed, false);
+  const snapshotIndex = taskSheet.cells[0].indexOf(
+    'authoritative_snapshot_json'
+  );
+  for (let index = 0; index < taskCount; index += 1) {
+    const snapshot = JSON.parse(
+      taskSheet.cells[
+        sandbox.WorkOsConfig.DATA_START_ROW - 1 + index
+      ][snapshotIndex]
+    );
+    assert.strictEqual(snapshot.schema_version, '2.5');
+  }
+});
+
+function assertCurrentTaskSnapshotFailsClosed(mutator) {
+  const state = legacyEnvironment();
+  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  const taskSheet = state.environment.taskSheet;
+  const snapshotIndex = taskSheet.cells[0].indexOf(
+    'authoritative_snapshot_json'
+  );
+  assert.ok(snapshotIndex >= 0);
+  mutator(taskSheet, snapshotIndex);
+  const beforeCells = state.environment.spreadsheet.getSheets().map((sheet) =>
+    fixture.snapshotCells(sheet)
+  );
+  const beforeWrites = totalWrites(state.environment.spreadsheet);
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet
+    ),
+    (error) =>
+      error.code === 'E_TASK_SNAPSHOT_INVALID' ||
+      error.code === 'E_V2_EXTENSION_STATE_INVALID'
+  );
+  assert.deepStrictEqual(
+    state.environment.spreadsheet.getSheets().map((sheet) =>
+      fixture.snapshotCells(sheet)
+    ),
+    beforeCells
+  );
+  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
+}
+
+test('R3-02A_LIVE_BUSINESS_DRIFT_IS_NOT_SILENTLY_REBASELINED', () => {
+  assertCurrentTaskSnapshotFailsClosed((taskSheet) => {
+    const titleIndex = taskSheet.cells[0].indexOf('task_title');
+    taskSheet.cells[2][titleIndex] = 'Untriggered raw drift';
+  });
+});
+
+test('R3-02B_MISSING_CURRENT_SNAPSHOT_FAILS_CLOSED', () => {
+  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
+    taskSheet.cells[2][snapshotIndex] = '';
+  });
+});
+
+test('R3-02C_MALFORMED_CURRENT_SNAPSHOT_FAILS_CLOSED', () => {
+  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
+    taskSheet.cells[2][snapshotIndex] = '{malformed';
+  });
+});
+
+test('R3-02D_SNAPSHOT_TASK_ID_MISMATCH_FAILS_CLOSED', () => {
+  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
+    const snapshot = JSON.parse(taskSheet.cells[2][snapshotIndex]);
+    snapshot.task_id = `tsk_${'f'.repeat(32)}`;
+    taskSheet.cells[2][snapshotIndex] = JSON.stringify(snapshot);
+  });
+});
+
+test('R3-02E_SNAPSHOT_SCHEMA_MISMATCH_FAILS_CLOSED', () => {
+  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
+    const snapshot = JSON.parse(taskSheet.cells[2][snapshotIndex]);
+    snapshot.schema_version = '0.0';
+    taskSheet.cells[2][snapshotIndex] = JSON.stringify(snapshot);
+  });
 });
 
 const summary = {
