@@ -1,23 +1,22 @@
 # Google Workspace Personal Work OS v2
 # TEST_MODE=true Sandbox 手動受入ガイド
 
-- 対象version: `2.8.1-prepilot`
-- Schema Version: `2.2`
+- 対象version: `2.8.4-prepilot`
+- Schema Version: `2.5`
 - AI Schema Version: `2.0`
-- Migration Version: `0`
+- Migration Version: `2`
 - Mode: `TEST_MODE=true`
 - Automation default: `OFF`
-- 対象Phase: Phase 8Bの非本番Sandbox受入
+- 対象: 独立再監査用の非本番Sandbox evidence collection
+- 最上位status: `READY_FOR_INDEPENDENT_REAUDIT`
 
-このガイドは、Phase 8Aで準備したdeployment packageを、新しい非本番Google
+このガイドは、監査Finding修正後のdeployment packageを、新しい非本番Google
 Spreadsheetへ安全に配置し、ローカルFakeでは確認できないSheets、Advanced
 Gmail、Advanced Calendar、OAuth、installable edit Trigger、LockService、
-Apps Script実行時間を確認するための正本です。Phase 8Aでは実Google Workspaceを
-操作していないため、以下の結果はすべて未記入です。
+Apps Script実行時間を確認するための受入手順です。package生成時点では
+実Google Workspaceを操作していないため、以下の結果はすべて未記入です。
 
-結果は
-[`V2_SANDBOX_ACCEPTANCE_RESULTS_TEMPLATE.md`](V2_SANDBOX_ACCEPTANCE_RESULTS_TEMPLATE.md)
-へ記録してください。
+結果は実ID、本文、credential、内部URLを含まない受入記録へ転記してください。
 
 ## 0. 判定・情報管理ルール
 
@@ -32,6 +31,7 @@ Apps Script実行時間を確認するための正本です。Phase 8Aでは実G
 - 実Provider、endpoint、model、credentialを設定・接続しない。
 - time-driven Triggerを作成せず、通常Inbox自動巡回を行わない。
 - cleanupで削除する場合は、利用者本人がSandbox専用resourceであることを確認する。
+- 個別項目の`PASS`をPhase 8B GO/PASS、Phase 8C GO、Pilot readyへ昇格しない。
 
 各Partの記録形式:
 
@@ -63,8 +63,8 @@ Reviewer:
 
 ### 前提
 
-- Phase 8A package
-  `release/v2.8.1-prepilot/`を使用する。
+- 独立再監査候補package
+  `release/v2.8.4-prepilot/`を使用する。
 - 非本番Googleアカウントと新しい空のSpreadsheetを使用できる。
 - Gmail labelと専用secondary Calendarを作ることを利用者本人が理解している。
 
@@ -72,10 +72,13 @@ Reviewer:
 
 1. `DEPLOYMENT_MANIFEST.md`で次を確認する。
 
-   - Code `2.8.1-prepilot`
-   - Schema `2.2`
+   - Repository `Tanukitsune-hub/GAS-Project-Schedule`
+   - Source commitが40桁のGit commit SHA
+   - Release content commitがmanifest自身を含むcommitを指す`SELF` marker
+   - Code `2.8.4-prepilot`
+   - Schema `2.5`
    - AI Schema `2.0`
-   - Migration `0`
+   - Migration `2`
    - `TEST_MODE=true`
    - Automation `OFF`
    - `.gs` 22件、`appsscript.json` 1件
@@ -195,7 +198,7 @@ Reviewer:
 
 1. `タスク一覧`の1行目が内部ID、2行目が日本語見出し、3行目以降がdata領域で
    あることを確認する。
-2. `タスク一覧`が43列で、管理列が右側にあり、非表示・保護されることを確認する。
+2. `タスク一覧`が47列で、管理列が右側にあり、非表示・保護されることを確認する。
 3. 空行のCheckbox対象cellにBoolean `FALSE`が入っていないことを確認する。
 4. `コメント`列にCheckboxがなく、Boolean列だけにCheckbox validationがある
    ことを確認する。
@@ -231,15 +234,19 @@ Reviewer:
 ### 操作
 
 1. 正式label 7件が重複なく存在することを確認する。
-2. 件名先頭を`[MOCK:NEW_HIGH]`にした架空メールへ`手動/取込`を付ける。
-3. `手動/取込を1件前処理`を実行する。
-4. 同じ操作を再実行する。
-5. 別の架空Threadへ`手動/取込`と`手動/除外`を両方付けて実行する。
-6. 既読・未読のsynthetic Messageを各1件確認する。
+2. 件名先頭を`[MOCK:NEW_HIGH]`にした架空メールを2件用意し、
+   古いMessageと新しいMessageの両方へ`手動/取込`を付ける。
+3. `手動/取込を1件前処理`を実行し、古いMessageが先に選ばれることを確認する。
+4. 同じ操作を再実行し、新しいMessageへ進むことを確認する。
+5. 同一synthetic Thread内に2件ある場合も、古い未処理Messageから進むことを
+   確認する。
+6. 別の架空Threadへ`手動/取込`と`手動/除外`を両方付けて実行する。
+7. 既読・未読のsynthetic Messageを各1件確認する。
 
 ### 期待結果
 
 - 1実行の新規Messageは最大1件で、read/unreadに依存しない。
+- 候補Thread間と同一Thread内のどちらでも、未処理Messageは古い順に進む。
 - Message ID単位でdedupし、同じMessage Stateは1行だけ。
 - `手動/除外`、Spam、Trashが優先される。
 - 通常Inbox自動走査、添付、外部URL取得を行わない。
@@ -272,13 +279,17 @@ Reviewer:
 4. Review Taskの同じ行にある`判断`を受入または却下へ変更する。
 5. 利用者編集列、`manual_fields`、`コメント`が後続Mockで保持されることを
    確認する。
-6. `Phase 2テストを実行`、`Phase 3テストを実行`を順に実行する。
+6. open Reviewを1行だけ選択し、`選択したReviewを再stage`を実行して確認dialogを
+   承認する。複数行選択とopenでないReviewでは安全に拒否されることも確認する。
+7. `Phase 2テストを実行`、`Phase 3テストを実行`を順に実行する。
 
 ### 期待結果
 
 - 外部AI、`UrlFetchApp`、credentialを使用しない。
 - 同じ`origin_key`のTaskは重複しない。
 - Review専用Sheetを作らず、同じ`タスク一覧`行で受入・却下できる。
+- 明示的な再stageだけが最新business versionとtarget identityを基準に更新し、
+  1行選択以外やopenでないReviewを変更しない。
 - 推測期限は`推奨期限`だけに入り、正式期限やEventにならない。
 - 不正JSONとprompt injection fixtureはTask副作用前に安全に処理される。
 - script由来の式prefixはformulaにならない。
@@ -303,6 +314,8 @@ Reviewer:
 1. Review解消済み・正式期限ありのsynthetic Taskで`Calendar登録`を`登録`へ
    変更する。
 2. `同期状態`にPENDINGが1件作成されたことを確認する。
+   同時にTaskの`calendar_reconcile_required`が残らず、Outbox append完了後だけ
+   exact intent versionでacknowledgeされることを確認する。
 3. `Calendar同期を1件処理`を実行する。
 4. 同じ操作を再実行する。
 5. Task名または期限を変更し、再度同期する。
@@ -319,6 +332,8 @@ Reviewer:
 - 再実行はNOOP、変更は同じowned EventのUPDATE、非対象化はDELETE。
 - primary Calendarとforeign Eventは不変。
 - 1回の明示同期は最大1 Job。
+- Outbox writeに到達できない場合はTaskのdurable reconcile intentが残り、
+  次のbounded recoveryで同じjobを重複なく再作成できる。
 
 ### 停止条件
 
@@ -343,13 +358,20 @@ Reviewer:
 3. 編集が自動反映されることを確認する。
 4. 問題時だけ対象cellを選び、
    `Task編集を手動反映（fallback）`を実行する。
-5. 管理列の直接編集が安全に拒否されることを確認する。
+5. 専用negative-test Taskで、管理列1cell、利用者列と管理列のmixed paste、
+   複数行paste、20行超pasteを順に行い、各操作の直前に行全体の非機密値を
+   記録する。
+6. 各管理列を含むeditがevent全体として拒否され、対象全行の全47列が直前の
+   trusted authoritative stateへ復元されることを確認する。
 
 ### 期待結果
 
 - installable edit Triggerは1件だけで、再帰的な重複処理がない。
 - 選択行だけが更新され、row version、manual fields、Calendar Outboxが整合する。
 - fallbackはGmail、AI、Calendar APIを呼ばない。
+- 管理列を含むeditは、同じevent内の利用者列も含めて全部拒否される。
+- 復元後はTask ID、business fields、source/AI fields、physical/business version、
+  snapshot、Calendar metadata、durable intent、timestampのすべてが一致する。
 
 ### 停止条件
 
@@ -441,12 +463,18 @@ Reviewer:
 3. 別の新規Spreadsheetで未知の非空cellを1つ用意し、Setupを実行する。
 4. さらに別のSpreadsheetでv1らしいSheet名またはheaderを用意し、Setupを
    実行する。
-5. 安全に実施できる場合だけ、手動取込とTask編集、Calendar同期とTask編集を
+5. 専用cloneでのみ、Schema 2.5 Taskのlive business valueと
+   `authoritative_snapshot_json`を意図的に不一致にしてSetupを実行し、
+   mutation前にfail closedとなることを確認する。通常Sandboxでは実施せず
+   `NOT EXECUTED`とする。
+6. 安全に実施できる場合だけ、手動取込とTask編集、Calendar同期とTask編集を
    別実行で重ね、stale結果がcommitされないことを確認する。
 
 ### 期待結果
 
 - Setup再実行で利用者dataやTaskが消えず、全resourceが重複しない。
+- Schema 2.5のsnapshot欠落・不正JSON・task/schema不一致・business driftを
+  Setupがsilent rebaselineせず、最初のwrite前に拒否する。
 - unknown / v1環境は変更・Migrationせず停止する。
 - 外部I/O待機中も短時間claim / CASにより利用者編集を戻さない。
 - concurrencyを安全に再現できない項目は`NOT EXECUTED`。
@@ -477,7 +505,7 @@ Reviewer:
 
 ### 期待結果
 
-- Phase 8Bの証跡が非機密で自己完結している。
+- 独立再監査の証跡が非機密で自己完結している。
 - 実Provider、TEST_MODE=false、time-driven Trigger、実案件、個人pilotは
   `NOT EXECUTED`。
 - Phase 8C / 8Dへ自動的に進まない。
@@ -491,13 +519,15 @@ Reviewer:
 - 削除前に対象がこのSandbox専用resourceであることを利用者本人が確認する。
 - shared / primary Calendar、既存label、無関係Triggerを削除しない。
 
-## 最終判定
+## 最終status
 
-| Stage | 判定 |
+| Stage | このguide完了時に許される最上位status |
 |---|---|
-| Phase 8B TEST_MODE=true非機密Sandbox | GO / CONDITIONAL GO / NO-GO |
-| Phase 8C TEST_MODE=false Sandbox | NO-GO |
-| Phase 8D 個人実業務パイロット | NO-GO |
+| Code 2.8.4-prepilot local +非機密Sandbox evidence | `READY_FOR_INDEPENDENT_REAUDIT` |
+| Phase 8B | GO/PASSを宣言しない |
+| Phase 8C | GOを宣言しない |
+| 個人実業務パイロット | Pilot readyを宣言しない |
 
-Phase 8Bは、Parts A〜Lで実施対象とした項目にFAILがなく、停止条件がなく、
-未実施外部境界が明確な場合だけ`GO`または`CONDITIONAL GO`とします。
+Parts A〜Lの個別結果は`PASS / FAIL / NOT EXECUTED`で記録できますが、
+全項目がPASSしても本guideからPhase 8B GO/PASS、Phase 8C GO、
+Pilot readyへ昇格させません。独立再監査へ引き渡します。
