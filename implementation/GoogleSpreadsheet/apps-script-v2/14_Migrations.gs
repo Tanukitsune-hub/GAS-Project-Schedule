@@ -55,9 +55,10 @@ var WorkOsMigrations = (function () {
       var ids = sheet.getRange(1, 1, 1, width).getValues()[0];
       var headers = sheet.getRange(2, 1, 1, width).getValues()[0];
       if (sheetName === taskName &&
-          width === currentIds.length - 1 &&
-          exactRow(ids, currentIds.slice(0, -1)) &&
-          exactRow(headers, currentHeaders.slice(0, -1))) {
+          (width === currentIds.length - 4 ||
+           width === currentIds.length - 3) &&
+          exactRow(ids, currentIds.slice(0, width)) &&
+          exactRow(headers, currentHeaders.slice(0, width))) {
         continue;
       }
       if (sheetName === messageName &&
@@ -91,14 +92,20 @@ var WorkOsMigrations = (function () {
     var messageSheet = byName[messageName];
     var errorSheet = byName[errorName];
     var taskSheet = byName[taskName];
+    var currentTaskWidth =
+      WorkOsSchemas.getInternalIds(taskName).length;
+    var taskWidth = taskSheet.getMaxColumns();
+    var taskSourceVersion = taskWidth === currentTaskWidth - 4
+      ? '2.3'
+      : (taskWidth === currentTaskWidth - 3 ? '2.4' : '2.5');
     return {
       applicable: true,
       task_sheet: taskSheet,
       message_sheet: messageSheet,
       error_sheet: errorSheet,
-      task_legacy_width:
-        taskSheet.getMaxColumns() ===
-          WorkOsSchemas.getInternalIds(taskName).length - 1,
+      task_source_version: taskSourceVersion,
+      task_append_count: currentTaskWidth - taskWidth,
+      task_legacy_width: taskWidth !== currentTaskWidth,
       legacy_width:
         messageSheet.getMaxColumns() ===
           WorkOsSchemas.getInternalIds(messageName).length - 1,
@@ -176,6 +183,7 @@ var WorkOsMigrations = (function () {
           rowSchemaVersion !== '2.1' &&
           rowSchemaVersion !== '2.2' &&
           rowSchemaVersion !== '2.3' &&
+          rowSchemaVersion !== '2.4' &&
           rowSchemaVersion !== WorkOsConfig.SCHEMA_VERSION) {
         throw new WorkOsAppError(
           'E_V2_EXTENSION_STATE_INVALID',
@@ -269,12 +277,26 @@ var WorkOsMigrations = (function () {
     };
   }
 
-  function prepareTaskRowsForSnapshot(sheet, legacyWidth, budget) {
+  function extensionCellsAreBlank(row, startIndex) {
+    return row.slice(startIndex).every(function (value) {
+      return value === '' || value == null;
+    });
+  }
+
+  function prepareTaskRowsForSnapshot(
+    sheet,
+    taskSourceVersion,
+    budget
+  ) {
     var sheetName = WorkOsConfig.SHEETS.TASKS;
     var currentIds = WorkOsSchemas.getInternalIds(sheetName);
-    var sourceWidth = legacyWidth
-      ? currentIds.length - 1
-      : currentIds.length;
+    var currentMap = WorkOsSchemas.buildColumnMapFromIds(currentIds);
+    var sourceVersion = String(taskSourceVersion || '2.5');
+    var sourceWidth = sourceVersion === '2.3'
+      ? currentIds.length - 4
+      : (sourceVersion === '2.4'
+        ? currentIds.length - 3
+        : currentIds.length);
     var sourceIds = currentIds.slice(0, sourceWidth);
     var sourceMap = WorkOsSchemas.buildColumnMapFromIds(sourceIds);
     var rowCount = Math.max(
@@ -305,30 +327,71 @@ var WorkOsMigrations = (function () {
             !String(sourceRow[sourceMap.origin_key] || '')) {
           return;
         }
-        var legacyRow = legacyWidth
-          ? sourceRow
-          : sourceRow.slice(0, -1);
-        var output =
-          WorkOsTaskRepository.migrateLegacyRowToSnapshot(legacyRow);
-        var snapshotChanged = legacyWidth ||
-          String(sourceRow[sourceWidth - 1] || '') !==
-            String(output[output.length - 1] || '');
-        if (snapshotChanged) {
-          changedRows.push({
-            row: WorkOsConfig.DATA_START_ROW + offset + rowIndex,
-            values: output
-          });
+        var output;
+        if (sourceVersion === '2.3') {
+          output =
+            WorkOsTaskRepository.migrateLegacyRowToSnapshot(sourceRow);
+        } else if (sourceVersion === '2.4') {
+          output =
+            WorkOsTaskRepository.migrateSchema24RowTo25(sourceRow);
+        } else {
+          var snapshotCell =
+            sourceRow[currentMap.authoritative_snapshot_json];
+          /*
+           * A PAUSED run may already have appended the new columns while
+           * later rows are still physically 2.3 or 2.4. Only the exact blank
+           * suffix patterns are resumable; an established 2.5 row with a
+           * missing or malformed snapshot fails closed.
+           */
+          if (!snapshotCell &&
+              extensionCellsAreBlank(
+                sourceRow,
+                currentIds.length - 4
+              )) {
+            output = WorkOsTaskRepository.migrateLegacyRowToSnapshot(
+              sourceRow.slice(0, -4)
+            );
+          } else {
+            var parsedSnapshot = null;
+            try {
+              parsedSnapshot = typeof snapshotCell === 'string'
+                ? JSON.parse(snapshotCell)
+                : snapshotCell;
+            } catch (parseError) {
+              parsedSnapshot = null;
+            }
+            if (parsedSnapshot &&
+                parsedSnapshot.schema_version === '2.4' &&
+                extensionCellsAreBlank(
+                  sourceRow,
+                  currentIds.length - 3
+                )) {
+              output = WorkOsTaskRepository.migrateSchema24RowTo25(
+                sourceRow.slice(0, -3)
+              );
+            } else {
+              WorkOsTaskRepository.assertCurrentAuthoritativeRow(
+                sourceRow
+              );
+              return;
+            }
+          }
         }
+        changedRows.push({
+          row: WorkOsConfig.DATA_START_ROW + offset + rowIndex,
+          values: output
+        });
       });
     }
     return {
       rows: changedRows,
       current_ids: currentIds,
-      current_headers: WorkOsSchemas.getHeaders(sheetName)
+      current_headers: WorkOsSchemas.getHeaders(sheetName),
+      source_version: sourceVersion
     };
   }
 
-  function writePreparedRows(sheet, rows, width, budget) {
+  function writePreparedRows(sheet, rows, width, budget, afterWrite) {
     var written = 0;
     var index = 0;
     while (index < rows.length) {
@@ -351,6 +414,11 @@ var WorkOsMigrations = (function () {
         block.length,
         width
       ).setValues(block.map(function (entry) { return entry.values; }));
+      if (typeof afterWrite === 'function') {
+        block.forEach(function (entry) {
+          afterWrite(entry);
+        });
+      }
       written += block.length;
       index = next;
     }
@@ -621,7 +689,7 @@ var WorkOsMigrations = (function () {
       try {
         preparedTasks = prepareTaskRowsForSnapshot(
           refreshed.task_sheet,
-          refreshed.task_legacy_width,
+          refreshed.task_source_version,
           budget
         );
         assertExtensionBudget(budget);
@@ -652,32 +720,55 @@ var WorkOsMigrations = (function () {
         throw preparationError;
       }
       if (refreshed.task_legacy_width) {
+        var taskAppendCount = refreshed.task_append_count;
+        var taskStartColumn =
+          preparedTasks.current_ids.length - taskAppendCount + 1;
         refreshed.task_sheet.insertColumnsAfter(
           refreshed.task_sheet.getMaxColumns(),
-          1
+          taskAppendCount
         );
-        var taskLastColumn = preparedTasks.current_ids.length;
-        refreshed.task_sheet.getRange(1, taskLastColumn, 1, 1)
-          .setValues([[
-            preparedTasks.current_ids[taskLastColumn - 1]
-          ]]);
-        refreshed.task_sheet.getRange(2, taskLastColumn, 1, 1)
-          .setValues([[
-            preparedTasks.current_headers[taskLastColumn - 1]
-          ]]);
+        refreshed.task_sheet.getRange(
+          1,
+          taskStartColumn,
+          1,
+          taskAppendCount
+        ).setValues([
+          preparedTasks.current_ids.slice(-taskAppendCount)
+        ]);
+        refreshed.task_sheet.getRange(
+          2,
+          taskStartColumn,
+          1,
+          taskAppendCount
+        ).setValues([
+          preparedTasks.current_headers.slice(-taskAppendCount)
+        ]);
       }
       var taskWriteResult = writePreparedRows(
         refreshed.task_sheet,
         preparedTasks.rows,
         preparedTasks.current_ids.length,
-        budget
+        budget,
+        function (entry) {
+          WorkOsTaskRepository.syncAuthoritativeMirror(
+            refreshed.task_sheet,
+            entry.row,
+            entry.values,
+            WorkOsSchemas.getSheetSchema(
+              WorkOsConfig.SHEETS.TASKS
+            ),
+            WorkOsSchemas.buildColumnMapFromIds(
+              preparedTasks.current_ids
+            )
+          );
+        }
       );
       if (taskWriteResult.status === 'PAUSED') {
         return {
           status: 'PAUSED',
           changed: refreshed.task_legacy_width ||
             taskWriteResult.written_rows > 0,
-          appended_columns: refreshed.task_legacy_width ? 1 : 0,
+          appended_columns: refreshed.task_append_count,
           updated_task_rows: taskWriteResult.written_rows,
           updated_message_rows: 0,
           updated_error_rows: 0,
@@ -710,7 +801,7 @@ var WorkOsMigrations = (function () {
             taskWriteResult.written_rows > 0 ||
             writeResult.written_rows > 0,
           appended_columns:
-            (refreshed.task_legacy_width ? 1 : 0) +
+            refreshed.task_append_count +
             (refreshed.legacy_width ? 1 : 0),
           updated_task_rows: taskWriteResult.written_rows,
           updated_message_rows: writeResult.written_rows,
@@ -751,7 +842,7 @@ var WorkOsMigrations = (function () {
           status: 'PAUSED',
           changed: true,
           appended_columns:
-            (refreshed.task_legacy_width ? 1 : 0) +
+            refreshed.task_append_count +
             (refreshed.legacy_width ? 1 : 0) +
             (refreshed.error_legacy_width
               ? refreshed.legacy_error_column_count
@@ -775,7 +866,7 @@ var WorkOsMigrations = (function () {
           prepared.rows.length > 0 || refreshed.legacy_width ||
           preparedErrors.rows.length > 0 || refreshed.error_legacy_width,
         appended_columns:
-          (refreshed.task_legacy_width ? 1 : 0) +
+          refreshed.task_append_count +
           (refreshed.legacy_width ? 1 : 0) +
           (refreshed.error_legacy_width
             ? refreshed.legacy_error_column_count
