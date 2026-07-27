@@ -403,15 +403,19 @@ var WorkOsGmailGateway = (function () {
       var decisionSuppressed = decision === 'SKIP'
         ? skipSuppressed
         : processSuppressed;
-      var selectedIndex = -1;
-      orderedMessages.forEach(function (message, messageIndex) {
-        var exactLabels = labelsForMessages([message], labelById);
-        var messageId = String(message.id || '');
-        if (exactLabels.indexOf('手動/取込') !== -1 &&
-            !decisionSuppressed[messageId]) {
-          selectedIndex = messageIndex;
+        var selectedIndex = -1;
+        for (var messageIndex = 0;
+          messageIndex < orderedMessages.length;
+          messageIndex += 1) {
+          var message = orderedMessages[messageIndex];
+          var exactLabels = labelsForMessages([message], labelById);
+          var messageId = String(message.id || '');
+          if (exactLabels.indexOf('手動/取込') !== -1 &&
+              !decisionSuppressed[messageId]) {
+            selectedIndex = messageIndex;
+            break;
+          }
         }
-      });
       if (selectedIndex === -1) {
         // A Thread search result is not evidence that an arbitrary Message
         // may be imported. Without an exact Message label, fail closed.
@@ -455,8 +459,9 @@ var WorkOsGmailGateway = (function () {
       });
     }
 
-    candidates.sort(function (left, right) {
-      var timeDifference = right.received_at.getTime() - left.received_at.getTime();
+      candidates.sort(function (left, right) {
+        var timeDifference = left.received_at.getTime() -
+          right.received_at.getTime();
       if (timeDifference !== 0) {
         return timeDifference;
       }
