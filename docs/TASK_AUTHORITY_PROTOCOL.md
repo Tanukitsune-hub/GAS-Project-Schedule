@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `NO-GO_REMOTE_PUBLICATION` |
+| Current gate | `NO-GO_REMOTE_PUBLICATION` for the R5 corrective integration pending final remote proof |
 
 ## Selected design
 
@@ -120,6 +120,13 @@ use an in-memory fake Apps Script environment. Real Google Workspace Sheet
 protection, trigger, lock, Gmail, and Calendar behavior remain `NOT_EXECUTED`
 pending independent re-audit.
 
-The status remains `NO-GO_REMOTE_PUBLICATION` until the corrected Source and
-Release pair is published through a normal non-force update and fresh-clone
-verification proves final GitHub provenance.
+P5 publication evidence for A5.2/B5.2 and fixed target `3442ac...` remains
+historical evidence. The retained A5.3/B5.3 candidate exposed a second High
+re-enqueue race during independent source review. Final R5 Source A5.4
+`6c4f737...` and direct-child Release B5.4 `3e57906...` preserve compensation
+across later forced re-enqueue and require their own normal non-force
+publication and fresh-clone verification. Until that proof, the current
+corrective integration remains `NO-GO_REMOTE_PUBLICATION`. After all remote
+proof and the separate 8B-only transfer envelope are verified, the maximum
+status may be only `READY_FOR_PHASE8B_SANDBOX_TRANSFER`; it is not Phase 8B
+PASS, Phase 8C GO, production ready, or pilot ready.

@@ -1,44 +1,63 @@
 # Project Context
 
-Last updated: 2026-07-28  
-Project ID: `google-workspace-personal-work-os`  
-Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`  
-Current candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Publication gate: `NO-GO_REMOTE_PUBLICATION`
+Last updated: 2026-07-29
+Project ID: `google-workspace-personal-work-os`
+Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
+Current candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Publication gate: `NO-GO_REMOTE_PUBLICATION` for the R5 corrective integration pending final remote proof
 
 ## Purpose
 
 This repository contains the Google Apps Script implementation of a personal
-work OS that derives Tasks from Gmail, keeps the task workflow in Google
-Sheets, and uses Google Calendar only as a derived reconciliation target.
-No production deployment, `clasp push`, credential, real Workspace identifier,
-or real message content is part of this repository or this remediation.
+work OS that derives Tasks from Gmail, keeps workflow state in Google Sheets,
+and uses Google Calendar only as a derived reconciliation target. No
+deployment, `clasp push`, credential, real Workspace identifier, real message
+content, or real business data belongs in this repository or this remediation.
 
 ## Canonical operating model
 
 | Concern | Canonical source | Rule |
 |---|---|---|
-| Business workflow and user-visible state | Google Sheet `タスク一覧` | Users interact with the Task Sheet; it is not a recovery authority. |
-| Technical integrity and recovery | Protected hidden `Task Authority Ledger` | A versioned two-slot ledger is the only authority for a current Task. |
-| Calendar / outbox | Derived state | It is durable intent, never an authority source. |
-| Repository source | This repository | Current implementation is under `implementation/GoogleSpreadsheet/`. |
+| Business workflow / visible state | Google Sheet `タスク一覧` | User-facing projection only; never a recovery authority. |
+| Technical integrity / recovery | Protected hidden `Task Authority Ledger` | Versioned two-slot ledger is the only current Task authority. |
+| Calendar / Outbox | Durable derived intent | Never an authority source; final revalidation, durable arm, and owned-event-only compensation protect external I/O. |
+| Repository source | This repository | Current implementation, tests, tools, docs, and releases live under `implementation/GoogleSpreadsheet/`. |
 
 The Task Sheet has exactly 50 canonical columns. The workbook contract is 11
-Sheets in total, of which 5 are hidden. A missing, invalid, visible, or
-unprotected ledger never causes a fallback to `authoritative_snapshot_json`, a
-cell note, or a live raw row. It fails closed to isolation.
+Sheets, 5 hidden. A missing, invalid, visible, or unprotected ledger never
+falls back to `authoritative_snapshot_json`, a cell note, or a live raw row; it
+fails closed to isolation.
+
+## Provenance and current remediation
+
+The published P5 target
+`3442ac01f5c544c2b49a40a9af170d1f432312f1` remains the fixed audit baseline:
+corrected Source A5.2 `ff658...` is its Release B5.2 `d6dda...` parent chain.
+The fixed-ref independent re-audit preserved that evidence and recorded a
+High Calendar authority-loss race as `REAUDIT_NO_GO`.
+
+R5 does not rewrite the fixed target. The initial A5.3/B5.3 unpublished
+candidate pair is retained as historical evidence. The final additive pair is
+Source A5.4 `6c4f737c676b3121c42aafabe9d0c677cacd69bb`, followed by its
+direct-child Release B5.4 `3e5790672740626f3bec4592c3c7c0b86b47f3b1`. A P6
+integration retains both the historical P5 evidence and this final
+source/release pair. Its normal publication and fresh-clone proof are still
+required before its gate changes.
 
 ## Repository layout
 
 - Canonical context: this file, `MASTER_PLAN.md`, `DECISIONS.md`, and
   `CURRENT_STATUS.md`.
-- Authority design: `docs/TASK_AUTHORITY_PROTOCOL.md`.
-- Implementation, tests, tools, source docs, and source visualization:
+- Authority design: `docs/TASK_AUTHORITY_PROTOCOL.md` and
+  `docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`.
+- Implementation, tests, tools, source docs, and visualizations:
   `implementation/GoogleSpreadsheet/`.
-- Candidate release artifacts only:
+- Immutable R5 release packages only:
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/` and
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`.
-- Instructions and independent-audit inputs: `instructions/`.
+- Company-PC 8B-only transfer envelope (not part of the immutable package):
+  `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
+- Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
 
@@ -47,14 +66,13 @@ No legacy `context-hub` path is a source, publication target, or sync target.
 GitHub is the formal ChatGPT–Codex handoff medium. The detailed policy is
 `CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md` and decision D-036. A task begins
 from a saved instruction, is re-read from GitHub, and returns its evidence to
-this same repository. Historical instructions are retained rather than
+this repository. Historical instructions and reports are retained rather than
 silently rewritten.
 
-## Current boundary
+## Company-PC boundary
 
-The remediation candidate is being prepared for independent re-audit. Local
-evidence alone does not permit `READY_FOR_INDEPENDENT_REAUDIT` until the
-candidate has been fast-forward published, final Source/Release SHAs resolve
-from GitHub, a fresh clone verifies them, and the P5 publication evidence is
-recorded. Phase 8B GO/PASS, Phase 8C GO, production ready, and pilot ready are
-not declared.
+The transfer envelope is intentionally limited to the non-confidential Phase
+8B package and only becomes effective after the R5 remote proof. Even then,
+it permits carriage only through a company-approved route; it does not approve
+real data, OAuth, real Provider configuration, deployment, Automation,
+triggers, Phase 8B PASS, Phase 8C GO, production use, or pilot use.

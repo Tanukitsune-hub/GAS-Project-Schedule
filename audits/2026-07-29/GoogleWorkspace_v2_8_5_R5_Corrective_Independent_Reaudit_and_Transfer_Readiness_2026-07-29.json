@@ -1,0 +1,83 @@
+{
+  "record_type": "R5_corrective_independent_reaudit_transfer_readiness",
+  "date": "2026-07-29",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "governing_instruction": "instructions/GoogleWorkspace_v2_8_5_Independent_Reaudit_and_Company_PC_Transfer_Preparation_2026-07-29.md",
+  "fixed_audit_target": "3442ac01f5c544c2b49a40a9af170d1f432312f1",
+  "historic_lineage": {
+    "source_a5_2": "ff658bacf1e85864e4008efa32863635e446d47d",
+    "release_b5_2": "d6dda2b3eb9307e7033dcdd5f4718260c4944451",
+    "fixed_target_parent": "d6dda2b3eb9307e7033dcdd5f4718260c4944451",
+    "fixed_target_verdict": "REAUDIT_NO_GO"
+  },
+  "final_corrective_lineage": {
+    "source_a5_4": "6c4f737c676b3121c42aafabe9d0c677cacd69bb",
+    "release_b5_4": "3e5790672740626f3bec4592c3c7c0b86b47f3b1",
+    "release_direct_parent_verified": true
+  },
+  "fixed_worktree_validation": {
+    "suite_files": 41,
+    "passed": 604,
+    "failed": 0,
+    "explicit_skips": 11,
+    "validator_passed": 11,
+    "validator_failed": 0,
+    "gs_files": 22
+  },
+  "corrective_local_validation": {
+    "suite_files": 41,
+    "passed": 611,
+    "failed": 0,
+    "explicit_skips": 11,
+    "f016_passed": 12,
+    "f016_failed": 0,
+    "validator_passed": 11,
+    "validator_failed": 0,
+    "release_8b_verify": "PASS_LOCAL",
+    "release_8c_verify": "PASS_LOCAL",
+    "remote_publication_consistency": "8/8_PASS_LOCAL"
+  },
+  "findings": [
+    {
+      "id": "REAUDIT-CAL-01",
+      "severity": "High",
+      "fixed_target_state": "OPEN",
+      "final_corrective_state": "RESOLVED_LOCAL",
+      "summary": "No durable final authority check and owned-event recovery state around Calendar external I/O."
+    },
+    {
+      "id": "REAUDIT-CAL-02",
+      "severity": "High",
+      "fixed_target_state": "NOT_APPLICABLE",
+      "final_corrective_state": "RESOLVED_LOCAL",
+      "summary": "Later forced re-enqueue could overwrite a pending authority-compensation record."
+    }
+  ],
+  "unresolved": {
+    "critical": 0,
+    "high": 0,
+    "transfer_safety_medium": 0,
+    "real_google_workspace_execution": "NOT_EXECUTED",
+    "remote_publication": "PENDING"
+  },
+  "current_gate": "NO-GO_REMOTE_PUBLICATION",
+  "maximum_post_publication_gate": "READY_FOR_PHASE8B_SANDBOX_TRANSFER",
+  "transfer_scope": {
+    "package": "implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/",
+    "package_file_count": 27,
+    "test_mode": true,
+    "automation": "OFF",
+    "phase_8c_excluded": true,
+    "real_data_excluded": true,
+    "credentials_excluded": true
+  },
+  "not_executed": [
+    "real Google Workspace operations",
+    "OAuth consent",
+    "deployment",
+    "clasp push",
+    "Automation or trigger enablement",
+    "real Provider configuration",
+    "real data or company-PC transfer"
+  ]
+}

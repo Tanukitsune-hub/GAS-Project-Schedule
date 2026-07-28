@@ -1,59 +1,68 @@
 # Master Plan
 
-Last updated: 2026-07-28  
-Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
-Current remediation contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Current publication gate: `NO-GO_REMOTE_PUBLICATION`
+Last updated: 2026-07-29
+Repository: `Tanukitsune-hub/GAS-Project-Schedule`
+Current contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `NO-GO_REMOTE_PUBLICATION` (R5 corrective integration awaiting final remote proof)
 
-## Remediation sequence
+## Completed historic publication path
 
-| Step | Deliverable | Current state |
+| Step | Deliverable | State |
 |---|---|---|
-| P0 | Verify historic local A5 `9705def…` and B5 `753fdbf…`; preserve their worktrees and artifacts | Complete; their root history cannot fast-forward the current remote branch. |
-| P1 | Prepare a corrected Source A5.1 on the current GitHub branch tip | In progress; canonical paths only. |
-| P2 | Repair R4/R5 authority contracts, tests, canonical documents, and tools | Complete in a separate review worktree; awaiting Source A5.1 commit. |
-| P3 | Run all local tests and static validation; record exact results | Complete pre-Source run: 41/41 files PASS; 603 PASS / 0 FAIL / 11 explicit fake-runtime skips; static 11/11 PASS. |
-| P4 | Generate and verify 8B/8C candidate packages from final Source A5.1 | Pending; packages are excluded from Source A5.1. |
-| P5 | Create a linear Release B5.1, publish non-force, resolve remote SHAs, and fresh-clone verify | Pending; this is the only path to `READY_FOR_INDEPENDENT_REAUDIT`. |
+| P0 | Preserve historic local A5 `9705def...` and B5 `753fdb...` | Complete; retained without reset, rebase, or replacement. |
+| P1 | Corrected Source A5.2 `ff658...` | Complete; source boundary verified. |
+| P2 | Corrected Release B5.2 `d6dda...` | Complete; direct child of A5.2; package boundary verified. |
+| P3 | P5 remote publication target `3442ac...` | Complete; normal non-force publication and fresh-clone evidence retained. |
+| P4 | Fixed-ref independent re-audit | Complete with `REAUDIT_NO_GO` finding `REAUDIT-CAL-01`; its immutable report is retained. |
+
+## R5 corrective path
+
+| Step | Deliverable | State |
+|---|---|---|
+| R5-1 | Final Source A5.4 `6c4f737...` | Complete. Additive source/tests/tools/canonical-docs/visualization correction only; no current v2.8.5 package or release report. Historical A5.3 remains preserved. |
+| R5-2 | Calendar authority-loss repair | Complete locally. Final shared-validator recheck, durable armed Outbox, owned-event-only compensation, and compensation preservation across later forced re-enqueue (F016). |
+| R5-3 | Full local validation | Complete locally: 41 suite files, 611 PASS / 0 FAIL / 11 explicit skips; validator 11/11 over 22 `.gs` files. |
+| R5-4 | Final Release B5.4 `3e57906...` | Complete locally. Direct child of A5.4; exactly 27 Phase 8B package files, 25 Phase 8C package files, and one Round 5 release report. Historical B5.3 remains preserved. |
+| R5-5 | Package verification | Complete locally. 8B/8C parity, checksums, allow-lists, provenance, secret scans, and immutable input guards PASS. |
+| R5-6 | P6 canonical documents, audit record, and 8B-only transfer envelope | Complete locally; deliberately outside the immutable package. |
+| R5-7 | Normal remote publication and fresh-clone re-audit | Pending. Required before transfer status can be asserted. |
 
 ## Authority recovery objectives
 
-1. The visible Task row and the independent authority ledger use a bounded,
-   two-slot `PREPARED` / `COMMITTED` protocol. A visible-row write occurs once
-   between durable ledger transitions and ambiguous writes are recovered from
-   durable evidence only.
-2. `authoritative_snapshot_json`, cell notes, and user-edited raw rows are
-   never authority fallback sources for Schema 2.6.
-3. Setup, Quick Diagnostic, Deep Diagnostic, Migration, Task writes, edit
-   restoration, Review, Worker, and Calendar use the same fail-closed authority
-   rules. Diagnostics are read-only.
-4. A row move rebinds the ledger hint without recreating business state. A
-   physical deletion becomes `ORPHANED`; duplicate or corrupt rows are
-   `QUARANTINED` or `UNRECOVERABLE` and excluded from operations.
-5. Task row 1/2, hidden-ledger headers, visibility, and protection are a
-   canonical control plane, not user data.
+1. The visible Task row is a business projection. The protected hidden Task
+   Authority Ledger is the only technical authority, using a bounded two-slot
+   `PREPARED` / `COMMITTED` transaction around one full visible-row write.
+2. Snapshot cells, notes, and user-edited raw rows are never Schema 2.6
+   authority fallbacks. Missing or invalid evidence isolates rather than
+   silently rebaselines.
+3. Setup, diagnostics, Migration, edit restoration, Worker, Review, and
+   Calendar share fail-closed authority validation.
+4. Calendar work takes a short final revalidation immediately before external
+   I/O. Durable arm and compensation target types make crash and
+   authority-loss recovery explicit; foreign Events are never deleted.
+5. Header rows, ledger visibility/protection, Task columns, and the sheet
+   contract remain canonical controls rather than user data.
 
-## Publication topology
+## Source/release boundary
 
-Corrected Source A5.1 contains only source, tests, tools, canonical documents,
-visualization, authority design, and migration under
-`implementation/GoogleSpreadsheet/`, plus the root canonical documents.
+Final R5 Source A5.4 contains source, tests, tools, canonical documents, the
+authority-loss design memo, and visualizations. It contains no current release
+payload and no release implementation report.
 
-Corrected Release B5.1 contains only:
+Final R5 Release B5.4 contains only:
 
 - `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
 - `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
-- `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md`
+- `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md`
 
-The release package records Source A5.1 and `SELF` for the release commit. It
-must be generated after the final Source commit and must not be included in the
-Source commit.
+The package manifests record A5.4 and `SELF` for the Release commit. The
+historical Round 4 report remains a B5.2 package-generation record and is not
+rewritten.
 
 ## Gate discipline
 
-All local tests, static validation, checksum/parity checks, and secret scans
-are necessary but not sufficient. Before normal GitHub publication and fresh
-clone verification, the maximum status remains `NO-GO_REMOTE_PUBLICATION`.
-After all required remote proof succeeds, the maximum status is only
-`READY_FOR_INDEPENDENT_REAUDIT`. Do not declare Phase 8B GO/PASS, Phase 8C GO,
-production ready, or pilot ready.
+Until R5-7 passes, the corrective integration remains
+`NO-GO_REMOTE_PUBLICATION`. After normal publication, remote SHA resolution,
+fresh-clone validation, and confirmed 8B-only transfer documents, the maximum
+status may be `READY_FOR_PHASE8B_SANDBOX_TRANSFER` only. It never means Phase
+8B GO/PASS, Phase 8C GO, production ready, or pilot ready.

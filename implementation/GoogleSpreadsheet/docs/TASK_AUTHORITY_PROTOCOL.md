@@ -1,7 +1,8 @@
 # Task Authority Protocol — Source Copy
 
 Code `2.8.5-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`  
-Source-candidate gate: `NO-GO_REMOTE_PUBLICATION`
+Current corrective-integration gate: `NO-GO_REMOTE_PUBLICATION` pending R5
+normal publication and fresh-clone proof
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

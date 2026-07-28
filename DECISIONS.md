@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: 2026-07-28
+Last updated: 2026-07-29
 
 This file records current governing decisions. Superseded detail remains
 available in Git history and is not silently reinterpreted as a current gate.
@@ -54,3 +54,26 @@ bounded Task-ID observation pass before ledger-only orphan reconciliation.
 row deletion/sort behavior, installable triggers, LockService, Gmail, and
 Calendar—remain `NOT_EXECUTED` until independent re-audit. The local fake
 runtime establishes regression evidence only.
+
+## D-039 — Calendar authority loss requires durable arm and owned-event-only compensation
+
+**Decision.** Immediately before external Calendar I/O, the worker must take a
+short lock-held read through the same fail-closed Task Authority Ledger
+validator used by all other Task consumers. A valid job writes
+`DEADLINE_CALENDAR_ARMED`, its deterministic Event ID, and the current claim
+fingerprint before I/O. If authority becomes excluded after that arm, the
+Outbox must persist `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION` and may delete
+only an Event whose deterministic ID and ownership both verify.
+
+**Rationale.** A visible Task row cannot prove authority after a concurrent
+edit, deletion, or quarantine. An unmarked external side effect could be lost
+across a crash or overwritten by concurrent enqueue. A foreign Event must not
+be treated as a Work OS artifact.
+
+**Consequences.** Known authority exclusion before I/O is a durable
+`CANCELLED` result with zero Calendar calls. Compensation never writes a Task
+acknowledgement, retains its target type through `DEAD` and manual retry, and
+fails closed on a foreign Event. The protocol is specified in
+`docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`; F016 local tests provide
+regression evidence only. This decision does not approve any real Calendar,
+OAuth, deployment, Automation, Phase 8B, Phase 8C, production, or pilot work.

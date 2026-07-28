@@ -1,3 +1,15 @@
+# HISTORICAL TEMPLATE — DO NOT USE FOR 2.8.5 PHASE 8B
+
+This retained historical template describes `2.8.1-prepilot` / Schema `2.2` /
+Migration `0`, 10 Sheets, and 44 Task columns. It is not an acceptance record
+or checklist for the current Code `2.8.5-prepilot` / Schema `2.6` / AI Schema
+`2.0` / Migration `3` contract (11 Sheets, 5 hidden, 50 Task columns, and a
+21-column Task Authority Ledger).
+
+For a company-PC Phase 8B Sandbox after final remote approval, use only
+`../transfer/v2.8.5-prepilot/RESULTS_TEMPLATE_ja.md` and the paired checklist.
+Do not copy any historical version values into a current result record.
+
 # Google Workspace Personal Work OS v2
 # Sandbox Acceptance Results
 
