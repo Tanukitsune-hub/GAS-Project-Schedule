@@ -154,6 +154,20 @@ var WorkOsSchemas = (function () {
     column('calendar_intent_version', 'calendar_intent_version', 'Integer', {
       visible: false,
       protected: true
+    }),
+    column('authority_generation', 'authority_generation', 'Integer', {
+      visible: false,
+      protected: true
+    }),
+    column('authority_hash', 'authority_hash', 'String', {
+      visible: false,
+      protected: true
+    }),
+    column('authority_state', 'authority_state', 'Enum', {
+      visible: false,
+      protected: true,
+      validation: 'ENUM',
+      allowedValues: ['COMMITTED', 'QUARANTINED', 'UNRECOVERABLE', 'ORPHANED']
     })
   ];
 
@@ -282,6 +296,41 @@ var WorkOsSchemas = (function () {
     column('last_attempt_at', 'last_attempt_at', 'DateTime'),
     column('last_success_at', 'last_success_at', 'DateTime'),
     column('error_code', 'error_code', 'String'),
+    column('updated_at', 'updated_at', 'DateTime')
+  ];
+  schemas[WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER] = [
+    column('task_id', 'task_id', 'String'),
+    column('control_state', 'control_state', 'Enum', {
+      validation: 'ENUM',
+      allowedValues: ['ACTIVE', 'QUARANTINED', 'UNRECOVERABLE', 'ORPHANED']
+    }),
+    column('active_slot', 'active_slot', 'Enum', {
+      validation: 'ENUM',
+      allowedValues: ['A', 'B']
+    }),
+    column('committed_generation', 'committed_generation', 'Integer'),
+    column('committed_hash', 'committed_hash', 'String'),
+    column('slot_a_generation', 'slot_a_generation', 'Integer'),
+    column('slot_a_hash', 'slot_a_hash', 'String'),
+    column('slot_a_snapshot_json', 'slot_a_snapshot_json', 'JsonObject'),
+    column('slot_b_generation', 'slot_b_generation', 'Integer'),
+    column('slot_b_hash', 'slot_b_hash', 'String'),
+    column('slot_b_snapshot_json', 'slot_b_snapshot_json', 'JsonObject'),
+    column('transaction_state', 'transaction_state', 'Enum', {
+      validation: 'ENUM',
+      allowedValues: ['IDLE', 'PREPARED']
+    }),
+    column('prepared_slot', 'prepared_slot', 'Enum', {
+      validation: 'ENUM',
+      allowedValues: ['A', 'B']
+    }),
+    column('prepared_generation', 'prepared_generation', 'Integer'),
+    column('prepared_hash', 'prepared_hash', 'String'),
+    column('base_generation', 'base_generation', 'Integer'),
+    column('base_hash', 'base_hash', 'String'),
+    column('operation_id', 'operation_id', 'String'),
+    column('physical_row_hint', 'physical_row_hint', 'Integer'),
+    column('quarantine_reason_code', 'quarantine_reason_code', 'String'),
     column('updated_at', 'updated_at', 'DateTime')
   ];
 
@@ -577,7 +626,8 @@ var WorkOsSchemas = (function () {
       'source_action_index',
       'row_version',
       'business_version',
-      'calendar_intent_version'
+      'calendar_intent_version',
+      'authority_generation'
     ].forEach(function (id) {
       if (value[id] != null && (!Number.isInteger(Number(value[id])) || Number(value[id]) < 0)) {
         errors.push(id + ' must be a non-negative Integer');

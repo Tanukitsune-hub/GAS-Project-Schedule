@@ -449,6 +449,39 @@ var WorkOsSetup = (function () {
     return result;
   }
 
+  function validateTaskAuthorityForSetup(spreadsheet) {
+    var taskSheet = spreadsheet.getSheetByName(WorkOsConfig.SHEETS.TASKS);
+    if (!taskSheet) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MISSING_SHEET',
+        'SETUP_AUTHORITY_VALIDATION',
+        false,
+        'Task sheet is missing during authority validation.'
+      );
+    }
+    return WorkOsUtilities.withScriptLock(function () {
+      var report = WorkOsTaskRepository.validateAllTaskAuthorities(taskSheet, {
+        mode: 'SETUP',
+        recover_prepared: true,
+        recover_relocated: true,
+        quarantine_invalid: true,
+        mark_orphaned: true
+      });
+      var nonOperational = report.rows.filter(function (item) {
+        return item.status !== 'VALID';
+      });
+      if (nonOperational.length) {
+        throw new WorkOsAppError(
+          'E_TASK_AUTHORITY_INVALID',
+          'SETUP_AUTHORITY_VALIDATION',
+          false,
+          'Task authority contains quarantined, recoverable-drift, or invalid rows.'
+        );
+      }
+      return report;
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
   function runImplementedStage(stage, spreadsheet, budget) {
     if (budget &&
         budget.isExhausted(WorkOsConfig.SETUP_RESERVE_MS)) {
@@ -466,7 +499,11 @@ var WorkOsSetup = (function () {
       return WorkOsSheetBuilder.ensureSheets(spreadsheet);
     }
     if (stage === 'S20_CREATE_SCHEMAS') {
-      return WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+      var columnMaps = WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+      return {
+        column_maps: columnMaps,
+        task_authority: validateTaskAuthorityForSetup(spreadsheet)
+      };
     }
     if (stage === 'S30_APPLY_SMALL_VALIDATIONS') {
       WorkOsSheetBuilder.applyValidationsAndFormats(spreadsheet);
@@ -584,6 +621,10 @@ var WorkOsSetup = (function () {
         completed,
         budget
       );
+      var setupAuthority = null;
+      if (completed.indexOf('S20_CREATE_SCHEMAS') !== -1) {
+        setupAuthority = validateTaskAuthorityForSetup(spreadsheet);
+      }
       assertCompletedStageIntegrity(completed, spreadsheet, budget);
       var versionRefresh = refreshCompletedVersionMetadata(
         spreadsheet,
@@ -660,6 +701,7 @@ var WorkOsSetup = (function () {
         stage_results: stageResults,
         v2_schema_extension: v2Extension,
         completed_layout_refresh: layoutRefresh,
+        task_authority_validation: setupAuthority,
         version_metadata_refresh: versionRefresh,
         edit_trigger_refresh: editTriggerRefresh,
         duration_ms: Date.now() - startedAt

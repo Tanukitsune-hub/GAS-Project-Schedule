@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * Round 3 canonical-document and release-provenance regression.
+ * Historic Round 3 provenance and current Round 4 authority-protocol
+ * regression.
  *
  * This suite is local/static only. GitHub commit existence and real Google
  * Workspace behavior are verified separately and are not promoted to PASS
@@ -25,12 +26,13 @@ function test(name, fn) {
   }
 }
 
-test('R3-06A_CONFIG_USES_2_8_4_SCHEMA_2_5_MIGRATION_2', () => {
+test('R4-06A_CONFIG_USES_2_8_5_SCHEMA_2_6_MIGRATION_3', () => {
   const source = read('apps-script-v2/00_Config.gs');
-  assert.match(source, /CODE_VERSION:\s*'2\.8\.4-prepilot'/);
-  assert.match(source, /SCHEMA_VERSION:\s*'2\.5'/);
+  assert.match(source, /CODE_VERSION:\s*'2\.8\.5-prepilot'/);
+  assert.match(source, /SCHEMA_VERSION:\s*'2\.6'/);
   assert.match(source, /AI_SCHEMA_VERSION:\s*'2\.0'/);
-  assert.match(source, /MIGRATION_VERSION:\s*'2'/);
+  assert.match(source, /MIGRATION_VERSION:\s*'3'/);
+  assert.match(source, /AUTOMATION_ENABLED:\s*false/);
 });
 
 test('R3-06B_TRACEABILITY_NAMES_ONLY_GAS_REPOSITORY_AS_CURRENT', () => {
@@ -44,27 +46,101 @@ test('R3-06B_TRACEABILITY_NAMES_ONLY_GAS_REPOSITORY_AS_CURRENT', () => {
   assert.ok(!source.includes('Repository: `GoogleSpreadsheet`'));
 });
 
-test('R3-06C_CURRENT_README_AND_CHANGELOG_COVER_R3_01_TO_R3_07', () => {
+test('R4-06C_CURRENT_README_AND_CHANGELOG_COVER_R4_01_TO_R4_06', () => {
   const readme = read('apps-script-v2/README.md');
   const changelog = read('apps-script-v2/CHANGELOG.md');
-  assert.ok(readme.includes('2.8.4-prepilot / Round 3 Remediation'));
+  assert.ok(readme.includes('2.8.5-prepilot / Round 4 Remediation'));
   assert.ok(readme.includes('Tanukitsune-hub/GAS-Project-Schedule'));
-  for (let finding = 1; finding <= 7; finding += 1) {
+  for (let finding = 1; finding <= 6; finding += 1) {
     assert.ok(
-      changelog.includes(`R3-0${finding}:`),
-      `CHANGELOG_MISSING_R3_0${finding}`
+      changelog.includes(`R4-0${finding}:`),
+      `CHANGELOG_MISSING_R4_0${finding}`
     );
   }
 });
 
-test('R3-06D_MANUAL_GUIDE_USES_47_COLUMNS_AND_STATUS_CAP', () => {
+test('R4-06D_MANUAL_GUIDE_USES_CURRENT_VERSION_AND_NO_GO_STATUS_CAP', () => {
   const guide = read('docs/V2_MANUAL_ACCEPTANCE_GUIDE.md');
-  assert.ok(guide.includes('対象version: `2.8.4-prepilot`'));
-  assert.ok(guide.includes('Schema Version: `2.5`'));
-  assert.ok(guide.includes('Migration Version: `2`'));
-  assert.ok(guide.includes('`タスク一覧`が47列'));
-  assert.ok(guide.includes('`READY_FOR_INDEPENDENT_REAUDIT`'));
-  assert.ok(guide.includes('Phase 8B | GO/PASSを宣言しない'));
+  assert.ok(guide.includes('2.8.5-prepilot'));
+  assert.ok(guide.includes('Schema Version: `2.6`'));
+  assert.ok(guide.includes('Migration Version: `3`'));
+  assert.ok(guide.includes('50'));
+  assert.ok(guide.includes('`NO-GO_REMOTE_PUBLICATION`'));
+  assert.ok(!guide.includes('`READY_FOR_INDEPENDENT_REAUDIT`'));
+  assert.ok(!/\|\s*Phase 8B[^|]*\|\s*(?:GO|PASS|GO\/PASS)\s*\|/.test(
+    guide
+  ));
+  assert.ok(!/\|\s*Phase 8C[^|]*\|\s*GO\s*\|/.test(guide));
+});
+
+test('R4-01A_TWO_SLOT_LEDGER_COMMITS_AROUND_ONE_TASK_ROW_WRITE', () => {
+  const repository = read('apps-script-v2/08_TaskRepository.gs');
+  const commitStart = repository.indexOf('function commitAuthorityRow(');
+  const commitEnd = repository.indexOf('\n  function restoreAuthorityRow(', commitStart);
+  const commit = repository.slice(commitStart, commitEnd);
+  const mirrorStart = repository.indexOf('function syncAuthoritativeMirror(');
+  const mirrorEnd = repository.indexOf('\n  function migrateLegacyRowToSnapshot(', mirrorStart);
+  const mirror = repository.slice(mirrorStart, mirrorEnd);
+
+  assert.ok(commitStart >= 0 && commitEnd > commitStart);
+  assert.ok(mirrorStart >= 0 && mirrorEnd > mirrorStart);
+  assert.ok(commit.indexOf('prepareAuthorityLedgerCommit(') <
+    commit.indexOf('.setValues([output])'));
+  assert.match(commit, /recoverPreparedAuthority\(/);
+  assert.match(commit, /promotePreparedLedgerRecord\(/);
+  assert.doesNotMatch(commit, /setNote\(|setNotes\(/);
+  assert.doesNotMatch(mirror, /setValues\(|setNote\(|setNotes\(/);
+  assert.match(mirror, /deprecated: true/);
+  assert.match(repository, /rollbackPreparedLedgerRecord\(/);
+});
+
+test('R4-02A_SHARED_VALIDATOR_FAILS_CLOSED_WITHOUT_SNAPSHOT_FALLBACK', () => {
+  const repository = read('apps-script-v2/08_TaskRepository.gs');
+  const setup = read('apps-script-v2/02_Setup.gs');
+  const diagnostics = read('apps-script-v2/16_Diagnostics.gs');
+  const migration = read('apps-script-v2/14_Migrations.gs');
+
+  assert.match(repository, /function validateAuthority\(row, options\)/);
+  assert.match(repository, /E_TASK_AUTHORITY_SNAPSHOT_FALLBACK_FORBIDDEN/);
+  assert.match(
+    repository,
+    /does not[\s\S]*?inspect authoritative_snapshot_json or a cell note/i
+  );
+  assert.match(setup, /validateAllTaskAuthorities\(taskSheet/);
+  assert.match(diagnostics, /validateAllTaskAuthorities\(/);
+  assert.match(migration, /WorkOsTaskRepository\.validateAuthority\(raw/);
+  assert.match(repository, /function restoreUserEditRows\([\s\S]*?validateAuthority\(/);
+});
+
+test('R4-03A_INVALID_EDIT_ROWS_ARE_QUARANTINED_AND_WORKERS_USE_OPERATIONAL_TASKS', () => {
+  const repository = read('apps-script-v2/08_TaskRepository.gs');
+  const editHandler = read('apps-script-v2/11_EditHandler.gs');
+  const worker = read('apps-script-v2/18_Worker.gs');
+  const calendar = read('apps-script-v2/10_CalendarSync.gs');
+
+  assert.match(repository, /function quarantineAuthorityRow\(/);
+  assert.match(repository, /function restoreUserEditRows\(/);
+  assert.match(editHandler, /restoreCanonicalTaskHeaders\(sheet\)/);
+  assert.match(editHandler, /restoreUserEditRows\(\s*sheet,\s*rowEdits\)/);
+  assert.match(worker, /operationalTasks\(/);
+  assert.match(calendar, /operationalTasks\(/);
+});
+
+test('R4-04A_TASK_HEADERS_AND_AUTHORITY_LEDGER_ARE_CANONICAL_CONTROL_PLANE', () => {
+  const config = read('apps-script-v2/00_Config.gs');
+  const builder = read('apps-script-v2/03_SheetBuilder.gs');
+  const migration = read('apps-script-v2/14_Migrations.gs');
+  const schemas = read('apps-script-v2/01_TypesAndSchemas.gs');
+
+  assert.match(config, /HEADER_ID_ROW:\s*1/);
+  assert.match(config, /HEADER_LABEL_ROW:\s*2/);
+  assert.match(config, /TASK_AUTHORITY_LEDGER:\s*'Task Authority Ledger'/);
+  assert.match(builder, /function restoreCanonicalTaskHeaders\(/);
+  assert.match(migration, /ensureR4AuthorityLedgerSheet\(/);
+  assert.match(migration, /restoreCanonicalTaskHeaders\(taskSheet\)/);
+  assert.match(schemas, /authority_generation/);
+  assert.match(schemas, /authority_hash/);
+  assert.match(schemas, /authority_state/);
 });
 
 test('R3-07A_BUILD_SCRIPTS_REQUIRE_EXACT_SOURCE_COMMIT', () => {

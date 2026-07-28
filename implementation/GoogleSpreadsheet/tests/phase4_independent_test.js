@@ -18,7 +18,8 @@ const appsScriptRoot = path.join(repositoryRoot, 'apps-script-v2');
 
 function loadHarness() {
   const phase3HarnessPath = path.join(__dirname, 'phase3_local_test.js');
-  const source = fs.readFileSync(phase3HarnessPath, 'utf8');
+  const source = fs.readFileSync(phase3HarnessPath, 'utf8')
+    .replace(/\r\n/g, '\n');
   const marker = '\nconst tests = [];';
   const markerIndex = source.indexOf(marker);
   assert.notStrictEqual(
@@ -984,7 +985,19 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     triggerSource,
     /EDIT_HANDLER_FUNCTION[\s\S]*forSpreadsheet\(spreadsheet\)\.onEdit\(\)/
   );
-  assert.strictEqual(/getLastRow\s*\(/.test(allGs), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
+  assert.strictEqual(
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
   assert.strictEqual(
     /GeminiAdapter|GoogleGenAI|generativelanguage\.googleapis/.test(allGs),
     false

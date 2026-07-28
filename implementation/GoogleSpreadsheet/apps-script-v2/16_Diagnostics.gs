@@ -214,6 +214,43 @@ var WorkOsDiagnostics = (function () {
       checks.push(check('TASK_COLUMN_MAP', 'FAIL', 'Column Mapを構築できません。'));
       return;
     }
+    try {
+      var authority = WorkOsTaskRepository.validateAllTaskAuthorities(sheet, {
+        mode: 'QUICK_DIAGNOSTIC',
+        recover_prepared: false,
+        recover_relocated: false,
+        quarantine_invalid: false,
+        mark_orphaned: false
+      });
+      var authorityFailures = authority.rows.filter(function (item) {
+        return item.status !== 'VALID';
+      });
+      checks.push(check(
+        'TASK_AUTHORITY_VALIDATOR',
+        authorityFailures.length ? 'FAIL' : 'PASS',
+        authorityFailures.length
+          ? 'Task authority requires recovery or quarantine; no snapshot fallback was used.'
+          : '',
+        {
+          counts: authority.counts,
+          invalid_row_count: authorityFailures.length,
+          validator: 'WorkOsTaskRepository.validateAuthority'
+        }
+      ));
+    } catch (authorityError) {
+      checks.push(check(
+        'TASK_AUTHORITY_VALIDATOR',
+        'FAIL',
+        'Task authority validator could not verify the protected ledger.',
+        {
+          error_code: WorkOsUtilities.safeError(
+            authorityError,
+            'DIAGNOSTIC'
+          ).code,
+          validator: 'WorkOsTaskRepository.validateAuthority'
+        }
+      ));
+    }
 
     var dataRowCount = sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1;
     var checkboxIds = ['needs_review', 'completed', 'excluded', 'waiting_for_reply'];
@@ -1317,6 +1354,33 @@ var WorkOsDiagnostics = (function () {
         {
           sample_limit: WorkOsConfig.DEEP_DIAGNOSTIC_SAMPLE_ROWS,
           recovery: recovery
+        }
+      ));
+      var taskSheet = target.getSheetByName(WorkOsConfig.SHEETS.TASKS);
+      var authority = WorkOsTaskRepository.validateAllTaskAuthorities(
+        taskSheet,
+        {
+          mode: 'DEEP_DIAGNOSTIC',
+          recover_prepared: false,
+          recover_relocated: false,
+          quarantine_invalid: false,
+          mark_orphaned: false
+        }
+      );
+      var authorityFailures = authority.rows.filter(function (item) {
+        return item.status !== 'VALID';
+      });
+      checks.push(check(
+        'DEEP_TASK_AUTHORITY_VALIDATOR',
+        authorityFailures.length ? 'FAIL' : 'PASS',
+        authorityFailures.length
+          ? 'Deep Diagnostic found non-operational Task authority rows.'
+          : '',
+        {
+          counts: authority.counts,
+          invalid_row_count: authorityFailures.length,
+          validator: 'WorkOsTaskRepository.validateAuthority',
+          repair: false
         }
       ));
       checks.push(check(

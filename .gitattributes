@@ -1,0 +1,4 @@
+# Keep authoritative source and generated release bytes portable across Windows clones.
+implementation/GoogleSpreadsheet/apps-script-v2/** text eol=lf
+implementation/GoogleSpreadsheet/tools/** text eol=lf
+implementation/GoogleSpreadsheet/release/** text eol=lf

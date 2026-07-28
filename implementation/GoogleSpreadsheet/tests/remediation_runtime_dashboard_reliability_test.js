@@ -572,14 +572,46 @@ test('R-UX-03_PAUSED_ACTION_DEPENDS_ON_OPERATION', () => {
 test('R-META-01_PHASE_BOUNDARY_AND_VERSIONS_ARE_CURRENT', () => {
   const config = source('00_Config.gs');
   const setup = source('02_Setup.gs');
-    assert.match(config, /CODE_VERSION:\s*'2\.8\.4-prepilot'/);
-    assert.match(config, /SCHEMA_VERSION:\s*'2\.5'/);
-    assert.match(config, /MIGRATION_VERSION:\s*'2'/);
+  assert.match(config, /CODE_VERSION:\s*'2\.8\.5-prepilot'/);
+  assert.match(config, /SCHEMA_VERSION:\s*'2\.6'/);
+  assert.match(config, /AI_SCHEMA_VERSION:\s*'2\.0'/);
+  assert.match(config, /MIGRATION_VERSION:\s*'3'/);
   assert.match(
     setup,
     /READY_FOR_INDEPENDENT_REAUDIT/
   );
   assert(!setup.includes('STOP_BEFORE_PHASE7'));
+});
+
+test('R-META-02_AUTOMATION_DEFAULT_REMAINS_OFF', () => {
+  const config = source('00_Config.gs');
+  assert.match(config, /AUTOMATION_ENABLED:\s*false/);
+  assert.strictEqual(
+    runtimeContext.WorkOsRuntimeSettings.CONTRACT.find(
+      (item) => item.key === 'automation_enabled'
+    ).default_value,
+    false
+  );
+});
+
+test('R-META-03_TASK_AUTHORITY_SCHEMA_IS_PRESENT_AND_HIDDEN_LEDGER_IS_REGISTERED', () => {
+  const Config = runtimeContext.WorkOsConfig;
+  const Schemas = runtimeContext.WorkOsSchemas;
+  const taskIdsCurrent = Schemas.getInternalIds(Config.SHEETS.TASKS);
+  const ledgerIds = Schemas.getInternalIds(Config.SHEETS.TASK_AUTHORITY_LEDGER);
+
+  assert.strictEqual(taskIdsCurrent.length, 50);
+  assert.deepStrictEqual(
+    JSON.parse(JSON.stringify(taskIdsCurrent.slice(-3))),
+    ['authority_generation', 'authority_hash', 'authority_state']
+  );
+  assert.strictEqual(ledgerIds.length, 21);
+  assert.strictEqual(
+    JSON.parse(JSON.stringify(runtimeContext.WorkOsHiddenSheets)).includes(
+      Config.SHEETS.TASK_AUTHORITY_LEDGER
+    ),
+    true
+  );
 });
 
 const failed = results.filter((item) => item.status === 'FAIL');

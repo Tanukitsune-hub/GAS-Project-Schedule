@@ -5,10 +5,10 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.4-prepilot',
-  SCHEMA_VERSION: '2.5',
+  CODE_VERSION: '2.8.5-prepilot',
+  SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
-  MIGRATION_VERSION: '2',
+  MIGRATION_VERSION: '3',
   TIMEZONE: 'Asia/Tokyo',
   HEADER_ID_ROW: 1,
   HEADER_LABEL_ROW: 2,
@@ -46,6 +46,13 @@ var WorkOsConfig = Object.freeze({
   V2_EXTENSION_CHUNK_ROWS: 500,
   V2_EXTENSION_MAX_ROWS: 10000,
   V2_EXTENSION_BUDGET_RESERVE_MS: 5000,
+  AUTHORITY_LEDGER_CHUNK_ROWS: 50,
+  // A ledger snapshot is intentionally kept below the Google Sheets cell
+  // limit.  The protocol fails closed rather than truncating recovery state.
+  AUTHORITY_LEDGER_MAX_SNAPSHOT_CHARS: 45000,
+  // Bound runtime scans and expansion so a malformed workbook cannot turn an
+  // authority check into an unbounded Sheet read/write operation.
+  AUTHORITY_LEDGER_MAX_DATA_ROWS: 10000,
   MOCK_AI_MODEL: 'work-os-deterministic-mock-v2',
   MOCK_PROMPT_VERSION: 'phase3-mock-v1',
   AI_PROVIDER: 'MOCK',
@@ -100,7 +107,8 @@ var WorkOsConfig = Object.freeze({
     MESSAGE_STATE: 'メール状態',
     SYSTEM_CONFIG: 'システム設定',
     PROMPT_VERSIONS: 'プロンプト版管理',
-    SYNC_STATE: '同期状態'
+    SYNC_STATE: '同期状態',
+    TASK_AUTHORITY_LEDGER: 'Task Authority Ledger'
   }),
   V1_SHEET_NAMES: Object.freeze([
     '要確認',
@@ -130,7 +138,9 @@ var WorkOsConfig = Object.freeze({
     AUTOMATION_SCAN_PAGE_TOKEN:
       'WORK_OS_V2_AUTOMATION_SCAN_PAGE_TOKEN',
     AI_PROVIDER_SUPPRESS_UNTIL:
-      'WORK_OS_V2_AI_PROVIDER_SUPPRESS_UNTIL'
+      'WORK_OS_V2_AI_PROVIDER_SUPPRESS_UNTIL',
+    AUTHORITY_MIGRATION_STATE:
+      'WORK_OS_V2_AUTHORITY_MIGRATION_STATE'
   }),
   SETUP_STAGES: Object.freeze([
     'S00_VALIDATE_ENV',
@@ -220,6 +230,16 @@ var WorkOsEnums = Object.freeze({
     UPCOMING: 'UPCOMING',
     TODAY: 'TODAY',
     OVERDUE: 'OVERDUE'
+  }),
+  AuthorityControlState: Object.freeze({
+    ACTIVE: 'ACTIVE',
+    ORPHANED: 'ORPHANED',
+    QUARANTINED: 'QUARANTINED',
+    UNRECOVERABLE: 'UNRECOVERABLE'
+  }),
+  AuthorityTransactionState: Object.freeze({
+    IDLE: 'IDLE',
+    PREPARED: 'PREPARED'
   })
 });
 
@@ -233,12 +253,14 @@ var WorkOsSheetOrder = Object.freeze([
   WorkOsConfig.SHEETS.MESSAGE_STATE,
   WorkOsConfig.SHEETS.SYSTEM_CONFIG,
   WorkOsConfig.SHEETS.PROMPT_VERSIONS,
-  WorkOsConfig.SHEETS.SYNC_STATE
+  WorkOsConfig.SHEETS.SYNC_STATE,
+  WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
 ]);
 
 var WorkOsHiddenSheets = Object.freeze([
   WorkOsConfig.SHEETS.MESSAGE_STATE,
   WorkOsConfig.SHEETS.SYSTEM_CONFIG,
   WorkOsConfig.SHEETS.PROMPT_VERSIONS,
-  WorkOsConfig.SHEETS.SYNC_STATE
+  WorkOsConfig.SHEETS.SYNC_STATE,
+  WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
 ]);

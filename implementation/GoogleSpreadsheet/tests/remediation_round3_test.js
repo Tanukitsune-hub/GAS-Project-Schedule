@@ -12,7 +12,7 @@ const path = require('path');
 const vm = require('vm');
 
 const phase3Path = path.resolve(__dirname, 'phase3_local_test.js');
-const phase3Source = fs.readFileSync(phase3Path, 'utf8');
+const phase3Source = fs.readFileSync(phase3Path, 'utf8').replace(/\r\n/g, '\n');
 const fixtureMarker = '\nconst tests = [];\n';
 const fixtureIndex = phase3Source.indexOf(fixtureMarker);
 if (fixtureIndex < 0) {
@@ -140,6 +140,22 @@ function outboxActions(sheet) {
   const ids = sandbox.WorkOsSchemas.getInternalIds(syncSheetName);
   const actionIndex = Array.from(ids).indexOf('desired_action');
   return outboxLogicalRows(sheet).map((row) => row[actionIndex]);
+}
+
+function authorityLedgerRow(spreadsheet, taskId) {
+  const ledgerName = sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+  const ledger = spreadsheet.getSheetByName(ledgerName);
+  const ids = sandbox.WorkOsSchemas.getInternalIds(ledgerName);
+  const taskIdIndex = ids.indexOf('task_id');
+  for (let row = sandbox.WorkOsConfig.DATA_START_ROW;
+       row <= ledger.getMaxRows();
+       row += 1) {
+    if (String(ledger.getRange(row, taskIdIndex + 1, 1, 1)
+      .getValues()[0][0] || '') === String(taskId)) {
+      return row;
+    }
+  }
+  throw new Error('AUTHORITY_LEDGER_RECORD_NOT_FOUND');
 }
 
 const tests = [];
@@ -282,7 +298,7 @@ test('R3-01H_OVER_20_ROW_PASTE_RESTORES_WITHOUT_PARTIAL_WRITE', () => {
   );
 });
 
-test('R3-01I_BLANK_ROW_MANAGEMENT_PASTE_IS_CLEARED', () => {
+test('R3-01I_UNAUTHORISED_BLANK_ROW_IS_QUARANTINED_AND_EXCLUDED', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const sheet = fixture.taskSheet(spreadsheet);
   const row = sandbox.WorkOsConfig.DATA_START_ROW;
@@ -294,13 +310,27 @@ test('R3-01I_BLANK_ROW_MANAGEMENT_PASTE_IS_CLEARED', () => {
   );
 
   assert.strictEqual(result.status, 'REJECTED');
+  assert.strictEqual(result.reason, 'MANAGEMENT_COLUMN_EDIT');
   assert.strictEqual(
-    rowValues(sheet, row).every((value) => value === ''),
-    true
+    rowValues(sheet, row)[fixture.columnMap(taskSheetName).authority_state],
+    'QUARANTINED'
+  );
+  const validation = sandbox.WorkOsTaskRepository.validateAuthority(
+    rowValues(sheet, row),
+    { sheet, physical_row: row }
+  );
+  assert.strictEqual(validation.status, 'QUARANTINED');
+  assert.strictEqual(validation.code, 'E_TASK_AUTHORITY_MISSING');
+  assert.strictEqual(
+    sandbox.WorkOsTaskRepository.findByTaskId(
+      sandbox.WorkOsTaskRepository.createContext(sheet),
+      `tsk_${'d'.repeat(32)}`
+    ),
+    null
   );
 });
 
-test('R3-01J_CORRUPT_TRUSTED_ROW_CAUSES_NO_PARTIAL_BATCH_WRITE', () => {
+test('R3-01J_CORRUPT_AUTHORITY_QUARANTINES_ONLY_BAD_ROW_AND_RESTORES_PEER', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const sheet = fixture.taskSheet(spreadsheet);
   const first = fixture.insertTaskFixture(sheet, {
@@ -311,23 +341,47 @@ test('R3-01J_CORRUPT_TRUSTED_ROW_CAUSES_NO_PARTIAL_BATCH_WRITE', () => {
   });
   const firstRow = fixture.taskRow(sheet, first.task_id);
   const secondRow = fixture.taskRow(sheet, second.task_id);
+  const firstBefore = exactRowJson(sheet, firstRow);
   fixture.setTaskCell(sheet, firstRow, 'row_version', 700);
   fixture.setTaskCell(sheet, secondRow, 'row_version', 800);
-  const snapshotColumn = fixture.columnMap(taskSheetName)
-    .authoritative_snapshot_json + 1;
-  sheet.getRange(secondRow, snapshotColumn, 1, 1)
-    .setNote('CORRUPT_TRUSTED_MIRROR');
-  const firstTampered = exactRowJson(sheet, firstRow);
-  const secondTampered = exactRowJson(sheet, secondRow);
+  const ledgerName = sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+  const ledger = spreadsheet.getSheetByName(ledgerName);
+  const ledgerIds = sandbox.WorkOsSchemas.getInternalIds(ledgerName);
+  const committedHashColumn = ledgerIds.indexOf('committed_hash') + 1;
+  ledger.getRange(
+    authorityLedgerRow(spreadsheet, second.task_id),
+    committedHashColumn,
+    1,
+    1
+  ).setValues([['CORRUPTED_COMMITTED_HASH']]);
 
-  assert.throws(
-    () => handleRange(
-      rangeForIds(sheet, firstRow, 2, 'row_version')
-    ),
-    (error) => error.code === 'E_TASK_SNAPSHOT_INVALID'
+  const result = handleRange(
+    rangeForIds(sheet, firstRow, 2, 'row_version')
   );
-  assert.strictEqual(exactRowJson(sheet, firstRow), firstTampered);
-  assert.strictEqual(exactRowJson(sheet, secondRow), secondTampered);
+  assert.strictEqual(result.status, 'REJECTED');
+  assert.strictEqual(result.reason, 'MANAGEMENT_COLUMN_EDIT');
+  assert.strictEqual(result.restored_rows, 1);
+  assert.strictEqual(exactRowJson(sheet, firstRow), firstBefore);
+  assert.strictEqual(
+    rowValues(sheet, secondRow)[
+      fixture.columnMap(taskSheetName).authority_state
+    ],
+    'UNRECOVERABLE'
+  );
+  assert.strictEqual(
+    sandbox.WorkOsTaskRepository.findByTaskId(
+      sandbox.WorkOsTaskRepository.createContext(sheet),
+      second.task_id
+    ),
+    null
+  );
+  const operational = sandbox.WorkOsTaskRepository.operationalTasks(
+    sandbox.WorkOsTaskRepository.createContext(sheet)
+  );
+  assert.strictEqual(
+    JSON.stringify(operational.map((task) => task.task_id)),
+    JSON.stringify([first.task_id])
+  );
 });
 
 test('R3-01K_SOURCE_AI_AND_INTENT_MANAGEMENT_FIELDS_RESTORE', () => {
@@ -596,7 +650,7 @@ test('R3-04E_LOCK_TIMEOUT_AFTER_TASK_COMMIT_RETAINS_INTENT', () => {
   );
 });
 
-test('R3-04F_CRASH_AFTER_ENQUEUE_IS_IDEMPOTENT_ON_RECOVERY', () => {
+test('R3-04F_ACK_WRITE_FAILURE_RETAINS_DURABLE_INTENT_AND_RECOVERS_IDEMPOTENTLY', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const sheet = fixture.taskSheet(spreadsheet);
   const syncSheet = spreadsheet.getSheetByName(syncSheetName);
@@ -626,12 +680,21 @@ test('R3-04F_CRASH_AFTER_ENQUEUE_IS_IDEMPOTENT_ON_RECOVERY', () => {
     }
     return range;
   };
-  assert.throws(
-    () => handleRange(rangeForIds(sheet, row, 1, 'task_title')),
-    /SYNTHETIC_AFTER_ENQUEUE_CRASH/
-  );
+  const result = handleRange(rangeForIds(sheet, row, 1, 'task_title'));
   sheet.getRange = originalGetRange;
+  assert.strictEqual(injected, true);
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(
+    result.calendar_outbox.acknowledgement_failure_count,
+    1,
+    'the durable intent must be reported as pending recovery, not acknowledged'
+  );
+  assert.strictEqual(result.calendar_outbox.remaining_intent_count, 1);
   assert.strictEqual(outboxLogicalRows(syncSheet).length, 1);
+  assert.strictEqual(
+    fixture.readTask(sheet, task.task_id).task_title,
+    'Crash after enqueue'
+  );
   assert.strictEqual(
     fixture.readTask(sheet, task.task_id).calendar_reconcile_required,
     true

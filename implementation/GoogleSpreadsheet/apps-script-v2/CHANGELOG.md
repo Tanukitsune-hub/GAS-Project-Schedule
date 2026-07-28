@@ -1,5 +1,76 @@
 # Changelog
 
+## 2.8.5-prepilot - 2026-07-28
+
+### Fixed
+
+- R4-01: replaced the unmarked Task `setValues` then `setNote` authority
+  double-write with a protected hidden `Task Authority Ledger` and a
+  versioned two-slot protocol.  A write records `PREPARED`, performs one full
+  visible Task-row write, and only then promotes `COMMITTED`; interruption
+  recovery deterministically promotes, rolls back, or isolates the row.  A
+  failed first insert that leaves both the Task row and the prior committed slot
+  blank discards only its empty PREPARED record, returns the original failure,
+  and remains retryable rather than being quarantined.
+- R4-02: removed snapshot-cell and note fallback authority.  Setup, Quick
+  Diagnostic, Deep Diagnostic, Task writes, Migration 3, edit restoration,
+  Worker reads, Review and Calendar use the shared fail-closed authority
+  validator.  Live raw rows and user-edited snapshot projections cannot seed
+  current authority.
+- R4-03: multi-row restoration now preserves every valid peer from its own
+  committed ledger slot even if another row is invalid.  Missing, copied,
+  duplicate, corrupt, or ambiguous authority is quarantined with a safe reason
+  code and excluded from operational Task consumers.
+- R4-04: Task rows 1 and 2 restore canonical internal IDs and headers after
+  direct or crossed-paste edits.  Schema 2.6 adds authority generation, hash,
+  and state columns; Migration 3 normalizes the hidden ledger before row work.
+- R4-05: added the current authority protocol design memo and offline workflow
+  visualization with canonical version/status metadata.
+- R4-06: records the Round 3 backup correction: the historic backup was
+  local-only and did not exist in GitHub.  Round 4 source/release provenance
+  remains split into A5 source and B5 release boundaries.
+- Calendar-intent acknowledgement now remains failure-recoverable after a
+  durable Outbox enqueue: a failed Task acknowledgement is counted as pending
+  recovery, retains the exact intent marker, and never reports a false
+  acknowledgement.
+
+### Added
+
+- `docs/TASK_AUTHORITY_PROTOCOL.md` with alternative analysis and
+  PREPARED/COMMITTED/recovery/rollback/quarantine fault matrix.
+- `visualizations/task_authority_protocol_v2_8_5.html`, a dependency-free
+  authority workflow visualization.
+- R4 local fault-injection and static provenance coverage for ledger failures,
+  first-insert rollback/retry, no-fallback behavior, quarantine, header
+  restoration, Calendar acknowledgement recovery, and canonical metadata.
+
+### Version and validation
+
+- Code/Schema/AI Schema/Migration: `2.8.5-prepilot` / `2.6` / `2.0` / `3`.
+- Automation default remains OFF; no deployment or `clasp push` is performed.
+- Final source-candidate regression/static run: 41/41 test files PASS; 603
+  PASS / 0 FAIL / 11 explicit fake-runtime skips; static validation passed
+  11/11 checks over 22 `.gs` files. Package validation is recorded only after
+  corrected Source A5.1 exists and packages are generated from that exact SHA.
+  Real Google Workspace behavior remains `NOT EXECUTED`.
+- R5 publication-consistency corrections add canonical JSON ordering,
+  validator-before-indexing, bounded ledger reads, durable orphan handling,
+  Calendar exclusion, and bounded Migration observation/reconciliation.
+- Existing Schema 2.6 ledger slots with the historical insertion-order hash
+  remain valid only after verification against that protected ledger payload;
+  the next committed generation uses canonical hashing. This is a migration
+  compatibility path, never a visible-row or snapshot-cell fallback.
+- Repeated copied-row isolation reuses its detached `qrow_` authority record,
+  and an exposed ledger protection editor list now fails closed unless it
+  contains only the effective user.
+- Authority-excluded Calendar jobs now use the durable `CANCELLED` outbox
+  state, which is accepted by the outbox reader and remains outside Calendar
+  external I/O.
+- Current source-candidate status is `NO-GO_REMOTE_PUBLICATION` until normal
+  publication, remote SHA resolution, and fresh-clone verification. No Phase
+  8B GO/PASS, Phase 8C GO, production-ready, or pilot-ready declaration is
+  made.
+
 ## 2.8.4-prepilot - 2026-07-27
 
 ### Fixed

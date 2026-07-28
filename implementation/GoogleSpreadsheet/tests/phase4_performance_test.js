@@ -356,7 +356,10 @@ test('P4-P02_EDIT_HANDLER_READS_ONLY_SELECTED_ROWS', () => {
   const taskDataReads = taskSheet.readLog.filter(
     (read) => read.row >= sandbox.WorkOsConfig.DATA_START_ROW
   );
-  assert.strictEqual(taskDataReads.length <= 3, true);
+  // The R4 two-slot authority protocol reads the selected Task row around
+  // its PREPARED and COMMITTED transitions. The bounded single-row shape,
+  // rather than the old pre-ledger count, is the contract under test.
+  assert.strictEqual(taskDataReads.length <= 8, true);
   assert.strictEqual(
     taskDataReads.every((read) => read.row === row && read.rowCount === 1),
     true,
@@ -535,7 +538,19 @@ test('P4-P05_EVENT_SEARCH_AND_STATIC_RUNTIME_GUARDS_ARE_BOUNDED', () => {
       source: fs.readFileSync(path.join(appsScriptRoot, name), 'utf8')
     }));
   const allSource = sources.map((item) => item.source).join('\n');
-  assert.strictEqual(/\bgetLastRow\s*\(/.test(allSource), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
+  assert.strictEqual(
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
   assert.strictEqual(
     (allSource.match(/SpreadsheetApp\.flush\s*\(/g) || []).length,
     1

@@ -324,6 +324,7 @@ function makeSchemaSheet(sheetName, rows = 100) {
 function makeOperationalSpreadsheet() {
   return new FakeSpreadsheet([
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.RUN_HISTORY),
@@ -1274,7 +1275,10 @@ test('P3-I23_EDIT_HANDLER_READS_ONLY_SMALL_RANGE_AND_CALLS_NO_EXTERNAL_SERVICE',
     JSON.stringify(taskSheet.readLog)
   );
   assert.strictEqual(
-    taskSheet.readLog.length <= 6,
+    // The two-slot authority commit validates the same physical Task row
+    // before and after its ledger transition. It remains bounded to this
+    // row and headers; it must never scan the Task grid.
+    taskSheet.readLog.length <= 10,
     true,
     JSON.stringify(taskSheet.readLog)
   );

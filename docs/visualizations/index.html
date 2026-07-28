@@ -1,35 +1,33 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!doctype html>
+<html lang="en" data-code-version="2.8.5-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="NO-GO_REMOTE_PUBLICATION">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GAS Project Schedule - Visualizations</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Google Workspace Personal Work OS v2 — Visualization Index</title>
   <style>
-    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; background: #f5f7fb; color: #1f2937; }
-    main { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
-    .hero, .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; box-shadow: 0 10px 30px rgba(15,23,42,.08); }
-    .hero { padding: 28px; margin-bottom: 18px; }
-    .hero h1 { margin: 0 0 8px; font-size: 28px; }
-    .hero p { margin: 0; color: #6b7280; }
-    .card { padding: 20px; }
-    .card h2 { margin: 0 0 8px; font-size: 20px; }
-    .card p { color: #6b7280; }
-    .button { display: inline-block; margin-top: 8px; padding: 11px 16px; border-radius: 10px; background: #2563eb; color: #fff; text-decoration: none; font-weight: 700; }
-    .meta { margin-top: 18px; color: #6b7280; font-size: 13px; }
+    body{margin:0;background:#f5f7fb;color:#172033;font:16px system-ui,sans-serif}
+    main{max-width:820px;margin:48px auto;padding:0 24px}
+    .card{background:#fff;border:1px solid #dce3ef;border-radius:14px;padding:22px;margin:16px 0}
+    .gate{color:#8a4b00;font-weight:700} code{background:#eef2f7;padding:2px 5px;border-radius:4px}
+    a{color:#1757a6;font-weight:650}
   </style>
 </head>
 <body>
-  <main>
-    <section class="hero">
-      <h1>GAS Project Schedule 可視化一覧</h1>
-      <p>Google Workspace Personal Work OS v2の構造・処理フロー・運用統制を、HTMLベースで確認するための索引ページです。</p>
-    </section>
-    <section class="card">
-      <h2>タスク管理システム 全体ワークフロー</h2>
-      <p>Gmail、Apps Script、AI、Google Sheets、Calendar、Diagnostics、Retry／Dead Letterの関係をスイムレーン形式で表示します。表示するフローをボタンで切り替えられます。</p>
-      <a class="button" href="GoogleWorkspace_v2_Workflow_Overview.html">ワークフロー図を開く</a>
-      <div class="meta">ファイル: <code>GoogleWorkspace_v2_Workflow_Overview.html</code></div>
-    </section>
-  </main>
+<main>
+  <h1>Google Workspace Personal Work OS v2</h1>
+  <p>Code <code>2.8.5-prepilot</code> · Schema <code>2.6</code> · AI Schema <code>2.0</code> · Migration <code>3</code></p>
+  <p class="gate">Publication gate: NO-GO_REMOTE_PUBLICATION</p>
+  <section class="card">
+    <h2>Workflow overview</h2>
+    <p>Business Task state, independent authority, durable Calendar intent, and isolation boundaries.</p>
+    <p><a href="GoogleWorkspace_v2_Workflow_Overview.html">Open workflow overview</a></p>
+  </section>
+  <section class="card">
+    <h2>Authority protocol</h2>
+    <p>The detailed state machine and fault matrix are in <code>docs/TASK_AUTHORITY_PROTOCOL.md</code>.</p>
+  </section>
+  <p>Local visualization only. It does not declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.</p>
+</main>
 </body>
 </html>
+

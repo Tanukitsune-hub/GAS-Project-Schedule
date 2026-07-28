@@ -19,7 +19,8 @@ var WorkOsCalendarSync = (function () {
     'PENDING',
     'RETRY',
     'DONE',
-    'DEAD'
+    'DEAD',
+    'CANCELLED'
   ]);
   var AUTO_CATEGORIES = Object.freeze([
     'EXTERNAL_SUBMISSION',
@@ -1561,12 +1562,8 @@ var WorkOsCalendarSync = (function () {
       updated_count: 0,
       noop_count: 0
     };
-    (taskContext && taskContext.logicalRows || []).forEach(
-      function (physicalRow) {
-        var task = WorkOsTaskRepository.readTaskAtRow(
-          taskContext,
-          physicalRow
-        );
+    WorkOsTaskRepository.operationalTasks(taskContext || { logicalRows: [] })
+      .forEach(function (task) {
         var syncStatus = String(task.calendar_sync_status || '');
         var existingRow = outboxContext.byTaskId[
           String(task.task_id || '')
@@ -1593,8 +1590,7 @@ var WorkOsCalendarSync = (function () {
         } else {
           counts.noop_count += 1;
         }
-      }
-    );
+      });
     return counts;
   }
 
@@ -1636,6 +1632,24 @@ var WorkOsCalendarSync = (function () {
       }
     }
     return null;
+  }
+
+  /*
+   * An Outbox row is derivative state. If its Task can no longer be resolved
+   * through the authority-aware reader, it must not repeatedly occupy the
+   * first Calendar job or cross the external I/O boundary. A later explicit
+   * repair/Task commit may deterministically enqueue a fresh row.
+   */
+  function cancelAuthorityExcludedJob(context, selected, nowValue) {
+    var record = cloneRecord(selected.record);
+    record.status = 'CANCELLED';
+    record.retry_count = 0;
+    record.next_retry_at = '';
+    record.last_attempt_at = nowValue;
+    record.error_code = 'E_CALENDAR_TASK_AUTHORITY_EXCLUDED';
+    record.updated_at = nowValue;
+    writeOutboxRecord(context, selected.row, record);
+    return record;
   }
 
   function outboxSheetForSettings(settings) {
@@ -1784,14 +1798,6 @@ var WorkOsCalendarSync = (function () {
         return { status: 'PAUSED', processed_count: 0 };
       }
       var context = createOutboxContextForHeldLock(sheet, lock);
-      var selected = selectNextJob(
-        context,
-        nowValue,
-        settings.allowed_task_ids
-      );
-      if (!selected) {
-        return { status: 'IDLE', processed_count: 0 };
-      }
       if (typeof settings.task_reader !== 'function' &&
           typeof settings.task_reader_in_context !== 'function') {
         throw appError(
@@ -1808,31 +1814,66 @@ var WorkOsCalendarSync = (function () {
           'Calendar同期用Task writerがありません。'
         );
       }
-      var task = readTaskForHeldLock(
-        settings,
-        selected.record.task_id,
-        lock
-      );
-      var claim = acquireCalendarJobClaim(
-        properties,
-        selected,
-        task,
-        nowValue
-      );
-      if (!claim) {
-        return { status: 'BUSY', processed_count: 0 };
+      var authorityExcludedCount = 0;
+      while (true) {
+        var selected = selectNextJob(
+          context,
+          nowValue,
+          settings.allowed_task_ids
+        );
+        if (!selected) {
+          return {
+            status: 'IDLE',
+            processed_count: 0,
+            authority_excluded_count: authorityExcludedCount
+          };
+        }
+        var task;
+        try {
+          task = readTaskForHeldLock(
+            settings,
+            selected.record.task_id,
+            lock
+          );
+        } catch (error) {
+          if (!error || !/^E_TASK_AUTHORITY_/.test(String(error.code || ''))) {
+            throw error;
+          }
+          task = null;
+        }
+        if (!task ||
+            (Object.prototype.hasOwnProperty.call(task, 'authority_state') &&
+             String(task.authority_state || '') !== 'COMMITTED')) {
+          cancelAuthorityExcludedJob(context, selected, nowValue);
+          authorityExcludedCount += 1;
+          continue;
+        }
+        var claim = acquireCalendarJobClaim(
+          properties,
+          selected,
+          task,
+          nowValue
+        );
+        if (!claim) {
+          return {
+            status: 'BUSY',
+            processed_count: 0,
+            authority_excluded_count: authorityExcludedCount
+          };
+        }
+        return {
+          status: 'READY',
+          claim_token: claim.token,
+          sync_id: claim.sync_id,
+          task_id: claim.task_id,
+          outbox_fingerprint: claim.outbox_fingerprint,
+          task_fingerprint: claim.task_fingerprint,
+          task_row_version: claim.task_row_version,
+          outbox_record: cloneRecord(selected.record),
+          task: cloneRecord(task),
+          authority_excluded_count: authorityExcludedCount
+        };
       }
-      return {
-        status: 'READY',
-        claim_token: claim.token,
-        sync_id: claim.sync_id,
-        task_id: claim.task_id,
-        outbox_fingerprint: claim.outbox_fingerprint,
-        task_fingerprint: claim.task_fingerprint,
-        task_row_version: claim.task_row_version,
-        outbox_record: cloneRecord(selected.record),
-        task: task ? cloneRecord(task) : null
-      };
     }, WorkOsConfig.LOCK_WAIT_MS);
   }
 

@@ -254,9 +254,42 @@ var WorkOsUtilities = (function () {
       date.getUTCDate() === day;
   }
 
-  function serializeJson(value, expectedKind) {
+  /*
+   * Canonical JSON is used for persisted integrity hashes.  It intentionally
+   * preserves array order, sorts object keys recursively, normalizes Date to
+   * ISO-8601, normalizes undefined/non-finite numbers to JSON null, and keeps
+   * primitive Boolean/Number/String values unchanged.  This is drift
+   * detection, not a keyed tamper-proof signature.
+   */
+  function canonicalJsonValue(value) {
+    if (value === undefined || value == null) {
+      return null;
+    }
+    if (value instanceof Date) {
+      if (isNaN(value.getTime())) {
+        throw new Error('E_INVALID_JSON_DATE');
+      }
+      return value.toISOString();
+    }
+    if (Array.isArray(value)) {
+      return value.map(canonicalJsonValue);
+    }
+    if (typeof value === 'number') {
+      return isFinite(value) ? value : null;
+    }
+    if (typeof value === 'object') {
+      var output = {};
+      Object.keys(value).sort().forEach(function (key) {
+        output[key] = canonicalJsonValue(value[key]);
+      });
+      return output;
+    }
+    return value;
+  }
+
+  function normalizedJsonValue(value, expectedKind) {
     if (value == null || value === '') {
-      return expectedKind === 'array' ? '[]' : '{}';
+      return expectedKind === 'array' ? [] : {};
     }
     if (typeof value === 'string') {
       var parsed = JSON.parse(value);
@@ -266,7 +299,7 @@ var WorkOsUtilities = (function () {
       if (expectedKind === 'object' && (Array.isArray(parsed) || parsed === null || typeof parsed !== 'object')) {
         throw new Error('E_INVALID_JSON_OBJECT');
       }
-      return JSON.stringify(parsed);
+      return parsed;
     }
     if (expectedKind === 'array' && !Array.isArray(value)) {
       throw new Error('E_INVALID_JSON_ARRAY');
@@ -274,7 +307,27 @@ var WorkOsUtilities = (function () {
     if (expectedKind === 'object' && (Array.isArray(value) || typeof value !== 'object')) {
       throw new Error('E_INVALID_JSON_OBJECT');
     }
-    return JSON.stringify(value);
+    return value;
+  }
+
+  /*
+   * Preserve the established cell serialization contract for ordinary JSON
+   * fields.  Some independently checkpointed payloads hash their original
+   * property order, so global key sorting here would invalidate a durable
+   * checkpoint after an otherwise harmless read/write round trip.
+   */
+  function serializeJson(value, expectedKind) {
+    return JSON.stringify(normalizedJsonValue(value, expectedKind));
+  }
+
+  /*
+   * Integrity-sensitive callers opt into this deterministic representation.
+   * Task Authority Ledger hashes use it; ordinary business projections do not.
+   */
+  function canonicalJsonString(value, expectedKind) {
+    return JSON.stringify(canonicalJsonValue(
+      normalizedJsonValue(value, expectedKind)
+    ));
   }
 
   function parseJson(value, expectedKind) {
@@ -305,6 +358,8 @@ var WorkOsUtilities = (function () {
     isBlank: isBlank,
     inspectRangeContent: inspectRangeContent,
     isValidIsoDate: isValidIsoDate,
+    canonicalJsonValue: canonicalJsonValue,
+    canonicalJsonString: canonicalJsonString,
     serializeJson: serializeJson,
     parseJson: parseJson
   });

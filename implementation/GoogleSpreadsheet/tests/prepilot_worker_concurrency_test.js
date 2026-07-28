@@ -12,7 +12,8 @@ const path = require('path');
 const vm = require('vm');
 
 const phase3Path = path.resolve(__dirname, 'phase3_local_test.js');
-const phase3Source = fs.readFileSync(phase3Path, 'utf8');
+const phase3Source = fs.readFileSync(phase3Path, 'utf8')
+  .replace(/\r\n/g, '\n');
 const reportMarker = '\nconst summary = {\n';
 const markerIndex = phase3Source.lastIndexOf(reportMarker);
 if (markerIndex < 0) {

@@ -305,6 +305,20 @@ function makeSchemaSheet(sheetName, rows = 100) {
   ]);
   sheet.readLog = [];
   sheet.writeLog = [];
+  if (sheetName === sandbox.WorkOsConfig.SHEETS.TASKS) {
+    const ledgerName = sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+    const ledgerSchema = sandbox.WorkOsSchemas.getSheetSchema(ledgerName);
+    const ledger = new FakeSheet(ledgerName, rows, ledgerSchema.length);
+    ledger.getRange(1, 1, 1, ledgerSchema.length).setValues([
+      Array.from(ledgerSchema, (column) => column.id)
+    ]);
+    ledger.getRange(2, 1, 1, ledgerSchema.length).setValues([
+      Array.from(ledgerSchema, (column) => column.header)
+    ]);
+    ledger.readLog = [];
+    ledger.writeLog = [];
+    new FakeSpreadsheet([sheet, ledger]);
+  }
   return sheet;
 }
 
@@ -314,7 +328,8 @@ function makeOperationalSpreadsheet() {
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.RUN_HISTORY),
-    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.ERRORS)
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.ERRORS),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
   ]);
 }
 
@@ -1128,7 +1143,8 @@ test('P3-U18_EDIT_HANDLER_READS_ONLY_EDITED_TASK_ROWS', () => {
   const sheet = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   new FakeSpreadsheet([
     sheet,
-    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE)
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
   ]);
   const first = insertExistingTask(sheet, {
     source: 'synthetic-edit-a',
@@ -1151,7 +1167,9 @@ test('P3-U18_EDIT_HANDLER_READS_ONLY_EDITED_TASK_ROWS', () => {
   const dataReads = sheet.readLog.filter((read) =>
     read.row >= sandbox.WorkOsConfig.DATA_START_ROW
   );
-  assert.strictEqual(dataReads.length <= 3, true);
+  // The two-slot authority coordinator performs a bounded extra Task-row
+  // compare before COMMIT. It must still never scan unedited Task rows.
+  assert.strictEqual(dataReads.length <= 6, true);
   assert.strictEqual(
     dataReads.every((read) =>
       read.row === row && read.rowCount === 1
@@ -1170,7 +1188,11 @@ test('P3-U18_EDIT_HANDLER_READS_ONLY_EDITED_TASK_ROWS', () => {
 test('P3-R2-01B_OVER_LIMIT_PASTE_RESTORES_ALL_ROWS', () => {
   const sheet = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   const sync = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE);
-  new FakeSpreadsheet([sheet, sync]);
+  new FakeSpreadsheet([
+    sheet,
+    sync,
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
+  ]);
   const inserted = [];
   for (let index = 0; index < 21; index += 1) {
     inserted.push(insertExistingTask(sheet, {
@@ -1829,7 +1851,8 @@ test('P3-G18_MENU_REACHABLE_SELECTION_APPLIES_REVIEW_DECISION', () => {
   const sheet = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   new FakeSpreadsheet([
     sheet,
-    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE)
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
   ]);
   const applied = applyMarker(sheet, 'NEW_REVIEW', {
     message_id: 'synthetic-menu-review'

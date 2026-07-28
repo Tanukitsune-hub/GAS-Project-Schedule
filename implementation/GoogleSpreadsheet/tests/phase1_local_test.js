@@ -53,6 +53,7 @@ class FakeSheet {
       { length: rows },
       () => Array.from({ length: columns }, () => '')
     );
+    this.parent = null;
   }
 
   getRange(row, column, rowCount, columnCount) {
@@ -63,6 +64,18 @@ class FakeSheet {
     return this.maxRows;
   }
 
+  getMaxColumns() {
+    return this.maxColumns;
+  }
+
+  getName() {
+    return this.name || '';
+  }
+
+  getParent() {
+    return this.parent;
+  }
+
   insertRowsAfter(after, count) {
     assert.strictEqual(after, this.maxRows);
     for (let index = 0; index < count; index += 1) {
@@ -71,6 +84,35 @@ class FakeSheet {
     this.maxRows += count;
     this.insertedRows += count;
   }
+}
+
+class FakeSpreadsheet {
+  constructor(sheets) {
+    this.sheets = sheets.slice();
+    this.sheets.forEach((sheet) => {
+      sheet.parent = this;
+    });
+  }
+
+  getSheetByName(name) {
+    return this.sheets.find((sheet) => sheet.getName() === name) || null;
+  }
+}
+
+function makeTaskSpreadsheet(taskSheet) {
+  taskSheet.name = sandbox.WorkOsConfig.SHEETS.TASKS;
+  const ledgerSchema = sandbox.WorkOsSchemas.getSheetSchema(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+  );
+  const ledger = new FakeSheet(100, ledgerSchema.length);
+  ledger.name = sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+  ledger.getRange(1, 1, 1, ledgerSchema.length).setValues([
+    ledgerSchema.map((column) => column.id)
+  ]);
+  ledger.getRange(2, 1, 1, ledgerSchema.length).setValues([
+    ledgerSchema.map((column) => column.header)
+  ]);
+  return new FakeSpreadsheet([taskSheet, ledger]);
 }
 
 const sandbox = {
@@ -139,7 +181,7 @@ test('P1-L01_SCHEMA_DEFINITIONS', () => {
   assert.strictEqual(validation.ok, true, validation.errors.join('; '));
   assert.strictEqual(
       sandbox.WorkOsSchemas.getSheetSchema(sandbox.WorkOsConfig.SHEETS.TASKS).length,
-      47
+      50
   );
 });
 
@@ -209,6 +251,7 @@ test('P1-L07_IDEMPOTENT_UPSERT_AND_TYPED_READ', () => {
   const schema = sandbox.WorkOsSchemas.getSheetSchema(sandbox.WorkOsConfig.SHEETS.TASKS);
   const ids = schema.map((column) => column.id);
   const sheet = new FakeSheet(100, schema.length);
+  makeTaskSpreadsheet(sheet);
   sheet.getRange(1, 1, 1, schema.length).setValues([ids]);
   const context = sandbox.WorkOsTaskRepository.createContext(sheet);
   const task = {
@@ -241,6 +284,7 @@ test('P1-L08_LIMITED_EXISTING_UPDATE', () => {
   const schema = sandbox.WorkOsSchemas.getSheetSchema(sandbox.WorkOsConfig.SHEETS.TASKS);
   const ids = schema.map((column) => column.id);
   const sheet = new FakeSheet(100, schema.length);
+  makeTaskSpreadsheet(sheet);
   sheet.getRange(1, 1, 1, schema.length).setValues([ids]);
   const context = sandbox.WorkOsTaskRepository.createContext(sheet);
   const base = {
@@ -258,7 +302,13 @@ test('P1-L08_LIMITED_EXISTING_UPDATE', () => {
   }, { sheet });
   assert.deepStrictEqual(
     Array.from(update.changed_fields).sort(),
-    ['ai_confidence', 'row_version', 'updated_at'].sort()
+    [
+      'ai_confidence',
+      'authority_generation',
+      'authority_hash',
+      'row_version',
+      'updated_at'
+    ].sort()
   );
   const after = sandbox.WorkOsTaskRepository.createContext(sheet);
   const read = sandbox.WorkOsTaskRepository.findByOriginKey(after, base.origin_key);
@@ -343,7 +393,19 @@ test('P1-L14_STATIC_GUARDRAILS', () => {
     .filter((fileName) => fileName.endsWith('.gs'))
     .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
     .join('\n');
-  assert.strictEqual(/\bgetLastRow\s*\(/.test(sources), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
+  assert.strictEqual(
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
   assert.strictEqual(/\.setValue\s*\(\s*false\s*\)/i.test(sources), false);
   assert.strictEqual(/\b(?:GmailApp|CalendarApp|UrlFetchApp)\b/.test(sources), false);
   const phase6 = Number(

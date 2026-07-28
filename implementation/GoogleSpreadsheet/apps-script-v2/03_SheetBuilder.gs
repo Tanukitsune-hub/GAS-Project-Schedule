@@ -147,6 +147,14 @@ var WorkOsSheetBuilder = (function () {
     })) {
       // Safe recovery from interruption between row 1 and row 2.
       sheet.getRange(WorkOsConfig.HEADER_LABEL_ROW, 1, 1, schema.length).setValues([headers]);
+    } else if (sheetName === WorkOsConfig.SHEETS.TASKS &&
+        sheet.getMaxColumns() === schema.length) {
+      // Task headers are canonical control-plane metadata. They are restored
+      // rather than used as evidence for a silent data rebaseline.
+      sheet.getRange(WorkOsConfig.HEADER_ID_ROW, 1, 1, schema.length)
+        .setValues([ids]);
+      sheet.getRange(WorkOsConfig.HEADER_LABEL_ROW, 1, 1, schema.length)
+        .setValues([headers]);
     } else {
       throw new WorkOsAppError(
         'E_SCHEMA_CONFLICT',
@@ -217,7 +225,12 @@ var WorkOsSheetBuilder = (function () {
     var rangeProtections = sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
     var headerDescription = PROTECTION_PREFIX + sheetName + '_HEADER_IDS';
     var headerProtection = findProtectionByDescription(rangeProtections, headerDescription);
-    var headerRange = sheet.getRange(1, 1, 1, schema.length);
+    var headerRange = sheet.getRange(
+      WorkOsConfig.HEADER_ID_ROW,
+      1,
+      WorkOsConfig.HEADER_LABEL_ROW,
+      schema.length
+    );
     if (!headerProtection) {
       headerProtection = headerRange
         .protect()
@@ -339,6 +352,32 @@ var WorkOsSheetBuilder = (function () {
     });
     SpreadsheetApp.flush();
     return columnMaps;
+  }
+
+  function restoreCanonicalTaskHeaders(sheet) {
+    var target = sheet;
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    if (!target || target.getMaxColumns() !== schema.length) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_CONFLICT',
+        'TASK_HEADER_RESTORE',
+        false,
+        'Task header restore requires the canonical physical column count.'
+      );
+    }
+    target.getRange(
+      WorkOsConfig.HEADER_ID_ROW,
+      1,
+      1,
+      schema.length
+    ).setValues([WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)]);
+    target.getRange(
+      WorkOsConfig.HEADER_LABEL_ROW,
+      1,
+      1,
+      schema.length
+    ).setValues([WorkOsSchemas.getHeaders(WorkOsConfig.SHEETS.TASKS)]);
+    return { restored: true, rows: [1, 2] };
   }
 
   function buildValidationRule(planItem) {
@@ -919,6 +958,7 @@ var WorkOsSheetBuilder = (function () {
     isSheetLogicallyEmpty: isSheetLogicallyEmpty,
     ensureSheets: ensureSheets,
     applyAllSchemas: applyAllSchemas,
+    restoreCanonicalTaskHeaders: restoreCanonicalTaskHeaders,
     applyValidationsAndFormats: applyValidationsAndFormats,
     refreshValidationsAndProtections:
       refreshValidationsAndProtections,

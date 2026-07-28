@@ -658,6 +658,482 @@ var WorkOsMigrations = (function () {
     };
   }
 
+  function r4TaskAuthorityInspection(spreadsheet) {
+    var taskName = WorkOsConfig.SHEETS.TASKS;
+    var ledgerName = WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+    var taskSheet = spreadsheet.getSheetByName(taskName);
+    if (!taskSheet) {
+      return null;
+    }
+    var currentIds = WorkOsSchemas.getInternalIds(taskName);
+    var currentHeaders = WorkOsSchemas.getHeaders(taskName);
+    var width = taskSheet.getMaxColumns();
+    var ids = taskSheet.getRange(1, 1, 1, width).getValues()[0];
+    var headers = taskSheet.getRange(2, 1, 1, width).getValues()[0];
+    var legacyWidth = currentIds.length - 3;
+    // Header rows are repairable control-plane metadata.  Column count is the
+    // physical migration discriminator; row 1/2 may be exact, partially
+    // written after an interruption, or owner-edited and will be restored
+    // canonically before any Task data is inspected.
+    var isLegacy25 = width === legacyWidth;
+    var isCurrent26 = width === currentIds.length;
+    if (!isLegacy25 && !isCurrent26) {
+      return null;
+    }
+    return {
+      task_sheet: taskSheet,
+      source_version: isLegacy25 ? '2.5' : '2.6',
+      append_count: isLegacy25 ? 3 : 0,
+      ledger_present: Boolean(spreadsheet.getSheetByName(ledgerName))
+    };
+  }
+
+  function ensureR4AuthorityLedgerSheet(spreadsheet) {
+    var sheetName = WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+    var schema = WorkOsSchemas.getSheetSchema(sheetName);
+    var ids = WorkOsSchemas.getInternalIds(sheetName);
+    var headers = WorkOsSchemas.getHeaders(sheetName);
+    var sheet = spreadsheet.getSheetByName(sheetName);
+    var created = false;
+    if (!sheet) {
+      sheet = spreadsheet.insertSheet(sheetName);
+      created = true;
+    }
+    if (sheet.getMaxRows() < WorkOsConfig.DEFAULT_INITIAL_ROWS) {
+      sheet.insertRowsAfter(
+        sheet.getMaxRows(),
+        WorkOsConfig.DEFAULT_INITIAL_ROWS - sheet.getMaxRows()
+      );
+    }
+    if (sheet.getMaxColumns() < schema.length) {
+      sheet.insertColumnsAfter(
+        sheet.getMaxColumns(),
+        schema.length - sheet.getMaxColumns()
+      );
+    }
+    if (sheet.getMaxColumns() > schema.length) {
+      if (!created || typeof sheet.deleteColumns !== 'function') {
+        throw new WorkOsAppError(
+          'E_TASK_AUTHORITY_LEDGER_SCHEMA',
+          'MIGRATION_25_TO_26',
+          false,
+          'Existing Task authority ledger has an unsupported column count.'
+        );
+      }
+      sheet.deleteColumns(
+        schema.length + 1,
+        sheet.getMaxColumns() - schema.length
+      );
+    }
+    if (sheet.getMaxColumns() !== schema.length) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_SCHEMA',
+        'MIGRATION_25_TO_26',
+        false,
+        'Task authority ledger does not have the canonical column count.'
+      );
+    }
+    var existingIds = sheet.getRange(1, 1, 1, schema.length).getValues()[0];
+    var existingHeaders = sheet.getRange(2, 1, 1, schema.length).getValues()[0];
+    if (!exactRow(existingIds, ids) || !exactRow(existingHeaders, headers)) {
+      // A ledger header is control-plane metadata only; restoring it does not
+      // create authority from Task data and makes row1/row2 partial writes
+      // resumable.
+      sheet.getRange(1, 1, 1, schema.length).setValues([ids]);
+      sheet.getRange(2, 1, 1, schema.length).setValues([headers]);
+    }
+    return sheet;
+  }
+
+  function appendR4TaskAuthorityColumns(taskSheet, inspection) {
+    if (!inspection.append_count) {
+      return false;
+    }
+    var ids = WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS);
+    var headers = WorkOsSchemas.getHeaders(WorkOsConfig.SHEETS.TASKS);
+    var startColumn = taskSheet.getMaxColumns() + 1;
+    taskSheet.insertColumnsAfter(taskSheet.getMaxColumns(), inspection.append_count);
+    taskSheet.getRange(1, startColumn, 1, inspection.append_count)
+      .setValues([ids.slice(-inspection.append_count)]);
+    taskSheet.getRange(2, startColumn, 1, inspection.append_count)
+      .setValues([headers.slice(-inspection.append_count)]);
+    return true;
+  }
+
+  function r4MigrationState(properties, state) {
+    var key = WorkOsConfig.PROPERTIES.AUTHORITY_MIGRATION_STATE;
+    if (state == null) {
+      properties.deleteProperty(key);
+      return;
+    }
+    properties.setProperty(key, JSON.stringify(state));
+  }
+
+  function readR4MigrationState(properties) {
+    var raw = properties.getProperty(
+      WorkOsConfig.PROPERTIES.AUTHORITY_MIGRATION_STATE
+    );
+    if (!raw) {
+      return null;
+    }
+    try {
+      var state = JSON.parse(raw);
+      if (!state || typeof state !== 'object' ||
+          state.state !== 'PREPARED' ||
+          (state.source_version !== '2.5' && state.source_version !== '2.6')) {
+        throw new Error('invalid authority migration state');
+      }
+      return state;
+    } catch (error) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_MIGRATION_STATE',
+        'MIGRATION_25_TO_26',
+        false,
+        'Task authority migration state is invalid and cannot be resumed safely.'
+      );
+    }
+  }
+
+  function r4AuthorityNoteAt(taskSheet, physicalRow, snapshotColumn) {
+    var range = taskSheet.getRange(physicalRow, snapshotColumn, 1, 1);
+    return typeof range.getNote === 'function' ? range.getNote() : '';
+  }
+
+  function migrateR4TaskAuthority(spreadsheet, inspection, budget) {
+    var taskSheet = inspection.task_sheet;
+    var props = PropertiesService.getScriptProperties();
+    var priorState = readR4MigrationState(props);
+    var sourceVersion = priorState
+      ? priorState.source_version
+      : inspection.source_version;
+    var startedAt = priorState && priorState.started_at
+      ? priorState.started_at
+      : WorkOsUtilities.now().toISOString();
+    r4MigrationState(props, {
+      source_version: sourceVersion,
+      state: 'PREPARED',
+      started_at: startedAt,
+      next_row: Number(priorState && priorState.next_row) ||
+        WorkOsConfig.DATA_START_ROW
+    });
+    ensureR4AuthorityLedgerSheet(spreadsheet);
+    var appended = appendR4TaskAuthorityColumns(taskSheet, inspection);
+    // Header rows are control-plane metadata and are restored canonically.
+    WorkOsSheetBuilder.restoreCanonicalTaskHeaders(taskSheet);
+    // Make the new ledger and its Task control columns hidden/protected before
+    // any record conversion. A budget pause or injected fault must never
+    // strand a visible, writable authority store.
+    WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+    WorkOsSheetBuilder.applyValidationsAndFormats(spreadsheet);
+    WorkOsSheetBuilder.applyVisibility(spreadsheet);
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var ids = WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS);
+    var map = WorkOsSchemas.buildColumnMapFromIds(ids);
+    var rowCount = Math.max(
+      0,
+      taskSheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1
+    );
+    var migrated = 0;
+    var quarantined = 0;
+    var restored = 0;
+    // Reuse one ledger index per bounded migration invocation. Writes update
+    // that context in-place only after durable success, avoiding per-Task
+    // whole-ledger scans while retaining pause/resume boundaries.
+    var ledgerContext = null;
+    var observedTaskRowsById = {};
+    var resumeRow = Math.max(
+      WorkOsConfig.DATA_START_ROW,
+      Number(priorState && priorState.next_row) ||
+        WorkOsConfig.DATA_START_ROW
+    );
+    var resumeOffset = Math.min(
+      rowCount,
+      resumeRow - WorkOsConfig.DATA_START_ROW
+    );
+    // A resumed invocation can legitimately skip the main row loop. Bootstrap
+    // the shared ledger context through the validator so the later orphan
+    // reconciliation still has the independent authority store available.
+    var bootstrapRaw = rowCount ? taskSheet.getRange(
+      WorkOsConfig.DATA_START_ROW,
+      1,
+      1,
+      schema.length
+    ).getValues()[0] : new Array(schema.length).fill('');
+    var bootstrapValidation = WorkOsTaskRepository.validateAuthority(
+      bootstrapRaw,
+      {
+        sheet: taskSheet,
+        physical_row: WorkOsConfig.DATA_START_ROW,
+        schema: schema,
+        column_map: map,
+        mode: 'MIGRATION_25_TO_26'
+      }
+    );
+    ledgerContext = bootstrapValidation.ledger_context || ledgerContext;
+    if (!ledgerContext) {
+      throw new WorkOsAppError(
+        bootstrapValidation.code || 'E_TASK_AUTHORITY_LEDGER_MISSING',
+        'MIGRATION_25_TO_26',
+        false,
+        'Task Authority Ledger is unavailable for migration reconciliation.'
+      );
+    }
+    for (var offset = resumeOffset; offset < rowCount; offset +=
+        WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS) {
+      if (budget && budget.isExhausted(
+        WorkOsConfig.V2_EXTENSION_BUDGET_RESERVE_MS
+      )) {
+        r4MigrationState(props, {
+          source_version: sourceVersion,
+          state: 'PREPARED',
+          started_at: startedAt,
+          next_row: WorkOsConfig.DATA_START_ROW + offset
+        });
+        return {
+          status: 'PAUSED',
+          changed: appended || migrated > 0 || quarantined > 0 || restored > 0,
+          appended_columns: inspection.append_count,
+          updated_task_rows: migrated + restored,
+          quarantined_task_rows: quarantined,
+          remaining_from_row: WorkOsConfig.DATA_START_ROW + offset
+        };
+      }
+      var count = Math.min(
+        WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS,
+        rowCount - offset
+      );
+      var rows = taskSheet.getRange(
+        WorkOsConfig.DATA_START_ROW + offset,
+        1,
+        count,
+        schema.length
+      ).getValues();
+      rows.forEach(function (raw, rowIndex) {
+        var physicalRow = WorkOsConfig.DATA_START_ROW + offset + rowIndex;
+        var rawTaskId = String(raw[map.task_id] || '').trim();
+        var rowHasIdentity = rawTaskId || String(raw[map.origin_key] || '');
+        var validation = WorkOsTaskRepository.validateAuthority(raw, {
+          sheet: taskSheet,
+          physical_row: physicalRow,
+          schema: schema,
+          column_map: map,
+          ledger_context: ledgerContext,
+          mode: 'MIGRATION_25_TO_26'
+        });
+        ledgerContext = validation.ledger_context || ledgerContext;
+        if (!rowHasIdentity && validation.status === 'EMPTY') {
+          return;
+        }
+        /*
+         * A current-ledger record whose physical row was deleted is evidence
+         * of an orphan, not a legacy row to rebuild from its snapshot.  Leave
+         * it untouched here; the shared post-migration reconciliation below
+         * marks it ORPHANED durably.  The only blank-row exception remains a
+         * PREPARED first insert, which has its own explicit rollback path.
+         */
+        if (!rowHasIdentity && validation.record &&
+            String(validation.record.control_state || '') === 'ACTIVE' &&
+            String(validation.record.transaction_state || '') === 'IDLE') {
+          return;
+        }
+        if (validation.status === 'VALID') {
+          return;
+        }
+        if (validation.status === 'RELOCATABLE') {
+          var reboundRow = WorkOsTaskRepository.restoreAuthorityRow(
+            taskSheet,
+            physicalRow,
+            raw,
+            {
+              schema: schema,
+              column_map: map,
+              ledger_context: ledgerContext,
+              mode: 'MIGRATION_25_TO_26'
+            }
+          );
+          if (reboundRow && reboundRow.status === 'RESTORED') {
+            restored += 1;
+            return;
+          }
+          validation = reboundRow || validation;
+        }
+        if (validation.status === 'PREPARED_RECOVERABLE') {
+          var recovered = WorkOsTaskRepository.recoverPreparedAuthority(
+            taskSheet,
+            physicalRow,
+            {
+              schema: schema,
+              column_map: map,
+              raw_row: raw,
+              ledger_context: ledgerContext
+            }
+          );
+          if (recovered.status === 'VALID') {
+            restored += 1;
+            return;
+          }
+          validation = recovered;
+        }
+        if (validation.status === 'RESTORABLE') {
+          var restoredRow = WorkOsTaskRepository.restoreAuthorityRow
+            ? WorkOsTaskRepository.restoreAuthorityRow(taskSheet, physicalRow, raw, {
+              schema: schema,
+              column_map: map,
+              ledger_context: ledgerContext,
+              mode: 'MIGRATION_25_TO_26'
+            })
+            : null;
+          if (restoredRow && restoredRow.status === 'RESTORED') {
+            restored += 1;
+            return;
+          }
+          validation = restoredRow || validation;
+        }
+        if (validation.status === 'EMPTY' ||
+            validation.status === 'QUARANTINED' ||
+            validation.status === 'UNRECOVERABLE') {
+          // Schema 2.5 records can be seeded exactly once, and only when no
+          // Schema 2.6 authority record exists.  A corrupt or conflicting
+          // ledger record is evidence of an authority failure, not a reason
+          // to trust the live row, editable snapshot cell, or a stale note
+          // again.  Keep that row excluded and let the operator resolve it.
+          if (!rowHasIdentity || sourceVersion !== '2.5' ||
+              (validation.status !== 'EMPTY' &&
+               validation.code !== 'E_TASK_AUTHORITY_MISSING')) {
+            WorkOsTaskRepository.quarantineAuthorityRow(
+              taskSheet,
+              physicalRow,
+              raw,
+              validation.code || 'E_TASK_AUTHORITY_MIGRATION_INVALID',
+              {
+                schema: schema,
+                column_map: map,
+                ledger_context: ledgerContext,
+                unrecoverable: validation.status === 'UNRECOVERABLE'
+              }
+            );
+            quarantined += 1;
+            return;
+          }
+          var legacySource = raw.slice(0, -3);
+          var note = r4AuthorityNoteAt(
+            taskSheet,
+            physicalRow,
+            map.authoritative_snapshot_json + 1
+          );
+          try {
+            var candidate = WorkOsTaskRepository
+              .prepareSchema25AuthorityCandidate(legacySource, note);
+            WorkOsTaskRepository.commitAuthorityRow(
+              taskSheet,
+              physicalRow,
+              candidate,
+              {
+                schema: schema,
+                column_map: map,
+                mode: 'MIGRATION_25_TO_26',
+                ledger_context: ledgerContext,
+                allow_authority_seed: true
+              }
+            );
+            migrated += 1;
+          } catch (migrationError) {
+            WorkOsTaskRepository.quarantineAuthorityRow(
+              taskSheet,
+              physicalRow,
+              raw,
+              migrationError && migrationError.code ||
+                validation.code || 'E_TASK_AUTHORITY_MIGRATION_INVALID',
+              {
+                schema: schema,
+                column_map: map,
+                ledger_context: ledgerContext,
+                unrecoverable: validation.status === 'UNRECOVERABLE'
+              }
+            );
+            quarantined += 1;
+          }
+        }
+      });
+      r4MigrationState(props, {
+        source_version: sourceVersion,
+        state: 'PREPARED',
+        started_at: startedAt,
+        next_row: WorkOsConfig.DATA_START_ROW + offset + count
+      });
+    }
+    /*
+     * The migration loop can resume after an earlier chunk, so its in-memory
+     * observed-ID set is intentionally not trusted here. Re-read only the
+     * Task ID column in bounded chunks before the ledger-oriented pass. We do
+     * not persist live IDs in Script Properties. If the budget expires, the
+     * next invocation restarts this cheap read-only observation pass after the
+     * row migration checkpoint; it cannot misclassify all earlier rows as
+     * missing.
+     */
+    observedTaskRowsById = {};
+    for (var observationOffset = 0;
+         observationOffset < rowCount;
+         observationOffset += WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS) {
+      if (budget && budget.isExhausted(
+        WorkOsConfig.V2_EXTENSION_BUDGET_RESERVE_MS
+      )) {
+        r4MigrationState(props, {
+          source_version: sourceVersion,
+          state: 'PREPARED',
+          started_at: startedAt,
+          // Main row conversion is complete; resume skips it and rebuilds the
+          // non-persisted observation set from row 3 before reconciliation.
+          next_row: WorkOsConfig.DATA_START_ROW + rowCount
+        });
+        return {
+          status: 'PAUSED',
+          changed: appended || migrated > 0 || quarantined > 0 || restored > 0,
+          appended_columns: inspection.append_count,
+          updated_task_rows: migrated + restored,
+          quarantined_task_rows: quarantined,
+          remaining_from_row: WorkOsConfig.DATA_START_ROW,
+          reconciliation_pending: true
+        };
+      }
+      var observationCount = Math.min(
+        WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS,
+        rowCount - observationOffset
+      );
+      taskSheet.getRange(
+        WorkOsConfig.DATA_START_ROW + observationOffset,
+        map.task_id + 1,
+        observationCount,
+        1
+      ).getValues().forEach(function (taskIdRow) {
+        var observedTaskId = String(taskIdRow[0] || '').trim();
+        if (observedTaskId) {
+          observedTaskRowsById[observedTaskId] = true;
+        }
+      });
+    }
+    var reconciliation = WorkOsTaskRepository.reconcileMissingAuthorityRecords(
+      taskSheet,
+      ledgerContext,
+      observedTaskRowsById,
+      {
+        mark_orphaned: true
+      }
+    );
+    r4MigrationState(props, null);
+    return {
+      status: migrated || quarantined || restored || appended ||
+          Number(reconciliation.mutations.orphaned || 0) ? 'UPDATED' : 'CURRENT',
+      changed: Boolean(migrated || quarantined || restored || appended ||
+        Number(reconciliation.mutations.orphaned || 0)),
+      appended_columns: inspection.append_count,
+      updated_task_rows: migrated + restored,
+      quarantined_task_rows: quarantined,
+      orphaned_task_rows: Number(reconciliation.mutations.orphaned || 0),
+      migration_source: sourceVersion
+    };
+  }
+
   /**
    * Append-only recognized-v2 extensions through physical Schema v2.4.
    * It runs only when every Sheet is an
@@ -665,6 +1141,25 @@ var WorkOsMigrations = (function () {
    * untouched for Setup validation to reject.
    */
   function ensureV2ExtensionsBeforeValidation(spreadsheet, budget) {
+    var r4Inspection = r4TaskAuthorityInspection(spreadsheet);
+    if (r4Inspection) {
+      return WorkOsUtilities.withScriptLock(function () {
+        var refreshedR4Inspection = r4TaskAuthorityInspection(spreadsheet);
+        if (!refreshedR4Inspection) {
+          throw new WorkOsAppError(
+            'E_V2_EXTENSION_CONFLICT',
+            'MIGRATION_25_TO_26',
+            false,
+            'Task authority migration changed while waiting for the Script Lock.'
+          );
+        }
+        return migrateR4TaskAuthority(
+          spreadsheet,
+          refreshedR4Inspection,
+          budget
+        );
+      }, WorkOsConfig.LOCK_WAIT_MS);
+    }
     var inspection = inspectV2ExtensionCandidate(spreadsheet);
     if (!inspection.applicable) {
       return {
@@ -673,6 +1168,15 @@ var WorkOsMigrations = (function () {
         reason: inspection.reason
       };
     }
+    // Schema 2.6 deliberately supports only the strict 2.5 -> 2.6 ledger
+    // migration above.  Older snapshot-cell extension paths cannot satisfy
+    // the mandatory independent-authority rule and therefore fail closed.
+    throw new WorkOsAppError(
+      'E_TASK_AUTHORITY_LEGACY_SCHEMA_UNSUPPORTED',
+      'MIGRATION_25_TO_26',
+      false,
+      'Pre-2.5 Task schemas require an explicit audited repair package.'
+    );
     return WorkOsUtilities.withScriptLock(function () {
       var refreshed = inspectV2ExtensionCandidate(spreadsheet);
       if (!refreshed.applicable) {
