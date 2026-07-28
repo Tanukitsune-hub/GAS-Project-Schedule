@@ -1,0 +1,61 @@
+{
+  "schema": "google-workspace-independent-reaudit-results/v1",
+  "audit_date": "2026-07-29",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "fixed_audit_ref": "3442ac01f5c544c2b49a40a9af170d1f432312f1",
+  "source_a5_2": "ff658bacf1e85864e4008efa32863635e446d47d",
+  "release_b5_2": "d6dda2b3eb9307e7033dcdd5f4718260c4944451",
+  "environment": "fresh detached worktree with local fake Apps Script runtime",
+  "real_google_workspace": "NOT_EXECUTED",
+  "lineage": {
+    "release_parent_is_source": true,
+    "p5_parent_is_release": true,
+    "source_to_release_allowed_paths": 53,
+    "release_to_p5_allowed_paths": 3
+  },
+  "verification": {
+    "test_suites": 41,
+    "passed": 604,
+    "failed": 0,
+    "explicit_skipped": 11,
+    "validator_passed": 11,
+    "validator_gs_files": 22,
+    "remote_publication_consistency_passed": 8,
+    "powershell_release_tools_parsed": 4,
+    "phase8b_package_files": 27,
+    "phase8b_payload_files": 23,
+    "phase8b_payload_sha256": "2b0356b1e9c22a2e62642db036dae931d8dc8f0e6f875f6510b9520e4bbe3c71",
+    "phase8c_package_files": 25,
+    "phase8c_payload_files": 22,
+    "phase8c_payload_sha256": "22686419fe675d6582e476cd3a6d14162640312a7eddb492d87fda2bd7206db3",
+    "phase8b_byte_parity_files": 27,
+    "phase8c_byte_parity_files": 25,
+    "byte_parity_differences": 0,
+    "clasp_json_files": 0,
+    "automation_default": "OFF"
+  },
+  "findings": [
+    {
+      "id": "REAUDIT-CAL-01",
+      "severity": "High",
+      "status": "OPEN_AT_FIXED_REF",
+      "title": "Calendar authority time-of-check/time-of-use gap can leave an external event after authority loss",
+      "company_pc_transfer_impact": "BLOCKING"
+    },
+    {
+      "id": "REAUDIT-DOC-01",
+      "severity": "Medium",
+      "status": "OPEN_AT_FIXED_REF",
+      "title": "Canonical current-state documents retain pre-publication assumptions",
+      "company_pc_transfer_impact": "BLOCKING_UNTIL_REMEDIATED"
+    },
+    {
+      "id": "REAUDIT-TRANSFER-01",
+      "severity": "Medium",
+      "status": "OPEN_AT_FIXED_REF",
+      "title": "No version-correct Phase-8B-only company-PC transfer envelope",
+      "company_pc_transfer_impact": "BLOCKING_UNTIL_REMEDIATED"
+    }
+  ],
+  "fixed_ref_status": "REAUDIT_NO_GO"
+}
