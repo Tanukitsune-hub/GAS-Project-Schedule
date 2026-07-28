@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `NO-GO_REMOTE_PUBLICATION` |
+| Current gate | `READY_FOR_INDEPENDENT_REAUDIT` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -24,7 +24,7 @@ Google Workspace Personal Work OS.
 - Validation and release tooling: `implementation/GoogleSpreadsheet/tools/`
 - Source docs and visualization: `implementation/GoogleSpreadsheet/docs/` and
   `implementation/GoogleSpreadsheet/visualizations/`
-- Candidate release artifacts: `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
+- Published release artifacts: `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
   and `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
@@ -64,3 +64,17 @@ $node = '<path-to-local-node-executable>'
 The project contains no deployment command in this workflow. Do not run
 `clasp push` without explicit approval. Local PASS results do not authorize
 Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.
+
+## Remote publication verification
+
+Corrected Source A5.2 `ff658bacf1e85864e4008efa32863635e446d47d` and
+corrected Release B5.2 `d6dda2b3eb9307e7033dcdd5f4718260c4944451` were
+published by normal non-force fast-forward to
+`codex/r4-authority-protocol`. A fresh HTTPS clone verified the full local
+test suite, Apps Script validator, package parity/checksums, allow-lists,
+provenance, and secret scans. The highest status is
+`READY_FOR_INDEPENDENT_REAUDIT`; independent re-audit is still pending.
+
+See
+`audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`
+for the exact evidence and limits.
