@@ -48,7 +48,7 @@
 
 - Code/Schema/AI Schema/Migration: `2.8.5-prepilot` / `2.6` / `2.0` / `3`.
 - Automation default remains OFF; no deployment or `clasp push` is performed.
-- Final source-candidate regression/static run: 41/41 test files PASS; 603
+- Final source-candidate regression/static run: 41/41 test files PASS; 604
   PASS / 0 FAIL / 11 explicit fake-runtime skips; static validation passed
   11/11 checks over 22 `.gs` files. Package validation is recorded only after
   corrected Source A5.1 exists and packages are generated from that exact SHA.
@@ -66,6 +66,10 @@
 - Authority-excluded Calendar jobs now use the durable `CANCELLED` outbox
   state, which is accepted by the outbox reader and remains outside Calendar
   external I/O.
+- The Phase 8B and 8C builders guard the actual immutable package inputs
+  (`apps-script-v2` and release tools/templates), while deliberately excluding
+  their generated `release/` output. This permits both packages to be built
+  sequentially from one clean Source commit without allowing source drift.
 - Current source-candidate status is `NO-GO_REMOTE_PUBLICATION` until normal
   publication, remote SHA resolution, and fresh-clone verification. No Phase
   8B GO/PASS, Phase 8C GO, production-ready, or pilot-ready declaration is

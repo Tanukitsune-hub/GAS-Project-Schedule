@@ -128,7 +128,9 @@ function Assert-ExactSourceCheckout {
 
 function Assert-CleanCanonicalSourceInputs {
   $status = Invoke-GitVerification -Arguments @(
-    'status', '--porcelain', '--', 'implementation/GoogleSpreadsheet'
+    'status', '--porcelain', '--',
+    'implementation/GoogleSpreadsheet/apps-script-v2',
+    'implementation/GoogleSpreadsheet/tools'
   ) -Purpose 'the canonical source inputs'
   if (-not [string]::IsNullOrWhiteSpace($status)) {
     throw 'Canonical source inputs must be clean before package generation. Commit or remove no files; package generation stopped.'

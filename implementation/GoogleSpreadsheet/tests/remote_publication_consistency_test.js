@@ -167,6 +167,13 @@ test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () 
         name + ': source cleanliness guard');
       assert.ok(text.includes('Assert-CleanCanonicalSourceInputs'),
         name + ': source cleanliness guard invocation');
+      assert.ok(text.includes("'implementation/GoogleSpreadsheet/apps-script-v2'"),
+        name + ': Apps Script source must be guarded');
+      assert.ok(text.includes("'implementation/GoogleSpreadsheet/tools'"),
+        name + ': release tools/templates must be guarded');
+      assert.ok(!text.includes(
+        "'status', '--porcelain', '--', 'implementation/GoogleSpreadsheet'"
+      ), name + ': generated release output must not block the companion package build');
     });
 });
 
