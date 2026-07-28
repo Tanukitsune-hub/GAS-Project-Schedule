@@ -1,0 +1,77 @@
+# Calendar Outbox Authority-Loss Compensation Protocol
+
+Contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` /
+Migration `3`
+Source-candidate gate: `NO-GO_REMOTE_PUBLICATION`
+
+## Purpose and boundary
+
+The Google Sheet Task row is a business projection. The protected hidden
+`Task Authority Ledger` is the only technical authority. The Calendar Outbox
+is durable *reconciliation intent* and must never become an authority source.
+
+This protocol closes the failure window between a final authority check and a
+Calendar mutation. It does not create a new Task authority, does not restore a
+Task row, and does not permit a snapshot cell, note, or raw visible row as a
+fallback.
+
+The protocol applies only to a deterministic Work OS-owned Event ID. It never
+deletes an Event unless ownership verification succeeds. Real Google
+Workspace, Calendar, lock, trigger, OAuth, and Provider behavior remain
+`NOT_EXECUTED`.
+
+## Durable target types
+
+| Target type | Meaning | Permitted terminal transition |
+|---|---|---|
+| `DEADLINE_CALENDAR` | Ordinary reconciliation intent | normal `DONE` / retry policy |
+| `DEADLINE_CALENDAR_ARMED` | A short-lock final validator accepted the ledger authority and external I/O may have begun | normal completion, or authority compensation after an authority-loss conflict |
+| `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION` | Authority was excluded after the Outbox had been armed or external I/O may have succeeded | `CANCELLED` after confirmed owned-event reconciliation; `DEAD` on foreign/unsafe Event |
+
+`error_code` remains an error description. It is never overloaded to carry the
+armed or compensation intent. Manual retry preserves the target type.
+
+## State transition and failure matrix
+
+| Point | Durable state before the point | Required action | Recovery / rollback outcome |
+|---|---|---|---|
+| Claim selected | `PENDING` or `RETRY`, ordinary target | claim using the Outbox CAS fingerprint | stale claim cannot execute |
+| Before final revalidation | claimed job; no arm | acquire short Script Lock and read Task through the shared authority validator | invalid / orphaned / quarantined Task transitions to `CANCELLED`; **zero Calendar I/O** |
+| Arm persisted | `DEADLINE_CALENDAR_ARMED`, deterministic Event ID, current claim fingerprint | persist the arm under the same short lock before releasing it | crash before or after Calendar I/O leaves a durable recovery clue |
+| Calendar I/O succeeds, Task remains authority-valid | armed record and owned Event | commit exact task/outbox CAS acknowledgement | normal target and terminal `DONE` as appropriate |
+| Calendar I/O succeeds, authority becomes excluded before commit | armed record, deterministic Event may exist | create/update Outbox as `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION`, desired action `DELETE` | no Task patch; later worker reconciles only the owned Event and ends `CANCELLED` |
+| Crash after I/O before commit | armed record remains due after claim expiry | re-read authority and deterministic Event | excluded authority schedules or executes owned-event-only compensation; valid authority follows idempotent normal reconcile |
+| Concurrent edit makes Task ineligible while an arm exists | concurrent enqueue must retain arm and deterministic Event ID | leave current row `PENDING`; do not erase external-I/O evidence | replay reconciles the owned Event rather than losing the intent |
+| Compensation sees foreign / unowned Event | compensation target plus failed ownership test | do not delete or patch the Task | retain compensation target, record safe error, become `DEAD`; manual retry remains compensation |
+
+## Safety invariants
+
+1. The final revalidation uses the same fail-closed validator as Setup,
+   diagnostics, Migration, edit restore, Worker, Review, and normal Task
+   writes.
+2. A known authority exclusion before I/O is a direct `CANCELLED` transition;
+   the Calendar gateway is not called.
+3. External side effects are represented by `DEADLINE_CALENDAR_ARMED` before
+   the side effect, not inferred later from an error string or a Task row.
+4. Compensation is limited to the deterministic Event ID and an ownership
+   check. A foreign Event is never deleted.
+5. Compensation never writes a Calendar acknowledgement to the Task row,
+   because that row no longer has valid authority.
+6. The added final revalidation is bounded: the worker uses at most one
+   additional Task and Outbox index read beyond the pre-existing claim /
+   prepare / commit path.
+
+## Local evidence
+
+`prepilot_calendar_cas_failure_injection_test.js` contains F016 coverage for:
+
+- authority loss after prepare and before execute (no external I/O);
+- loss after final revalidation, then owned-event compensation;
+- crash after create before commit;
+- concurrent ineligibility while an armed job exists;
+- refusal to delete a foreign Event; and
+- preservation of the compensation marker across manual retry.
+
+`phase4_performance_test.js` asserts the bounded additional reads. These are
+local fake-runtime checks only, not a declaration of a real Workspace pass,
+Phase 8B PASS, Phase 8C GO, production readiness, or pilot readiness.

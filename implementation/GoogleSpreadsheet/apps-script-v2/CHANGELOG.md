@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.8.5-prepilot - 2026-07-29 corrective source candidate
+
+### Fixed
+
+- Calendar reconciliation now takes a short lock-held final read through the
+  shared Task Authority Ledger validator immediately before external Calendar
+  I/O. An authority-excluded job is durably `CANCELLED` with no Calendar call.
+- Before Calendar I/O, the Outbox records
+  `DEADLINE_CALENDAR_ARMED`, a deterministic Event ID, and the claim
+  fingerprint. The arm survives crash recovery and concurrent re-enqueue so
+  external-I/O intent cannot be inferred from an error string or erased by a
+  competing Task edit.
+- If authority is lost after the arm or I/O, the worker schedules
+  `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION`. It never patches the excluded
+  Task and deletes only a deterministic Event that passes the existing
+  ownership check. Foreign Events are retained and fail closed.
+
+### Added
+
+- F016 local fault injection for authority loss before I/O, loss after the
+  final revalidation, crash after create before commit, concurrent
+  ineligibility, foreign-event refusal, and manual-retry target preservation.
+- The Calendar authority-loss protocol design memo and visualization coverage.
+
+### Version and status
+
+- The contract remains Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0`
+  / Migration `3`; this is a corrective source revision, not a schema or
+  migration change.
+- Source-candidate gate remains `NO-GO_REMOTE_PUBLICATION` until a separately
+  generated Release commit, normal publication, fresh-clone verification, and
+  the independent re-audit evidence are complete. Real Google Workspace
+  execution remains `NOT_EXECUTED`.
+
 ## 2.8.5-prepilot - 2026-07-28
 
 ### Fixed

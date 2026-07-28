@@ -41,7 +41,7 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 | R4-28 | Schema 2.5 note-only seed | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-29 | Migration observation pause/resume | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-30 | Durable outbox/ack | `remediation_round3_test.js` | LOCAL_PENDING_FINAL |
-| R4-31 | Calendar authority exclusion | `remediation_round5_test.js` | LOCAL_PASS |
+| R4-31 | Calendar authority exclusion; armed authority-loss compensation | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
 | R4-32 | Release checksum/parity/provenance | `verify scripts` | PENDING_RELEASE |
 | R4-33 | Secret scan/fresh clone/remote SHA | `static/fresh clone` | PENDING_PUBLICATION |
 
@@ -60,7 +60,7 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 | W-09 | Migration rebind/reconcile | `validateAuthority + reconcileMissingAuthorityRecords` |
 | W-10 | PREPARED recovery | `recoverPreparedAuthority` |
 | W-11 | Worker patch | `operational authority read` |
-| W-12 | Calendar acknowledgement | `exact intent/version guard` |
+| W-12 | Calendar acknowledgement / authority-loss compensation | `final validator; durable arm; owned-event-only compensation` |
 | W-13 | quarantine/orphan | `durable isolation record` |
 
 ## Status rule

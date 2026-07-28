@@ -108,6 +108,18 @@
       </div>
     </section>
 
+    <section>
+      <h2>Calendar authority-loss boundary</h2>
+      <div class="flow" aria-label="Calendar authority-loss recovery">
+        <article class="node ledger"><h3>1. Final validator</h3><p>A short lock reads the Task only through the protected ledger immediately before Calendar I/O.</p><p class="small">Invalid authority is <code>CANCELLED</code>; zero Calendar calls.</p></article>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <article class="node warn"><h3>2. Durable arm</h3><p>Persist <code>DEADLINE_CALENDAR_ARMED</code>, deterministic Event ID, and claim fingerprint before I/O.</p><p class="small">A crash keeps recovery evidence durable.</p></article>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <article class="node danger"><h3>3. Compensation</h3><p>Authority loss after the arm becomes <code>DEADLINE_CALENDAR_AUTHORITY_COMPENSATION</code>.</p><p class="small">Delete only a verified-owned Event; never patch an excluded Task.</p></article>
+      </div>
+      <p class="callout" style="margin-top:18px">A foreign or unowned Event is never deleted. The compensation target remains durable through failure and manual retry so an error string cannot erase external-I/O intent.</p>
+    </section>
+
     <section class="columns">
       <div>
         <h2>Consumers of the same validator</h2>

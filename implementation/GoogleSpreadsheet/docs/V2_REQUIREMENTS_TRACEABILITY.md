@@ -55,7 +55,7 @@ explicit fake-runtime skips. `tools/validate_apps_script_v2.js` also passed
 | R4-28 | Schema 2.5 seed uses independent note only | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-29 | Migration pause/resume re-observes IDs safely | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-30 | Outbox intent and acknowledgement are durable | `remediation_round3_test.js` | LOCAL_PENDING_FINAL |
-| R4-31 | Calendar excludes missing / orphaned authority | `remediation_round5_test.js` | LOCAL_PASS |
+| R4-31 | Calendar excludes invalid authority before I/O; armed authority loss is owned-event-only compensation | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
 | R4-32 | Release parity/checksum/inventory/provenance | `verify_v2_8_5*.ps1` | PENDING_RELEASE |
 | R4-33 | Secret scan and fresh clone verification | `static scan / fresh clone` | PENDING_PUBLICATION |
 
@@ -74,7 +74,7 @@ explicit fake-runtime skips. `tools/validate_apps_script_v2.js` also passed
 | W-09 | Migration restore/rebind | `14_Migrations.gs` | validator plus bounded reconcile |
 | W-10 | PREPARED recovery | `08_TaskRepository.gs` | promote or rollback from durable evidence |
 | W-11 | Worker operational patch | `18_Worker.gs` | operational authority read |
-| W-12 | Calendar acknowledgement patch | `10_CalendarSync.gs` | exact-version durable intent guard |
+| W-12 | Calendar acknowledgement / authority-loss compensation | `10_CalendarSync.gs` | final validator; durable arm; owned-event-only compensation; no excluded-Task patch |
 | W-13 | Quarantine / orphan isolation | `08_TaskRepository.gs` | detached record or ORPHANED ledger state |
 
 ## External boundary

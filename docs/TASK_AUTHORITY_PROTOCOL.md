@@ -61,6 +61,10 @@ Workspace verification.
 | Row deleted | active ledger record has no observed Task ID | mark `ORPHANED`, clear physical hint, retain safe audit metadata | never recreate from snapshot |
 | Duplicate / missing / invalid authority | evidence conflicts or is absent | durable `QUARANTINED` / `UNRECOVERABLE` record | exclude Worker, Review, Calendar |
 | Historic Schema 2.6 hash | protected slot has a valid insertion-order hash | validate the ledger payload only, then use canonical hashing at the next write | no silent rebaseline or quarantine |
+| Calendar job claimed, before Calendar I/O | claimed Outbox row and Task ID only | take the short execution lock and revalidate the Task from the ledger | invalid authority becomes `CANCELLED`; no Calendar API call is allowed |
+| Calendar I/O is about to begin | atomically armed Outbox (`DEADLINE_CALENDAR_ARMED`), deterministic Event ID, and claim fingerprint | retain the arm through crashes and competing enqueue | recovery must reconcile the deterministic owned Event before completing the job |
+| Authority is lost after an armed write | durable authority-compensation target and owned deterministic Event ID | schedule `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION` | delete only a confirmed owned Event; never acknowledge a Task patch |
+| Compensation encounters a foreign Event | ownership verification fails | leave the Event untouched and retain the compensation target through `DEAD` / manual retry | fail closed; operator decides the next safe action |
 
 ## Shared validator and consumers
 
@@ -80,6 +84,18 @@ and `reconcileMissingAuthorityRecords` provide row- and ledger-oriented passes.
 - Worker, Review, and Calendar use authority-aware operational reads. An
   existing outbox record for an excluded Task is cancelled with a safe reason;
   no Calendar external operation is attempted for it.
+- Calendar performs one more short-lock authority revalidation immediately
+  before external I/O. It durably arms the Outbox before I/O and, if authority
+  is lost after the arm, schedules owned-event-only compensation instead of
+  writing a Task acknowledgement.
+
+## Calendar authority-loss compensation
+
+The Outbox is durable reconciliation intent, not authority. Its additional
+armed and compensation target types make the interval around an external
+Calendar write failure-recoverable without trusting a visible Task row. The
+full state and recovery protocol is in
+[`CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`](CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md).
 
 ## Migration rule
 
@@ -95,9 +111,11 @@ previous rows are missing.
 Round 4 and Round 5 local fault-injection tests cover two-slot failure points,
 canonical hashing, validation-before-index, multi-row isolation, move/copy/
 delete/orphan handling, bounded reads, hidden/protection contracts, Calendar
-exclusion, and migration pause/resume. They use an in-memory fake Apps Script
-environment. Real Google Workspace Sheet protection, trigger, lock, Gmail, and
-Calendar behavior remain `NOT_EXECUTED` pending independent re-audit.
+exclusion, authority loss before and after the final pre-I/O revalidation,
+armed crash recovery, foreign-event refusal, and migration pause/resume. They
+use an in-memory fake Apps Script environment. Real Google Workspace Sheet
+protection, trigger, lock, Gmail, and Calendar behavior remain `NOT_EXECUTED`
+pending independent re-audit.
 
 The status remains `NO-GO_REMOTE_PUBLICATION` until the corrected Source and
 Release pair is published through a normal non-force update and fresh-clone

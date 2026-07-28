@@ -52,6 +52,7 @@ const rootDocs = [
   'CURRENT_STATUS.md',
   'README.md',
   'docs/TASK_AUTHORITY_PROTOCOL.md',
+  'docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md',
   'docs/R4_VERIFICATION_MATRIX.md',
   'docs/visualizations/index.html',
   'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html'
@@ -85,10 +86,19 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const current = rootDocs.map(read).concat(moduleDocs.map((relative) =>
     source(relative)
   )).join('\n');
+  const gateMatch = read('CURRENT_STATUS.md').match(
+    /^Overall status:\s+`([^`]+)`/m
+  );
+  assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
+  const declaredGate = gateMatch[1];
+  assert.ok([
+    'NO-GO_REMOTE_PUBLICATION',
+    'READY_FOR_PHASE8B_SANDBOX_TRANSFER'
+  ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
     '2.8.5-prepilot',
     '2.6',
-    'NO-GO_REMOTE_PUBLICATION',
+    declaredGate,
     'Task Authority Ledger',
     'PREPARED',
     'ORPHANED'
@@ -128,6 +138,7 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   const migration = source('apps-script-v2/14_Migrations.gs');
   const setup = source('apps-script-v2/02_Setup.gs');
   const diagnostics = source('apps-script-v2/16_Diagnostics.gs');
+  const calendar = source('apps-script-v2/10_CalendarSync.gs');
   [
     'function validateAuthority',
     'function reconcileMissingAuthorityRecords',
@@ -140,6 +151,13 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   assert.ok(setup.includes('mark_orphaned: true'));
   assert.ok(diagnostics.includes('recover_relocated: false'));
   assert.ok(diagnostics.includes('mark_orphaned: false'));
+  [
+    'DEADLINE_CALENDAR_ARMED',
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION',
+    'function revalidatePreparedExecution',
+    'function executeAuthorityCompensation',
+    'E_CALENDAR_TASK_AUTHORITY_EXCLUDED'
+  ].forEach((literal) => assert.ok(calendar.includes(literal), literal));
 });
 
 test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () => {
@@ -187,12 +205,18 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
   // SOURCE_COMMIT is the authoritative source-boundary verification.
   assert.ok(!names.includes('release'), 'Source commit must not contain release/');
   assert.ok(!names.includes('AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md'));
+  assert.ok(!names.includes(
+    'AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md'
+  ));
   ['apps-script-v2', 'tests', 'tools'].forEach((name) => {
     assert.ok(!names.includes(name), 'root duplicate forbidden: ' + name);
   });
   assert.ok(!allNames.includes(
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md'
   ), 'Source commit must not contain the Round 4 release report');
+  assert.ok(!allNames.includes(
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md'
+  ), 'Source commit must not contain the Round 5 release report');
   [
     'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/',
     'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/'
@@ -210,8 +234,8 @@ test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
     'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/',
     'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/'
   ];
-  const report = 'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md';
-  assert.ok(changed.includes(report), 'Round 4 report missing from Release commit');
+  const report = 'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md';
+  assert.ok(changed.includes(report), 'Round 5 report missing from Release commit');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[0])),
     'Phase 8B package missing from Release commit');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[1])),

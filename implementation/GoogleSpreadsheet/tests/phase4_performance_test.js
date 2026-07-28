@@ -423,14 +423,14 @@ test('P4-P03_STANDALONE_USES_BOUNDED_CAS_SCANS_AND_RUNS_ONE_JOB', () => {
       read.rowCount > 1
   );
   assert.strictEqual(
-    taskFullReads.length <= 4,
+    taskFullReads.length <= 5,
     true,
-    'Task index scans exceeded the bounded claim/prepare/commit design'
+    'Task index scans exceeded the bounded claim/revalidate/commit design'
   );
   assert.strictEqual(
-    outboxFullReads.length <= 3,
+    outboxFullReads.length <= 4,
     true,
-    'Outbox index scans exceeded the bounded claim/prepare/commit design'
+    'Outbox index scans exceeded the bounded claim/revalidate/commit design'
   );
   assert.strictEqual(
     taskSheet.readLog

@@ -36,7 +36,7 @@
     <div class="arrow">→</div>
     <article class="node"><h3>5. Durable outbox intent</h3><p>Calendar intent is persisted before external Calendar I/O.</p></article>
     <div class="arrow">→</div>
-    <article class="node"><h3>6. Calendar reconcile</h3><p>CAS acknowledgement confirms exact Task authority; Calendar is derived state.</p></article>
+    <article class="node"><h3>6. Calendar reconcile</h3><p>A final short-lock validator arms durable intent before I/O; authority loss compensates only a verified-owned deterministic Event. Calendar is derived state.</p></article>
   </section>
   <section class="flow" aria-label="failure workflow">
     <article class="node excluded"><h3>Moved / sorted row</h3><p>Rebind the ledger physical hint only. Do not rewrite business data.</p></article>
@@ -52,6 +52,7 @@
       <tr><td>PREPARED write fails</td><td>Ledger re-read</td><td>No visible Task write, or deterministic rollback.</td></tr>
       <tr><td>Task row write ambiguous</td><td>Committed and prepared slots plus visible row</td><td>Promote, roll back, or isolate; never infer success.</td></tr>
       <tr><td>Migration / Setup sees missing authority</td><td>Common validator and bounded observation</td><td>Isolation, never silent rebaseline.</td></tr>
+      <tr><td>Authority is lost after Calendar arm / I/O</td><td><code>DEADLINE_CALENDAR_ARMED</code> then compensation target</td><td>Cancel before I/O, or delete only a verified-owned Event; never patch an excluded Task.</td></tr>
     </tbody>
   </table>
   <p>Real Google Workspace execution remains NOT EXECUTED. This view does not declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.</p>
