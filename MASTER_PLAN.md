@@ -3,7 +3,7 @@
 Last updated: 2026-07-29
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential Phase 8B carriage only)
+Current publication gate: `NO-GO_REMOTE_PUBLICATION` (P8 correcting transfer-checksum portability)
 
 ## Completed historic publication path
 
@@ -24,8 +24,8 @@ Current publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential
 | R5-3 | Full local validation | Complete locally and in P6 fresh clone: 41 suite files, 611 PASS / 0 FAIL / 11 explicit skips; validator 11/11 over 22 `.gs` files. |
 | R5-4 | Final Release B5.4 `3e57906...` | Complete locally. Direct child of A5.4; exactly 27 Phase 8B package files, 25 Phase 8C package files, and one Round 5 release report. Historical B5.3 remains preserved. |
 | R5-5 | Package verification | Complete locally and in P6 fresh clone. 8B/8C parity, checksums, allow-lists, provenance, secret scans, and immutable input guards PASS. |
-| R5-6 | P6 canonical documents, audit record, and 8B-only transfer envelope | Complete; deliberately outside the immutable package and limited to 8B. |
-| R5-7 | Normal remote publication and fresh-clone re-audit | Complete for P6 `12538796...`: normal fast-forward, GitHub SHA resolution, fresh clone, full tests, validator, package verification, allow-list, and secret scan PASS. P7 carries the final transfer checksum/status evidence only. |
+| R5-6 | P6 canonical documents, audit record, and 8B-only transfer envelope | P6 complete; P8 corrects `REAUDIT-TR-01` because the first operator-documentation checksum was not portable across line-ending checkout forms. |
+| R5-7 | Normal remote publication and fresh-clone re-audit | P6 complete for source/release. P7 fresh clone found transfer-safety Medium `REAUDIT-TR-01`; P8/P9 canonical-text checksum proof is required before transfer status can be asserted. |
 
 ## Authority recovery objectives
 
@@ -61,6 +61,8 @@ rewritten.
 
 ## Gate discipline
 
-R5-7 passed for the final source/release pair. The maximum status is
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER` only. It never means Phase 8B GO/PASS,
+Source/release R5-7 passed, but `REAUDIT-TR-01` blocks transfer readiness.
+The current gate is `NO-GO_REMOTE_PUBLICATION` until canonical-text checksum
+proof is normal-pushed and fresh-clone verified. A later maximum status is
+`READY_FOR_PHASE8B_SANDBOX_TRANSFER` only; it never means Phase 8B GO/PASS,
 Phase 8C GO, production ready, or pilot ready.

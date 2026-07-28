@@ -2,19 +2,19 @@
 
 Last updated: 2026-07-29
 Candidate version: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Overall status: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
+Overall status: `NO-GO_REMOTE_PUBLICATION`
 Automation default: `OFF`  
 Real Google Workspace execution: `NOT_EXECUTED`
 
-## Why this gate is transfer-only READY
+## Why this gate returned to NO-GO
 
-The fixed P5 target `3442ac01f5c544c2b49a40a9af170d1f432312f1` was validly
-published as `READY_FOR_INDEPENDENT_REAUDIT`, then independently found to have
-a High Calendar authority-loss race. The final R5 A5.4/B5.4 correction was
-normal-pushed, resolved from GitHub, and rerun from a new P6 fresh clone with
-all required local/static/package checks passing. This gate permits only the
-non-confidential Phase 8B package to be carried through a company-approved
-route.
+The final R5 A5.4/B5.4 correction remains normally published and verified in a
+fresh P6 clone. A separate fresh clone of P7 found that the first
+`TRANSFER_CHECKSUMS.sha256` implementation used checkout-byte hashes and could
+fail after line-ending normalization. This is `REAUDIT-TR-01`, a
+company-PC-transfer-safety Medium finding. The historical P7 record is
+preserved; P8 corrects the checksum protocol before transfer status can be
+asserted again.
 
 ## Provenance state
 
@@ -30,7 +30,8 @@ route.
 | Final R5 Source A5.4 | `6c4f737c676b3121c42aafabe9d0c677cacd69bb` | final source-only additive correction; no release payload or release report |
 | Final R5 Release B5.4 | `3e5790672740626f3bec4592c3c7c0b86b47f3b1` | direct child of A5.4; exactly 27 Phase 8B files, 25 Phase 8C files, and one Round 5 report |
 | P6 remote publication evidence | `12538796fed90eb7f95492d477cca44a5d859291` | normal fast-forward pushed to `codex/r5-independent-reaudit-transfer-prep`; GitHub SHA resolution and fresh-clone validation PASS |
-| P7 transfer-readiness evidence | `SELF (this status/checksum evidence commit)` | documentation-only completion; re-resolve and fresh-clone verify after normal push |
+| Historical P7 transfer-readiness evidence | `45bb4b938b02f2fd56d5d57267f4083a46f5176b` | normal-pushed; its fresh clone detected `REAUDIT-TR-01` raw-byte checksum portability mismatch; not a transfer authorization |
+| P8 checksum-portability correction | `SELF (this corrective evidence commit)` | canonical-text checksum and fresh-clone verification required before any READY status |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.
@@ -40,6 +41,8 @@ The separate final-corrective local re-audit and transfer-readiness record is
 `audits/2026-07-29/GoogleWorkspace_v2_8_5_R5_Corrective_Independent_Reaudit_and_Transfer_Readiness_2026-07-29.md`.
 The remote-publication and transfer-readiness verification is recorded at
 `audits/2026-07-29/GoogleWorkspace_v2_8_5_R5_Remote_Publication_and_Transfer_Readiness_Verification_2026-07-29.md`.
+The checksum-portability finding and P8 corrective record is
+`audits/2026-07-29/GoogleWorkspace_v2_8_5_R5_Transfer_Checksum_Portability_Correction_2026-07-29.md`.
 
 ## R5 corrective implementation state
 
@@ -52,15 +55,16 @@ The remote-publication and transfer-readiness verification is recorded at
 | F016 fault injection | 12 PASS / 0 FAIL, including pre-I/O exclusion, post-I/O compensation, crash recovery, concurrent ineligibility, foreign Event refusal, manual retry-marker preservation, and forced re-enqueue preservation. |
 | Static validation | `tools/validate_apps_script_v2.js`: 11/11 PASS; 22 `.gs` files. |
 | R5 release packages | 8B: 27 files / 23 payload; 8C: 25 files / 22 payload; checksum, parity, allow-list, provenance, and secret scans PASS from the P6 fresh clone. |
-| Company-PC transfer materials | P6 remote/fresh-clone proof completed. The P7 envelope adds its own checksum and remains limited to the non-confidential Phase 8B package. |
+| Company-PC transfer materials | P6 remote/fresh-clone proof remains PASS, but P7 checksum portability is `REAUDIT_NO_GO` until P8/P9 canonical-text verification completes. |
 
 ## Gate
 
 P6 established normal non-force publication, GitHub remote SHA resolution of
 A5.4/B5.4/integration, and a fresh-clone rerun of the full tests, validator,
-package parity/checksum/allow-list/provenance, and secret scan. P7 adds only
-transfer documentation and its checksum, then receives the same remote/fresh-
-clone confirmation.
+package parity/checksum/allow-list/provenance, and secret scan. P8 must replace
+the raw-byte transfer checksum with a newline-normalized canonical-text
+protocol and receive a new remote/fresh-clone verification. Until then no
+transfer is authorized.
 
 That status means only that the non-confidential Phase 8B package may be
 carried through a company-approved transfer route. It does **not** mean Phase

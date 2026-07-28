@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential 8B carriage only) |
+| Current gate | `NO-GO_REMOTE_PUBLICATION` (P8 correcting transfer-checksum portability) |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -82,15 +82,17 @@ history; the final additive correction is Source A5.4
 `6c4f737c676b3121c42aafabe9d0c677cacd69bb` and direct-child Release B5.4
 `3e5790672740626f3bec4592c3c7c0b86b47f3b1`. P6
 `12538796fed90eb7f95492d477cca44a5d859291` was normal-pushed to the target
-branch, resolved from GitHub, and verified in a fresh clone. The transfer-only
-status is documented by the final R5 remote-publication/transfer-readiness
-report under `audits/2026-07-29/`.
+branch, resolved from GitHub, and verified in a fresh clone. Historical P7
+transfer evidence then exposed a newline portability flaw in its operator
+checksum. P8 preserves that record and corrects it before any transfer-only
+status can be asserted again.
 
 ## Company-PC transfer boundary
 
 Do not copy this repository, the entire `release/` tree, or the Phase 8C
-candidate to a company PC. The completed R5 remote proof permits copying the
-exact Phase 8B package only through a company-approved route using
+candidate to a company PC. Do not copy the package until the P8
+checksum-portability correction has its own remote/fresh-clone proof. Then
+copy the exact Phase 8B package only through a company-approved route using
 `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/` as the
 allow-list, Japanese procedure, stop/rollback checklist, synthetic-data
 specification, and result-record source.

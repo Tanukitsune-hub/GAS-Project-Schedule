@@ -1,6 +1,6 @@
 # Phase 8B Company-PC Transfer Manifest
 
-状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
+状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
 
 ## Identity
 
@@ -13,7 +13,8 @@
 | Final R5 Source A5.4 | `6c4f737c676b3121c42aafabe9d0c677cacd69bb` |
 | Final R5 Release B5.4 | `3e5790672740626f3bec4592c3c7c0b86b47f3b1` |
 | P6 remote publication evidence | `12538796fed90eb7f95492d477cca44a5d859291` |
-| P7 transfer-readiness evidence | `SELF (this status/checksum evidence commit)` |
+| Historical P7 transfer-readiness evidence | `45bb4b938b02f2fd56d5d57267f4083a46f5176b` — raw-byte document checksum not portable across checkout line endings |
+| P8 portability correction | `SELF (this canonical-text correction commit)` |
 | Automation | `OFF` |
 | Package test mode | `true` |
 | Harness | included |
@@ -43,9 +44,11 @@ Verify the seven operator-documentation files against
 separately as operator documentation; it is not a package payload and must not
 be added inside the package directory.
 
-The transfer-documentation checksum is generated in this final status record.
-It covers the seven operator files, excludes itself, and never changes the
-immutable package payload.
+The historical P7 checksum is not valid for transfer use. P8 replaces the
+protocol with canonical UTF-8 text hashing after `CRLF`/`CR` to `LF`
+normalization, verified by `tools/verify_phase8b_transfer_envelope.ps1`. The
+seven operator files remain separate from, and never alter, the immutable
+package payload.
 
 ## Explicit exclusions
 
@@ -59,9 +62,10 @@ immutable package payload.
 
 ## Effective-use condition
 
-This manifest is usable only because the final R5 audit report records
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER` after P6 remote SHA resolution and fresh-
-clone verification. That status means carriage of the
+This manifest is not usable while its state is
+`PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`. A later canonical-text fresh-
+clone proof is required before it can record
+`READY_FOR_PHASE8B_SANDBOX_TRANSFER`. That future status means carriage of the
 non-confidential 8B package through a company-approved route only. It does not
 approve a Sandbox PASS, Phase 8C, production, pilot, OAuth, deployment,
 `clasp push`, Automation, triggers, or real Workspace work.

@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only; all real Workspace behavior remains `NOT_EXECUTED` |
+| Current gate | `NO-GO_REMOTE_PUBLICATION` while `REAUDIT-TR-01` corrects transfer-checksum portability; all real Workspace behavior remains `NOT_EXECUTED` |
 
 ## Selected design
 

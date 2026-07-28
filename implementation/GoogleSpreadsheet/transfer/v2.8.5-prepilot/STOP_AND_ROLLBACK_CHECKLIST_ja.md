@@ -1,6 +1,6 @@
 # Stop / Rollback チェックリスト
 
-状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
+状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
 
 ## 即時 STOP 条件
 

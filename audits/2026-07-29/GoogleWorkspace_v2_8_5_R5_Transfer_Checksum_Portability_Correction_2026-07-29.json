@@ -1,0 +1,33 @@
+{
+  "record_type": "R5_transfer_checksum_portability_correction",
+  "date": "2026-07-29",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "governing_instruction": "instructions/GoogleWorkspace_v2_8_5_Independent_Reaudit_and_Company_PC_Transfer_Preparation_2026-07-29.md",
+  "historical_p7": "45bb4b938b02f2fd56d5d57267f4083a46f5176b",
+  "correction_commit": "SELF",
+  "finding": {
+    "id": "REAUDIT-TR-01",
+    "severity": "Medium",
+    "transfer_safety_impact": true,
+    "p8_conclusion": "REAUDIT_NO_GO",
+    "summary": "Raw checkout-byte hashes of transfer documentation were not portable across line-ending forms."
+  },
+  "unaffected": {
+    "source_release_lineage": "PASS",
+    "phase8b_package": "UNCHANGED",
+    "phase8c_package": "UNCHANGED",
+    "automation": "OFF",
+    "real_google_workspace": "NOT_EXECUTED"
+  },
+  "correction": {
+    "algorithm": "SHA-256 over UTF-8 text after CRLF/CR to LF normalization",
+    "inventory": "exact seven non-self transfer files",
+    "verifier": "implementation/GoogleSpreadsheet/tools/verify_phase8b_transfer_envelope.ps1"
+  },
+  "required_next_proof": [
+    "normal push of P8",
+    "P8 fresh-clone verification",
+    "canonical checksum generation in P9",
+    "normal push and fresh-clone verification of final P9 HEAD"
+  ]
+}
