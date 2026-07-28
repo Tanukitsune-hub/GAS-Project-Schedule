@@ -40,12 +40,16 @@ implementation without using a legacy external context.
   `DEADLINE_CALENDAR_ARMED`; authority loss after that arm becomes
   `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION`, which may delete only the
   deterministic, verified-owned Event and never writes a Task acknowledgement.
+  A later Task enqueue cannot replace due compensation with normal
+  `NOOP` / `DONE`; compensation uses only its Outbox CAS because it has no
+  Task patch.
 
 The canonical state/failure matrix is
 `../../docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`. The F016 local
 fault-injection cases cover pre-I/O exclusion, post-I/O compensation, crash
 recovery, concurrent ineligibility, foreign-event refusal, and retry marker
-preservation.
+preservation, including preservation across an authority-valid ineligible
+forced re-enqueue.
 
 Local fake-runtime tests are evidence only. Real Google Workspace behavior is
 `NOT_EXECUTED`; this document does not declare Phase 8B GO/PASS, Phase 8C GO,

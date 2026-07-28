@@ -154,6 +154,7 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   [
     'DEADLINE_CALENDAR_ARMED',
     'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION',
+    'function isAuthorityCompensationRecord',
     'function revalidatePreparedExecution',
     'function executeAuthorityCompensation',
     'E_CALENDAR_TASK_AUTHORITY_EXCLUDED'

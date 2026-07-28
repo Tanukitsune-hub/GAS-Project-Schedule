@@ -43,6 +43,7 @@ armed or compensation intent. Manual retry preserves the target type.
 | Crash after I/O before commit | armed record remains due after claim expiry | re-read authority and deterministic Event | excluded authority schedules or executes owned-event-only compensation; valid authority follows idempotent normal reconcile |
 | Concurrent edit makes Task ineligible while an arm exists | concurrent enqueue must retain arm and deterministic Event ID | leave current row `PENDING`; do not erase external-I/O evidence | replay reconciles the owned Event rather than losing the intent |
 | Compensation sees foreign / unowned Event | compensation target plus failed ownership test | do not delete or patch the Task | retain compensation target, record safe error, become `DEAD`; manual retry remains compensation |
+| Later Task edit / forced re-enqueue while compensation is due | existing compensation target and deterministic Event ID | do not replace it with normal `NOOP` / `DONE`, even if the Task is again authority-valid | the owned-event-only cleanup remains due until it safely cancels or fails closed |
 
 ## Safety invariants
 
@@ -57,7 +58,11 @@ armed or compensation intent. Manual retry preserves the target type.
    check. A foreign Event is never deleted.
 5. Compensation never writes a Calendar acknowledgement to the Task row,
    because that row no longer has valid authority.
-6. The added final revalidation is bounded: the worker uses at most one
+6. Compensation has priority over later Task enqueue. A reappeared or changed
+   Task cannot invalidate its Outbox CAS because compensation has no Task
+   patch; normal reconciliation may run only after the owned cleanup reaches a
+   terminal safe result.
+7. The added final revalidation is bounded: the worker uses at most one
    additional Task and Outbox index read beyond the pre-existing claim /
    prepare / commit path.
 
@@ -70,7 +75,8 @@ armed or compensation intent. Manual retry preserves the target type.
 - crash after create before commit;
 - concurrent ineligibility while an armed job exists;
 - refusal to delete a foreign Event; and
-- preservation of the compensation marker across manual retry.
+- preservation of the compensation marker across manual retry; and
+- preservation across a later authority-valid, ineligible forced re-enqueue.
 
 `phase4_performance_test.js` asserts the bounded additional reads. These are
 local fake-runtime checks only, not a declaration of a real Workspace pass,

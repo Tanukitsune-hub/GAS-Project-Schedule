@@ -1499,6 +1499,19 @@ var WorkOsCalendarSync = (function () {
     if (existingRow) {
       var existing = readOutboxRow(context, existingRow);
       /*
+       * Authority compensation is a higher-priority owned-event cleanup
+       * intent. A later Task edit, including force_enqueue, must not turn it
+       * into normal NOOP/DONE work or clear its deterministic Event ID. Only
+       * the compensation worker may consume it after ownership verification.
+       */
+      if (isAuthorityCompensationRecord(existing)) {
+        return {
+          operation: 'NOOP',
+          desired_action: existing.desired_action,
+          status: existing.status
+        };
+      }
+      /*
        * A concurrent Task edit may update normal outbox fields, but an armed
        * row retains its separate target_type marker until the pending external
        * effect has been reconciled.  Do not use error_code as that marker.
@@ -1945,11 +1958,13 @@ var WorkOsCalendarSync = (function () {
           selected.record.task_id,
           lock
         );
-        var authorityCompensation = false;
+        var authorityCompensation = isAuthorityCompensationRecord(
+          selected.record
+        );
         if (!isCommittedAuthorityTask(task)) {
           authorityExcludedCount += 1;
-          if (isAuthorityCompensationRecord(selected.record)) {
-            authorityCompensation = true;
+          if (authorityCompensation) {
+            /* Retain the pre-existing owned-event-only cleanup intent. */
           } else if (isExternalIoArmedRecord(selected.record)) {
             var scheduled = scheduleAuthorityExcludedCompensation(
               context,
@@ -2331,8 +2346,7 @@ var WorkOsCalendarSync = (function () {
         lock
       );
       if (prepared.authority_compensation === true) {
-        if (isCommittedAuthorityTask(task) ||
-            !isAuthorityCompensationRecord(record)) {
+        if (!isAuthorityCompensationRecord(record)) {
           return { status: 'SKIPPED_STALE' };
         }
         return {
@@ -2670,13 +2684,21 @@ var WorkOsCalendarSync = (function () {
       var currentTaskVersion = Number(
         currentTask && currentTask.row_version || 0
       );
-      var snapshotsMatch = currentRecord &&
+      var outboxSnapshotMatches = currentRecord &&
         String(currentRecord.task_id || '') === prepared.task_id &&
         outboxFingerprint(currentRecord) ===
-          String(prepared.outbox_fingerprint || '') &&
-        taskFingerprint(currentTask) ===
-          String(prepared.task_fingerprint || '') &&
-        currentTaskVersion === Number(prepared.task_row_version || 0);
+          String(prepared.outbox_fingerprint || '');
+      /*
+       * Compensation is a bounded, owned-event-only cleanup operation and
+       * deliberately has no Task patch. A Task that reappears or changes
+       * after authority loss cannot invalidate the durable cleanup claim.
+       */
+      var snapshotsMatch = outboxSnapshotMatches &&
+        (prepared.authority_compensation === true
+          ? isAuthorityCompensationRecord(currentRecord)
+          : (taskFingerprint(currentTask) ===
+              String(prepared.task_fingerprint || '') &&
+             currentTaskVersion === Number(prepared.task_row_version || 0)));
       if (!snapshotsMatch) {
         var recoveryWriter = taskWriterForHeldLock(
           settings,

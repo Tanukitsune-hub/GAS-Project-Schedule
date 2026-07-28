@@ -10,9 +10,10 @@ Current gate: `NO-GO_REMOTE_PUBLICATION`
 real Google Workspace execution. `PENDING_*` items are intentionally not
 upgraded until the final source/release/publication stages complete.
 
-Latest pre-Source local run: 41/41 test files PASS; 603 PASS / 0 FAIL / 11
-explicit fake-runtime skips. `tools/validate_apps_script_v2.js` also passed
-11/11 checks over 22 `.gs` files. These facts do not alter the current gate.
+Latest R5 follow-up local run: 41/41 test files PASS; 611 PASS / 0 FAIL / 11
+explicit real-Workspace/fake-runtime skips. `tools/validate_apps_script_v2.js`
+also passed 11/11 checks over 22 `.gs` files. These facts do not alter the
+current gate.
 
 ## Historical provenance labels retained for traceability
 
@@ -55,7 +56,7 @@ explicit fake-runtime skips. `tools/validate_apps_script_v2.js` also passed
 | R4-28 | Schema 2.5 seed uses independent note only | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-29 | Migration pause/resume re-observes IDs safely | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-30 | Outbox intent and acknowledgement are durable | `remediation_round3_test.js` | LOCAL_PENDING_FINAL |
-| R4-31 | Calendar excludes invalid authority before I/O; armed authority loss is owned-event-only compensation | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
+| R4-31 | Calendar excludes invalid authority before I/O; armed authority loss is owned-event-only compensation that survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
 | R4-32 | Release parity/checksum/inventory/provenance | `verify_v2_8_5*.ps1` | PENDING_RELEASE |
 | R4-33 | Secret scan and fresh clone verification | `static scan / fresh clone` | PENDING_PUBLICATION |
 

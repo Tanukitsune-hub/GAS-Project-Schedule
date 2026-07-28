@@ -271,6 +271,36 @@ function excludeTaskAndEnqueueCurrentState(scenario) {
   );
 }
 
+function markOutboxAsAuthorityCompensation(scenario) {
+  sandbox.WorkOsCalendarSync.withLockedOutboxContext(
+    scenario.syncSheet,
+    (context) => {
+      const row = context.byTaskId[scenario.task.task_id];
+      const record = sandbox.WorkOsCalendarSync.readOutboxRow(context, row);
+      record.target_type = 'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION';
+      record.desired_action = 'DELETE';
+      record.event_id = sandbox.WorkOsCalendarSync.deterministicEventId(
+        scenario.task.task_id
+      );
+      record.status = 'PENDING';
+      record.retry_count = 0;
+      record.next_retry_at = '';
+      record.last_attempt_at = '';
+      record.error_code = 'E_CALENDAR_TASK_AUTHORITY_COMPENSATION';
+      record.updated_at = scenario.clock.now();
+      const output = sandbox.WorkOsCalendarSync.OUTBOX_IDS.map((id) => (
+        record[id] == null ? '' : record[id]
+      ));
+      context.sheet.getRange(
+        row,
+        1,
+        1,
+        sandbox.WorkOsCalendarSync.OUTBOX_IDS.length
+      ).setValues([output]);
+    }
+  );
+}
+
 function includeTaskAndEnqueueCurrentState(scenario) {
   const map = sandbox.WorkOsSchemas.buildColumnMapFromIds(
     sandbox.WorkOsSchemas.getInternalIds(
@@ -763,6 +793,70 @@ test('F016_MANUAL_RETRY_PRESERVES_COMPENSATION_TARGET', () => {
     'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
   );
   assert.strictEqual(retried.error_code, '');
+});
+
+test('F016_COMPENSATION_SURVIVES_VALID_INELIGIBLE_REENQUEUE', () => {
+  const scenario = makeScenario('calendar-compensation-reenqueue');
+  const initial = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(initial.result.status, 'DONE');
+  assert.strictEqual(initial.result.action, 'CREATE');
+  assert.strictEqual(scenario.gateway.events.size, 1);
+
+  /*
+   * Simulate the durable result of a post-I/O authority-loss conflict, then
+   * let a later authority-valid ineligible Task attempt a forced re-enqueue.
+   * The re-enqueue must not erase the only owned-event cleanup intent.
+   */
+  excludeTaskAndEnqueueCurrentState(scenario);
+  markOutboxAsAuthorityCompensation(scenario);
+  const before = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(
+    before.target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+  assert.strictEqual(before.desired_action, 'DELETE');
+  assert.strictEqual(before.status, 'PENDING');
+  assert.strictEqual(
+    before.event_id,
+    sandbox.WorkOsCalendarSync.deterministicEventId(scenario.task.task_id)
+  );
+
+  const current = sandbox.WorkOsTaskRepository.findByTaskId(
+    sandbox.WorkOsTaskRepository.createContext(scenario.taskSheet),
+    scenario.task.task_id
+  );
+  assert.strictEqual(current.authority_state, 'COMMITTED');
+  assert.strictEqual(current.excluded, true);
+  sandbox.WorkOsCalendarSync.enqueueTask(current, {
+    sheet: scenario.syncSheet,
+    now: new Date(scenario.clock.now().getTime() + 2000),
+    timezone: sandbox.WorkOsConfig.TIMEZONE,
+    force_enqueue: true
+  });
+  const preserved = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(
+    preserved.target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+  assert.strictEqual(preserved.desired_action, 'DELETE');
+  assert.strictEqual(preserved.status, 'PENDING');
+  assert.strictEqual(
+    preserved.event_id,
+    sandbox.WorkOsCalendarSync.deterministicEventId(scenario.task.task_id)
+  );
+
+  const taskWritesBeforeCompensation = scenario.taskWrites.length;
+  const replay = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(replay.processed_count, 1);
+  assert.strictEqual(replay.result.status, 'CANCELLED');
+  assert.strictEqual(replay.result.action, 'DELETE');
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 1);
+  assert.strictEqual(scenario.gateway.events.size, 0);
+  assert.strictEqual(
+    scenario.taskWrites.length,
+    taskWritesBeforeCompensation,
+    'authority compensation must not patch a reappeared Task'
+  );
 });
 
 const summary = {

@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.8.5-prepilot - 2026-07-29 R5 follow-up source correction
+
+### Fixed
+
+- An outstanding `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION` record can no
+  longer be erased by a later Task edit or `force_enqueue`. The compensation
+  target, deterministic Event ID, and due state remain durable until the
+  owned-event-only cleanup reaches a safe terminal result.
+- Compensation is claimed and revalidated as compensation even if a Task later
+  becomes authority-valid. Its commit CAS intentionally covers the Outbox but
+  not a changing Task, because the cleanup never writes a Task patch.
+
+### Added
+
+- F016 regression for an authority-valid, ineligible forced re-enqueue while
+  an owned Event compensation is pending. It proves that the record is not
+  rewritten to normal `NOOP` / `DONE`, the Event is deleted exactly once, and
+  the reappeared Task is not patched by compensation.
+
+### Version and status
+
+- The contract remains Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0`
+  / Migration `3`. This is a durability correction requiring a new source and
+  release provenance pair; it does not change the schema or Migration.
+
 ## 2.8.5-prepilot - 2026-07-29 corrective source candidate
 
 ### Fixed

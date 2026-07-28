@@ -65,6 +65,7 @@ Workspace verification.
 | Calendar I/O is about to begin | atomically armed Outbox (`DEADLINE_CALENDAR_ARMED`), deterministic Event ID, and claim fingerprint | retain the arm through crashes and competing enqueue | recovery must reconcile the deterministic owned Event before completing the job |
 | Authority is lost after an armed write | durable authority-compensation target and owned deterministic Event ID | schedule `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION` | delete only a confirmed owned Event; never acknowledge a Task patch |
 | Compensation encounters a foreign Event | ownership verification fails | leave the Event untouched and retain the compensation target through `DEAD` / manual retry | fail closed; operator decides the next safe action |
+| Later Task enqueue sees compensation | compensation target has not reached a safe terminal result | preserve the target, deterministic ID, and due state | no `NOOP` / `DONE` overwrite can strand an owned Event |
 
 ## Shared validator and consumers
 
@@ -87,7 +88,9 @@ and `reconcileMissingAuthorityRecords` provide row- and ledger-oriented passes.
 - Calendar performs one more short-lock authority revalidation immediately
   before external I/O. It durably arms the Outbox before I/O and, if authority
   is lost after the arm, schedules owned-event-only compensation instead of
-  writing a Task acknowledgement.
+  writing a Task acknowledgement. A later Task enqueue cannot overwrite an
+  outstanding compensation record; its Outbox CAS is sufficient because the
+  cleanup intentionally has no Task patch.
 
 ## Calendar authority-loss compensation
 
