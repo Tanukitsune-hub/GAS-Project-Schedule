@@ -1,6 +1,6 @@
 # Phase 8B Company-PC Transfer Manifest
 
-状態: `PENDING_R5_REMOTE_VERIFICATION`
+状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
 
 ## Identity
 
@@ -12,7 +12,8 @@
 | Fixed independent-audit ref | `3442ac01f5c544c2b49a40a9af170d1f432312f1` |
 | Final R5 Source A5.4 | `6c4f737c676b3121c42aafabe9d0c677cacd69bb` |
 | Final R5 Release B5.4 | `3e5790672740626f3bec4592c3c7c0b86b47f3b1` |
-| P6/P7 audit evidence | `SELF (final commit containing the transfer/audit record)` |
+| P6 remote publication evidence | `12538796fed90eb7f95492d477cca44a5d859291` |
+| P7 transfer-readiness evidence | `SELF (this status/checksum evidence commit)` |
 | Automation | `OFF` |
 | Package test mode | `true` |
 | Harness | included |
@@ -42,9 +43,9 @@ Verify the seven operator-documentation files against
 separately as operator documentation; it is not a package payload and must not
 be added inside the package directory.
 
-While this manifest remains `PENDING_R5_REMOTE_VERIFICATION`, the transfer
-checksum is intentionally not final and no transfer is authorized. It is
-generated only after the final post-push fresh-clone evidence is recorded.
+The transfer-documentation checksum is generated in this final status record.
+It covers the seven operator files, excludes itself, and never changes the
+immutable package payload.
 
 ## Explicit exclusions
 
@@ -58,8 +59,9 @@ generated only after the final post-push fresh-clone evidence is recorded.
 
 ## Effective-use condition
 
-This manifest becomes usable only when the final R5 audit report records
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER`. That status means carriage of the
+This manifest is usable only because the final R5 audit report records
+`READY_FOR_PHASE8B_SANDBOX_TRANSFER` after P6 remote SHA resolution and fresh-
+clone verification. That status means carriage of the
 non-confidential 8B package through a company-approved route only. It does not
 approve a Sandbox PASS, Phase 8C, production, pilot, OAuth, deployment,
 `clasp push`, Automation, triggers, or real Workspace work.

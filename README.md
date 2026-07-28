@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `NO-GO_REMOTE_PUBLICATION` (R5 corrective integration awaiting remote proof) |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential 8B carriage only) |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -25,7 +25,7 @@ Google Workspace Personal Work OS.
 - Validation and release tooling: `implementation/GoogleSpreadsheet/tools/`
 - Source docs and visualization: `implementation/GoogleSpreadsheet/docs/` and
   `implementation/GoogleSpreadsheet/visualizations/`
-- R5 release artifacts pending final publication proof:
+- R5 immutable release artifacts:
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
   and `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
 
@@ -80,15 +80,17 @@ The independent fixed-ref review found two High Calendar authority-loss
 findings. The initial unpublished A5.3/B5.3 candidate pair is retained as
 history; the final additive correction is Source A5.4
 `6c4f737c676b3121c42aafabe9d0c677cacd69bb` and direct-child Release B5.4
-`3e5790672740626f3bec4592c3c7c0b86b47f3b1`. Until this final R5 integration
-is normal-pushed, resolved remotely, and verified from a fresh clone, its gate
-remains `NO-GO_REMOTE_PUBLICATION`.
+`3e5790672740626f3bec4592c3c7c0b86b47f3b1`. P6
+`12538796fed90eb7f95492d477cca44a5d859291` was normal-pushed to the target
+branch, resolved from GitHub, and verified in a fresh clone. The transfer-only
+status is documented by the final R5 remote-publication/transfer-readiness
+report under `audits/2026-07-29/`.
 
 ## Company-PC transfer boundary
 
 Do not copy this repository, the entire `release/` tree, or the Phase 8C
-candidate to a company PC. After the R5 remote proof only, copy the exact
-Phase 8B package through a company-approved route using
+candidate to a company PC. The completed R5 remote proof permits copying the
+exact Phase 8B package only through a company-approved route using
 `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/` as the
 allow-list, Japanese procedure, stop/rollback checklist, synthetic-data
 specification, and result-record source.

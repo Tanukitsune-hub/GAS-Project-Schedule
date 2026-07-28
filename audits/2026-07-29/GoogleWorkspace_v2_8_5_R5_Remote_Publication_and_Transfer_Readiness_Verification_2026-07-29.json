@@ -1,0 +1,60 @@
+{
+  "record_type": "R5_remote_publication_and_transfer_readiness_verification",
+  "date": "2026-07-29",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "governing_instruction": "instructions/GoogleWorkspace_v2_8_5_Independent_Reaudit_and_Company_PC_Transfer_Preparation_2026-07-29.md",
+  "fixed_audit_target": "3442ac01f5c544c2b49a40a9af170d1f432312f1",
+  "source_a5_4": "6c4f737c676b3121c42aafabe9d0c677cacd69bb",
+  "release_b5_4": "3e5790672740626f3bec4592c3c7c0b86b47f3b1",
+  "p6_remote_evidence": "12538796fed90eb7f95492d477cca44a5d859291",
+  "p7_status_checksum_evidence": "SELF",
+  "target_branch": "codex/r5-independent-reaudit-transfer-prep",
+  "remote_publication": {
+    "normal_fast_forward_push": "PASS",
+    "remote_sha_resolution": "PASS",
+    "a5_4_b5_4_direct_parent": "PASS",
+    "a5_4_b5_4_ancestors_of_p6": "PASS",
+    "release_boundary_paths": 53
+  },
+  "fresh_clone": {
+    "clean": true,
+    "head": "12538796fed90eb7f95492d477cca44a5d859291",
+    "suite_files": 41,
+    "passed": 611,
+    "failed": 0,
+    "explicit_skips": 11,
+    "validator_passed": 11,
+    "validator_failed": 0,
+    "gs_files": 22,
+    "remote_publication_consistency": "8/8_PASS",
+    "release_8b_verify": "PASS",
+    "release_8c_verify": "PASS",
+    "allow_list": "27/27_PASS",
+    "transfer_secret_scan": "PASS"
+  },
+  "package_integrity": {
+    "phase8b_payload_sha256": "8c423f402ce8bb1de7aaa35ab70129b9af45c8abf1d0ccfe20dade8d44dea738",
+    "phase8b_tree_sha256": "1d6c78332c39734e8e5d05b30735d5379ba82b8f5d20556553064624d6292060",
+    "phase8b_checksums_sha256": "1ecd877676d84bc6fc02bed60e090619c11b908aebd56805935edaf6c80a5a79",
+    "phase8b_manifest_sha256": "f305c8c5439cd1bfee425ea5130709380080ade5833d87b7dce29cadb73d3f66",
+    "phase8c_payload_sha256": "64e7ec4cf9d452db7c713275e0b2451ff194da9a737c539b8af96b324708ba10"
+  },
+  "findings": {
+    "REAUDIT-CAL-01": "RESOLVED",
+    "REAUDIT-CAL-02": "RESOLVED",
+    "unresolved_critical": 0,
+    "unresolved_high": 0,
+    "unresolved_transfer_safety_medium": 0
+  },
+  "status": "READY_FOR_PHASE8B_SANDBOX_TRANSFER",
+  "not_executed": [
+    "real Google Workspace operations",
+    "OAuth consent",
+    "deployment",
+    "clasp push",
+    "Automation or trigger enablement",
+    "real Provider configuration",
+    "real data",
+    "company-PC transfer"
+  ]
+}

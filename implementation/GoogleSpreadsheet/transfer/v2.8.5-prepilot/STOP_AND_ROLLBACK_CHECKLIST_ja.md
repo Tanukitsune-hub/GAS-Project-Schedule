@@ -1,6 +1,6 @@
 # Stop / Rollback チェックリスト
 
-状態: `PENDING_R5_REMOTE_VERIFICATION`
+状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
 
 ## 即時 STOP 条件
 

@@ -1,6 +1,6 @@
 # Phase 8B 用 Synthetic Test Data 仕様
 
-状態: `PENDING_R5_REMOTE_VERIFICATION`
+状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
 
 ## 許可されるデータ
 

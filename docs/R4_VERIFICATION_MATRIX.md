@@ -2,7 +2,7 @@
 
 Date: 2026-07-29
 Candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Gate: `NO-GO_REMOTE_PUBLICATION`
+Gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential Phase 8B carriage only)
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -11,15 +11,15 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 
 | ID | Requirement | Evidence | State |
 |---|---|---|---|
-| R4-01 | Canonical source and release-tool topology | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-02 | No root duplicate implementation/test/tool trees | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-03 | Code/Schema/AI/Migration/Gate consistency | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-01 | Canonical source and release-tool topology | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-02 | No root duplicate implementation/test/tool trees | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-03 | Code/Schema/AI/Migration/Gate consistency | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-04 | Historic A5/B5 preserved and verified | `Git ancestry audit` | VERIFIED_HISTORIC |
-| R4-05 | Source/Release self-reference | `release verify scripts` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-06 | Release diff boundary | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-07 | 11 Sheets / hidden 5 | `static schema contract` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-08 | 50 Task columns | `static schema contract` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-09 | 21 Ledger columns | `static schema contract` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-05 | Source/Release self-reference | `release verify scripts` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-06 | Release diff boundary | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-07 | 11 Sheets / hidden 5 | `static schema contract` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-08 | 50 Task columns | `static schema contract` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-09 | 21 Ledger columns | `static schema contract` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-10 | Task internal-ID header restore | `remediation_round4_test.js` | LOCAL_PASS |
 | R4-11 | Task label header restore | `remediation_round4_test.js` | LOCAL_PASS |
 | R4-12 | Hidden/protected ledger contract | `remediation_round5_test.js` | LOCAL_PASS |
@@ -37,13 +37,13 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 | R4-24 | Copied-row detached isolation is repeat-idempotent | `remediation_round5_test.js` | LOCAL_PASS |
 | R4-25 | Moved-row rebind | `remediation_round5_test.js` | LOCAL_PASS |
 | R4-26 | Deletion/orphan policy | `phase5_schema_extension_test.js` | LOCAL_PASS |
-| R4-27 | Diagnostics are read-only | `diagnostic source/test` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-27 | Diagnostics are read-only | `diagnostic source/test` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-28 | Schema 2.5 note-only seed | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-29 | Migration observation pause/resume | `phase5_schema_extension_test.js` | LOCAL_PASS |
-| R4-30 | Durable outbox/ack | `remediation_round3_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-31 | Calendar authority exclusion; armed authority-loss compensation survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
-| R4-32 | Release checksum/parity/provenance | `verify scripts` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-33 | Secret scan/fresh clone/remote SHA | `static/fresh clone` | PENDING_P6_PUBLICATION |
+| R4-30 | Durable outbox/ack | `remediation_round3_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-31 | Calendar authority exclusion; armed authority-loss compensation survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-32 | Release checksum/parity/provenance | `verify scripts` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-33 | Secret scan/fresh clone/remote SHA | `static/fresh clone` | REMOTE_FRESH_CLONE_PASS_P6 |
 
 ## 13 write routes
 

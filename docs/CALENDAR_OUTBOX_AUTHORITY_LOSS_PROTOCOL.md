@@ -2,8 +2,9 @@
 
 Contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
-Current corrective-integration gate: `NO-GO_REMOTE_PUBLICATION` pending R5
-normal publication and fresh-clone proof
+Current corrective-integration gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
+after R5 normal publication and fresh-clone proof; real Workspace behavior is
+still `NOT_EXECUTED`
 
 ## Purpose and boundary
 

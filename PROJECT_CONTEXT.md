@@ -4,7 +4,7 @@ Last updated: 2026-07-29
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `NO-GO_REMOTE_PUBLICATION` for the R5 corrective integration pending final remote proof
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only
 
 ## Purpose
 
@@ -41,8 +41,10 @@ candidate pair is retained as historical evidence. The final additive pair is
 Source A5.4 `6c4f737c676b3121c42aafabe9d0c677cacd69bb`, followed by its
 direct-child Release B5.4 `3e5790672740626f3bec4592c3c7c0b86b47f3b1`. A P6
 integration retains both the historical P5 evidence and this final
-source/release pair. Its normal publication and fresh-clone proof are still
-required before its gate changes.
+source/release pair. P6 `12538796fed90eb7f95492d477cca44a5d859291` normally
+published the final pair to the target branch; GitHub resolution and a new
+fresh-clone rerun passed. The resulting gate is transfer-only and does not
+authorize execution.
 
 ## Repository layout
 

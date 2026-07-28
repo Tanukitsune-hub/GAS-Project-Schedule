@@ -1,6 +1,6 @@
 # 会社PC向け Phase 8B Sandbox 搬入資料
 
-状態: `PENDING_R5_REMOTE_VERIFICATION`
+状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`
 
 このフォルダは、R5 corrective integration の remote publication と fresh
 clone verification が完了した場合に限り有効になる、非機密 Phase 8B
