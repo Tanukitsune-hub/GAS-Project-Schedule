@@ -1,11 +1,12 @@
 # 会社PC向け Phase 8B Sandbox 搬入資料
 
-状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
+状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
 
-このフォルダは、R5 corrective integration の remote publication と fresh
-clone verification が完了した場合に限り有効になる、非機密 Phase 8B
-Sandbox package の搬入手順です。現在は準備資料であり、まだ搬入・実行の
-承認ではありません。
+このフォルダは、R5 corrective integration の remote publication、fresh
+clone verification、および canonical-text transfer checksum portability proof
+を完了した非機密 Phase 8B Sandbox package の搬入手順です。P9 の最終HEAD検証
+が終わるまで搬入は承認されません。いずれの場合も、搬入可の状態は実行承認では
+ありません。
 
 ## 最重要の境界
 

@@ -52,8 +52,10 @@ bounded Task-ID observation pass before ledger-only orphan reconciliation.
 
 **Risk acceptance.** Real Google Workspace failure modes—Sheet protection,
 row deletion/sort behavior, installable triggers, LockService, Gmail, and
-Calendar—remain `NOT_EXECUTED` until independent re-audit. The local fake
-runtime establishes regression evidence only.
+Calendar—remain `NOT_EXECUTED` after independent re-audit unless separately
+authorized. `READY_FOR_PHASE8B_SANDBOX_TRANSFER` permits only carriage of the
+non-confidential Phase 8B package; it is not execution authorization. The
+local fake runtime establishes regression evidence only.
 
 ## D-039 — Calendar authority loss requires durable arm and owned-event-only compensation
 

@@ -1,6 +1,6 @@
 # Phase 8B Sandbox 結果記録 Template
 
-状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
+状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
 
 この template は current contract 専用です。実 ID、URL、本文、credential、token、
 個人情報、顧客情報、未公表情報を記録しません。

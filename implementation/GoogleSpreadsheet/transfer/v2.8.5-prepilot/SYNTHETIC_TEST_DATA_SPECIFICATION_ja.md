@@ -1,6 +1,6 @@
 # Phase 8B 用 Synthetic Test Data 仕様
 
-状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
+状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
 
 ## 許可されるデータ
 

@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `NO-GO_REMOTE_PUBLICATION` (P8 correcting transfer-checksum portability) |
+| Current gate | `NO-GO_REMOTE_PUBLICATION` (P9 final-head verification pending) |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -83,16 +83,19 @@ history; the final additive correction is Source A5.4
 `3e5790672740626f3bec4592c3c7c0b86b47f3b1`. P6
 `12538796fed90eb7f95492d477cca44a5d859291` was normal-pushed to the target
 branch, resolved from GitHub, and verified in a fresh clone. Historical P7
-transfer evidence then exposed a newline portability flaw in its operator
-checksum. P8 preserves that record and corrects it before any transfer-only
-status can be asserted again.
+transfer evidence exposed a newline portability flaw in its operator checksum;
+P8 `784b293c50713597a656bc7d9d1ae51fdaa26f1a` corrected it with canonical
+UTF-8 text hashing and passed a new fresh-clone verifier. P9 carries the
+final transfer-envelope correction and must pass its own remote/fresh-clone
+verification before a separate final transfer-only status is recorded.
 
 ## Company-PC transfer boundary
 
 Do not copy this repository, the entire `release/` tree, or the Phase 8C
-candidate to a company PC. Do not copy the package until the P8
-checksum-portability correction has its own remote/fresh-clone proof. Then
-copy the exact Phase 8B package only through a company-approved route using
+candidate to a company PC. The P8 checksum-portability correction has its own
+remote/fresh-clone proof, but P9 final-head verification remains required.
+After that, copy the exact Phase 8B package only through a
+company-approved route using
 `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/` as the
 allow-list, Japanese procedure, stop/rollback checklist, synthetic-data
 specification, and result-record source.

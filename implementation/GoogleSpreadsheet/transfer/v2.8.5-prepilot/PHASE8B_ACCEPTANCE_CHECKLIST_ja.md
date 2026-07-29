@@ -1,6 +1,6 @@
 # Phase 8B Sandbox 受入チェックリスト
 
-状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
+状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
 
 各行を人が一件ずつ確認し、`RESULTS_TEMPLATE_ja.md` に `PASS`、`FAIL`、又は
 `NOT EXECUTED` を記録してください。local test の PASS を実 Google Workspace

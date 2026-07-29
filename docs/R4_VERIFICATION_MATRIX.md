@@ -2,7 +2,7 @@
 
 Date: 2026-07-29
 Candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Gate: `NO-GO_REMOTE_PUBLICATION` while `REAUDIT-TR-01` corrects transfer-checksum portability
+Gate: `NO-GO_REMOTE_PUBLICATION` pending P9 final-head transfer-envelope verification; real Workspace remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -43,7 +43,7 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 | R4-30 | Durable outbox/ack | `remediation_round3_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-31 | Calendar authority exclusion; armed authority-loss compensation survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-32 | Release checksum/parity/provenance | `verify scripts` | REMOTE_FRESH_CLONE_PASS_P6 |
-| R4-33 | Secret scan/fresh clone/remote SHA and transfer-checksum portability | `static/fresh clone` | REAUDIT_NO_GO_TR-01_PENDING_CANONICAL_CHECKSUM |
+| R4-33 | Secret scan/fresh clone/remote SHA and transfer-checksum portability | `static/fresh clone` | REMOTE_FRESH_CLONE_PASS_P8_CANONICAL_CHECKSUM; P9 final-head verification pending |
 
 ## 13 write routes
 

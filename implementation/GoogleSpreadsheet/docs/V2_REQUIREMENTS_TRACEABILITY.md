@@ -4,12 +4,15 @@ Last updated: 2026-07-29
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/GoogleWorkspace_v2_8_5_Independent_Reaudit_and_Company_PC_Transfer_Preparation_2026-07-29.md`
 Version contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Current gate: `NO-GO_REMOTE_PUBLICATION`
+Current gate: `NO-GO_REMOTE_PUBLICATION` pending P9 final-head transfer-
+envelope verification; real Google Workspace execution remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
-real Google Workspace execution. `LOCAL_PASS_P6_REMOTE_PENDING` means the R5
-corrective source/release result is verified locally but still awaits normal
-publication, remote SHA resolution, and fresh-clone revalidation.
+real Google Workspace execution. `REMOTE_FRESH_CLONE_PASS_P6` means the R5
+corrective source/release result was normal-published, remote-resolved, and
+verified in a fresh clone. `REMOTE_FRESH_CLONE_PASS_P8_CANONICAL_CHECKSUM`
+adds the separate canonical-text transfer-checksum portability proof; P9
+still requires final-head verification before final user-facing confirmation.
 
 Latest R5 follow-up local run: 41/41 test files PASS; 611 PASS / 0 FAIL / 11
 explicit real-Workspace/fake-runtime skips. `tools/validate_apps_script_v2.js`
@@ -27,15 +30,15 @@ current gate before final R5 remote proof.
 
 | ID | Requirement | Primary evidence | Current evidence |
 |---|---|---|---|
-| R4-01 | Canonical source topology | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-02 | No root duplicate implementation/test/tool trees | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-03 | Code, Schema, AI Schema, Migration, Gate consistency | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-01 | Canonical source topology | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-02 | No root duplicate implementation/test/tool trees | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-03 | Code, Schema, AI Schema, Migration, Gate consistency | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-04 | Historical A5/B5 lineage preserved | `Git ancestry / publication audit` | VERIFIED_HISTORIC |
-| R4-05 | Source / Release self-reference rule | `release verify scripts` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-06 | Release B boundary contains packages and report only | `remote_publication_consistency_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-07 | 11 Sheets with 5 hidden | `schema and static tests` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-08 | Task Sheet has exactly 50 canonical columns | `schema and static tests` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-09 | Ledger has exactly 21 canonical columns | `schema and static tests` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-05 | Source / Release self-reference rule | `release verify scripts` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-06 | Release B boundary contains packages and report only | `remote_publication_consistency_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-07 | 11 Sheets with 5 hidden | `schema and static tests` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-08 | Task Sheet has exactly 50 canonical columns | `schema and static tests` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-09 | Ledger has exactly 21 canonical columns | `schema and static tests` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-10 | Task row 1 internal IDs restore canonically | `remediation_round4_test.js` | LOCAL_PASS |
 | R4-11 | Task row 2 labels restore canonically | `remediation_round4_test.js` | LOCAL_PASS |
 | R4-12 | Ledger hidden / protected runtime contract | `remediation_round5_test.js` | LOCAL_PASS |
@@ -53,13 +56,13 @@ current gate before final R5 remote proof.
 | R4-24 | Copied duplicate becomes repeat-idempotent detached isolation | `remediation_round5_test.js` | LOCAL_PASS |
 | R4-25 | Moved/sorted row rebinds ledger only | `remediation_round5_test.js` | LOCAL_PASS |
 | R4-26 | Deleted row becomes durable ORPHANED | `phase5_schema_extension_test.js` | LOCAL_PASS |
-| R4-27 | Quick / Deep diagnostic is read-only | `diagnostic tests and static caller options` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-27 | Quick / Deep diagnostic is read-only | `diagnostic tests and static caller options` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-28 | Schema 2.5 seed uses independent note only | `phase5_schema_extension_test.js` | LOCAL_PASS |
 | R4-29 | Migration pause/resume re-observes IDs safely | `phase5_schema_extension_test.js` | LOCAL_PASS |
-| R4-30 | Outbox intent and acknowledgement are durable | `remediation_round3_test.js` | LOCAL_PASS_P6_REMOTE_PENDING |
+| R4-30 | Outbox intent and acknowledgement are durable | `remediation_round3_test.js` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-31 | Calendar excludes invalid authority before I/O; armed authority loss is owned-event-only compensation that survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
-| R4-32 | Release parity/checksum/inventory/provenance | `verify_v2_8_5*.ps1` | LOCAL_PASS_P6_REMOTE_PENDING |
-| R4-33 | Secret scan and fresh clone verification | `static scan / fresh clone` | PENDING_P6_PUBLICATION |
+| R4-32 | Release parity/checksum/inventory/provenance | `verify_v2_8_5*.ps1` | REMOTE_FRESH_CLONE_PASS_P6 |
+| R4-33 | Secret scan and fresh clone verification | `static scan / fresh clone` | REMOTE_FRESH_CLONE_PASS_P8_CANONICAL_CHECKSUM |
 
 ## Task write-route inventory (13 routes)
 

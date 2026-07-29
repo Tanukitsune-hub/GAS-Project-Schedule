@@ -1,6 +1,6 @@
 # Phase 8B Company-PC Transfer Manifest
 
-状態: `PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`
+状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
 
 ## Identity
 
@@ -14,7 +14,8 @@
 | Final R5 Release B5.4 | `3e5790672740626f3bec4592c3c7c0b86b47f3b1` |
 | P6 remote publication evidence | `12538796fed90eb7f95492d477cca44a5d859291` |
 | Historical P7 transfer-readiness evidence | `45bb4b938b02f2fd56d5d57267f4083a46f5176b` — raw-byte document checksum not portable across checkout line endings |
-| P8 portability correction | `SELF (this canonical-text correction commit)` |
+| P8 portability correction | `784b293c50713597a656bc7d9d1ae51fdaa26f1a` — canonical UTF-8 text checksum verifier passed in a fresh clone |
+| P9 final transfer-readiness record | `SELF` — normal push, GitHub resolution, and final-head fresh-clone verification are required before user-facing confirmation |
 | Automation | `OFF` |
 | Package test mode | `true` |
 | Harness | included |
@@ -28,7 +29,7 @@
 | External package-tree SHA-256 | `1d6c78332c39734e8e5d05b30735d5379ba82b8f5d20556553064624d6292060` |
 | `CHECKSUMS.sha256` file SHA-256 | `1ecd877676d84bc6fc02bed60e090619c11b908aebd56805935edaf6c80a5a79` |
 | `DEPLOYMENT_MANIFEST.md` SHA-256 | `f305c8c5439cd1bfee425ea5130709380080ade5833d87b7dce29cadb73d3f66` |
-| Source parity / checksum / secret scan | PASS locally; final remote proof required before use |
+| Source parity / checksum / secret scan | P6 remote/fresh-clone PASS; P8 canonical-text transfer-checksum fresh-clone PASS; P9 final-head check required before user-facing confirmation |
 
 The external package-tree digest is SHA-256 over UTF-8, path-sorted lines
 `<file SHA-256><two spaces><package-relative path><LF>` for all 27 package
@@ -62,10 +63,11 @@ package payload.
 
 ## Effective-use condition
 
-This manifest is not usable while its state is
-`PENDING_R5_CHECKSUM_PORTABILITY_CORRECTION`. A later canonical-text fresh-
-clone proof is required before it can record
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER`. That future status means carriage of the
-non-confidential 8B package through a company-approved route only. It does not
-approve a Sandbox PASS, Phase 8C, production, pilot, OAuth, deployment,
-`clasp push`, Automation, triggers, or real Workspace work.
+The P7 raw-byte protocol is historical evidence only. P8 canonical-text
+fresh-clone proof is complete, but P9 must be normal-pushed, GitHub-resolved,
+and verified from a fresh clone before this manifest can record
+`READY_FOR_PHASE8B_SANDBOX_TRANSFER`. Until then it is not usable for
+carriage. A later READY status means carriage of the non-confidential 8B
+package through a company-approved route only. It does not approve a Sandbox
+PASS, Phase 8C, production, pilot, OAuth, deployment, `clasp push`,
+Automation, triggers, or real Workspace work.

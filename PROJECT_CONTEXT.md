@@ -4,7 +4,7 @@ Last updated: 2026-07-29
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `NO-GO_REMOTE_PUBLICATION` while P8 corrects transfer-checksum portability
+Publication gate: `NO-GO_REMOTE_PUBLICATION` pending P9 final-head verification
 
 ## Purpose
 
@@ -43,9 +43,11 @@ direct-child Release B5.4 `3e5790672740626f3bec4592c3c7c0b86b47f3b1`. A P6
 integration retains both the historical P5 evidence and this final
 source/release pair. P6 `12538796fed90eb7f95492d477cca44a5d859291` normally
 published the final pair to the target branch; GitHub resolution and a new
-fresh-clone rerun passed. A P7 fresh clone then found that raw checkout-byte
-operator checksums were not portable across line-ending forms. P8 corrects
-that transfer-safety Medium before any transfer-only gate is restored.
+fresh-clone rerun passed. A P7 fresh clone found that raw checkout-byte
+operator checksums were not portable across line-ending forms; P8 corrected
+that transfer-safety Medium with canonical text hashing and a fresh-clone
+verifier. P9 carries the final transfer-envelope update but must complete
+remote/fresh-clone verification before it can restore the transfer-only gate.
 
 ## Repository layout
 

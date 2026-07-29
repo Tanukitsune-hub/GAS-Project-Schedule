@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `NO-GO_REMOTE_PUBLICATION` while `REAUDIT-TR-01` corrects transfer-checksum portability; all real Workspace behavior remains `NOT_EXECUTED` |
+| Current gate | `NO-GO_REMOTE_PUBLICATION` pending P9 final-head transfer-envelope verification; all real Workspace behavior remains `NOT_EXECUTED` |
 
 ## Selected design
 
@@ -124,9 +124,12 @@ P5 publication evidence for A5.2/B5.2 and fixed target `3442ac...` remains
 historical evidence. The retained A5.3/B5.3 candidate exposed a second High
 re-enqueue race during independent source review. Final R5 Source A5.4
 `6c4f737...` and direct-child Release B5.4 `3e57906...` preserve compensation
-across later forced re-enqueue and require their own normal non-force
-publication and fresh-clone verification. Until that proof, the current
-corrective integration remains `NO-GO_REMOTE_PUBLICATION`. After all remote
-proof and the separate 8B-only transfer envelope are verified, the maximum
-status may be only `READY_FOR_PHASE8B_SANDBOX_TRANSFER`; it is not Phase 8B
-PASS, Phase 8C GO, production ready, or pilot ready.
+across later forced re-enqueue. P6 normally published that correction and a
+fresh clone reran the local/static source and package checks. Historical P7
+then exposed a raw-checkout-byte transfer checksum portability defect;
+P8 published the canonical UTF-8 text checksum correction and a fresh clone
+passed its verifier. The current P9 envelope record is not yet remote/fresh-
+clone verified, so the gate remains `NO-GO_REMOTE_PUBLICATION`. After that
+check, the maximum status is only `READY_FOR_PHASE8B_SANDBOX_TRANSFER`:
+non-confidential Phase 8B carriage, not Phase 8B PASS, Phase 8C GO,
+production ready, or pilot ready.
