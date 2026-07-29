@@ -17,8 +17,9 @@ prohibitions. The detailed rule is
 specification. This prevents branch/path ambiguity and preserves historical
 instructions.
 
-**Consequence.** The remote-publication index and its six numbered documents
-are the task-specific specification for this remediation. No legacy
+**Consequence.** The exact GitHub instruction named by the current handoff is
+the task-specific specification; older indexes and their numbered documents
+remain historical unless explicitly selected by that handoff. No legacy
 `context-hub` location participates.
 
 ## D-037 — Independent Task Authority Ledger with two-slot recovery

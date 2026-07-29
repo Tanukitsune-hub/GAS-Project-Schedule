@@ -48,10 +48,10 @@ See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 
 GitHub is the only formal handoff medium. Read
 `CHATGPT_CODEX_GITHUB_HANDOFF_POLICY.md` and D-036 before beginning a task.
-The active remote-publication instruction is the indexed file under
-`instructions/`; the index lists six numbered documents that must be read in
-order. GitHub-unsaved long conversation text is not an authoritative task
-specification.
+The exact GitHub instruction named by the current handoff is the only
+task-specific specification. Older indexed instruction sets remain historical
+evidence unless the current handoff explicitly selects them. GitHub-unsaved
+long conversation text is not an authoritative task specification.
 
 ## Local validation
 
@@ -88,14 +88,17 @@ P8 `784b293c50713597a656bc7d9d1ae51fdaa26f1a` corrected it with canonical
 UTF-8 text hashing and passed a new fresh-clone verifier. P9
 `ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b` then normally published the
 final transfer-envelope correction and passed its own GitHub-resolution and
-fresh-clone re-audit. The resulting status is transfer-only.
+fresh-clone re-audit. P10 `1a1f9df65dacf3a031409d724cb2906b58900f77` is the
+fixed transfer reference independently revalidated from a new HTTPS clone.
+The later evidence-only closure record is intentionally outside the transfer
+target. The resulting status is transfer-only.
 
 ## Company-PC transfer boundary
 
 Do not copy this repository, the entire `release/` tree, or the Phase 8C
-candidate to a company PC. The P8 checksum-portability correction and P9
-final-head transfer-envelope proof have independent remote/fresh-clone
-evidence. Copy the exact Phase 8B package only through a
+candidate to a company PC. The P8 checksum-portability correction, P9
+final-head proof, and fixed P10 fresh-clone verification have independent
+remote/fresh-clone evidence. Copy the exact Phase 8B package only through a
 company-approved route using
 `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/` as the
 allow-list, Japanese procedure, stop/rollback checklist, synthetic-data

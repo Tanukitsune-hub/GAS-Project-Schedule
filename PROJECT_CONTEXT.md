@@ -48,7 +48,11 @@ operator checksums were not portable across line-ending forms; P8 corrected
 that transfer-safety Medium with canonical text hashing and a fresh-clone
 verifier. P9 `ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b` then completed normal
 publication, GitHub resolution, and fresh-clone verification, restoring only
-the transfer-only gate without authorizing execution.
+the transfer-only gate without authorizing execution. P10
+`1a1f9df65dacf3a031409d724cb2906b58900f77` is the fixed transfer reference
+independently verified from a separate HTTPS clone. The evidence-only closure
+commit that records this result is intentionally not part of the transfer
+target.
 
 ## Repository layout
 
@@ -78,7 +82,8 @@ silently rewritten.
 ## Company-PC boundary
 
 The transfer envelope is intentionally limited to the non-confidential Phase
-8B package and only becomes effective after the R5 remote proof. Even then,
-it permits carriage only through a company-approved route; it does not approve
-real data, OAuth, real Provider configuration, deployment, Automation,
-triggers, Phase 8B PASS, Phase 8C GO, production use, or pilot use.
+8B package and is fixed at the independently verified P10 transfer reference.
+Even then, it permits carriage only through a company-approved route; it does
+not approve real data, OAuth, Apps Script import, Setup, real Provider
+configuration, deployment, Automation, triggers, Phase 8B PASS, Phase 8C GO,
+production use, or pilot use.

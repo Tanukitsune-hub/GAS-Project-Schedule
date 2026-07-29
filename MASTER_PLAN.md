@@ -25,7 +25,7 @@ Current publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential
 | R5-4 | Final Release B5.4 `3e57906...` | Complete locally. Direct child of A5.4; exactly 27 Phase 8B package files, 25 Phase 8C package files, and one Round 5 release report. Historical B5.3 remains preserved. |
 | R5-5 | Package verification | Complete locally and in P6 fresh clone. 8B/8C parity, checksums, allow-lists, provenance, secret scans, and immutable input guards PASS. |
 | R5-6 | P6 canonical documents, audit record, and 8B-only transfer envelope | Complete. P8 corrected `REAUDIT-TR-01` with canonical-text checksum verification; P9 final-head proof enables the 8B-only transfer envelope. |
-| R5-7 | Normal remote publication and fresh-clone re-audit | Complete: P6 source/release proof, P8 canonical-checksum proof, and P9 remote SHA/fresh-clone confirmation PASS. |
+| R5-7 | Normal remote publication and fixed-ref fresh-clone re-audit | Complete: P6 source/release proof, P8 canonical-checksum proof, P9 remote SHA/fresh-clone confirmation, and detached P10 `1a1f9df...` fresh-clone verification PASS. The later evidence-only closure record is not a transfer target. |
 
 ## Authority recovery objectives
 
@@ -61,7 +61,7 @@ rewritten.
 
 ## Gate discipline
 
-Source/release proof, canonical-text transfer checksum proof, and P9
-final-head verification passed. The maximum status is
+Source/release proof, canonical-text transfer checksum proof, P9 final-head
+verification, and fixed P10 fresh-clone verification passed. The maximum status is
 `READY_FOR_PHASE8B_SANDBOX_TRANSFER` only; it never means Phase 8B GO/PASS,
 Phase 8C GO, production ready, or pilot ready.

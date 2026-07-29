@@ -1,0 +1,63 @@
+{
+  "report": "Google Workspace v2.8.5 P10 Fixed Transfer Reference Verification",
+  "date": "2026-07-29",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "instruction": {
+    "path": "instructions/GoogleWorkspace_v2_8_5_P10_Fixed_Transfer_Ref_Closure_and_PR8_Finalization_2026-07-29.md",
+    "commit": "cceaec17aa99c4752d6f21ebe03d88a1f094d591"
+  },
+  "status": "READY_FOR_PHASE8B_SANDBOX_TRANSFER",
+  "fixed_transfer_ref": "1a1f9df65dacf3a031409d724cb2906b58900f77",
+  "source_a5_4": "6c4f737c676b3121c42aafabe9d0c677cacd69bb",
+  "release_b5_4": "3e5790672740626f3bec4592c3c7c0b86b47f3b1",
+  "fresh_clone": {
+    "head": "1a1f9df65dacf3a031409d724cb2906b58900f77",
+    "detached": true,
+    "clean_before_and_after": true,
+    "diff_check": "PASS"
+  },
+  "lineage": {
+    "p10_parent_p9": "ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b",
+    "a5_4_to_b5_4": "PASS",
+    "b5_4_to_p10": "PASS",
+    "p10_to_instruction_commit": "direct child; instruction only",
+    "p9_to_p10_immutable_source_release_change": false
+  },
+  "validation": {
+    "full_test_suites": 41,
+    "passed": 611,
+    "failed": 0,
+    "explicit_skipped": 11,
+    "f016": { "passed": 12, "failed": 0 },
+    "apps_script_validator": { "passed": 11, "failed": 0, "gs_files": 22 },
+    "remote_publication_consistency": { "passed": 8, "failed": 0 },
+    "powershell_parser": { "passed": 5, "failed": 0 },
+    "phase8b_verifier": "PASS",
+    "phase8c_verifier": "PASS",
+    "operator_checksum_records": { "passed": 7, "failed": 0 },
+    "phase8b_allow_list": { "passed": 27, "failed": 0 },
+    "phase8b_checksum_inventory": { "passed": 26, "failed": 0 },
+    "a5_4_b5_4_rebuild_parity": { "phase8b": "27/27 PASS", "phase8c": "25/25 PASS" },
+    "secret_credential_local_path_transfer_scans": "PASS"
+  },
+  "integrity": {
+    "phase8b_payload_sha256": "8c423f402ce8bb1de7aaa35ab70129b9af45c8abf1d0ccfe20dade8d44dea738",
+    "phase8b_tree_sha256": "1d6c78332c39734e8e5d05b30735d5379ba82b8f5d20556553064624d6292060",
+    "phase8b_checksums_sha256": "1ecd877676d84bc6fc02bed60e090619c11b908aebd56805935edaf6c80a5a79",
+    "phase8b_manifest_sha256": "f305c8c5439cd1bfee425ea5130709380080ade5833d87b7dce29cadb73d3f66",
+    "phase8c_payload_sha256": "64e7ec4cf9d452db7c713275e0b2451ff194da9a737c539b8af96b324708ba10"
+  },
+  "configuration": {
+    "test_mode": true,
+    "automation_enabled": false,
+    "ai_provider": "MOCK",
+    "external_ai_enabled": false
+  },
+  "boundary": {
+    "evidence_commit_is_transfer_target": false,
+    "transfer_release_source_tests_tools_changed": false,
+    "historical_package_no_go_preserved": true
+  },
+  "github_native_ci_for_p10_pr8": "NOT_CONFIGURED",
+  "real_workspace": "NOT_EXECUTED"
+}
