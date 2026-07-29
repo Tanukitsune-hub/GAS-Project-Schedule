@@ -3,8 +3,8 @@
 Last updated: 2026-07-29
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
-Current candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only
+Current candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Publication gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
 
 ## Purpose
 
@@ -54,6 +54,16 @@ independently verified from a separate HTTPS clone. The evidence-only closure
 commit that records this result is intentionally not part of the transfer
 target.
 
+After that historical transfer chain, the exact P10 2.8.5 Phase 8B package
+failed a first-time empty-Spreadsheet Setup safely before `S20_CREATE_SCHEMAS`
+completed: `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at `TASK_AUTHORITY`, with only
+S00 and S10 recorded.  This High `PHASE8B-SETUP-01` evidence has no Spreadsheet
+ID, URL, account, screenshot, OAuth detail, or business data.  It supersedes
+P10 as an executable transfer target.  The 2.8.6 correction is additive: Setup
+itself establishes and verifies the protected-hidden Ledger control plane
+before authority validation; it never weakens the validator or silently
+recreates authority from a visible row, note, or snapshot.
+
 ## Repository layout
 
 - Canonical context: this file, `MASTER_PLAN.md`, `DECISIONS.md`, and
@@ -62,11 +72,13 @@ target.
   `docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`.
 - Implementation, tests, tools, source docs, and visualizations:
   `implementation/GoogleSpreadsheet/`.
-- Immutable R5 release packages only:
+- Immutable historical failed P10 release packages:
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/` and
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`.
-- Company-PC 8B-only transfer envelope (not part of the immutable package):
+- Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
+- Corrected 2.8.6 package and transfer directories are created only after
+  Source A6, direct-child Release B6, normal publication, and verification.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -81,9 +93,12 @@ silently rewritten.
 
 ## Company-PC boundary
 
-The transfer envelope is intentionally limited to the non-confidential Phase
-8B package and is fixed at the independently verified P10 transfer reference.
-Even then, it permits carriage only through a company-approved route; it does
-not approve real data, OAuth, Apps Script import, Setup, real Provider
+The historical P10 envelope must not be carried or executed after
+`PHASE8B-SETUP-01`.  Automation remains OFF; do not manually hide the Ledger,
+continue P10 Setup, or run P10 diagnostics.  Preserve the failed workbook as
+evidence and use the Japanese recovery guide after an explicitly approved
+corrected-package retransfer.  Even a future
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits carriage only; it does not
+approve real data, OAuth, Apps Script import, Setup, real Provider
 configuration, deployment, Automation, triggers, Phase 8B PASS, Phase 8C GO,
 production use, or pilot use.

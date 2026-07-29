@@ -63,7 +63,7 @@ const moduleDocs = [
   'docs/TASK_AUTHORITY_PROTOCOL.md',
   'docs/V2_REQUIREMENTS_TRACEABILITY.md',
   'docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
-  'visualizations/task_authority_protocol_v2_8_5.html'
+  'visualizations/task_authority_protocol_v2_8_6.html'
 ];
 
 test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () => {
@@ -77,7 +77,7 @@ test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () =>
 test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const config = source('apps-script-v2/00_Config.gs');
   [
-    "CODE_VERSION: '2.8.5-prepilot'",
+    "CODE_VERSION: '2.8.6-prepilot'",
     "SCHEMA_VERSION: '2.6'",
     "AI_SCHEMA_VERSION: '2.0'",
     "MIGRATION_VERSION: '3'",
@@ -92,11 +92,11 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
   const declaredGate = gateMatch[1];
   assert.ok([
-    'NO-GO_REMOTE_PUBLICATION',
-    'READY_FOR_PHASE8B_SANDBOX_TRANSFER'
+    'PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER',
+    'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
   ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
-    '2.8.5-prepilot',
+    '2.8.6-prepilot',
     '2.6',
     declaredGate,
     'Task Authority Ledger',
@@ -131,14 +131,20 @@ test('RPC-03_SCHEMA_COUNTS_AND_MATRIX_TRACEABILITY_ARE_CANONICAL', () => {
   const matrix = read('docs/R4_VERIFICATION_MATRIX.md');
   assert.strictEqual((matrix.match(/^\| R4-\d{2} \|/gm) || []).length, 33);
   assert.strictEqual((matrix.match(/^\| W-\d{2} \|/gm) || []).length, 13);
+  assert.strictEqual((matrix.match(/^\| PHASE8B-SETUP-01 \|/gm) || []).length,
+    1, 'current Setup blocker must be traced without changing historical R4 counts');
 });
 
 test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   const repository = source('apps-script-v2/08_TaskRepository.gs');
   const migration = source('apps-script-v2/14_Migrations.gs');
   const setup = source('apps-script-v2/02_Setup.gs');
+  const sheetBuilder = source('apps-script-v2/03_SheetBuilder.gs');
   const diagnostics = source('apps-script-v2/16_Diagnostics.gs');
   const calendar = source('apps-script-v2/10_CalendarSync.gs');
+  const worker = source('apps-script-v2/18_Worker.gs');
+  const review = source('apps-script-v2/09_TaskReviewPolicy.gs');
+  const editHandler = source('apps-script-v2/11_EditHandler.gs');
   [
     'function validateAuthority',
     'function reconcileMissingAuthorityRecords',
@@ -151,6 +157,44 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   assert.ok(setup.includes('mark_orphaned: true'));
   assert.ok(diagnostics.includes('recover_relocated: false'));
   assert.ok(diagnostics.includes('mark_orphaned: false'));
+  assert.ok(repository.includes('E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN'),
+    'strict hidden-Ledger validator must remain in place');
+  [
+    'function ensureTaskAuthorityLedgerProtection',
+    'function ensureTaskAuthorityLedgerControlPlane',
+    'E_TASK_AUTHORITY_LEDGER_PROTECTION_SETUP_FAILED',
+    'E_TASK_AUTHORITY_LEDGER_VISIBILITY_SETUP_FAILED',
+    'E_TASK_AUTHORITY_LEDGER_MISSING',
+    'protection_reasserted: true'
+  ].forEach((literal) => assert.ok(sheetBuilder.includes(literal), literal));
+  const s20Start = setup.indexOf("if (stage === 'S20_CREATE_SCHEMAS') {");
+  const s30Start = setup.indexOf("if (stage === 'S30_APPLY_SMALL_VALIDATIONS') {");
+  const s40Start = setup.indexOf("if (stage === 'S40_SEED_SAFE_SETTINGS') {");
+  assert.ok(s20Start >= 0 && s30Start > s20Start && s40Start > s30Start,
+    'Setup schema/visibility stage boundaries missing');
+  const s20 = setup.slice(s20Start, s30Start);
+  const s30 = setup.slice(s30Start, s40Start);
+  assert.ok(s20.indexOf('ensureTaskAuthorityLedgerControlPlane') >= 0,
+    'S20 must own Ledger control-plane establishment');
+  assert.ok(s20.indexOf('ensureTaskAuthorityLedgerControlPlane') <
+    s20.indexOf('validateTaskAuthorityForSetup'),
+  'S20 must establish Ledger control plane before strict authority validation');
+  assert.ok(s30.includes('ensureTaskAuthorityLedgerControlPlane'),
+    'S30 must idempotently reassert Ledger control plane');
+  const completedS20Start = setup.indexOf(
+    "if (completed.indexOf('S20_CREATE_SCHEMAS') !== -1) {"
+  );
+  const completedS20End = setup.indexOf('assertCompletedStageIntegrity', completedS20Start);
+  assert.ok(completedS20Start >= 0 && completedS20End > completedS20Start,
+    'completed Setup S20 revalidation boundary missing');
+  const completedS20 = setup.slice(completedS20Start, completedS20End);
+  assert.ok(completedS20.indexOf('ensureTaskAuthorityLedgerControlPlane') <
+    completedS20.indexOf('validateTaskAuthorityForSetup'),
+  'completed Setup rerun must reassert Ledger control plane before validation');
+  [migration, diagnostics, calendar, worker, review, editHandler].forEach((text) => assert.ok(
+    !text.includes('ensureTaskAuthorityLedgerControlPlane'),
+    'Ledger repair authority must remain scoped to Setup bootstrap/resume'
+  ));
   [
     'DEADLINE_CALENDAR_ARMED',
     'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION',
@@ -163,10 +207,10 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
 
 test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () => {
   const toolNames = [
-    'build_v2_8_5_release.ps1',
-    'build_v2_8_5_phase8c_release.ps1',
-    'verify_v2_8_5_release.ps1',
-    'verify_v2_8_5_phase8c_release.ps1'
+    'build_v2_8_6_release.ps1',
+    'build_v2_8_6_phase8c_release.ps1',
+    'verify_v2_8_6_release.ps1',
+    'verify_v2_8_6_phase8c_release.ps1'
   ];
   toolNames.forEach((name) => {
     const text = source(path.join('tools', name));
@@ -179,7 +223,7 @@ test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () 
     assert.ok(text.includes('Join-Path $moduleRoot "release\\$'),
       name + ': release must be rooted at canonical module path');
   });
-  ['build_v2_8_5_release.ps1', 'build_v2_8_5_phase8c_release.ps1']
+  ['build_v2_8_6_release.ps1', 'build_v2_8_6_phase8c_release.ps1']
     .forEach((name) => {
       const text = source(path.join('tools', name));
       assert.ok(text.includes('function Assert-CleanCanonicalSourceInputs'),
@@ -212,17 +256,26 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
   ['apps-script-v2', 'tests', 'tools'].forEach((name) => {
     assert.ok(!names.includes(name), 'root duplicate forbidden: ' + name);
   });
-  assert.ok(!allNames.includes(
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md'
-  ), 'Source commit must not contain the Round 4 release report');
-  assert.ok(!allNames.includes(
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md'
-  ), 'Source commit must not contain the Round 5 release report');
+  [
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md',
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md',
+    'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_5.html'
+  ].forEach((historicalPath) => assert.ok(allNames.includes(historicalPath),
+    'historical v2.8.5 evidence must remain present: ' + historicalPath));
   [
     'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/',
     'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/'
+  ].forEach((prefix) => assert.ok(allNames.some((name) => name.startsWith(prefix)),
+    'historical v2.8.5 package must remain present: ' + prefix));
+  const currentReport =
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_SETUP_LEDGER_VISIBILITY_IMPLEMENTATION_REPORT.md';
+  assert.ok(!allNames.includes(currentReport),
+    'Source A6 must not contain the Phase 8B Setup blocker release report');
+  [
+    'implementation/GoogleSpreadsheet/release/v2.8.6-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.6-prepilot-phase8c/'
   ].forEach((prefix) => assert.ok(!allNames.some((name) => name.startsWith(prefix)),
-    'Source commit must not contain current release payload: ' + prefix));
+    'Source A6 must not contain new release payload: ' + prefix));
 });
 
 test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
@@ -231,12 +284,17 @@ test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
   if (!sourceCommit || !releaseCommit) return;
   const changed = git(['diff', '--name-only', sourceCommit, releaseCommit])
     .split(/\r?\n/).filter(Boolean);
+  const lineage = git(['rev-list', '--parents', '-n', '1', releaseCommit])
+    .split(/\s+/).filter(Boolean);
+  assert.deepStrictEqual(lineage, [releaseCommit, sourceCommit],
+    'Release B6 must be a direct child of Source A6');
   const allowedPrefixes = [
-    'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/',
-    'implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/'
+    'implementation/GoogleSpreadsheet/release/v2.8.6-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.6-prepilot-phase8c/'
   ];
-  const report = 'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md';
-  assert.ok(changed.includes(report), 'Round 5 report missing from Release commit');
+  const report =
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_SETUP_LEDGER_VISIBILITY_IMPLEMENTATION_REPORT.md';
+  assert.ok(changed.includes(report), 'Phase 8B Setup blocker report missing from Release B6');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[0])),
     'Phase 8B package missing from Release commit');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[1])),

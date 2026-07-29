@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja" data-code-version="2.8.6-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="work-os-code-version" content="2.8.6-prepilot">
+  <meta name="work-os-schema-version" content="2.6">
+  <meta name="work-os-ai-schema-version" content="2.0">
+  <meta name="work-os-migration-version" content="3">
+  <meta name="work-os-release-status" content="PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER">
+  <title>Task Authority Protocol — 2.8.6-prepilot</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #162335;
+      --muted: #5d6b7c;
+      --line: #d7dee8;
+      --page: #f5f7fa;
+      --card: #fff;
+      --ledger: #e7f0ff;
+      --task: #e8f7ef;
+      --warn: #fff4d6;
+      --danger: #fde9e9;
+      --ok: #e4f6eb;
+      --code: #334155;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { width: min(1180px, calc(100% - 32px)); margin: 30px auto 56px; }
+    header, section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 3px 12px #1623350a; }
+    header { padding: 26px 28px; }
+    h1 { margin: 0 0 7px; font-size: clamp(24px, 4vw, 36px); letter-spacing: -.02em; }
+    h2 { margin: 0 0 14px; font-size: 20px; }
+    h3 { font-size: 15px; margin: 0 0 6px; }
+    p { margin: 0; }
+    .sub { color: var(--muted); }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
+    .badge { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: #fff; font-size: 13px; }
+    .badge.status { background: var(--warn); border-color: #e9cb7b; }
+    section { margin-top: 18px; padding: 22px 24px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+    .key::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; background: var(--card); border: 1px solid var(--line); }
+    .key.ledger::before { background: var(--ledger); }
+    .key.task::before { background: var(--task); }
+    .key.isolation::before { background: var(--danger); }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 13px; align-items: stretch; }
+    .node { position: relative; border: 1px solid var(--line); border-radius: 11px; padding: 14px; min-height: 150px; background: #fff; }
+    .node.ledger { background: var(--ledger); border-color: #b9d3fb; }
+    .node.task { background: var(--task); border-color: #b7ddc5; }
+    .node.warn { background: var(--warn); border-color: #ead188; }
+    .node.danger { background: var(--danger); border-color: #efb5b5; }
+    .arrow { color: var(--muted); font-weight: 700; text-align: center; padding-top: 61px; }
+    .small { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .matrix { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; min-width: 820px; font-size: 13px; }
+    th, td { border: 1px solid var(--line); padding: 9px 10px; vertical-align: top; text-align: left; }
+    th { background: #f1f4f8; }
+    code { background: #eef2f7; color: var(--code); border-radius: 4px; padding: 1px 4px; font-size: .92em; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .callout { border-left: 4px solid #d99a16; padding: 11px 14px; background: #fff9e8; border-radius: 0 8px 8px 0; }
+    footer { color: var(--muted); font-size: 12px; margin: 18px 4px 0; }
+    @media (max-width: 900px) { .flow { grid-template-columns: 1fr; } .arrow { padding: 0; transform: rotate(90deg); min-height: 20px; } .columns { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Task Authority Protocol</h1>
+      <p class="sub">Phase 8B Setup Ledger visibility remediation — visible Task rows are projections; the protected hidden <code>Task Authority Ledger</code> is the authority store.</p>
+      <div class="badges" aria-label="Version metadata">
+        <span class="badge">Code 2.8.6-prepilot</span>
+        <span class="badge">Schema 2.6</span>
+        <span class="badge">AI Schema 2.0</span>
+        <span class="badge">Migration 3</span>
+        <span class="badge status">PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>Setup-owned Ledger control plane</h2>
+      <div class="flow" aria-label="Setup Ledger visibility control-plane flow">
+        <article class="node"><h3>S00 / S10</h3><p>Validate one empty unknown sheet, then create the canonical workbook.</p><p class="small">The Ledger exists but must not yet be trusted.</p></article>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <article class="node ledger"><h3>S20_CREATE_SCHEMAS establish</h3><p>Setup reasserts canonical Ledger protection and hidden visibility before authority validation.</p><p class="small">No user manual hide is required.</p></article>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <article class="node danger"><h3>Fail or continue</h3><p>Visibility/protection failure leaves S20 incomplete; success allows strict validation.</p><p class="small">No raw row, note, or snapshot fallback.</p></article>
+      </div>
+      <p class="callout" style="margin-top:18px"><code>PHASE8B-SETUP-01</code>: S30 and a completed Setup rerun reassert the same controls. Worker, Review, Calendar, diagnostics, Migration, and edit restoration do not receive a general repair path.</p>
+    </section>
+
+    <section>
+      <h2>Single-row commit and recovery path</h2>
+      <div class="legend"><span class="key ledger">protected hidden ledger</span><span class="key task">visible Task row</span><span class="key isolation">isolated / excluded</span></div>
+      <div class="flow" aria-label="Authority commit state transition">
+        <article class="node ledger"><h3>1. Validate</h3><p>Common validator reads the active committed slot and reconstructs the canonical Task row.</p><p class="small">No note or snapshot-cell fallback.</p></article>
+        <div class="arrow" aria-hidden="true">→</div>
+        <article class="node ledger"><h3>2. PREPARED</h3><p>Write next snapshot into the inactive slot with base generation/hash and operation ID.</p><p class="small">Old committed slot remains intact.</p></article>
+        <div class="arrow" aria-hidden="true">→</div>
+        <article class="node task"><h3>3. One Task write</h3><p>Write the complete canonical visible row once with <code>setValues</code>.</p><p class="small"><code>setNote</code> is not an authority write.</p></article>
+        <div class="arrow" aria-hidden="true">→</div>
+        <article class="node ledger"><h3>4. COMMITTED</h3><p>Promote the prepared slot only after base-generation/hash verification.</p><p class="small">Clear PREPARED metadata.</p></article>
+      </div>
+      <p class="callout" style="margin-top:18px">If an interruption leaves PREPARED durable, recovery compares the visible row with the prepared and committed canonical rows. It promotes, rolls back, or isolates—never rebaselines from a user-visible projection.</p>
+    </section>
+
+    <section>
+      <h2>Failure matrix</h2>
+      <div class="matrix">
+        <table>
+          <thead><tr><th>Observed state</th><th>Evidence</th><th>Recovery action</th><th>Operational result</th></tr></thead>
+          <tbody>
+            <tr><td>Ledger write fails before PREPARED</td><td>No durable next slot</td><td>No Task row write begins</td><td>Existing committed row remains operational</td></tr>
+            <tr><td>Task write throws during PREPARED</td><td>Visible row equals prepared or committed row</td><td>Promote prepared or roll back PREPARED after re-read</td><td>Operational only after validator returns valid</td></tr>
+            <tr><td>Promotion throws</td><td>Durable PREPARED and canonical row</td><td>Re-read then promote/rollback deterministically</td><td>Operational only after committed validation</td></tr>
+            <tr><td>Missing/corrupt/duplicate authority</td><td>No proof of an active committed record</td><td>Write isolated control record with safe reason code</td><td><strong>QUARANTINED / UNRECOVERABLE</strong>; Worker, Review, Calendar exclude row</td></tr>
+            <tr><td>Multi-row edit with one invalid row</td><td>Each row has independent validation</td><td>Restore every valid peer from its own slot; isolate only invalid row</td><td>No raw peer edit remains</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Calendar authority-loss boundary</h2>
+      <div class="flow" aria-label="Calendar authority-loss recovery">
+        <article class="node ledger"><h3>1. Final validator</h3><p>A short lock reads the Task only through the protected ledger immediately before Calendar I/O.</p><p class="small">Invalid authority is <code>CANCELLED</code>; zero Calendar calls.</p></article>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <article class="node warn"><h3>2. Durable arm</h3><p>Persist <code>DEADLINE_CALENDAR_ARMED</code>, deterministic Event ID, and claim fingerprint before I/O.</p><p class="small">A crash keeps recovery evidence durable.</p></article>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <article class="node danger"><h3>3. Compensation</h3><p>Authority loss after the arm becomes <code>DEADLINE_CALENDAR_AUTHORITY_COMPENSATION</code>.</p><p class="small">Delete only a verified-owned Event; never patch an excluded Task.</p></article>
+      </div>
+      <p class="callout" style="margin-top:18px">A foreign or unowned Event is never deleted. The compensation target remains durable through failure and manual retry so an error string cannot erase external-I/O intent.</p>
+    </section>
+
+    <section class="columns">
+      <div>
+        <h2>Consumers of the same validator</h2>
+        <ul>
+          <li>Setup and Migration 3</li>
+          <li>Quick and Deep Diagnostic</li>
+          <li>Task insert/update and manual edit restoration</li>
+          <li>Worker operational reads and Review actions</li>
+          <li>Calendar reconciliation</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Schema control recovery</h2>
+        <p>Task internal IDs (row 1) and display headers (row 2) are canonical controls. A direct edit or a paste crossing either header restores both rows, then applies per-row authority recovery to any touched data rows.</p>
+      </div>
+    </section>
+
+    <footer>Local static visualization only. It does not authorize deployment, Phase 8B GO/PASS, Phase 8C GO, production use, or pilot readiness.</footer>
+  </main>
+</body>
+</html>

@@ -33,6 +33,37 @@ function Get-CanonicalTextSha256 {
   }
 }
 
+function Assert-TransferContentSafety {
+  param([Parameter(Mandatory = $true)][string[]]$Paths)
+
+  # Operator documents may state that secrets, Workspace IDs, or local paths are
+  # forbidden. Match only value-shaped secrets and actual path/URL forms so the
+  # safety instructions themselves do not produce a false positive.
+  $prohibitedContent = [regex]::new(
+    '(sk-[A-Za-z0-9_-]{20,}|' +
+    'AIza[0-9A-Za-z_-]{20,}|' +
+    'ya29\.[A-Za-z0-9_-]{20,}|' +
+    'gh[pousr]_[A-Za-z0-9]{20,}|' +
+    '[0-9]+-[a-z0-9]{20,}\.apps\.googleusercontent\.com|' +
+    '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|' +
+    'https?://[^/\s:@]+:[^@\s/]+@|' +
+    'https://(docs\.google\.com/(spreadsheets|document)|' +
+    'drive\.google\.com|script\.google\.com|calendar\.google\.com)/|' +
+    '(?<![A-Za-z])[A-Za-z]:\\|' +
+    '\\\\[^\\\s]+\\[^\\\s]+|' +
+    '/(home|Users)/[^/\s]+/|' +
+    'OneDrive\\[^\\]+\\)',
+    [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+  )
+
+  foreach ($path in $Paths) {
+    $content = Get-Content -Raw -Encoding UTF8 -LiteralPath $path
+    if ($prohibitedContent.IsMatch($content)) {
+      throw "Transfer secret/local-path scan failed: $([System.IO.Path]::GetFileName($path))"
+    }
+  }
+}
+
 if (-not (Test-Path -LiteralPath $transferRoot -PathType Container)) {
   throw "Transfer directory does not exist: $transferRoot"
 }
@@ -78,9 +109,14 @@ foreach ($name in $actualNames) {
   }
 }
 
+Assert-TransferContentSafety -Paths @(
+  $actualNames | ForEach-Object { Join-Path $transferRoot $_ }
+)
+
 [pscustomobject]@{
   TransferDirectory = $transferRoot
   TransferFiles = $actualNames.Count
   CanonicalTextSha256 = 'PASS'
   ChecksumFileSelfIncluded = $false
+  SecretAndLocalPathScan = 'PASS'
 }

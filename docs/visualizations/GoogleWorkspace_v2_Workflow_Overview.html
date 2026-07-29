@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-code-version="2.8.5-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="NO-GO_REMOTE_PUBLICATION">
+<html lang="en" data-code-version="2.8.6-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -21,9 +21,17 @@
 <main>
   <h1>Task Authority and Calendar Reconciliation</h1>
   <div class="meta">
-    <span class="badge">Code 2.8.5-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
-    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">NO-GO_REMOTE_PUBLICATION</span>
+    <span class="badge">Code 2.8.6-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
+    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER</span>
   </div>
+  <h2>Setup control-plane bootstrap</h2>
+  <section class="flow" aria-label="setup control-plane workflow">
+    <article class="node"><h3>S00 / S10</h3><p>Validate one empty unknown sheet, then create the canonical 11-sheet workbook.</p></article>
+    <div class="arrow">&rarr;</div>
+    <article class="node authority"><h3>S20 control plane</h3><p>Setup establishes canonical Ledger protection and hidden visibility before any authority validation.</p></article>
+    <div class="arrow">&rarr;</div>
+    <article class="node"><h3>Validate / S30 reassert</h3><p>The strict validator remains fail-closed. S30 and completed Setup reruns idempotently reassert the same controls.</p></article>
+  </section>
   <section class="flow" aria-label="authority workflow">
     <article class="node"><h3>1. User / Gmail input</h3><p>Raw business intent enters the visible Task workflow.</p></article>
     <div class="arrow">→</div>

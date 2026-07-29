@@ -5,11 +5,11 @@ Google Workspace Personal Work OS.
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.5-prepilot` |
+| Code | `2.8.6-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential 8B carriage only) |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -25,9 +25,11 @@ Google Workspace Personal Work OS.
 - Validation and release tooling: `implementation/GoogleSpreadsheet/tools/`
 - Source docs and visualization: `implementation/GoogleSpreadsheet/docs/` and
   `implementation/GoogleSpreadsheet/visualizations/`
-- R5 immutable release artifacts:
+- Historical failed P10 release artifacts (immutable, not executable):
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
   and `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
+- Corrected 2.8.6 source and release chain: generated additively from Source A6;
+  it must not replace any v2.8.5 byte or transfer identity.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.
@@ -43,6 +45,23 @@ Worker, Review, and Calendar work.
 
 See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 [workflow visualization](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html).
+
+## Phase 8B Setup Ledger visibility blocker
+
+The previously transferred P10 `2.8.5-prepilot` Phase 8B package failed during
+first-time Setup before `S20_CREATE_SCHEMAS` completed.  The safe observed
+error was `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at `TASK_AUTHORITY`, after only
+`S00_VALIDATE_ENV` and `S10_CREATE_SHEETS`.  It is recorded as High finding
+`PHASE8B-SETUP-01` without any Workspace identifier, URL, account, screenshot,
+or business data in
+`audits/2026-07-29/GoogleWorkspace_v2_8_6_Phase8B_Setup_Ledger_Visibility_Blocker_Incident_2026-07-29.md`.
+
+`2.8.6-prepilot` makes the protected-hidden Ledger control plane an explicit,
+idempotent Setup-owned step before any hidden/protection authority validation.
+`S30` and a completed-Setup rerun reassert the same control plane.  The
+validator remains fail-closed; no Task raw row, note, or snapshot cell is used
+as authority and no manual Ledger-hide workaround is a product fix.  Corrected
+package real-Workspace retest is `NOT_EXECUTED`.
 
 ## ChatGPT–Codex handoff
 
@@ -95,17 +114,16 @@ target. The resulting status is transfer-only.
 
 ## Company-PC transfer boundary
 
-Do not copy this repository, the entire `release/` tree, or the Phase 8C
-candidate to a company PC. The P8 checksum-portability correction, P9
-final-head proof, and fixed P10 fresh-clone verification have independent
-remote/fresh-clone evidence. Copy the exact Phase 8B package only through a
-company-approved route using
-`implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/` as the
-allow-list, Japanese procedure, stop/rollback checklist, synthetic-data
-specification, and result-record source.
+Do not copy this repository, the entire `release/` tree, the failed P10
+package, or the Phase 8C candidate to a company PC.  The P10 envelope remains
+historical failed evidence and is not executable.  The corrected 2.8.6 Phase
+8B package may be considered for a new transfer envelope only after its
+separate source/release generation, normal publication, and fresh-clone
+verification.  The already-failed Sandbox recovery instructions are
+`implementation/GoogleSpreadsheet/docs/PHASE8B_SETUP_BLOCKER_RECOVERY_GUIDE_ja.md`.
 
-The transfer material is outside the immutable package and does not alter its
-checksums. It allows carriage of a non-confidential Sandbox candidate only;
-it never declares Phase 8B PASS, Phase 8C GO, production ready, pilot ready,
-OAuth approval, deployment, `clasp push`, Automation enablement, real data,
-or real Workspace operation.
+Any corrected transfer material will remain outside its immutable package and
+will not alter its checksums.  The current no-go does not authorize Setup,
+diagnostics, Phase 8B PASS, Phase 8C GO, production ready, pilot ready, OAuth
+approval, deployment, `clasp push`, Automation enablement, real data, or real
+Workspace operation.

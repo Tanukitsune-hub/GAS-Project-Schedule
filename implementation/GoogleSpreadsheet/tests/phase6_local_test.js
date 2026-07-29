@@ -837,7 +837,7 @@ test('P6-L13_SETUP_NEVER_CREATES_OR_ENSURES_TRIGGER', () => {
   assert.strictEqual(/ensureSingleAutomationTrigger\s*\(/.test(source), false);
   assert.match(
     source,
-    /phase_boundary:[\s\S]*READY_FOR_INDEPENDENT_REAUDIT/
+    /phase_boundary:[\s\S]*READY_FOR_PHASE8B_SANDBOX_RETRANSFER/
   );
 });
 

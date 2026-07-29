@@ -1,10 +1,10 @@
 # Calendar Outbox Authority-Loss Compensation Protocol
 
-Contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` /
+Contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage
-only; real Workspace behavior is still `NOT_EXECUTED`
+`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real Workspace
+retest is still `NOT_EXECUTED`
 
 ## Purpose and boundary
 
@@ -16,6 +16,11 @@ This protocol closes the failure window between a final authority check and a
 Calendar mutation. It does not create a new Task authority, does not restore a
 Task row, and does not permit a snapshot cell, note, or raw visible row as a
 fallback.
+
+Ledger protection and hidden visibility are Setup bootstrap controls, not a
+Calendar recovery mechanism. Calendar never repairs a visible or unprotected
+Ledger; it relies on the same fail-closed validator after Setup has established
+the control plane.
 
 The protocol applies only to a deterministic Work OS-owned Event ID. It never
 deletes an Event unless ownership verification succeeds. Real Google

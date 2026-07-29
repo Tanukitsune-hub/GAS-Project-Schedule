@@ -2,8 +2,8 @@
 
 Last updated: 2026-07-29
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
-Current contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential Phase 8B carriage only)
+Current contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
 
 ## Completed historic publication path
 
@@ -26,6 +26,18 @@ Current publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` (non-confidential
 | R5-5 | Package verification | Complete locally and in P6 fresh clone. 8B/8C parity, checksums, allow-lists, provenance, secret scans, and immutable input guards PASS. |
 | R5-6 | P6 canonical documents, audit record, and 8B-only transfer envelope | Complete. P8 corrected `REAUDIT-TR-01` with canonical-text checksum verification; P9 final-head proof enables the 8B-only transfer envelope. |
 | R5-7 | Normal remote publication and fixed-ref fresh-clone re-audit | Complete: P6 source/release proof, P8 canonical-checksum proof, P9 remote SHA/fresh-clone confirmation, and detached P10 `1a1f9df...` fresh-clone verification PASS. The later evidence-only closure record is not a transfer target. |
+
+## Phase 8B Setup blocker remediation
+
+| Step | Deliverable | State |
+|---|---|---|
+| P8B-1 | Preserve failed P10 evidence | Complete. `1a1f9df...` and all v2.8.5 packages/transfer material remain immutable historical failed evidence; no byte or transfer identity is replaced. |
+| P8B-2 | `PHASE8B-SETUP-01` incident record | Complete in Source A6 scope. Safe evidence records `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at `TASK_AUTHORITY`, with only S00/S10 complete; corrected-package real retest remains `NOT_EXECUTED`. |
+| P8B-3 | Setup-owned Ledger control-plane repair | In progress. S20 establishes protected-hidden Ledger state before validation; S30 and completed Setup rerun reassert it without a runtime/diagnostic repair path or authority fallback. |
+| P8B-4 | Fresh/partial/failure/idempotence regression coverage | In progress. The targeted fake-runtime suite covers empty Setup, observed S00/S10 resume, visibility/protection failure, S30, rerun, and no-fallback. |
+| P8B-5 | Source A6 | Pending. Source/tests/tools/canonical docs/visualization/recovery guidance only; no v2.8.6 package, release report, or transfer envelope. |
+| P8B-6 | Direct-child Release B6 | Pending. Exactly the two v2.8.6 packages and the Phase 8B implementation report. |
+| P8B-7 | Corrected transfer candidate and fresh clone | Pending. New transfer identity, package/allow-list/checksum/provenance/scans, normal publication, and detached HTTPS clone verification are required before any status advance. |
 
 ## Authority recovery objectives
 
@@ -55,13 +67,24 @@ Final R5 Release B5.4 contains only:
 - `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
 - `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md`
 
-The package manifests record A5.4 and `SELF` for the Release commit. The
-historical Round 4 report remains a B5.2 package-generation record and is not
-rewritten.
+The package manifests record A5.4 and `SELF` for the historical Release
+commit. The historical Round 4 report remains a B5.2 package-generation record
+and is not rewritten.
+
+The current Source A6 must contain source, tests, tools, canonical documents,
+the workflow visualization, incident record, and Japanese recovery guide.  It
+must not contain any `v2.8.6-prepilot` release package, release implementation
+report, or transfer envelope.  Its direct-child Release B6 must contain only:
+
+- `implementation/GoogleSpreadsheet/release/v2.8.6-prepilot/`
+- `implementation/GoogleSpreadsheet/release/v2.8.6-prepilot-phase8c/`
+- `implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_SETUP_LEDGER_VISIBILITY_IMPLEMENTATION_REPORT.md`
 
 ## Gate discipline
 
-Source/release proof, canonical-text transfer checksum proof, P9 final-head
-verification, and fixed P10 fresh-clone verification passed. The maximum status is
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER` only; it never means Phase 8B GO/PASS,
-Phase 8C GO, production ready, or pilot ready.
+P10 proof remains historical but `PHASE8B-SETUP-01` makes it no longer
+transfer-ready.  The current maximum is
+`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`.  Only a new corrected transfer ref
+verified from GitHub in a detached fresh clone may advance the repository to
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; even then it never means Phase 8B
+GO/PASS, Phase 8C GO, production ready, or pilot ready.

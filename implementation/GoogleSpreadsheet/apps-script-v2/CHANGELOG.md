@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.8.6-prepilot - 2026-07-29 Phase 8B Setup Ledger visibility remediation
+
+### Fixed
+
+- `PHASE8B-SETUP-01`: a historical P10 first-time Setup applied Ledger schema
+  and then invoked strict authority validation before S30 made the Ledger
+  hidden. It stopped safely with `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at
+  `TASK_AUTHORITY`, with only S00/S10 complete.
+- S20 now uses an explicit Setup-owned, idempotent control-plane operation to
+  establish canonical Ledger protection and hidden visibility before authority
+  validation. Protection/visibility write failures remain deterministic and do
+  not persist S20 completion.
+- S30 and completed-Setup reruns reassert the same control plane before their
+  relevant authority validation. The validator was not weakened and no generic
+  repair path was added to diagnostics, Worker, Review, Calendar, Migration, or
+  edit restoration.
+
+### Added
+
+- `phase8b_setup_ledger_visibility_test.js` covers a fresh empty workbook, the
+  observed S00/S10 partial resume, visibility/protection failure injection,
+  S30 reassertion, completed rerun idempotence, fake hidden/protection behavior,
+  and no snapshot/note/raw-row fallback.
+
+### Version and status
+
+- Contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; Automation default remains `OFF`.
+- Current source gate is `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The failed P10
+  v2.8.5 package and transfer evidence are immutable historical evidence and
+  are not executable. Corrected-package real Workspace retest is
+  `NOT_EXECUTED`.
+- Source A6 requires a new direct-child Release B6 and separate transfer/fresh
+  clone evidence. A future `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits
+  carriage only; it is not Phase 8B PASS, Phase 8C GO, production ready, or
+  pilot ready.
+
 ## 2.8.5-prepilot - 2026-07-29 R5 follow-up source correction
 
 ### Fixed

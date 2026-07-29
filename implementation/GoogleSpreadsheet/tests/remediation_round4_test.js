@@ -702,10 +702,13 @@ test('R4-08_QUARANTINE_WRITES_SAFE_ERROR_AUDIT_WITHOUT_RAW_TASK_CONTENT', () => 
   assert.strictEqual(JSON.stringify(record).includes('Sensitive operator-facing title'), false);
 });
 
-test('R4-09_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', () => {
+test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', () => {
   const config = fs.readFileSync(path.join(appsRoot, '00_Config.gs'), 'utf8');
   const html = fs.readFileSync(path.join(root, 'visualizations',
-    'task_authority_protocol_v2_8_5.html'), 'utf8');
+    'task_authority_protocol_v2_8_6.html'), 'utf8');
+  const currentStatus = fs.readFileSync(
+    path.resolve(root, '..', '..', 'CURRENT_STATUS.md'), 'utf8'
+  );
   const values = {};
   [
     ['code', 'CODE_VERSION'],
@@ -721,8 +724,16 @@ test('R4-09_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', () => {
   assert.ok(html.includes(`data-schema-version="${values.schema}"`));
   assert.ok(html.includes(`data-ai-schema-version="${values.ai}"`));
   assert.ok(html.includes(`data-migration-version="${values.migration}"`));
-  assert.ok(html.includes('data-release-status="NO-GO_REMOTE_PUBLICATION"'));
+  const gateMatch = currentStatus.match(/^Overall status:\s+`([^`]+)`/m);
+  assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
+  assert.ok([
+    'PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER',
+    'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
+  ].includes(gateMatch[1]), 'unexpected current gate: ' + gateMatch[1]);
+  assert.ok(html.includes(`data-release-status="${gateMatch[1]}"`));
   assert.ok(html.includes('Task Authority Ledger'));
+  assert.ok(html.includes('PHASE8B-SETUP-01'));
+  assert.ok(html.includes('S20_CREATE_SCHEMAS'));
   assert.ok(html.includes('PREPARED'));
   assert.ok(html.includes('COMMITTED'));
 });

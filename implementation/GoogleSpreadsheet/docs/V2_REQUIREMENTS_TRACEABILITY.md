@@ -2,10 +2,10 @@
 
 Last updated: 2026-07-29
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
-Specification: `instructions/GoogleWorkspace_v2_8_5_Independent_Reaudit_and_Company_PC_Transfer_Preparation_2026-07-29.md`
-Version contract: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Current gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase
-8B carriage only; real Google Workspace execution remains `NOT_EXECUTED`.
+Specification: `instructions/GoogleWorkspace_v2_8_6_Phase8B_Setup_Ledger_Visibility_Blocker_Remediation_2026-07-29.md`
+Version contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real
+Google Workspace retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
 real Google Workspace execution. `REMOTE_FRESH_CLONE_PASS_P6` means the R5
@@ -15,14 +15,14 @@ adds the separate canonical-text transfer-checksum portability proof. P9
 normal publication, GitHub resolution, and final-head fresh-clone validation
 completed before the transfer-only status was recorded.
 
-Latest R5 follow-up local run: 41/41 test files PASS; 611 PASS / 0 FAIL / 11
+Historical R5/P10 local run: 41/41 test files PASS; 611 PASS / 0 FAIL / 11
 explicit real-Workspace/fake-runtime skips. `tools/validate_apps_script_v2.js`
-also passed 11/11 checks over 22 `.gs` files. These facts do not alter the
-current gate before final R5 remote proof.
+also passed 11/11 checks over 22 `.gs` files. These historical facts do not
+alter the current v2.8.6 no-go after `PHASE8B-SETUP-01`.
 
 ## Historical provenance labels retained for traceability
 
-| Decision | Retained meaning in the 2.8.5 candidate |
+| Decision | Retained meaning in the historical 2.8.5 candidate |
 |---|---|
 | D-033 | Raw edit values are event input only; authority, ID resolution, and recovery are reconstructed from the validated ledger slot. |
 | D-038 | Legacy v2 Error rows remain historical audit evidence and are not a current authority, rollback, or publication source. |
@@ -64,6 +64,12 @@ current gate before final R5 remote proof.
 | R4-31 | Calendar excludes invalid authority before I/O; armed authority loss is owned-event-only compensation that survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | LOCAL_PASS |
 | R4-32 | Release parity/checksum/inventory/provenance | `verify_v2_8_5*.ps1` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-33 | Secret scan and fresh clone verification | `static scan / fresh clone` | REMOTE_FRESH_CLONE_PASS_P9_CANONICAL_CHECKSUM |
+
+## Phase 8B Setup blocker traceability
+
+| ID | Requirement | Primary evidence | Current evidence |
+|---|---|---|---|
+| PHASE8B-SETUP-01 | Setup establishes protected-hidden Ledger state before S20 authority validation; observed S00/S10 partial resume, control-plane failures, S30, completed rerun, and no-fallback remain safe | `phase8b_setup_ledger_visibility_test.js`; incident record; `02_Setup.gs` / `03_SheetBuilder.gs` | LOCAL_REGRESSION_PASS; corrected-package real Workspace retest `NOT_EXECUTED` |
 
 ## Task write-route inventory (13 routes)
 

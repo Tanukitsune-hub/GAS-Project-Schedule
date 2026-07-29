@@ -1,8 +1,8 @@
 # Google Workspace Personal Work OS v2 — Implementation Specification
 
-Last updated: 2026-07-28  
-Code: `2.8.5-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`  
-Source-candidate gate: `NO-GO_REMOTE_PUBLICATION`
+Last updated: 2026-07-29
+Code: `2.8.6-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
+Source-candidate gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
 
 ## 1. Scope and non-goals
 
@@ -26,6 +26,18 @@ production ready, or pilot ready.
 
 Task row 1/2 and ledger row 1/2 are control-plane schema. Setup and the edit
 handler restore canonical headers; data cannot be promoted into headers.
+
+### Setup Ledger bootstrap ordering
+
+Before any Setup authority validation that requires Ledger hidden/protection
+state, S20 applies canonical schemas and Setup explicitly reasserts canonical
+Ledger protection plus hidden visibility. Only then can the shared validator
+run. S30 repeats the reassertion idempotently, and a completed Setup rerun does
+so before its pre-loop validation. A protection/visibility write failure is a
+safe S20 failure and must leave S20 unrecorded. This bootstrap privilege does
+not extend to diagnostics, Worker, Review, Calendar, Migration, or edit
+restoration; none may silently repair the control plane or trust a raw row,
+note, or snapshot as authority.
 
 ## 3. Authority architecture
 

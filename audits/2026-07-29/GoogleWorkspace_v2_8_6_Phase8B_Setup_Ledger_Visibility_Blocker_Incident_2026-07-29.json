@@ -1,0 +1,32 @@
+{
+  "finding_id": "PHASE8B-SETUP-01",
+  "severity": "HIGH",
+  "scope": "Phase 8B Setup execution readiness",
+  "historical_package": {
+    "code_version": "2.8.5-prepilot",
+    "fixed_transfer_ref": "1a1f9df65dacf3a031409d724cb2906b58900f77",
+    "disposition": "immutable_failed_historical_evidence"
+  },
+  "safe_observation": {
+    "status": "FAILED",
+    "code": "E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN",
+    "stage": "TASK_AUTHORITY",
+    "completed_stages": [
+      "S00_VALIDATE_ENV",
+      "S10_CREATE_SHEETS"
+    ],
+    "duration_ms": 38645
+  },
+  "correction_candidate": {
+    "code_version": "2.8.6-prepilot",
+    "schema_version": "2.6",
+    "ai_schema_version": "2.0",
+    "migration_version": "3",
+    "gate": "PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER",
+    "automation_default": "OFF"
+  },
+  "root_cause": "S20 validated the hidden Ledger invariant after schema application but before S30 applied visibility.",
+  "correction": "Setup establishes Ledger protection and hidden visibility before S20 authority validation; S30 and completed rerun reassert idempotently.",
+  "real_workspace_retest": "NOT_EXECUTED",
+  "safe_evidence_only": true
+}

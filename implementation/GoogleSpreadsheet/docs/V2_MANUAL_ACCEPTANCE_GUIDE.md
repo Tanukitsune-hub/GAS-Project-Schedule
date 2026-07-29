@@ -1,10 +1,11 @@
-# Manual Acceptance Guide — 2.8.5 R5 Corrective Candidate
+# Manual Acceptance Guide — 2.8.6 Phase 8B Setup Ledger Visibility Candidate
 
-Code Version: `2.8.5-prepilot`
+Code Version: `2.8.6-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `NO-GO_REMOTE_PUBLICATION` pending R5 normal publication and fresh-clone proof
+Current gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` pending corrected source,
+release, transfer, normal publication, and fresh-clone proof
 Automation default: `OFF`
 
 ## Purpose
@@ -49,17 +50,19 @@ transcribed as real Workspace PASS.
 
 ## Company-PC material
 
-After final R5 remote verification only, use the authoritative Japanese
-procedure, 8B-only allow-list, acceptance checklist, stop/rollback checklist,
-synthetic-data specification, and results template in
-`../transfer/v2.8.5-prepilot/`. Do not use the historical
-`V2_SANDBOX_ACCEPTANCE_RESULTS_TEMPLATE.md` for this version.
+Do not use `../transfer/v2.8.5-prepilot/`: it is the immutable failed P10
+historical envelope. Do not manually hide its Ledger, continue its Setup, or
+run its diagnostics. After corrected 2.8.6 publication and independent
+verification only, use the separately generated Japanese procedure, 8B-only
+allow-list, acceptance checklist, stop/rollback checklist, synthetic-data
+specification, results template, and failed-Sandbox recovery guide in the new
+2.8.6 transfer envelope.
 
 ## Prohibited status upgrades
 
 This guide never declares Phase 8B GO/PASS, Phase 8C GO, production ready, or
-pilot ready. Before R5 normal GitHub publication and fresh-clone verification,
-the maximum status is `NO-GO_REMOTE_PUBLICATION`. After those conditions and
-transfer-envelope verification, the maximum status is only
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER`; it is not a Sandbox PASS or execution
+pilot ready. Before corrected publication and fresh-clone verification, the
+maximum status is `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. After those conditions
+and transfer-envelope verification, the maximum status is only
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; it is not a Sandbox PASS or execution
 authorization.

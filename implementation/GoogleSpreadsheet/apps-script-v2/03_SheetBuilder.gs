@@ -179,7 +179,11 @@ var WorkOsSheetBuilder = (function () {
         sheet.hideColumns(firstHidden + 1, schema.length - firstHidden);
       }
     }
-    ensureSmallProtections(sheet, sheetName, schema);
+    if (sheetName === WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER) {
+      ensureTaskAuthorityLedgerProtection(sheet, schema);
+    } else {
+      ensureSmallProtections(sheet, sheetName, schema);
+    }
 
     return WorkOsSchemas.buildColumnMapFromIds(ids);
   }
@@ -336,6 +340,87 @@ var WorkOsSheetBuilder = (function () {
     }
   }
 
+  /*
+   * The Task Authority Ledger is a Setup-owned control plane.  Unlike the
+   * visible business sheets, it must be both protected and hidden before any
+   * authority read can be attempted.  Keep the write boundary explicit here
+   * so Setup can normalize a native Sheets write failure into a safe,
+   * deterministic stage error without relaxing the repository validator.
+   */
+  function ensureTaskAuthorityLedgerProtection(sheet, schema) {
+    try {
+      ensureSmallProtections(
+        sheet,
+        WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER,
+        schema || WorkOsSchemas.getSheetSchema(
+          WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+        )
+      );
+    } catch (error) {
+      if (error instanceof WorkOsAppError) {
+        throw error;
+      }
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_PROTECTION_SETUP_FAILED',
+        'S20_CREATE_SCHEMAS',
+        false,
+        'Task Authority Ledger protection could not be established safely.'
+      );
+    }
+  }
+
+  function ensureTaskAuthorityLedgerControlPlane(spreadsheet) {
+    var sheetName = WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+    var ledger = spreadsheet && spreadsheet.getSheetByName
+      ? spreadsheet.getSheetByName(sheetName)
+      : null;
+    if (!ledger) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_MISSING',
+        'S20_CREATE_SCHEMAS',
+        false,
+        'Task Authority Ledger is missing during Setup control-plane establishment.'
+      );
+    }
+
+    ensureTaskAuthorityLedgerProtection(
+      ledger,
+      WorkOsSchemas.getSheetSchema(sheetName)
+    );
+
+    var visibilityChanged = false;
+    try {
+      if (typeof ledger.isSheetHidden !== 'function' ||
+          typeof ledger.hideSheet !== 'function') {
+        throw new Error('LEDGER_VISIBILITY_API_UNAVAILABLE');
+      }
+      if (!ledger.isSheetHidden()) {
+        ledger.hideSheet();
+        visibilityChanged = true;
+      }
+      if (ledger.isSheetHidden() !== true) {
+        throw new Error('LEDGER_VISIBILITY_POSTCONDITION_FAILED');
+      }
+    } catch (error) {
+      if (error instanceof WorkOsAppError) {
+        throw error;
+      }
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_VISIBILITY_SETUP_FAILED',
+        'S20_CREATE_SCHEMAS',
+        false,
+        'Task Authority Ledger could not be hidden safely during Setup.'
+      );
+    }
+
+    return {
+      sheet: sheetName,
+      hidden: true,
+      protection_reasserted: true,
+      visibility_changed: visibilityChanged
+    };
+  }
+
   function applyAllSchemas(spreadsheet) {
     var columnMaps = {};
     WorkOsSheetOrder.forEach(function (sheetName) {
@@ -448,11 +533,18 @@ var WorkOsSheetBuilder = (function () {
           'Validation/Protection更新対象Sheetがありません。'
         );
       }
-      ensureSmallProtections(
-        sheet,
-        sheetName,
-        WorkOsSchemas.getSheetSchema(sheetName)
-      );
+      if (sheetName === WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER) {
+        ensureTaskAuthorityLedgerProtection(
+          sheet,
+          WorkOsSchemas.getSheetSchema(sheetName)
+        );
+      } else {
+        ensureSmallProtections(
+          sheet,
+          sheetName,
+          WorkOsSchemas.getSheetSchema(sheetName)
+        );
+      }
       refreshedSheets.push(sheetName);
     });
     return {
@@ -958,6 +1050,8 @@ var WorkOsSheetBuilder = (function () {
     isSheetLogicallyEmpty: isSheetLogicallyEmpty,
     ensureSheets: ensureSheets,
     applyAllSchemas: applyAllSchemas,
+    ensureTaskAuthorityLedgerControlPlane:
+      ensureTaskAuthorityLedgerControlPlane,
     restoreCanonicalTaskHeaders: restoreCanonicalTaskHeaders,
     applyValidationsAndFormats: applyValidationsAndFormats,
     refreshValidationsAndProtections:

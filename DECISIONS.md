@@ -54,9 +54,11 @@ bounded Task-ID observation pass before ledger-only orphan reconciliation.
 **Risk acceptance.** Real Google Workspace failure modes—Sheet protection,
 row deletion/sort behavior, installable triggers, LockService, Gmail, and
 Calendar—remain `NOT_EXECUTED` after independent re-audit unless separately
-authorized. `READY_FOR_PHASE8B_SANDBOX_TRANSFER` permits only carriage of the
-non-confidential Phase 8B package; it is not execution authorization. The
-local fake runtime establishes regression evidence only.
+authorized. `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibits reuse of the
+historical P10 package while the corrected chain is verified. A later
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits only carriage of the
+non-confidential corrected Phase 8B package; it is not execution authorization.
+The local fake runtime establishes regression evidence only.
 
 ## D-039 — Calendar authority loss requires durable arm and owned-event-only compensation
 
@@ -80,3 +82,28 @@ fails closed on a foreign Event. The protocol is specified in
 `docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`; F016 local tests provide
 regression evidence only. This decision does not approve any real Calendar,
 OAuth, deployment, Automation, Phase 8B, Phase 8C, production, or pilot work.
+
+## D-040 — Setup owns Ledger control-plane establishment
+
+**Decision.** Before any Setup authority validation that requires a hidden and
+protected `Task Authority Ledger`, Setup itself must establish that control
+plane idempotently.  S20 performs it after canonical schema application and
+before validation; S30 reasserts it with layout controls; a completed Setup
+rerun reasserts it before its pre-loop authority validation.  The operation is
+limited to canonical Ledger protection and hidden visibility.
+
+**Rationale.** The historical P10 `2.8.5-prepilot` first-time Setup created the
+Ledger and its schema but invoked the strict validator before the later S30
+visibility operation.  It safely stopped with
+`E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at `TASK_AUTHORITY` after S00/S10.  A
+manual hide or a general runtime repair would hide the ordering defect and
+expand trust outside Setup.
+
+**Consequences.** Visibility/protection write failures are deterministic S20
+failures and S20 is not recorded complete.  The validator remains fail-closed;
+Worker, Review, Calendar, diagnostics, Migration, and edit restoration do not
+gain a silent repair path.  The operation never trusts or regenerates
+authority from a Task raw row, note, or snapshot cell.  The P10 package and
+transfer evidence remain immutable historical failures.  Automation stays OFF;
+the current gate is `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until a separate
+2.8.6 source/release/transfer chain is independently verified.

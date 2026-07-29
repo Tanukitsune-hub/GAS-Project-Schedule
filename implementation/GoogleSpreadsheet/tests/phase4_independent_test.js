@@ -958,7 +958,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
   );
   assert.match(
     setupSource,
-    /S99_COMPLETE[\s\S]*READY_FOR_INDEPENDENT_REAUDIT/
+    /S99_COMPLETE[\s\S]*READY_FOR_PHASE8B_SANDBOX_RETRANSFER/
   );
   assert.strictEqual(/\bCalendar\./.test(diagnosticSource), false);
   assert.strictEqual(/\bCalendarApp\b/.test(diagnosticSource), false);

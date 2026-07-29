@@ -1,8 +1,8 @@
 # R4/R5 Verification Matrix
 
 Date: 2026-07-29
-Candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`  
-Gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only; real Workspace remains `NOT_EXECUTED`
+Candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real Workspace retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -45,6 +45,12 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 | R4-32 | Release checksum/parity/provenance | `verify scripts` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-33 | Secret scan/fresh clone/remote SHA and transfer-checksum portability | `static/fresh clone` | REMOTE_FRESH_CLONE_PASS_P9_CANONICAL_CHECKSUM |
 
+## Phase 8B Setup blocker traceability
+
+| ID | Requirement | Evidence | State |
+|---|---|---|---|
+| PHASE8B-SETUP-01 | Setup establishes and verifies the protected-hidden Ledger control plane before S20 authority validation; S00/S10 partial resume, control-plane failure, S30, completed rerun, and no-fallback remain fail-closed | `phase8b_setup_ledger_visibility_test.js`; safe incident record | LOCAL_REGRESSION_PASS; corrected-package real Workspace retest `NOT_EXECUTED` |
+
 ## 13 write routes
 
 | ID | Route | Authority path |
@@ -65,10 +71,10 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 
 ## Status rule
 
-P5 publication is historical evidence; R5 has a new Source/Release pair. Only
-final R5 local/static/release verification plus normal non-force GitHub
-publication, final remote SHA resolution, fresh-clone verification, and the
-8B-only transfer envelope can change the maximum status to
-`READY_FOR_PHASE8B_SANDBOX_TRANSFER`. This matrix does not declare Phase 8B
-GO/PASS, Phase 8C GO, production ready, or pilot ready. Real Google Workspace
-evidence remains `NOT_EXECUTED`.
+P5/R5/P10 publication is historical evidence. `PHASE8B-SETUP-01` makes the
+current gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. Only a corrected 2.8.6
+source/release/transfer chain with normal non-force publication, final remote
+SHA resolution, and detached fresh-clone verification can change the maximum
+status to `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix does not declare
+Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready. Corrected
+package real Google Workspace evidence remains `NOT_EXECUTED`.

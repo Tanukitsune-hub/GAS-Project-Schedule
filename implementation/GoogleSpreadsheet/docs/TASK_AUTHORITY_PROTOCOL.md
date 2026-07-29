@@ -1,8 +1,8 @@
 # Task Authority Protocol — Source Copy
 
-Code `2.8.5-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`  
-Current corrective-integration gate: `NO-GO_REMOTE_PUBLICATION` pending R5
-normal publication and fresh-clone proof
+Code `2.8.6-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
+Current corrective-integration gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+pending the corrected Source A6/Release B6/transfer/fresh-clone proof
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept
@@ -31,6 +31,11 @@ implementation without using a legacy external context.
   reuses its detached `qrow_` record.
 - When editor details are available, only the effective user may remain on the
   authority ledger protection; otherwise validation fails closed.
+- Setup alone establishes canonical Ledger protection and hidden visibility
+  before S20 authority validation. The same idempotent control-plane operation
+  is reasserted by S30 and a completed Setup rerun. A write failure leaves S20
+  incomplete; Worker, Review, Calendar, diagnostics, Migration, and edit
+  restoration receive no general repair permission.
 - Setup may repair/rebind/isolate; Quick and Deep Diagnostics are explicitly
   read-only. Migration uses bounded row validation and bounded Task-ID
   observation before shared ledger-only orphan reconciliation.
@@ -53,5 +58,7 @@ preservation, including preservation across an authority-valid ineligible
 forced re-enqueue.
 
 Local fake-runtime tests are evidence only. Real Google Workspace behavior is
-`NOT_EXECUTED`; this document does not declare Phase 8B GO/PASS, Phase 8C GO,
+`NOT_EXECUTED` for the corrected package; the historical P10 package failed
+first-time Setup safely and is immutable evidence, not an executable transfer
+target. This document does not declare Phase 8B GO/PASS, Phase 8C GO,
 production ready, or pilot ready.

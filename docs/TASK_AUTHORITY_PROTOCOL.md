@@ -1,13 +1,13 @@
-# Task Authority Protocol — Code 2.8.5-prepilot
+# Task Authority Protocol — Code 2.8.6-prepilot
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.5-prepilot` |
+| Code | `2.8.6-prepilot` |
 | Task Schema | `2.6` / 50 columns |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only; all real Workspace behavior remains `NOT_EXECUTED` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real Workspace retest remains `NOT_EXECUTED` |
 
 ## Selected design
 
@@ -47,6 +47,27 @@ Workspace verification.
 7. `QUARANTINED`, `UNRECOVERABLE`, and `ORPHANED` records are non-operational.
    A copied-row detached `qrow_` record is reused on repeat isolation rather
    than appended again.
+
+## Setup-owned control-plane establishment
+
+The Ledger invariant applies before authority validation, including a fresh
+workbook with no Task records. `2.8.6-prepilot` therefore assigns only Setup
+the bootstrap write that ensures canonical Ledger protection and hidden
+visibility before S20 authority validation. It is idempotent and has these
+boundaries:
+
+| Setup path / failure point | Required action | Safe result |
+|---|---|---|
+| Fresh S20 after canonical schemas | establish Ledger protection, hide Ledger, verify postcondition, then validate authority | no manual hide is required; S20 may complete only after the control plane exists |
+| Observed S00/S10 partial state | execute the same Setup-owned operation before validation | resume without recreating Sheets, Task records, or authority |
+| Protection or visibility write failure | throw deterministic S20 control-plane failure before stage persistence | S20 remains incomplete and the validator stays fail-closed |
+| S30 layout application | reassert protection and hidden visibility idempotently | layout rerun does not duplicate protections or change authority |
+| Completed Setup rerun | reassert before pre-loop authority validation | protects against a visibly drifted Ledger without granting runtime repair rights |
+
+Worker, Review, Calendar, diagnostics, Migration, and edit restoration do not
+call this bootstrap operation. It does not trust a Task raw row, cell note, or
+`authoritative_snapshot_json`, and it does not create or rebaseline a ledger
+record.
 
 ## State and fault matrix
 
@@ -118,7 +139,9 @@ exclusion, authority loss before and after the final pre-I/O revalidation,
 armed crash recovery, foreign-event refusal, and migration pause/resume. They
 use an in-memory fake Apps Script environment. Real Google Workspace Sheet
 protection, trigger, lock, Gmail, and Calendar behavior remain `NOT_EXECUTED`
-pending independent re-audit.
+pending independent re-audit. `phase8b_setup_ledger_visibility_test.js` adds
+fake-runtime coverage for fresh S20 ordering, the observed S00/S10 partial
+resume, visibility/protection failures, S30, completed rerun, and no-fallback.
 
 P5 publication evidence for A5.2/B5.2 and fixed target `3442ac...` remains
 historical evidence. The retained A5.3/B5.3 candidate exposed a second High
@@ -129,6 +152,11 @@ fresh clone reran the local/static source and package checks. Historical P7
 then exposed a raw-checkout-byte transfer checksum portability defect;
 P8 published the canonical UTF-8 text checksum correction and a fresh clone
 passed its verifier. P9 `ab6b1db...` was then normal-pushed, resolved from
-GitHub, and independently rechecked in a new fresh clone. The maximum status
-is only `READY_FOR_PHASE8B_SANDBOX_TRANSFER`: non-confidential Phase 8B
-carriage, not Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
+GitHub, and independently rechecked in a new fresh clone. Those facts remain
+historical, but the exact P10 package then failed first-time Setup with
+`E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN`; `PHASE8B-SETUP-01` makes the current gate
+`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. A separately published and fresh-clone
+verified 2.8.6 transfer ref may advance only to
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`: carriage of a non-confidential
+corrected package, not Phase 8B PASS, Phase 8C GO, production ready, or pilot
+ready.

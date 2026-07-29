@@ -1,8 +1,18 @@
-# Google Workspace Personal Work OS v2 - 2.8.5-prepilot / Round 4 Remediation
+# Google Workspace Personal Work OS v2 - 2.8.6-prepilot / Phase 8B Setup Ledger Visibility Remediation
 
-## Current R4 authority boundary
+## Current authority and Setup boundary
 
-`2.8.5-prepilot` resolves R4-01 through R4-06.  Task authority is now a
+`2.8.6-prepilot` retains the R4/R5 authority contract and remediates
+`PHASE8B-SETUP-01`: the historical P10 initial Setup stopped safely with
+`E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` because S20 validated hidden visibility
+before the later S30 visibility stage.  Setup now owns an explicit idempotent
+Ledger control-plane operation: after canonical schemas, S20 establishes
+protection and hidden visibility before validation; S30 and completed Setup
+reruns reassert the same control plane.  Visibility/protection write failure
+leaves S20 incomplete and fail-closed.  This does not create a general runtime,
+diagnostic, Worker, Review, Calendar, Migration, or edit-restore repair path.
+
+Task authority remains a
 protected hidden `Task Authority Ledger` with two versioned slots.  The
 visible Task row is written once between durable `PREPARED` and `COMMITTED`
 ledger states; `authoritative_snapshot_json` and cell notes are projections
@@ -31,16 +41,20 @@ ledger has 21 columns.
 
 Canonical state-transition documentation is in
 `docs/TASK_AUTHORITY_PROTOCOL.md`; the offline workflow visualization is
-`visualizations/task_authority_protocol_v2_8_5.html`.  The prior Round 3
+`visualizations/task_authority_protocol_v2_8_6.html`.  The prior Round 3
 backup directory was local-only and was not present in GitHub; this historical
 fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
-Current versions are Code `2.8.5-prepilot`, Schema `2.6`, AI Schema `2.0`,
-and Migration `3`.  Automation remains OFF by default.  The highest possible
-status, even after local tests pass, is `READY_FOR_INDEPENDENT_REAUDIT`; this
-does not declare Phase 8B GO/PASS, Phase 8C GO, production readiness, or pilot
-readiness.
+Current versions are Code `2.8.6-prepilot`, Schema `2.6`, AI Schema `2.0`,
+and Migration `3`. Automation remains OFF by default. The current gate is
+`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until a separate corrected source,
+release, transfer, normal-publication, and fresh-clone verification chain is
+complete. Corrected-package real Workspace retest is `NOT_EXECUTED`. A later
+maximum `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits carriage only; it does
+not declare Phase 8B GO/PASS, Phase 8C GO, production readiness, or pilot
+readiness. The failed P10 v2.8.5 package is immutable historical evidence and
+is not a manual-hide workaround or an executable transfer target.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 
@@ -76,11 +90,11 @@ Phase 7は失敗を`エラー・再実行`へ1 subsystem・1 safe reference単�
 
 手動Gmail取込はThread単位ではなく正確なMessage ID単位で完了状態を抑止し、同じThreadの次の未処理`手動/取込`へ進みます。Thread内の`手動/除外`は引き続き最優先です。Setup再実行は既存Schema 2.2／2.3環境を2.4へデータ保持で拡張した後、全行のValidation、owner-only Protection、Task／Errorsの行拡張範囲を冪等に再整備します。
 
-`2.8.4-prepilot`の段落はRound 3時点の履歴です。そこに記した47列snapshot／cell-note mirrorは、Round 4では正本として使用しません。現行の`2.8.5-prepilot`契約は、このREADME先頭のprotected hidden `Task Authority Ledger`、two-slot protocol、no-fallback、row単位quarantineを正とします。
+`2.8.4-prepilot`の段落はRound 3時点の履歴です。そこに記した47列snapshot／cell-note mirrorは、Round 4以降では正本として使用しません。現行の`2.8.6-prepilot`契約は、このREADME先頭のSetup-owned protected hidden `Task Authority Ledger`、two-slot protocol、no-fallback、row単位quarantineを正とします。
 
 物理更新の`row_version`と人間の業務変更を表す`business_version`を分離しました。Reviewはbusiness version、target identity、staged values、manual fieldsをguardとし、Calendar metadataやsync timestampだけの変化では拒否しません。Task editはCalendar reconcile intentをTask行へ先にdurable commitし、Outbox enqueue成功後だけexact intent versionでacknowledgeします。Outbox欠落、append失敗、Lock timeout、enqueue直後の再実行でもbounded recoveryがcreate/update/delete/no-op intentを冪等に回収します。open Reviewの明示的な`選択したReviewを再stage`は確認dialogと1行selection、row-bound再検証を必須とします。手動Gmail候補はThread間とThread内のどちらも古い未処理Messageを先に選びます。
 
-`release/v2.8.4-prepilot/`の記述はRound 3の履歴です。Round 4では、Source A5を確定してから`release/v2.8.5-prepilot/`（`TEST_MODE=true`、Automation OFF、Test Harness同梱）と`release/v2.8.5-prepilot-phase8c/`（監査済みの`TEST_MODE=false`変換、`99_TestHarness.gs`除外）を生成します。両packageは`Tanukitsune-hub/GAS-Project-Schedule`の実在するSource commitを明記し、release content commitはmanifest自身を含むGit commitとして追跡します。実Google Workspaceは未実行であり、最高statusは`READY_FOR_INDEPENDENT_REAUDIT`を超えません。Phase 8B GO/PASS、Phase 8C GO、Pilot readyは宣言しません。
+`release/v2.8.4-prepilot/`および`release/v2.8.5-prepilot/`の記述は歴史的証跡です。P10のv2.8.5 packageは初回Setup失敗後も変更せず、実行・再搬入には使用しません。Round 6ではSource A6を確定してから`release/v2.8.6-prepilot/`（`TEST_MODE=true`、Automation OFF、Test Harness同梱）と`release/v2.8.6-prepilot-phase8c/`（監査済みの`TEST_MODE=false`変換、`99_TestHarness.gs`除外）を生成します。両packageは`Tanukitsune-hub/GAS-Project-Schedule`の実在するSource commitを明記し、release content commitはmanifest自身を含むGit commitとして追跡します。実Google Workspace再検証は未実施であり、Source時点のgateは`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`です。Phase 8B GO/PASS、Phase 8C GO、Pilot readyは宣言しません。
 
 Phase 8AではApps Script sourceを変更せず、`release/v2.8.1-prepilot/`へ
 TEST_MODE=true・Automation OFFの決定的な非本番Sandbox導入packageを作成しました。
@@ -223,7 +237,7 @@ S50とS60は公開Setupから実行されます。S80はTask編集用Triggerだ�
 65. Calendar Outbox enqueue後の再実行はexact intent versionのacknowledgeとjob冪等性により重複しない。
 66. `選択したReviewを再stage`はopen Reviewの1行selectionと確認dialogだけを受け付け、最新business versionとtarget identityへ更新する。
 67. 手動Gmail候補はThread間と同一Thread内の両方で古い未処理Messageから進む。
-68. Code／Schema／AI Schema／Migrationは`2.8.5-prepilot`／`2.6`／`2.0`／`3`であり、release provenanceはRepository、Source commit、manifest自身を含むrelease content commitを区別する。
+68. Code／Schema／AI Schema／Migrationは`2.8.6-prepilot`／`2.6`／`2.0`／`3`であり、release provenanceはRepository、Source A6、direct-child Release B6、transfer ref、evidence-only closureを区別する。
 
 Google Workspace実環境で実行していない項目はPASSにせず、未実施として記録してください。
 
@@ -257,7 +271,7 @@ Test HarnessのTaskは完全な架空データです。認証情報をSheetセ�
 ## 既知の制約
 
 - Google Workspace固有のData Validation、Protection、Advanced Gmail/Calendar Service、OAuth、実際のlabel hierarchy、専用Calendar所有判定、Event CRUD、選択範囲メニュー、式neutralizationの`getFormula()`確認、Script Lock競合、実行時間は実環境での手動受入が必要です。ローカルPASSはこれらの実環境PASSを意味しません。
-- Code Versionは`2.8.5-prepilot`、Schema Versionは`2.6`、AI Schema Versionは`2.0`、Migration Versionは`3`として分離しています。
+- Code Versionは`2.8.6-prepilot`、Schema Versionは`2.6`、AI Schema Versionは`2.0`、Migration Versionは`3`として分離しています。
 - Phase 2 entry pointは`PREPROCESSED`で停止します。Mock縦フローはMock分類、Task/Review、AIラベル、Calendar Outboxを扱いますが、実AIを呼びません。
 - installable edit TriggerはSetupでTask編集用に1件だけ作成します。time-driven TriggerはSetupから作成せず、明示的有効化と全前提条件を満たす場合だけ管理します。現在の未承認・実Transport未実装構成では作成を拒否します。
 - Calendar Eventは専用Calendar内の本system所有markerを持つEventだけを更新・削除します。Calendar側の変更をTask正本へ逆流させません。

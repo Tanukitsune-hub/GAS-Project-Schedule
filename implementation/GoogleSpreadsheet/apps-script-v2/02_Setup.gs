@@ -446,6 +446,9 @@ var WorkOsSetup = (function () {
     var result =
       WorkOsSheetBuilder.refreshValidationsAndProtections(spreadsheet);
     assertSetupBudget(budget, 'SETUP_LAYOUT_REFRESH');
+    result.task_authority_control_plane =
+      WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
+    assertSetupBudget(budget, 'SETUP_LAYOUT_REFRESH');
     return result;
   }
 
@@ -500,15 +503,23 @@ var WorkOsSetup = (function () {
     }
     if (stage === 'S20_CREATE_SCHEMAS') {
       var columnMaps = WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+      var taskAuthorityControlPlane =
+        WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
       return {
         column_maps: columnMaps,
+        task_authority_control_plane: taskAuthorityControlPlane,
         task_authority: validateTaskAuthorityForSetup(spreadsheet)
       };
     }
     if (stage === 'S30_APPLY_SMALL_VALIDATIONS') {
       WorkOsSheetBuilder.applyValidationsAndFormats(spreadsheet);
+      var taskAuthorityControlPlaneS30 =
+        WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
       WorkOsSheetBuilder.applyVisibility(spreadsheet);
-      return { applied: true };
+      return {
+        applied: true,
+        task_authority_control_plane: taskAuthorityControlPlaneS30
+      };
     }
     if (stage === 'S40_SEED_SAFE_SETTINGS') {
       return WorkOsSheetBuilder.seedSafeSettings(spreadsheet);
@@ -575,7 +586,7 @@ var WorkOsSetup = (function () {
       return {
         completed: true,
         phase_boundary:
-          'READY_FOR_INDEPENDENT_REAUDIT'
+          'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
       };
     }
     throw new WorkOsAppError(
@@ -623,6 +634,7 @@ var WorkOsSetup = (function () {
       );
       var setupAuthority = null;
       if (completed.indexOf('S20_CREATE_SCHEMAS') !== -1) {
+        WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
         setupAuthority = validateTaskAuthorityForSetup(spreadsheet);
       }
       assertCompletedStageIntegrity(completed, spreadsheet, budget);
