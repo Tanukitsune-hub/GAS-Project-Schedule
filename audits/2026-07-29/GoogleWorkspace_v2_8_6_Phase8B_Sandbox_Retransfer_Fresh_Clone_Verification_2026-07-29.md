@@ -92,7 +92,9 @@ corrected external digest.
 
 - The normal remote branch head resolved to T6.1 before this evidence commit.
 - Draft PR #8 remains open and Draft against `main`; it is not merged.
-- GitHub Actions / repository CI is not configured for this scope: `NOT EXECUTED`.
+- The repository retains three active temporary historical GitHub Actions
+  workflows, but no run or combined-status evidence targets this branch/ref;
+  CI evidence for this scope is `NOT EXECUTED`.
 - No real Google Workspace, Apps Script import, Setup, Gmail, Calendar, OAuth,
   Provider, deployment, `clasp push`, trigger, Automation, credential, or real
   data operation was performed.

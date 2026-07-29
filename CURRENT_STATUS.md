@@ -101,5 +101,7 @@ Phase 8B PASS, Phase 8C GO, production ready, pilot ready, real data approval,
 OAuth consent, deployment, `clasp push`, Automation enablement, or a real
 Workspace action.
 
-No GitHub-native CI workflow/run or combined-status evidence exists for this
-PR #8 scope.  Fresh-clone local/static validation is the required evidence.
+No GitHub Actions run or combined-status evidence exists for this PR #8 scope.
+The repository retains three active historical temporary workflows, but none
+targeted this branch/ref; CI evidence for this scope is `NOT EXECUTED`.
+Fresh-clone local/static validation is the required evidence.
