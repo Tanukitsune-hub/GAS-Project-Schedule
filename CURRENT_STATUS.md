@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 Candidate version: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
@@ -13,8 +13,10 @@ immutable historical records.  A first-time Setup using the exact P10 Phase
 8B package then safely failed with `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at
 `TASK_AUTHORITY`, after only `S00_VALIDATE_ENV` and `S10_CREATE_SHEETS`.
 Finding `PHASE8B-SETUP-01` therefore supersedes P10 as a transfer target.  The
-current 2.8.6 source candidate is deliberately no-go until a new additive
-source/release/transfer chain is independently published and reverified.
+current 2.8.6 source candidate was deliberately no-go until a new additive
+source/release/transfer chain was independently published and reverified. That
+condition is now satisfied for the fixed T6.1 transfer ref only; it remains a
+carriage-only status and not an execution authorization.
 
 ## Provenance state
 
@@ -35,6 +37,11 @@ source/release/transfer chain is independently published and reverified.
 | P9 transfer-envelope evidence | `ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b` | normal-pushed; GitHub resolution, fresh-clone 41-suite validation, package parity, canonical transfer checksum, allow-list, and scans PASS |
 | P10 fixed transfer reference | `1a1f9df65dacf3a031409d724cb2906b58900f77` | independently verified from a detached fresh HTTPS clone; the fixed non-confidential Phase 8B transfer reference |
 | Phase 8B Setup blocker | `PHASE8B-SETUP-01` | High; observed only on failed historical P10 initial Setup; safe evidence preserved, corrected-package real retest pending |
+| Source A6 | `8e8e3e4a5f2288985554b3467a5b68814e7bab21` | additive source/tests/tools/canonical-docs/visualization/recovery guide; excludes v2.8.6 release and transfer payloads |
+| Release B6 | `49f6774242e11f3c4ae1f0881dc4a7e13c5aad23` | direct child of A6; exactly both v2.8.6 packages and the implementation report |
+| Transfer T6 | `39205ff9d0a7df79f9e0892b02ab73cac1a7dc14` | retained transfer-envelope generation record; superseded only for an external-digest record correction |
+| Fixed transfer T6.1 | `863217b99dfa1ad682a8f4dd1989212b0a8d548b` | normally pushed, GitHub-resolved final transfer ref; fresh-clone static verification PASS |
+| Evidence-only closure | `SELF (this commit)` | records the T6.1 proof and corrected documentation digest; it is not a transfer target and changes no package/transfer/source/test/tool file |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.
@@ -53,6 +60,8 @@ The fixed P10 verification record is
 the later evidence-only commit is not a transfer target.
 The safe incident record for the superseding blocker is
 `audits/2026-07-29/GoogleWorkspace_v2_8_6_Phase8B_Setup_Ledger_Visibility_Blocker_Incident_2026-07-29.md`.
+The final T6.1 fresh-clone verification is
+`audits/2026-07-29/GoogleWorkspace_v2_8_6_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-29.md`.
 
 ## Historical R5 state and current 2.8.6 correction
 
@@ -66,6 +75,7 @@ The safe incident record for the superseding blocker is
 | Static validation | `tools/validate_apps_script_v2.js`: 11/11 PASS; 22 `.gs` files. |
 | R5 release packages | 8B: 27 files / 23 payload; 8C: 25 files / 22 payload; checksum, parity, allow-list, provenance, and secret scans PASS from the P6 fresh clone. |
 | Historical company-PC transfer materials | P6 source/release proof, P8 canonical-text checksum portability proof, P9 final-head proof, and P10 fixed-ref verification PASS; P10 itself is now historical failed evidence and may not be used. |
+| Corrected 2.8.6 final fresh clone | T6.1: 42 suites, 619 PASS / 0 FAIL / 11 explicit skips; F016 7/7; validator 11/11 over 22 `.gs`; 8B/8C verifier, parity, 27/27 allow-list, 26/26 package checksum, transfer checksum, secret/local-path scan, and remote consistency 8/8 PASS. |
 
 The 2.8.6 correction makes Ledger protection and hidden visibility an explicit
 Setup-owned, idempotent control-plane operation before hidden/protection
@@ -78,19 +88,18 @@ real Workspace retest remains `NOT_EXECUTED`.
 
 ## Gate and recovery boundary
 
-`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibits use of the old package and all
-real Workspace action while the corrected 2.8.6 Source A6/Release B6/transfer
-chain is created and independently verified.  Automation stays OFF.  Do not
-manually hide the Ledger, continue Setup, or run diagnostics with P10; preserve
-the failed workbook as evidence.  The Japanese recovery guide gives the only
-safe handoff procedure.
+The historical `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibited reuse of the
+old package and all real Workspace action while the corrected Source A6 /
+Release B6 / transfer chain was created and independently verified. Automation
+remains OFF. Do not manually hide the Ledger, continue Setup, or run
+diagnostics with P10; preserve the failed workbook as evidence.
 
-Only after normal publication and a fresh detached HTTPS clone of a new fixed
-2.8.6 transfer ref passes all required checks may this status advance to
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`.  That future status permits carriage
-of a non-confidential corrected package only.  It never means Phase 8B PASS,
-Phase 8C GO, production ready, pilot ready, real data approval, OAuth consent,
-deployment, `clasp push`, Automation enablement, or a real Workspace action.
+The normal-pushed T6.1 fixed ref passed the required target-branch fresh-clone
+checks. The current `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status permits
+carriage of a non-confidential corrected Phase 8B package only. It never means
+Phase 8B PASS, Phase 8C GO, production ready, pilot ready, real data approval,
+OAuth consent, deployment, `clasp push`, Automation enablement, or a real
+Workspace action.
 
 No GitHub-native CI workflow/run or combined-status evidence exists for this
 PR #8 scope.  Fresh-clone local/static validation is the required evidence.

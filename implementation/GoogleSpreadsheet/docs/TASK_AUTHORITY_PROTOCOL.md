@@ -1,8 +1,8 @@
 # Task Authority Protocol — Source Copy
 
 Code `2.8.6-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
-Current corrective-integration gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
-pending the corrected Source A6/Release B6/transfer/fresh-clone proof
+Current corrective-integration gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+after the corrected Source A6/Release B6/T6.1 fresh-clone proof
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

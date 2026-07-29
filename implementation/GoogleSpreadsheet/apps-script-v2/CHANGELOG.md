@@ -28,14 +28,13 @@
 
 - Contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` /
   Migration `3`; Automation default remains `OFF`.
-- Current source gate is `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The failed P10
-  v2.8.5 package and transfer evidence are immutable historical evidence and
-  are not executable. Corrected-package real Workspace retest is
+- The package-generation gate was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The
+  failed P10 v2.8.5 package and transfer evidence are immutable historical
+  evidence and are not executable. Corrected-package real Workspace retest is
   `NOT_EXECUTED`.
-- Source A6 requires a new direct-child Release B6 and separate transfer/fresh
-  clone evidence. A future `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits
-  carriage only; it is not Phase 8B PASS, Phase 8C GO, production ready, or
-  pilot ready.
+- Source A6, direct-child Release B6, and the T6.1 fresh-clone proof now
+  establish `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It permits carriage only;
+  it is not Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
 
 ## 2.8.5-prepilot - 2026-07-29 R5 follow-up source correction
 

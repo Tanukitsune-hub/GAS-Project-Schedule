@@ -4,7 +4,7 @@ Last updated: 2026-07-29
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/GoogleWorkspace_v2_8_6_Phase8B_Setup_Ledger_Visibility_Blocker_Remediation_2026-07-29.md`
 Version contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real
+Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; corrected-package real
 Google Workspace retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
@@ -18,7 +18,7 @@ completed before the transfer-only status was recorded.
 Historical R5/P10 local run: 41/41 test files PASS; 611 PASS / 0 FAIL / 11
 explicit real-Workspace/fake-runtime skips. `tools/validate_apps_script_v2.js`
 also passed 11/11 checks over 22 `.gs` files. These historical facts do not
-alter the current v2.8.6 no-go after `PHASE8B-SETUP-01`.
+replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 
 ## Historical provenance labels retained for traceability
 

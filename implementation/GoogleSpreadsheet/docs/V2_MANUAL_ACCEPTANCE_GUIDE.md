@@ -4,8 +4,8 @@ Code Version: `2.8.6-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` pending corrected source,
-release, transfer, normal publication, and fresh-clone proof
+Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` after corrected source,
+release, transfer, normal publication, and fresh-clone proof; carriage only
 Automation default: `OFF`
 
 ## Purpose
@@ -62,7 +62,7 @@ specification, results template, and failed-Sandbox recovery guide in the new
 
 This guide never declares Phase 8B GO/PASS, Phase 8C GO, production ready, or
 pilot ready. Before corrected publication and fresh-clone verification, the
-maximum status is `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. After those conditions
-and transfer-envelope verification, the maximum status is only
+package-generation maximum was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. After
+those conditions and T6.1 transfer-envelope verification, the maximum status is only
 `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; it is not a Sandbox PASS or execution
 authorization.

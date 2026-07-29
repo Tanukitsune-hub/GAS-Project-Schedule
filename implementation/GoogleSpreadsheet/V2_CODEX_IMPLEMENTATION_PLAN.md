@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 Current source candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Scope
 
@@ -47,8 +47,9 @@ used as a current transfer target.
 5. Create direct-child Release B6 containing only both new package directories
    and the Phase 8B Setup Ledger visibility implementation report.
 6. Create a separate corrected transfer candidate and verify it from GitHub in
-   a detached fresh HTTPS clone. Only a subsequent evidence-only closure may
-   state `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; it remains carriage-only.
+   a detached fresh HTTPS clone. T6.1 `863217b...` completed that proof; the
+   evidence-only closure states `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which
+   remains carriage-only.
 
 ## Safety rules
 

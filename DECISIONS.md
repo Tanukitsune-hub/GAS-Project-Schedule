@@ -54,10 +54,11 @@ bounded Task-ID observation pass before ledger-only orphan reconciliation.
 **Risk acceptance.** Real Google Workspace failure modes—Sheet protection,
 row deletion/sort behavior, installable triggers, LockService, Gmail, and
 Calendar—remain `NOT_EXECUTED` after independent re-audit unless separately
-authorized. `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibits reuse of the
-historical P10 package while the corrected chain is verified. A later
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits only carriage of the
-non-confidential corrected Phase 8B package; it is not execution authorization.
+authorized. `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibited reuse of the
+historical P10 package while the corrected chain was verified. The verified
+T6.1 ref now has `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which permits only
+carriage of the non-confidential corrected Phase 8B package; it is not
+execution authorization.
 The local fake runtime establishes regression evidence only.
 
 ## D-039 — Calendar authority loss requires durable arm and owned-event-only compensation
@@ -105,5 +106,7 @@ Worker, Review, Calendar, diagnostics, Migration, and edit restoration do not
 gain a silent repair path.  The operation never trusts or regenerates
 authority from a Task raw row, note, or snapshot cell.  The P10 package and
 transfer evidence remain immutable historical failures.  Automation stays OFF;
-the current gate is `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until a separate
-2.8.6 source/release/transfer chain is independently verified.
+the package-generation gate was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until
+the separate 2.8.6 source/release/transfer chain was independently verified.
+The current gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; it remains
+carriage-only and does not authorize any real Workspace action.

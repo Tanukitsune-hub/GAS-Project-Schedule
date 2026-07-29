@@ -2,7 +2,7 @@
 
 Date: 2026-07-29
 Candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real Workspace retest remains `NOT_EXECUTED`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; corrected-package real Workspace retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -71,10 +71,10 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 
 ## Status rule
 
-P5/R5/P10 publication is historical evidence. `PHASE8B-SETUP-01` makes the
-current gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. Only a corrected 2.8.6
-source/release/transfer chain with normal non-force publication, final remote
-SHA resolution, and detached fresh-clone verification can change the maximum
-status to `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix does not declare
-Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready. Corrected
-package real Google Workspace evidence remains `NOT_EXECUTED`.
+P5/R5/P10 publication is historical evidence. `PHASE8B-SETUP-01` made the
+corrective package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`.
+Source A6, direct-child Release B6, normal non-force publication, final remote
+SHA resolution, and detached T6.1 fresh-clone verification now establish the
+maximum status `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix does not
+declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.
+Corrected-package real Google Workspace evidence remains `NOT_EXECUTED`.

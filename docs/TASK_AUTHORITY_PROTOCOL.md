@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real Workspace retest remains `NOT_EXECUTED` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; corrected-package real Workspace retest remains `NOT_EXECUTED` |
 
 ## Selected design
 
@@ -154,9 +154,9 @@ P8 published the canonical UTF-8 text checksum correction and a fresh clone
 passed its verifier. P9 `ab6b1db...` was then normal-pushed, resolved from
 GitHub, and independently rechecked in a new fresh clone. Those facts remain
 historical, but the exact P10 package then failed first-time Setup with
-`E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN`; `PHASE8B-SETUP-01` makes the current gate
-`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. A separately published and fresh-clone
-verified 2.8.6 transfer ref may advance only to
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`: carriage of a non-confidential
-corrected package, not Phase 8B PASS, Phase 8C GO, production ready, or pilot
-ready.
+`E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN`; `PHASE8B-SETUP-01` made the corrective
+package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The separately
+published and fresh-clone verified T6.1 2.8.6 transfer ref has now advanced
+only to `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`: carriage of a
+non-confidential corrected package, not Phase 8B PASS, Phase 8C GO,
+production ready, or pilot ready.

@@ -4,7 +4,7 @@ Last updated: 2026-07-29
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Purpose
 
@@ -64,6 +64,14 @@ itself establishes and verifies the protected-hidden Ledger control plane
 before authority validation; it never weakens the validator or silently
 recreates authority from a visible row, note, or snapshot.
 
+Source A6 `8e8e3e4a5f2288985554b3467a5b68814e7bab21`, direct-child Release B6
+`49f6774242e11f3c4ae1f0881dc4a7e13c5aad23`, and fixed transfer ref T6.1
+`863217b99dfa1ad682a8f4dd1989212b0a8d548b` are the corrected additive chain.
+T6.1 was normal-pushed, resolved from GitHub, and verified from a fresh clone
+with all local/static checks passing. The resulting status is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which permits non-confidential package
+carriage only; real Workspace retest remains `NOT_EXECUTED`.
+
 ## Repository layout
 
 - Canonical context: this file, `MASTER_PLAN.md`, `DECISIONS.md`, and
@@ -77,8 +85,9 @@ recreates authority from a visible row, note, or snapshot.
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`.
 - Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
-- Corrected 2.8.6 package and transfer directories are created only after
-  Source A6, direct-child Release B6, normal publication, and verification.
+- Corrected 2.8.6 package and T6.1 transfer directories are the verified
+  additive outputs of Source A6, direct-child Release B6, normal publication,
+  and fresh-clone verification.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.

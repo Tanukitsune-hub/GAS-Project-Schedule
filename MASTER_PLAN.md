@@ -3,7 +3,7 @@
 Last updated: 2026-07-29
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Completed historic publication path
 
@@ -33,11 +33,12 @@ Current publication gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
 |---|---|---|
 | P8B-1 | Preserve failed P10 evidence | Complete. `1a1f9df...` and all v2.8.5 packages/transfer material remain immutable historical failed evidence; no byte or transfer identity is replaced. |
 | P8B-2 | `PHASE8B-SETUP-01` incident record | Complete in Source A6 scope. Safe evidence records `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at `TASK_AUTHORITY`, with only S00/S10 complete; corrected-package real retest remains `NOT_EXECUTED`. |
-| P8B-3 | Setup-owned Ledger control-plane repair | In progress. S20 establishes protected-hidden Ledger state before validation; S30 and completed Setup rerun reassert it without a runtime/diagnostic repair path or authority fallback. |
-| P8B-4 | Fresh/partial/failure/idempotence regression coverage | In progress. The targeted fake-runtime suite covers empty Setup, observed S00/S10 resume, visibility/protection failure, S30, rerun, and no-fallback. |
-| P8B-5 | Source A6 | Pending. Source/tests/tools/canonical docs/visualization/recovery guidance only; no v2.8.6 package, release report, or transfer envelope. |
-| P8B-6 | Direct-child Release B6 | Pending. Exactly the two v2.8.6 packages and the Phase 8B implementation report. |
-| P8B-7 | Corrected transfer candidate and fresh clone | Pending. New transfer identity, package/allow-list/checksum/provenance/scans, normal publication, and detached HTTPS clone verification are required before any status advance. |
+| P8B-3 | Setup-owned Ledger control-plane repair | Complete in Source A6. S20 establishes protected-hidden Ledger state before validation; S30 and completed Setup rerun reassert it without a runtime/diagnostic repair path or authority fallback. |
+| P8B-4 | Fresh/partial/failure/idempotence regression coverage | Complete locally: the targeted fake-runtime suite covers empty Setup, observed S00/S10 resume, visibility/protection failure, S30, rerun, and no-fallback. |
+| P8B-5 | Source A6 | Complete: `8e8e3e4a5f2288985554b3467a5b68814e7bab21`; source/tests/tools/canonical docs/visualization/recovery guidance only; no v2.8.6 package, release report, or transfer envelope. |
+| P8B-6 | Direct-child Release B6 | Complete: `49f6774242e11f3c4ae1f0881dc4a7e13c5aad23`; exactly the two v2.8.6 packages and the Phase 8B implementation report. |
+| P8B-7 | Corrected transfer candidate and fresh clone | Complete: T6 `39205ff...` transfer generation and T6.1 `863217b...` external-digest correction were normal-pushed. GitHub resolution plus detached target-branch fresh-clone validation, package parity, checksum, allow-list, provenance, and scans PASS. |
+| P8B-8 | Evidence-only closure | Complete in `SELF`. Records T6.1 proof and the corrected external package-tree digest; does not change package, transfer, source, test, or tool files. |
 
 ## Authority recovery objectives
 
@@ -83,8 +84,8 @@ report, or transfer envelope.  Its direct-child Release B6 must contain only:
 ## Gate discipline
 
 P10 proof remains historical but `PHASE8B-SETUP-01` makes it no longer
-transfer-ready.  The current maximum is
-`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`.  Only a new corrected transfer ref
-verified from GitHub in a detached fresh clone may advance the repository to
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; even then it never means Phase 8B
-GO/PASS, Phase 8C GO, production ready, or pilot ready.
+transfer-ready. The corrected T6.1 ref was verified from GitHub in a detached
+target-branch fresh clone, so the current maximum is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It permits non-confidential package
+carriage only and never means Phase 8B GO/PASS, Phase 8C GO, production ready,
+or pilot ready.

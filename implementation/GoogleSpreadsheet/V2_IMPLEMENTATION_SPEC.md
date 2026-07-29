@@ -2,7 +2,8 @@
 
 Last updated: 2026-07-29
 Code: `2.8.6-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Source-candidate gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+Historical package-generation gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
+Current transfer-readiness gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## 1. Scope and non-goals
 

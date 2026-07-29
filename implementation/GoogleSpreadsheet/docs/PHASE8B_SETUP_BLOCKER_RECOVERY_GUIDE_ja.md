@@ -1,7 +1,11 @@
 # Phase 8B Setup blocker — 失敗済みSandboxの安全な扱い
 
 対象: P10 の `2.8.5-prepilot` Phase 8B packageで初回Setupが停止した
-Sandbox。現在の状態は `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` です。
+Sandbox。ここでいう `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` は修正版の
+package-generation 時点の履歴です。固定 transfer ref T6.1 の fresh-clone
+verification 後の現在の上限は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+（非機密 package の搬入のみ）です。実 Google Workspace 再検証は
+`NOT_EXECUTED` のままであり、このガイドは実行を承認しません。
 
 ## 今すぐ維持すること
 

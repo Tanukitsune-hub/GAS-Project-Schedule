@@ -48,13 +48,14 @@ the historic Round 3 report.
 
 Current versions are Code `2.8.6-prepilot`, Schema `2.6`, AI Schema `2.0`,
 and Migration `3`. Automation remains OFF by default. The current gate is
-`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until a separate corrected source,
-release, transfer, normal-publication, and fresh-clone verification chain is
-complete. Corrected-package real Workspace retest is `NOT_EXECUTED`. A later
-maximum `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits carriage only; it does
+`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` while the separate corrected source,
+release, transfer, normal-publication, and fresh-clone verification chain was
+incomplete. T6.1 now has the maximum
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which permits carriage only. It does
 not declare Phase 8B GO/PASS, Phase 8C GO, production readiness, or pilot
-readiness. The failed P10 v2.8.5 package is immutable historical evidence and
-is not a manual-hide workaround or an executable transfer target.
+readiness. Corrected-package real Workspace retest remains `NOT_EXECUTED`.
+The failed P10 v2.8.5 package is immutable historical evidence and is not a
+manual-hide workaround or an executable transfer target.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 

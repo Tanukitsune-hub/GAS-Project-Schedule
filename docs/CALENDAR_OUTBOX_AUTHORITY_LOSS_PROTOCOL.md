@@ -3,7 +3,7 @@
 Contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`; corrected-package real Workspace
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; corrected-package real Workspace
 retest is still `NOT_EXECUTED`
 
 ## Purpose and boundary
