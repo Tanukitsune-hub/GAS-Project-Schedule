@@ -1,12 +1,11 @@
 # 会社PC向け Phase 8B Sandbox 搬入資料
 
-状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
+状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`（非機密 Phase 8B package の搬入のみ）
 
 このフォルダは、R5 corrective integration の remote publication、fresh
 clone verification、および canonical-text transfer checksum portability proof
-を完了した非機密 Phase 8B Sandbox package の搬入手順です。P9 の最終HEAD検証
-が終わるまで搬入は承認されません。いずれの場合も、搬入可の状態は実行承認では
-ありません。
+を完了した非機密 Phase 8B Sandbox package の搬入手順です。P9 の最終HEAD検証も
+完了しています。搬入可の状態は実行承認ではありません。
 
 ## 最重要の境界
 

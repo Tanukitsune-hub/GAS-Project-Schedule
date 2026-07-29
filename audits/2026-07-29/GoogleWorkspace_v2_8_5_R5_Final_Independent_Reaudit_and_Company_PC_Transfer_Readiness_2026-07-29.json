@@ -1,0 +1,62 @@
+{
+  "report": "Google Workspace v2.8.5 R5 Final Independent Re-audit and Company-PC Transfer Readiness",
+  "date": "2026-07-29",
+  "repository": "Tanukitsune-hub/GAS-Project-Schedule",
+  "instruction": "instructions/GoogleWorkspace_v2_8_5_Independent_Reaudit_and_Company_PC_Transfer_Preparation_2026-07-29.md",
+  "fixed_audit_target": "3442ac01f5c544c2b49a40a9af170d1f432312f1",
+  "status": "READY_FOR_PHASE8B_SANDBOX_TRANSFER",
+  "status_scope": "non-confidential Phase 8B package carriage only",
+  "real_google_workspace": "NOT_EXECUTED",
+  "lineage": {
+    "source_a5_2": "ff658bacf1e85864e4008efa32863635e446d47d",
+    "release_b5_2": "d6dda2b3eb9307e7033dcdd5f4718260c4944451",
+    "source_a5_4": "6c4f737c676b3121c42aafabe9d0c677cacd69bb",
+    "release_b5_4": "3e5790672740626f3bec4592c3c7c0b86b47f3b1",
+    "p6": "12538796fed90eb7f95492d477cca44a5d859291",
+    "p7_historical": "45bb4b938b02f2fd56d5d57267f4083a46f5176b",
+    "p8": "784b293c50713597a656bc7d9d1ae51fdaa26f1a",
+    "p9": "ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b",
+    "p10_report": "SELF"
+  },
+  "findings": {
+    "REAUDIT_CAL_01": "RESOLVED_A5_4_B5_4",
+    "REAUDIT_CAL_02": "RESOLVED_A5_4_B5_4",
+    "REAUDIT_TR_01": "RESOLVED_P8_CANONICAL_TEXT_AND_P9_FRESH_CLONE",
+    "unresolved_critical_high_or_transfer_medium": false
+  },
+  "validation": {
+    "fresh_clone_head": "ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b",
+    "test_suites": 41,
+    "passed": 611,
+    "failed": 0,
+    "explicit_skips": 11,
+    "f016": "12 PASS / 0 FAIL",
+    "apps_script_validator": "11/11 PASS; 22 gs files",
+    "remote_publication_consistency": "8/8 PASS",
+    "powershell_parser": "5/5 PASS",
+    "phase8b_verifier": "PASS; 27 package files / 23 payload",
+    "phase8c_verifier": "PASS; 25 package files / 22 payload",
+    "transfer_envelope_verifier": "PASS; 7 non-self canonical records",
+    "allow_list": "PASS; 27/27",
+    "rebuild_byte_parity": "PASS; 8B 27/27; 8C 25/25",
+    "secret_and_local_path_scans": "PASS"
+  },
+  "package_integrity": {
+    "phase8b_payload_sha256": "8c423f402ce8bb1de7aaa35ab70129b9af45c8abf1d0ccfe20dade8d44dea738",
+    "phase8b_tree_sha256": "1d6c78332c39734e8e5d05b30735d5379ba82b8f5d20556553064624d6292060",
+    "phase8b_checksums_sha256": "1ecd877676d84bc6fc02bed60e090619c11b908aebd56805935edaf6c80a5a79",
+    "phase8b_manifest_sha256": "f305c8c5439cd1bfee425ea5130709380080ade5833d87b7dce29cadb73d3f66",
+    "phase8c_payload_sha256": "64e7ec4cf9d452db7c713275e0b2451ff194da9a737c539b8af96b324708ba10"
+  },
+  "prohibitions_retained": [
+    "No Phase 8B PASS",
+    "No Phase 8C GO",
+    "No production or pilot ready declaration",
+    "No deployment, clasp push, OAuth, Automation, trigger, Provider, or real Workspace action"
+  ],
+  "review_focus": [
+    "A5.4/B5.4 boundary and F016 durable compensation preservation",
+    "8B-only allow-list and canonical transfer checksum protocol",
+    "transfer-only interpretation of the READY status"
+  ]
+}

@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `NO-GO_REMOTE_PUBLICATION` pending P9 final-head transfer-envelope verification; all real Workspace behavior remains `NOT_EXECUTED` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only; all real Workspace behavior remains `NOT_EXECUTED` |
 
 ## Selected design
 
@@ -128,8 +128,7 @@ across later forced re-enqueue. P6 normally published that correction and a
 fresh clone reran the local/static source and package checks. Historical P7
 then exposed a raw-checkout-byte transfer checksum portability defect;
 P8 published the canonical UTF-8 text checksum correction and a fresh clone
-passed its verifier. The current P9 envelope record is not yet remote/fresh-
-clone verified, so the gate remains `NO-GO_REMOTE_PUBLICATION`. After that
-check, the maximum status is only `READY_FOR_PHASE8B_SANDBOX_TRANSFER`:
-non-confidential Phase 8B carriage, not Phase 8B PASS, Phase 8C GO,
-production ready, or pilot ready.
+passed its verifier. P9 `ab6b1db...` was then normal-pushed, resolved from
+GitHub, and independently rechecked in a new fresh clone. The maximum status
+is only `READY_FOR_PHASE8B_SANDBOX_TRANSFER`: non-confidential Phase 8B
+carriage, not Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.

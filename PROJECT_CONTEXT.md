@@ -4,7 +4,7 @@ Last updated: 2026-07-29
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `NO-GO_REMOTE_PUBLICATION` pending P9 final-head verification
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_TRANSFER` for non-confidential Phase 8B carriage only
 
 ## Purpose
 
@@ -46,8 +46,9 @@ published the final pair to the target branch; GitHub resolution and a new
 fresh-clone rerun passed. A P7 fresh clone found that raw checkout-byte
 operator checksums were not portable across line-ending forms; P8 corrected
 that transfer-safety Medium with canonical text hashing and a fresh-clone
-verifier. P9 carries the final transfer-envelope update but must complete
-remote/fresh-clone verification before it can restore the transfer-only gate.
+verifier. P9 `ab6b1db8c0d7cc3f0df6bc104cfee39392787d4b` then completed normal
+publication, GitHub resolution, and fresh-clone verification, restoring only
+the transfer-only gate without authorizing execution.
 
 ## Repository layout
 

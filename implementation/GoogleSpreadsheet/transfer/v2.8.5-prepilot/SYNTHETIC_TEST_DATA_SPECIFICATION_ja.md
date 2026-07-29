@@ -1,6 +1,6 @@
 # Phase 8B 用 Synthetic Test Data 仕様
 
-状態: `PENDING_R5_FINAL_HEAD_VERIFICATION`（P9 の remote/fresh-clone 検証待ち）
+状態: `READY_FOR_PHASE8B_SANDBOX_TRANSFER`（非機密 Phase 8B package の搬入のみ）
 
 ## 許可されるデータ
 
