@@ -26,7 +26,7 @@ transfer reference remain preserved evidence; they are not a retransfer path.
 | --- | --- |
 | Package files / payload files | `27 / 23` |
 | Canonical payload SHA-256 | `e734d1d11be637e4b146b448728dd54841df0cb37f0cba53528213f2a564fbfc` |
-| External package-tree SHA-256 | `02442a7afbfb910298aacda739ba4259123baf5edb078526ba7266d531073d34` |
+| External package-tree SHA-256 | `1534bf2ee7215fd7b64acbc8a8b4417814dde628156b7b0912b81ad1b4effc67` |
 | `CHECKSUMS.sha256` file SHA-256 | `52f7808c31a8bde9441b4e258a819787607aa7c2eb73d69db196875f64450ddb` |
 | `DEPLOYMENT_MANIFEST.md` SHA-256 | `7607de2105d7ec9cd57f7b0eff8156ac64303ca0d6b94fa5d6479fa9f412fe52` |
 | Package build prepared at | `2026-07-29T06:27:34.455Z` |
