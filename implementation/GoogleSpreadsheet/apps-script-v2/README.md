@@ -21,11 +21,12 @@ It does not record locale, actual format strings, values, formulas, notes,
 addresses, IDs, URLs, or identities. Quick and Deep Diagnostic remain
 read-only and do not flush or repair.
 
-The source-stage gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. Source A10, direct-child
-Release B10, fixed transfer T10, and evidence E10 are respectively
-`PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and `PENDING_E10`; real Workspace
-retransfer/retest is `NOT_EXECUTED`.
+The verified carriage-only gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`.
+Source A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child
+Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed transfer
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are normally
+published and detached-clone verified. This evidence-only commit is not a
+transfer target; real Workspace retransfer/retest is `NOT_EXECUTED`.
 
 The historical `2.8.9-prepilot` work retains the R4/R5 authority contract,
 historical
@@ -100,9 +101,9 @@ fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
 Current versions are Code `2.8.10-prepilot`, Schema `2.6`, AI Schema `2.0`,
-and Migration `3`. Automation remains OFF by default. Source A10/B10/T10/E10
-are pending and the current source-stage gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. The verified v2.8.7
+and Migration `3`. Automation remains OFF by default. The current
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate is limited to fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6`. The verified v2.8.7
 chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `95bc7240d99124b245e188b8e646eccf6c3ead48`, C7
 `ba175d3994c86dacc76bad3537df97e3e644dc09` (verifier only), and fixed T7
@@ -112,7 +113,8 @@ as an executable target by `PHASE8B-DASHBOARD-NUMBER-FORMAT-01`. Corrected
 Source A9.1, direct-child corrected Release B9.1, and fixed T9 now support
 the immutable historical v2.8.9 evidence chain only; T9 is superseded as an
 execution target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Real Workspace
-retransfer/retest remains `NOT_EXECUTED`.
+retransfer/retest remains `NOT_EXECUTED`; no Phase 8B PASS, Phase 8C GO,
+production-ready, or pilot-ready claim is made.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 

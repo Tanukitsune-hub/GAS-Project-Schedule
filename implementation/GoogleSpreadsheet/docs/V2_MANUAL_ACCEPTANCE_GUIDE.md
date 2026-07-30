@@ -4,13 +4,16 @@ Code Version: `2.8.10-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer `PENDING_T10`; real Workspace retransfer/retest `NOT_EXECUTED`
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Workspace retransfer/retest `NOT_EXECUTED`
 Automation default: `OFF`
 
 Historical note: A9/A9.1/B9.1/T9 and the
 `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` source gate are retained as
 immutable provenance. The repeated 51-cell finding supersedes T9 as an
-execution target.
+execution target. Source A10 and Release B10 correctly retained
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` until T10 was normally
+published and verified; E10 changes the current publication gate without
+rewriting that historical stage evidence.
 
 ## Purpose
 
@@ -64,18 +67,18 @@ transcribed as real Workspace PASS.
 Do not use any v2.8.5 through v2.8.9 transfer as the current execution target.
 They are immutable historical evidence. Do not manually hide the Ledger,
 change Dashboard formats, continue Setup, or run diagnostics as a workaround.
-The v2.8.10 company-PC replacement list must be generated from raw Git blob
-comparison between fixed T9 and final B10. Until fixed T10 and detached-clone
-evidence are complete, no transfer path or changed-file/hash list is approved;
-those items remain `PENDING_T10`.
+The v2.8.10 company-PC replacement list was generated from raw Git blob
+comparison between fixed T9 and final B10. Fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` and its detached-clone
+evidence are complete. Only the exact transfer envelope and its three-file
+replacement order are approved for controlled carriage.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. The current gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; A10/B10/T10/E10 are
-pending. Even a later `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` would mean
-controlled carriage only, never Sandbox PASS or execution authorization.
-Real Workspace retransfer/retest is `NOT_EXECUTED`.
+This guide never declares execution readiness. The current
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate means controlled carriage of exact
+fixed T10 only, never Sandbox PASS or execution authorization. Real Workspace
+retransfer/retest is `NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7

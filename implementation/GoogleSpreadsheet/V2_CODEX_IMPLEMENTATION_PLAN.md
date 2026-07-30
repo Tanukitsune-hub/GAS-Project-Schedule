@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Current remediation candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Scope
 
@@ -12,9 +12,12 @@ does not use or synchronize a legacy context hub.
 
 Corrected Source A9.1, direct-child corrected Release B9.1, and fixed T9 are
 immutable historical evidence. The repeated 51-cell finding supersedes T9 as
-an execution target. Source A10, direct-child Release B10, fixed transfer T10,
-and evidence E10 are `PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and
-`PENDING_E10`; no real Workspace operation is authorized or recorded.
+an execution target. Source A10
+`33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child Release B10
+`3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed transfer T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` are normally published
+and independently verified. This evidence-only commit records closure and is
+not a transfer target; no real Workspace operation is authorized or recorded.
 
 ## Historical work sequence
 
@@ -52,10 +55,11 @@ used as a current transfer target.
 5. Model queued writes in the fake runtime and cover historical no-flush,
    fresh-Range, module-skew, S00–S80 resume, resource invariants, and
    document-consistency negatives.
-6. Create Source A10, its direct-child Release B10, separate fixed transfer
-   T10 derived from raw Git blob comparison to T9, then evidence E10 only after
-   normal publication and detached HTTPS verification. The source gate stays
-   no-go until that proof; real Workspace remains `NOT_EXECUTED`.
+6. Completed: Source A10, its direct-child Release B10, and separate fixed
+   transfer T10 were created; T10 was derived from raw Git blob comparison to
+   T9, normally published, and verified from a detached HTTPS clone. This
+   evidence-only commit records the proof. Real Workspace remains
+   `NOT_EXECUTED`.
 
 ## Historical Phase 8B Setup blocker sequence
 

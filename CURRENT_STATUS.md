@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Candidate version: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
+Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
@@ -13,8 +13,8 @@ Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
-| Fixed transfer | `PENDING_T10` |
+| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
@@ -32,11 +32,14 @@ non-format surface contract. After an actual Setup-only write it flushes,
 reacquires a fresh exact Range, and requires all 51 formats to satisfy the
 canonical postcondition before S90 continues. It also rejects Config, Setup,
 or Dashboard module-contract skew before any write and records only bounded
-normalization evidence. Quick/Deep Diagnostic remain read-only. Source A10,
-direct-child Release B10, fixed T10, and evidence E10 are pending; therefore
-the current gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`, fixed
-transfer is `PENDING_T10`, Automation is `OFF`, and real Workspace retest is
-`NOT_EXECUTED`.
+normalization evidence. Quick/Deep Diagnostic remain read-only. Source A10
+`33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child Release B10
+`3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal
+publication and detached HTTPS fresh-clone verification. This evidence-only
+commit records that proof. The current carriage-only gate is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; Automation is `OFF`, and real
+Workspace retest is `NOT_EXECUTED`.
 
 ## Historical 2.8.9 Dashboard number-format transfer evidence
 
@@ -195,6 +198,10 @@ evidence, not the current transfer target or an execution authorization.
 | Corrected Release B9.1 | `b451d2361db99b4efbde036dafa3e2baf6b5cb97` | direct child of A9.1; contains only both v2.8.9 packages and its implementation report |
 | Fixed transfer T9 | `781f408fcf0853a5fffee9c00d3022ee5e17b1d7` | historical v2.8.9 transfer envelope; normal-pushed and detached-clone verified, then superseded by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` |
 | Evidence E9 | `63841d85da478e401986e80db77e9308c8af9655` | records fixed-T9 fresh-clone proof; not a transfer target and changes no source/test/tool/package/transfer file |
+| Source A10 | `33b9ecee5b0957615fcc27fc822bf7d10a74c86f` | direct child of instruction commit `56fff00bab0b272640ce89c90ffda8a60968e56b`; source/tests/tools/current docs only; excludes generated packages, release report, and transfer envelope |
+| Release B10 | `3f4fe6c52be7bf9c66ad221594e6271feebb57ed` | direct child of A10; exactly both v2.8.10 packages and the write-visibility/module-skew implementation report |
+| Fixed transfer T10 | `927d8567bce64461840cc6f72fbae0c1e636a8e6` | direct child of B10; exactly the flat 11-file transfer envelope; normal-pushed, GitHub-resolved, and detached HTTPS fresh-clone verified |
+| Evidence E10 | `SELF (this evidence-only commit)` | records final remote/fresh-clone proof and current-document reconciliation; not a transfer target and changes no source/test/tool/package/transfer file |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.
@@ -221,6 +228,9 @@ The v2.8.8 fixed-T8 detached-clone verification is
 `audits/2026-07-30/GoogleWorkspace_v2_8_8_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-30.md`.
 The v2.8.9 fixed-T9 detached-clone verification is
 `audits/2026-07-30/GoogleWorkspace_v2_8_9_Fixed_T9_Fresh_Clone_Publication_Audit_2026-07-30.md`.
+The v2.8.10 fixed-T10 detached-clone publication verification is
+`audits/2026-07-31/GoogleWorkspace_v2_8_10_Fixed_T10_Fresh_Clone_Publication_Audit_2026-07-31.md`;
+the evidence-only commit that contains it is not a transfer target.
 
 ## Historical R5 and 2.8.6 correction
 
@@ -255,10 +265,12 @@ diagnostics with P10; preserve the failed workbook as evidence.
 
 The normal-pushed T6.1, T7, T8, and T9 fixed refs passed their respective
 historical verification and remain immutable evidence. T9 is superseded as an
-execution transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`; no
-current retransfer carriage is authorized while T10 remains `PENDING_T10`.
-The current no-go status does not authorize OAuth consent, deployment,
-`clasp push`, Automation enablement, real data, or real Workspace action.
+execution transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is the current
+carriage-only target under `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This status
+does not authorize OAuth consent, Apps Script import, Setup, diagnostics,
+Dashboard refresh, deployment, `clasp push`, Automation enablement, real data,
+or any real Workspace action.
 
 No GitHub Actions run or combined-status evidence exists for this PR #8 scope.
 The repository retains three active historical temporary workflows, but none

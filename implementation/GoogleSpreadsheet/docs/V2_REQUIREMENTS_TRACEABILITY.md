@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/GoogleWorkspace_v2_8_10_Phase8B_Dashboard_Number_Format_Write_Visibility_and_Module_Skew_Remediation_2026-07-31.md`
 Version contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer `PENDING_T10`; real Google Workspace
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Google Workspace
 retransfer/retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
@@ -102,20 +102,20 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 
 ## Phase 8B Dashboard write-visibility / module-skew traceability
 
-The rows below are Source A10 requirements. Their status remains
-`PENDING_A10_VERIFICATION`; no local test result is asserted here before the
-complete Source verification run.
+The rows below are Source A10 requirements. Local, package, remote, and fixed
+T10 detached-clone verification are complete. Real Workspace retransfer/retest
+remains `NOT_EXECUTED`.
 
 | ID | Requirement | Primary evidence | Current evidence |
 |---|---|---|---|
-| WV-01 | A queued format write is made visible with one `SpreadsheetApp.flush()` before the strict reread | `15_Dashboard.gs`; buffered-write runtime suite | PENDING_A10_VERIFICATION; real Workspace retest `NOT_EXECUTED` |
-| WV-02 | Postcondition uses a fresh exact Range and requires all 51 system cells to be canonical | `15_Dashboard.gs`; fresh-Range instrumentation | PENDING_A10_VERIFICATION |
-| WV-03 | Flush unavailable/failure or stale post-flush state fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION` with bounded evidence | Dashboard runtime suite; recovery guide | PENDING_A10_VERIFICATION; no locale/format string captured |
-| WV-04 | Canonical block is idempotent with zero write/flush; Quick/Deep remain zero-write and zero-flush | Dashboard and Diagnostic runtime suites | PENDING_A10_VERIFICATION |
-| WV-05 | Config/Setup/Dashboard mismatch fails as `E_MODULE_VERSION_SKEW` before a write; aligned identifiers may proceed | `00_Config.gs`; `02_Setup.gs`; `15_Dashboard.gs`; module-skew suite | PENDING_A10_VERIFICATION |
-| WV-06 | S00–S80 resume records safe normalization evidence without changing Gmail-label, Calendar, Property, edit-trigger, Automation-OFF, or no-five-minute-trigger invariants | Setup resume/runtime suites | PENDING_A10_VERIFICATION; real Workspace retest `NOT_EXECUTED` |
-| WV-07 | Four canonical documents agree on current version/gate/fixed-ref/path and synthetic T8/T9 skew fails | canonical-document consistency suite | PENDING_A10_VERIFICATION |
-| WV-08 | T10 patch list is produced only from fixed T9 versus final B10 raw Git blobs | v2.8.10 patch-manifest builder/verifier | `PENDING_B10` / `PENDING_T10`; changed files and hashes not pre-assumed |
+| WV-01 | A queued format write is made visible with one `SpreadsheetApp.flush()` before the strict reread | `15_Dashboard.gs`; buffered-write runtime suite | PASS, 22/22 suite assertions; real Workspace retest `NOT_EXECUTED` |
+| WV-02 | Postcondition uses a fresh exact Range and requires all 51 system cells to be canonical | `15_Dashboard.gs`; fresh-Range instrumentation | PASS; exact one-flush/fresh-Range and 51-cell postcondition covered |
+| WV-03 | Flush unavailable/failure or stale post-flush state fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION` with bounded evidence | Dashboard runtime suite; recovery guide | PASS; no locale or actual format string captured |
+| WV-04 | Canonical block is idempotent with zero write/flush; Quick/Deep remain zero-write and zero-flush | Dashboard and Diagnostic runtime suites | PASS; read-only resource snapshots and mutation sentinels covered |
+| WV-05 | Config/Setup/Dashboard mismatch fails as `E_MODULE_VERSION_SKEW` before a write; aligned identifiers may proceed | `00_Config.gs`; `02_Setup.gs`; `15_Dashboard.gs`; module-skew suite | PASS, 5/5 suite assertions |
+| WV-06 | S00–S80 resume records safe normalization evidence without changing Gmail-label, Calendar, Property, edit-trigger, Automation-OFF, or no-five-minute-trigger invariants | Setup resume/runtime suites | PASS; real Workspace retest `NOT_EXECUTED` |
+| WV-07 | Four canonical documents agree on current version/gate/fixed-ref/path and synthetic T8/T9 skew fails | canonical-document consistency suite | PASS, 4/4 assertions at exact fixed T10 |
+| WV-08 | T10 patch list is produced only from fixed T9 versus final B10 raw Git blobs | v2.8.10 patch-manifest builder/verifier | PASS; 3 modified / 20 unchanged / 0 added or removed; `appsscript.json` unchanged |
 
 ## Task write-route inventory (13 routes)
 

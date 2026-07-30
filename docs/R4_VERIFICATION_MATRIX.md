@@ -2,7 +2,7 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; real Workspace retransfer/retest remains `NOT_EXECUTED`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Workspace retransfer/retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -73,7 +73,7 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 
 | ID | Requirement | Evidence | State |
 |---|---|---|---|
-| PHASE8B-DASHBOARD-WRITE-VISIBILITY-01 | An actual Setup-only format write is followed by exactly one flush, a fresh exact Range, and a strict 51-cell postcondition; Config/Setup/Dashboard contract skew fails before any write; bounded Setup evidence is retained; Quick/Deep Diagnostic remain read-only | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_module_version_skew_test.js`; `canonical_document_consistency_test.js`; safe incident record | LOCAL_REGRESSION_PASS; A10/B10/T10/E10 `PENDING`; real Workspace retransfer/retest `NOT_EXECUTED` |
+| PHASE8B-DASHBOARD-WRITE-VISIBILITY-01 | An actual Setup-only format write is followed by exactly one flush, a fresh exact Range, and a strict 51-cell postcondition; Config/Setup/Dashboard contract skew fails before any write; bounded Setup evidence is retained; Quick/Deep Diagnostic remain read-only | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_module_version_skew_test.js`; `canonical_document_consistency_test.js`; fixed-T10 fresh-clone publication audit | LOCAL_REGRESSION_PASS; A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`; B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`; T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`; E10 is this evidence-only commit; real Workspace retransfer/retest `NOT_EXECUTED` |
 
 ## 13 write routes
 
@@ -110,8 +110,8 @@ evidence. The corrected v2.8.9 Source A9.1
 remote resolution, package/transfer verification, and detached HTTPS
 fresh-clone proof. That carriage-only status is historical: the repeated
 write-visibility finding supersedes T9 as an execution transfer target.
-Until Source A10, direct-child Release B10, fixed T10, Evidence E10, normal
-publication, and detached T10 verification all pass, the current gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` and no carriage is
-authorized. This matrix authorizes no Workspace operation; real Google
-Workspace evidence remains `NOT_EXECUTED`.
+Source A10, direct-child Release B10, fixed T10, normal publication, and
+detached T10 verification all passed. This evidence-only commit records the
+closure. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` authorizes controlled carriage
+of exact fixed T10 only. This matrix authorizes no Workspace operation; real
+Google Workspace evidence remains `NOT_EXECUTED`.

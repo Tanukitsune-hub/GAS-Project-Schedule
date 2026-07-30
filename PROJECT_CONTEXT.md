@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,8 +13,8 @@ Publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
-| Fixed transfer | `PENDING_T10` |
+| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
@@ -30,9 +30,12 @@ Historical corrected Source A9.1, direct-child corrected Release B9.1, fixed
 T9, and evidence E9 were normal-published and independently verified in a
 detached HTTPS clone. They remain immutable evidence, but
 `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes T9 as an execution transfer
-target. Source A10, direct-child Release B10, fixed T10, and evidence E10 are
-pending. No current carriage is authorized; real Workspace work remains
-`NOT_EXECUTED` and Automation remains `OFF`.
+target. Source A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`,
+direct-child Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`,
+and fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are
+normally published and independently verified. This evidence-only commit is
+not a transfer target. Real Workspace work remains `NOT_EXECUTED` and
+Automation remains `OFF`.
 
 ## Historical v2.8.9/T9 context
 
@@ -162,10 +165,10 @@ transfer target.
 - Corrected 2.8.6/T6.1, v2.8.7/T7, v2.8.8/T8, and v2.8.9/T9 package and
   transfer directories are immutable historical evidence. None is the
   current execution transfer target.
-- The intended v2.8.10 carriage path is
-  `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`, but fixed
-  T10 is `PENDING_T10`. It must be generated only after direct-child Release
-  B10 and is not part of Source A10.
+- The current v2.8.10 carriage path is
+  `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`, fixed at T10
+  `927d8567bce64461840cc6f72fbae0c1e636a8e6`. T10 is the direct
+  child of Release B10 and is not part of Source A10.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -184,8 +187,9 @@ The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
 evidence. T6.1, T7, T8, and T9 are also historical and are not current
-execution transfer targets. The current
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` status approves no
-carriage while fixed T10 remains `PENDING_T10`. It does not approve real data,
-OAuth, Apps Script import, Setup, Dashboard refresh, Provider configuration,
-deployment, Automation, triggers, or any real Workspace operation.
+execution transfer targets. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` approves
+controlled carriage only from fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6`. It does not approve real
+data, OAuth, Apps Script import, Setup, diagnostics, Dashboard refresh,
+Provider configuration, deployment, Automation, triggers, or any real
+Workspace operation.

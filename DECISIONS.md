@@ -225,7 +225,10 @@ evidence is restricted to a closed normalization state,
 write/flush/postcondition Booleans, checked-cell count, and noncanonical count;
 it excludes locale, actual format strings, content, addresses, IDs, URLs, and
 identities. T9 remains immutable historical evidence but is superseded as an
-execution target. Until the A10/B10/T10/E10 chain and detached-clone proof are
-complete, the gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`, fixed transfer is
-`PENDING_T10`, and real Workspace retransfer/retest is `NOT_EXECUTED`.
+execution target. A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`,
+direct-child B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal
+publication and detached-clone proof. This evidence-only commit records that
+closure and is not a transfer target. The resulting
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate is carriage-only; real Workspace
+retransfer/retest remains `NOT_EXECUTED`.

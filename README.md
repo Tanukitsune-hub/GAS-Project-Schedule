@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,8 +21,8 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
-| Fixed transfer | `PENDING_T10` |
+| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
@@ -44,9 +44,10 @@ Google Workspace Personal Work OS.
   immutable historical evidence. The published v2.8.9 corrected
   A9.1/B9.1/T9 chain is additive and does not replace any v2.8.5 through
   v2.8.8 package, transfer, or audit byte. T9 is superseded as an execution
-  transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. The v2.8.10
-  T10 transfer is still pending, so no current carriage artifact is
-  authorized and real Workspace retest remains `NOT_EXECUTED`.
+  transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed v2.8.10
+  T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is the current
+  carriage-only target after normal publication and detached HTTPS
+  fresh-clone verification; real Workspace retest remains `NOT_EXECUTED`.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.
@@ -77,11 +78,13 @@ module contracts before any format write. Quick/Deep Diagnostic remain
 read-only, Automation remains `OFF`, and real Workspace work is
 `NOT_EXECUTED`.
 
-Source A10, direct-child Release B10, fixed transfer T10, and evidence E10 are
-not yet complete at this source stage. Until their required validation and
-normal publication finish, the gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` and T10 is
-`PENDING_T10`.
+Source A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child
+Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed transfer
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are normally
+published and independently verified. This evidence-only commit records the
+closure. The resulting `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status
+authorizes controlled carriage of that exact non-sensitive Phase 8B transfer
+only.
 
 ## Historical Phase 8B Dashboard number-format real-runtime remediation
 
@@ -235,14 +238,12 @@ target. The resulting status is transfer-only.
 
 Do not copy this repository, the entire `release/` tree, the failed P10
 package, or the Phase 8C candidate to a company PC. The P10, T6.1, T7, T8, and
-T9 envelopes remain immutable historical evidence. T8 and T9 are not the
-current execution transfer target. The only intended future carriage path is
-`implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`, but its fixed
-T10 ref is `PENDING_T10` and no v2.8.10 carriage is authorized at the Source
-A10 pre-publication stage.
+T9 envelopes remain immutable historical evidence and are not the current
+execution transfer target. The only approved carriage source is fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` at
+`implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`.
 
-The current `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate does not
-authorize Setup, diagnostics, OAuth approval, deployment, `clasp push`,
-Automation enablement, real data, or real Workspace operation. A later
-evidence-only update may raise the gate only after the complete A10/B10/T10
-chain and detached fixed-ref verification pass.
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is carriage-only. It does not authorize
+Setup, diagnostics, OAuth approval, deployment, `clasp push`, Automation
+enablement, real data, or any real Workspace operation, and it is not Phase 8B
+PASS, Phase 8C GO, production ready, or pilot ready.

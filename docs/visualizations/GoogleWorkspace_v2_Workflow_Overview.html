@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-code-version="2.8.10-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY">
+<html lang="en" data-code-version="2.8.10-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_PHASE8B_SANDBOX_RETRANSFER">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22,7 +22,7 @@
   <h1>Task Authority and Calendar Reconciliation</h1>
   <div class="meta">
     <span class="badge">Code 2.8.10-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
-    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY</span>
+    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">READY_FOR_PHASE8B_SANDBOX_RETRANSFER</span>
   </div>
   <h2>Setup control-plane bootstrap</h2>
   <section class="flow" aria-label="setup control-plane workflow">
@@ -51,7 +51,7 @@
     <div class="arrow">&rarr;</div>
     <article class="node authority"><h3>3. Fresh strict read</h3><p>Setup reacquires the exact Range and requires all 51 cells to satisfy the canonical contract before read-only Quick Diagnostic.</p></article>
   </section>
-  <p>Flush unavailable/failure or a noncanonical reread stops as <code>E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION</code>. Module mismatch stops as <code>E_MODULE_VERSION_SKEW</code>. Only closed states, Booleans, and counts are retained. A10/B10/T10/E10 are pending and fixed transfer is <code>PENDING_T10</code>.</p>
+  <p>Flush unavailable/failure or a noncanonical reread stops as <code>E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION</code>. Module mismatch stops as <code>E_MODULE_VERSION_SKEW</code>. Only closed states, Booleans, and counts are retained. A10 <code>33b9ecee5b0957615fcc27fc822bf7d10a74c86f</code>, direct-child B10 <code>3f4fe6c52be7bf9c66ad221594e6271feebb57ed</code>, and fixed T10 <code>927d8567bce64461840cc6f72fbae0c1e636a8e6</code> are normally published and detached-clone verified; this evidence-only commit is not a transfer target.</p>
   <section class="flow" aria-label="authority workflow">
     <article class="node"><h3>1. User / Gmail input</h3><p>Raw business intent enters the visible Task workflow.</p></article>
     <div class="arrow">→</div>
@@ -83,7 +83,7 @@
       <tr><td>Authority is lost after Calendar arm / I/O</td><td><code>DEADLINE_CALENDAR_ARMED</code> then compensation target</td><td>Cancel before I/O, or delete only a verified-owned Event; never patch an excluded Task.</td></tr>
     </tbody>
   </table>
-  <p>Real Google Workspace execution remains NOT EXECUTED. Current gate is PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY. This view does not declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.</p>
+  <p>Real Google Workspace execution remains NOT EXECUTED. Current carriage-only gate is READY_FOR_PHASE8B_SANDBOX_RETRANSFER. This view does not declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.</p>
 </main>
 </body>
 </html>

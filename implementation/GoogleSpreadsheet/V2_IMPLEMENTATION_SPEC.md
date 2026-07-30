@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Code: `2.8.10-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` (fixed transfer `PENDING_T10`; real Workspace retransfer/retest `NOT_EXECUTED`)
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` (fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Workspace retransfer/retest `NOT_EXECUTED`)
 
 ## 1. Scope and non-goals
 
