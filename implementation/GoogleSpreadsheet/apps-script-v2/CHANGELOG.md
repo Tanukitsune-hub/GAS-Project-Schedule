@@ -34,12 +34,15 @@
 
 - Contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` /
   Migration `3`; Automation default remains `OFF`.
-- Source A7 is source/tests/tools/canonical-docs/visualization/incident and
-  recovery guidance only. It contains no v2.8.7 release package, release
-  report, or transfer envelope.
-- Current source-candidate gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`.
-  Real Google Workspace retest is `NOT_EXECUTED`; no Phase 8B PASS, Phase 8C
-  GO, production ready, or pilot ready is declared.
+- Source A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69` is source/tests/tools/
+  canonical-docs/visualization/incident/recovery guidance only. Direct-child
+  Release B7 `95bc7240d99124b245e188b8e646eccf6c3ead48` contains the generated
+  packages/report; C7 `ba175d3994c86dacc76bad3537df97e3e644dc09` changes only
+  the manifest verifier; fixed T7 `008c643b85c6b234ad489d946033cb9c06d32920`
+  contains the transfer envelope and raw-byte patch manifest.
+- Current gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for controlled
+  carriage only. Real Google Workspace retransfer/retest is `NOT_EXECUTED`;
+  Automation remains `OFF`.
 
 ## 2.8.6-prepilot - 2026-07-29 Phase 8B Setup Ledger visibility remediation
 

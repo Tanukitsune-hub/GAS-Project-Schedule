@@ -1,13 +1,14 @@
 # Project Context
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
-The current source-only candidate addresses `PHASE8B-QUICK-DIAGNOSTIC-01`.
-It is not a replacement for the historical v2.8.5/P10 or v2.8.6/T6.1 chains.
+The current verified retransfer chain addresses
+`PHASE8B-QUICK-DIAGNOSTIC-01`. It is additive and does not replace the
+historical v2.8.5/P10 or v2.8.6/T6.1 chains.
 The four finding contracts are: exact Dashboard Setup control plane/seed,
 Task rows 1–2/50-column protection, schema-derived five-checkbox validation,
 and narrow identity-empty Boolean `false` handling. S00–S80 may be preserved;
@@ -74,13 +75,14 @@ recreates authority from a visible row, note, or snapshot.
 
 Historical Source A6 `8e8e3e4a5f2288985554b3467a5b68814e7bab21`, direct-child Release B6
 `49f6774242e11f3c4ae1f0881dc4a7e13c5aad23`, and fixed transfer ref T6.1
-`863217b99dfa1ad682a8f4dd1989212b0a8d548b` are the corrected additive chain.
-T6.1 was normal-pushed, resolved from GitHub, and verified from a fresh clone
-with all local/static checks passing. That is historical evidence only:
-`PHASE8B-QUICK-DIAGNOSTIC-01` makes the current v2.8.7 source candidate
-`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its own release, transfer,
-publication, and fresh-clone evidence is complete. Real Workspace retest
-remains `NOT_EXECUTED`.
+`863217b99dfa1ad682a8f4dd1989212b0a8d548b` are historical corrected evidence.
+The current additive v2.8.7 chain is Source A7
+`be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child Release B7
+`95bc7240d99124b245e188b8e646eccf6c3ead48`, tool-only verifier correction C7
+`ba175d3994c86dacc76bad3537df97e3e644dc09`, and fixed transfer T7
+`008c643b85c6b234ad489d946033cb9c06d32920`. The target branch resolves T7 and
+a detached HTTPS clone passed its full local/static and transfer verification.
+Real Workspace retransfer/retest remains `NOT_EXECUTED`.
 
 ## Repository layout
 
@@ -96,8 +98,9 @@ remains `NOT_EXECUTED`.
 - Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
 - Corrected 2.8.6 package and T6.1 transfer directories are historical,
-  verified additive outputs of Source A6, direct-child Release B6, normal
-  publication, and fresh-clone verification; they are not the current target.
+  verified additive outputs of Source A6 and direct-child Release B6; they are
+  not the current target. The current fixed carriage artifact is
+  `implementation/GoogleSpreadsheet/transfer/v2.8.7-prepilot/` at T7.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -113,11 +116,9 @@ silently rewritten.
 ## Company-PC boundary
 
 The historical P10 envelope must not be carried or executed after
-`PHASE8B-SETUP-01`.  Automation remains OFF; do not manually hide the Ledger,
-continue P10 Setup, or run P10 diagnostics.  Preserve the failed workbook as
-evidence and use the Japanese recovery guide after an explicitly approved
-corrected-package retransfer.  Even a future
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` permits carriage only; it does not
-approve real data, OAuth, Apps Script import, Setup, real Provider
-configuration, deployment, Automation, triggers, Phase 8B PASS, Phase 8C GO,
-production use, or pilot use.
+`PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
+continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
+evidence. The current `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status permits
+only controlled carriage of fixed T7; it does not approve real data, OAuth,
+Apps Script import, Setup, Provider configuration, deployment, Automation,
+triggers, or real Workspace operation.

@@ -4,7 +4,7 @@ Code Version: `2.8.7-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; source candidate only
+Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; controlled carriage only
 Automation default: `OFF`
 
 ## Purpose
@@ -61,9 +61,13 @@ specification, results template, and failed-Sandbox recovery guide in the new
 
 ## Prohibited status upgrades
 
-This guide never declares Phase 8B GO/PASS, Phase 8C GO, production ready, or
-pilot ready. Before corrected publication and fresh-clone verification, the
-package-generation maximum is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until
-Source A7, Release B7, transfer T7, remote resolution, and fresh-clone evidence
-are complete. A later `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` remains only a
-retransfer authorization, never a Sandbox PASS or execution authorization.
+This guide never declares execution readiness. Source A7, direct-child Release
+B7, C7 verifier correction, fixed transfer T7, remote resolution, and detached
+fresh-clone evidence are complete. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+remains only a retransfer authorization, never a Sandbox execution
+authorization. Real Workspace retransfer/retest is `NOT_EXECUTED`.
+
+Historical source/package-generation material correctly recorded the earlier
+cap as `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` before the A7/B7/C7/T7
+publication and detached-clone proof. That historical marker is not the current
+operational gate.

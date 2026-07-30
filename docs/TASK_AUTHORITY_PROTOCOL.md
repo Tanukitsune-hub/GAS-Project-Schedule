@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; corrected-package real Workspace retest remains `NOT_EXECUTED` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
 
 ## Quick Diagnostic runtime control plane
 
@@ -169,7 +169,8 @@ historical, but the exact P10 package then failed first-time Setup with
 `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN`; `PHASE8B-SETUP-01` made the corrective
 package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The separately
 published and fresh-clone verified T6.1 2.8.6 transfer ref is historical
-evidence only. The current v2.8.7 Quick Diagnostic candidate is
-`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its independent source/release/
-transfer/fresh-clone chain completes. Any later carriage-only status remains
-not Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
+evidence only. The v2.8.7 A7/B7/C7/T7 chain has completed its independent
+source/release/transfer/fresh-clone verification and is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This permits controlled package
+carriage only, never real Workspace execution, Automation, deployment, or
+real-data use.

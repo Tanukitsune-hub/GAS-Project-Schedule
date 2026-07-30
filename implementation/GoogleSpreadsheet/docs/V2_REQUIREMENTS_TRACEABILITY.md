@@ -4,8 +4,8 @@ Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/GoogleWorkspace_v2_8_7_Implementation_Execution_and_Company_PC_Patch_Manifest_2026-07-30.md`
 Version contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; corrected-package real
-Google Workspace retest remains `NOT_EXECUTED`.
+Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Google Workspace
+retransfer/retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
 real Google Workspace execution. `REMOTE_FRESH_CLONE_PASS_P6` means the R5
@@ -75,10 +75,10 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 
 | ID | Requirement | Primary evidence | Current evidence |
 |---|---|---|---|
-| QD-01 | Dashboard exact Setup control plane and exact seed; foreign data/control/format remains fail-closed | `15_Dashboard.gs`; `prepilot_dashboard_safety_test.js`; `phase8b_quick_diagnostic_real_runtime_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
-| QD-02 | Task rows 1–2 / 50-column protection, five schema-defined checkbox validation, and narrow identity-empty `false` contract | `01_TypesAndSchemas.gs`; `03_SheetBuilder.gs`; `16_Diagnostics.gs`; runtime suite | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
-| QD-03 | S00–S80 preserved; S90/S99 resume neither duplicates nor deletes synthetic label/calendar/edit-trigger resources | `phase8b_setup_ledger_visibility_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
-| QD-04 | Company-PC replacement list is Git raw-byte derived from T6.1 and final B7 payload | v2.8.7 patch-manifest tools | PENDING_RELEASE_TRANSFER |
+| QD-01 | Dashboard exact Setup control plane and exact seed; foreign data/control/format remains fail-closed | `15_Dashboard.gs`; `prepilot_dashboard_safety_test.js`; `phase8b_quick_diagnostic_real_runtime_test.js`; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
+| QD-02 | Task rows 1–2 / 50-column protection, five schema-defined checkbox validation, and narrow identity-empty `false` contract | `01_TypesAndSchemas.gs`; `03_SheetBuilder.gs`; `16_Diagnostics.gs`; runtime suite; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
+| QD-03 | S00–S80 preserved; S90/S99 resume neither duplicates nor deletes synthetic label/calendar/edit-trigger resources | `phase8b_setup_ledger_visibility_test.js`; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
+| QD-04 | Company-PC replacement list is Git raw-byte derived from T6.1 and final B7 payload | v2.8.7 patch-manifest tools; T7 manifest verifier | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 
 ## Task write-route inventory (13 routes)
 

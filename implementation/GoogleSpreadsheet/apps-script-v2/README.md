@@ -56,13 +56,14 @@ fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
 Current versions are Code `2.8.7-prepilot`, Schema `2.6`, AI Schema `2.0`,
-and Migration `3`. Automation remains OFF by default. The current source
-candidate gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until the separate
-source, release, transfer, normal-publication, and fresh-clone verification
-chain completes. T6.1 remains immutable historical evidence; it is not the
-v2.8.7 transfer target. This source state does not declare Phase 8B GO/PASS,
-Phase 8C GO, production readiness, or pilot readiness. Corrected-package real
-Workspace retest remains `NOT_EXECUTED`.
+and Migration `3`. Automation remains OFF by default. The verified v2.8.7
+chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
+`95bc7240d99124b245e188b8e646eccf6c3ead48`, C7
+`ba175d3994c86dacc76bad3537df97e3e644dc09` (verifier only), and fixed T7
+`008c643b85c6b234ad489d946033cb9c06d32920`. Its carriage-only gate is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. T6.1 remains immutable historical
+evidence; it is not the v2.8.7 transfer target. Real Workspace retransfer/retest
+remains `NOT_EXECUTED`.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 

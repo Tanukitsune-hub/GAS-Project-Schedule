@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-30
 Current source candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Scope
 
@@ -55,16 +55,18 @@ remains carriage-only.
 
 1. Preserve all historical packages, T6.1, and their evidence without
    replacement.
-2. In Source A7, correct only the four diagnostic contracts, add the
-   S20/S30/S40 runtime reproduction and S00–S80 resume coverage, and add
-   v2.8.7 tools/docs/visualization/incident/recovery guidance. Do not include
-   a v2.8.7 package, release report, or transfer envelope.
-3. Create direct-child Release B7 with only both v2.8.7 package directories
-   and the implementation report.
-4. Create transfer T7 with raw Git-blob company-PC patch manifests comparing
-   T6.1 to B7. Create evidence E7 only after remote and fresh-clone proof.
-5. Until E7 succeeds, retain `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`. No
-   status means Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
+2. Source A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69` corrected only the four
+   diagnostic contracts and added S20/S30/S40 runtime reproduction, S00–S80
+   resume coverage, and v2.8.7 tools/docs/visualization/incident/recovery
+   guidance; it excludes release/report/transfer outputs.
+3. Direct-child Release B7 `95bc7240d99124b245e188b8e646eccf6c3ead48` contains
+   only both v2.8.7 package directories and the implementation report.
+4. C7 `ba175d3994c86dacc76bad3537df97e3e644dc09` corrected only the verified
+   transfer-manifest tool defect. Fixed T7
+   `008c643b85c6b234ad489d946033cb9c06d32920` carries raw Git-blob manifests
+   comparing T6.1 to B7; package bytes remain immutable.
+5. E7 records the completed remote and detached fresh-clone proof. The maximum
+   status is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for carriage only.
 
 ## Safety rules
 

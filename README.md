@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -47,7 +47,7 @@ Worker, Review, and Calendar work.
 See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 [workflow visualization](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html).
 
-## Phase 8B Quick Diagnostic remediation candidate
+## Phase 8B Quick Diagnostic remediation and verified retransfer package
 
 The current candidate corrects the four safe real-Sandbox findings
 `DASHBOARD_LAYOUT_OWNERSHIP`, `TASK_PROTECTIONS`,
@@ -60,11 +60,19 @@ protection, user data, formula, note, named range, merge, hidden state,
 non-default formatting, `true`, text boolean, non-checkbox data, and partial
 identity cases remain fail-closed.
 
-The current gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`. Source A7 has no
-v2.8.7 package, release report, or transfer envelope. Real Workspace retest is
-`NOT_EXECUTED`; no Phase 8B PASS, Phase 8C GO, production/pilot readiness,
-OAuth, deployment, `clasp push`, Automation/trigger enablement, or real data
-authorization is implied.
+The published v2.8.7 chain is Source A7
+`be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child Release B7
+`95bc7240d99124b245e188b8e646eccf6c3ead48`, transfer-verifier correction C7
+`ba175d3994c86dacc76bad3537df97e3e644dc09` (package bytes unchanged), and
+fixed transfer T7 `008c643b85c6b234ad489d946033cb9c06d32920`. T7 was normally
+pushed, GitHub-resolved, and independently verified from a detached HTTPS
+clone. The resulting gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`.
+
+The transfer envelope contains a raw-Git-blob-derived company-PC patch manifest
+against historical T6.1. The real Workspace retransfer/retest remains
+`NOT_EXECUTED`; this gate permits only controlled carriage of the exact
+non-confidential Phase 8B package. It does not authorize Workspace execution,
+OAuth, deployment, `clasp push`, Automation/trigger enablement, or real data.
 
 ## Historical Phase 8B Setup Ledger visibility blocker
 
@@ -88,11 +96,11 @@ The historical fixed transfer ref is T6.1
 target-branch fresh clone independently passed all 42 Node suites (619 PASS /
 0 FAIL / 11 explicit skips), F016, the 11/11 Apps Script validator, both
 package verifiers, parity rebuilds, checksums, allow-list, transfer checksums,
-and secret/local-path scans. This historical evidence does not override the
-current v2.8.7 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` gate while A7/B7/T7
-and fresh-clone proof are incomplete. It does not authorize Setup,
-Phase 8B PASS, Phase 8C GO, production, pilot, OAuth, deployment, `clasp
-push`, Automation, triggers, real data, or any real Google Workspace action.
+and secret/local-path scans. This historical evidence is superseded as the
+current transfer target by the separately verified v2.8.7 A7/B7/C7/T7 chain.
+Neither historical nor current verification authorizes Setup, OAuth,
+deployment, `clasp push`, Automation, triggers, real data, or any real Google
+Workspace action.
 
 ## ChatGPT–Codex handoff
 
@@ -148,14 +156,13 @@ target. The resulting status is transfer-only.
 Do not copy this repository, the entire `release/` tree, the failed P10
 package, or the Phase 8C candidate to a company PC.  The P10 envelope remains
 historical failed evidence and is not executable. The corrected 2.8.6 Phase
-8B package is represented only by the historical T6.1 transfer envelope,
-after separate source/release generation, normal publication, and fresh-clone
-verification. The current v2.8.7 route remains no-go until its own verified
-transfer envelope exists. The historical recovery instructions are
+8B package is represented only by the historical T6.1 transfer envelope. The
+current executable carriage artifact is the verified v2.8.7 T7 envelope,
+including `implementation/GoogleSpreadsheet/transfer/v2.8.7-prepilot/COMPANY_PC_PATCH_MANIFEST_ja.md`
+and its JSON companion. The historical recovery instructions are
 `implementation/GoogleSpreadsheet/docs/PHASE8B_SETUP_BLOCKER_RECOVERY_GUIDE_ja.md`.
 
 Corrected transfer material remains outside its immutable package and does not
-alter its checksums. A future `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is
-carriage-only: it does not authorize Setup, diagnostics, Phase 8B PASS, Phase 8C GO,
-production ready, pilot ready, OAuth approval, deployment, `clasp push`,
-Automation enablement, real data, or real Workspace operation.
+alter its checksums. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is carriage-only:
+it does not authorize Setup, diagnostics, OAuth approval, deployment, `clasp
+push`, Automation enablement, real data, or real Workspace operation.

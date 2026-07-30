@@ -2,7 +2,7 @@
 
 Date: 2026-07-30
 Candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; corrected-package real Workspace retest remains `NOT_EXECUTED`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -55,7 +55,7 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 
 | ID | Requirement | Evidence | State |
 |---|---|---|---|
-| PHASE8B-QUICK-DIAGNOSTIC-01 | Exact Dashboard Setup control plane/seed, 50-column Task rows 1–2 protection, schema-driven five-checkbox validation, narrow blank-row Boolean handling, and S00–S80 resource-invariant S90/S99 resume | `phase8b_quick_diagnostic_real_runtime_test.js`; `phase8b_setup_ledger_visibility_test.js`; safe incident record | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+| PHASE8B-QUICK-DIAGNOSTIC-01 | Exact Dashboard Setup control plane/seed, 50-column Task rows 1–2 protection, schema-driven five-checkbox validation, narrow blank-row Boolean handling, and S00–S80 resource-invariant S90/S99 resume | runtime suite; Setup resume suite; fixed T7 fresh-clone audit; safe incident record | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 
 ## 13 write routes
 
@@ -81,8 +81,7 @@ P5/R5/P10 publication is historical evidence. `PHASE8B-SETUP-01` made the
 corrective package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`.
 Source A6, direct-child Release B6, normal non-force publication, final remote
 SHA resolution, and detached T6.1 fresh-clone verification are historical
-evidence. The current v2.8.7 candidate remains
-`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its own source/release/transfer/
-fresh-clone proof is complete. This matrix does not declare Phase 8B GO/PASS,
-Phase 8C GO, production ready, or pilot ready. Corrected-package real Google
-Workspace evidence remains `NOT_EXECUTED`.
+evidence. The current v2.8.7 A7/B7/C7/T7 chain has passed its own
+source/release/transfer/fresh-clone proof and is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix authorizes carriage only;
+real Google Workspace evidence remains `NOT_EXECUTED`.

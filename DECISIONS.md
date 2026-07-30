@@ -40,8 +40,9 @@ formulas, notes, named ranges, merges, hidden state, non-default formatting,
 missing/unexpected checkbox validation, `true`, string boolean, non-checkbox
 data, and partial identity all remain fail-closed. S00–S80 can be preserved;
 S90/S99 may resume only through normal Setup. Automation remains OFF. Until
-the v2.8.7 source/release/transfer/evidence chain is independently verified,
-the current gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`.
+  the v2.8.7 source/release/transfer/evidence chain is independently verified,
+  the current gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for controlled
+  carriage only.
 
 ## D-037 — Independent Task Authority Ledger with two-slot recovery
 
@@ -77,10 +78,10 @@ row deletion/sort behavior, installable triggers, LockService, Gmail, and
 Calendar—remain `NOT_EXECUTED` after independent re-audit unless separately
 authorized. `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibited reuse of the
 historical P10 package while the corrected 2.8.6 chain was verified. The
-verified T6.1 ref is historical evidence; the current v2.8.7 candidate remains
-`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its own source/release/transfer/
-fresh-clone chain is independently verified. It is not execution authorization.
-The local fake runtime establishes regression evidence only.
+  verified T6.1 ref is historical evidence. The v2.8.7 A7/B7/C7/T7 chain has
+  passed its own source/release/transfer/fresh-clone verification and is
+  `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It is not execution authorization.
+  The local fake runtime establishes regression evidence only.
 
 ## D-039 — Calendar authority loss requires durable arm and owned-event-only compensation
 
@@ -129,6 +130,6 @@ authority from a Task raw row, note, or snapshot cell.  The P10 package and
 transfer evidence remain immutable historical failures.  Automation stays OFF;
 the package-generation gate was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until
 the separate 2.8.6 source/release/transfer chain was independently verified.
-That result is historical. The current v2.8.7 gate is
-`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; a later carriage-only status still
-does not authorize any real Workspace action.
+  That result is historical. The current v2.8.7 fixed transfer ref T7 is
+  `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; this carriage-only status does not
+  authorize any real Workspace action.

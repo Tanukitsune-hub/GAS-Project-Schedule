@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-30
 Candidate version: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
+Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
@@ -20,12 +20,21 @@ without Workspace IDs, URLs, screenshots, or business data:
 - `TASK_VALIDATION_TYPES`: all five schema-defined checkbox columns, including
   hidden `calendar_reconcile_required`, are validated from the canonical plan.
 
-Source A7 is intentionally source/tests/tools/docs/visualization/incident and
-recovery guidance only; its SHA is `SELF (the source commit containing this
-candidate)`. Release B7, transfer T7, and evidence E7 have not been generated
-at this source-only point. The status remains NO-GO until the required local,
-release, transfer, raw-byte-manifest, remote, and fresh-clone verifications
-are complete. No real Workspace retest is implied.
+Source A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69` contains only source,
+tests, tools, canonical documents, visualization, incident, and recovery
+guidance. Its direct-child Release B7
+`95bc7240d99124b245e188b8e646eccf6c3ead48` contains only the two v2.8.7
+packages and implementation report. C7
+`ba175d3994c86dacc76bad3537df97e3e644dc09` corrected the transfer-manifest
+verifier without changing package bytes. Fixed transfer T7
+`008c643b85c6b234ad489d946033cb9c06d32920` contains only the transfer
+envelope and raw-byte-derived company-PC patch manifest. T7 was normally
+pushed, GitHub-resolved, and verified from a detached fresh HTTPS clone.
+
+Evidence E7 is `SELF (this evidence-only commit)`: it records the final remote
+and fresh-clone proof and is not a transfer target. It changes no package,
+transfer, source, test, or tool file. Real Workspace retransfer/retest remains
+`NOT_EXECUTED`.
 
 ## Why the 2.8.5 transfer gate is superseded
 
@@ -62,7 +71,12 @@ evidence, not the current transfer target or an execution authorization.
 | Release B6 | `49f6774242e11f3c4ae1f0881dc4a7e13c5aad23` | direct child of A6; exactly both v2.8.6 packages and the implementation report |
 | Transfer T6 | `39205ff9d0a7df79f9e0892b02ab73cac1a7dc14` | retained transfer-envelope generation record; superseded only for an external-digest record correction |
 | Fixed transfer T6.1 | `863217b99dfa1ad682a8f4dd1989212b0a8d548b` | normally pushed, GitHub-resolved historical transfer ref; fresh-clone static verification PASS, superseded as the current target by `PHASE8B-QUICK-DIAGNOSTIC-01` |
-| Evidence-only closure | `SELF (this commit)` | records the T6.1 proof and corrected documentation digest; it is not a transfer target and changes no package/transfer/source/test/tool file |
+| Historical evidence-only closure E6.1 | `e03367c38ac1a623f6ce0c45ba5d5e37d7271d69` | records the T6.1 proof and corrected documentation digest; it is not a transfer target |
+| Source A7 | `be2e551da310a9b7c0611f3aef8899309a3d7b69` | source/tests/tools/canonical-docs/visualization/incident/recovery only; excludes v2.8.7 package, report, and transfer envelope |
+| Release B7 | `95bc7240d99124b245e188b8e646eccf6c3ead48` | direct child of A7; exactly the two v2.8.7 packages and the Phase 8B Quick Diagnostic implementation report |
+| Transfer verifier C7 | `ba175d3994c86dacc76bad3537df97e3e644dc09` | post-B7 tool-only correction for an independently demonstrated manifest-verifier defect; immutable package bytes unchanged |
+| Fixed transfer T7 | `008c643b85c6b234ad489d946033cb9c06d32920` | normally pushed, GitHub-resolved fixed v2.8.7 transfer ref; raw-byte patch manifest, checksums, and detached fresh-clone verification PASS |
+| Evidence E7 | `SELF (this evidence-only commit)` | records final remote/fresh-clone proof; not a transfer target and changes no package/transfer/source/test/tool file |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.
@@ -83,6 +97,8 @@ The safe incident record for the superseding blocker is
 `audits/2026-07-29/GoogleWorkspace_v2_8_6_Phase8B_Setup_Ledger_Visibility_Blocker_Incident_2026-07-29.md`.
 The final T6.1 fresh-clone verification is
 `audits/2026-07-29/GoogleWorkspace_v2_8_6_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-29.md`.
+The v2.8.7 final detached-clone verification is
+`audits/2026-07-30/GoogleWorkspace_v2_8_7_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-30.md`.
 
 ## Historical R5 and 2.8.6 correction
 
@@ -116,12 +132,11 @@ remains OFF. Do not manually hide the Ledger, continue Setup, or run
 diagnostics with P10; preserve the failed workbook as evidence.
 
 The normal-pushed T6.1 fixed ref passed its required target-branch fresh-clone
-checks. That result is historical. The current source-only v2.8.7 candidate is
-`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until A7/B7/T7/evidence, normal
-publication, and a fresh detached clone are complete. No current carriage or
-execution authorization is implied, and no Phase 8B PASS, Phase 8C GO,
-production ready, pilot ready, OAuth consent, deployment, `clasp push`,
-Automation enablement, or real Workspace action is declared.
+checks and remains historical. The v2.8.7 A7/B7/C7/T7 chain has separately
+passed normal publication, GitHub resolution, raw-byte patch-manifest checks,
+and detached fresh-clone verification. The current status therefore permits
+only retransfer carriage. It does not authorize OAuth consent, deployment,
+`clasp push`, Automation enablement, real data, or real Workspace action.
 
 No GitHub Actions run or combined-status evidence exists for this PR #8 scope.
 The repository retains three active historical temporary workflows, but none
