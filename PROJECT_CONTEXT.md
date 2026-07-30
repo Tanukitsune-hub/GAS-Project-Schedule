@@ -3,16 +3,16 @@
 Last updated: 2026-07-30
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
-Current candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current candidate: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
 
-The current verified retransfer chain addresses
-`PHASE8B-QUICK-DIAGNOSTIC-01`. It is additive and does not replace the
-historical v2.8.5/P10 or v2.8.6/T6.1 chains.
-The four finding contracts are: exact Dashboard Setup control plane/seed,
-Task rows 1–2/50-column protection, schema-derived five-checkbox validation,
-and narrow identity-empty Boolean `false` handling. S00–S80 may be preserved;
-S90/S99 are the only intended resume stages. Real Workspace retest remains
+The current additive correction addresses `PHASE8B-DASHBOARD-01` without
+replacing the historical v2.8.5/P10, v2.8.6/T6.1, or v2.8.7/T7 chains. It
+models native Protection ownership with internally equal owner/effective-user
+identity and `canEdit()`, not an assumed one-entry explicit-editor list. It
+also separates every Dashboard control/data/format surface into a closed
+non-sensitive reason code and count. S00–S80 may be preserved; S90/S99 are
+the only intended resume stages. Real Workspace retransfer/retest remains
 `NOT_EXECUTED` and Automation remains `OFF`.
 
 ## Purpose
@@ -76,13 +76,16 @@ recreates authority from a visible row, note, or snapshot.
 Historical Source A6 `8e8e3e4a5f2288985554b3467a5b68814e7bab21`, direct-child Release B6
 `49f6774242e11f3c4ae1f0881dc4a7e13c5aad23`, and fixed transfer ref T6.1
 `863217b99dfa1ad682a8f4dd1989212b0a8d548b` are historical corrected evidence.
-The current additive v2.8.7 chain is Source A7
+The historical additive v2.8.7 chain is Source A7
 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child Release B7
 `95bc7240d99124b245e188b8e646eccf6c3ead48`, tool-only verifier correction C7
 `ba175d3994c86dacc76bad3537df97e3e644dc09`, and fixed transfer T7
 `008c643b85c6b234ad489d946033cb9c06d32920`. The target branch resolves T7 and
 a detached HTTPS clone passed its full local/static and transfer verification.
-Real Workspace retransfer/retest remains `NOT_EXECUTED`.
+Real Workspace retransfer/retest remains `NOT_EXECUTED`. The later safe S90
+Dashboard ownership finding supersedes T7 as an executable transfer target.
+Source A8 is source/tests/tools/canonical-docs/visualization/incident/recovery
+only, and no v2.8.8 package or transfer exists at its boundary.
 
 ## Repository layout
 
@@ -97,10 +100,10 @@ Real Workspace retransfer/retest remains `NOT_EXECUTED`.
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`.
 - Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
-- Corrected 2.8.6 package and T6.1 transfer directories are historical,
-  verified additive outputs of Source A6 and direct-child Release B6; they are
-  not the current target. The current fixed carriage artifact is
-  `implementation/GoogleSpreadsheet/transfer/v2.8.7-prepilot/` at T7.
+- Corrected 2.8.6/T6.1 and v2.8.7/T7 package and transfer directories are
+  immutable historical evidence. Neither is the current executable target.
+  The v2.8.8 transfer directory must not exist in Source A8 and is generated
+  only after direct-child Release B8.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -118,7 +121,8 @@ silently rewritten.
 The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
-evidence. The current `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status permits
-only controlled carriage of fixed T7; it does not approve real data, OAuth,
-Apps Script import, Setup, Provider configuration, deployment, Automation,
-triggers, or real Workspace operation.
+evidence. The current `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` status permits
+no v2.8.8 carriage. A later `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, if every
+remote and fresh-clone check passes, would approve controlled non-confidential
+carriage only—not real data, OAuth, Apps Script import, Setup, Provider
+configuration, deployment, Automation, triggers, or real Workspace operation.

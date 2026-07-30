@@ -1,8 +1,8 @@
 # R4/R5 Verification Matrix
 
 Date: 2026-07-30
-Candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED`
+Candidate: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; real Workspace retransfer/retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -57,6 +57,12 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 |---|---|---|---|
 | PHASE8B-QUICK-DIAGNOSTIC-01 | Exact Dashboard Setup control plane/seed, 50-column Task rows 1–2 protection, schema-driven five-checkbox validation, narrow blank-row Boolean handling, and S00–S80 resource-invariant S90/S99 resume | runtime suite; Setup resume suite; fixed T7 fresh-clone audit; safe incident record | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 
+## Phase 8B Dashboard surface traceability
+
+| ID | Requirement | Evidence | State |
+|---|---|---|---|
+| PHASE8B-DASHBOARD-01 | Native owner/effective-user/`canEdit` Protection semantics; implicit or explicit proven owner only; fail-closed foreign/domain/audience/wrong/duplicate/unprotected controls; closed-enum surface inspection; byte-stable Quick Diagnostic; S00–S80 resource-invariant S90/S99 resume | `phase8b_dashboard_surface_real_runtime_test.js`; prior Quick Diagnostic and Setup resume suites; safe incident record | LOCAL_REGRESSION_PENDING_FULL_CHAIN; corrected-package real Workspace retransfer/retest `NOT_EXECUTED` |
+
 ## 13 write routes
 
 | ID | Route | Authority path |
@@ -81,7 +87,8 @@ P5/R5/P10 publication is historical evidence. `PHASE8B-SETUP-01` made the
 corrective package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`.
 Source A6, direct-child Release B6, normal non-force publication, final remote
 SHA resolution, and detached T6.1 fresh-clone verification are historical
-evidence. The current v2.8.7 A7/B7/C7/T7 chain has passed its own
-source/release/transfer/fresh-clone proof and is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix authorizes carriage only;
-real Google Workspace evidence remains `NOT_EXECUTED`.
+evidence. The v2.8.7 A7/B7/C7/T7 chain passed its own historical
+source/release/transfer/fresh-clone proof. `PHASE8B-DASHBOARD-01` now
+supersedes T7 as an execution target, so the Source A8 gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. This matrix authorizes no Workspace
+operation; real Google Workspace evidence remains `NOT_EXECUTED`.

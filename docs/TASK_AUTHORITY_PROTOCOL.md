@@ -1,13 +1,13 @@
-# Task Authority Protocol — Code 2.8.7-prepilot
+# Task Authority Protocol — Code 2.8.8-prepilot
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.7-prepilot` |
+| Code | `2.8.8-prepilot` |
 | Task Schema | `2.6` / 50 columns |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
 
 ## Quick Diagnostic runtime control plane
 
@@ -20,6 +20,25 @@ canonical checkbox `false` values only when that row's validation is the same
 canonical checkbox contract; all other content remains a failure. The exact
 Dashboard Setup sheet/header protections and exact three-row seed are handled
 by the Dashboard ownership protocol, never by a raw-data fallback.
+
+## Dashboard Protection and surface contract
+
+Dashboard ownership is not inferred from `getEditors().length`. The runtime
+must prove a non-null Spreadsheet owner, a non-null effective user equal to
+that owner, and `Protection.canEdit() === true`. The explicit editor list may
+be empty (`OWNER_IMPLICIT_CAN_EDIT`) or contain exactly that owner
+(`OWNER_EXPLICIT_EDITOR`). A null owner / Shared Drive, different effective
+user, blank or foreign editor, warning-only Protection, domain edit, target
+audience, duplicate/wrong Protection, non-empty unprotected range, or foreign
+range Protection fails closed.
+
+The read-only Dashboard inspector separates sheet/header/foreign range
+Protection, foreign named range, value, formula, validation, note, merge,
+hidden row/column, background, font, number format, and seed/marker contracts.
+It returns only a closed reason/subreason enum and whitelisted counts. It does
+not return identities, values, formulas, notes, range addresses, IDs, or URLs.
+The exact three-row Setup seed and the explicit-refresh owned marker are the
+only accepted content states. This contract is `PHASE8B-DASHBOARD-01`.
 
 ## Selected design
 
@@ -169,8 +188,8 @@ historical, but the exact P10 package then failed first-time Setup with
 `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN`; `PHASE8B-SETUP-01` made the corrective
 package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The separately
 published and fresh-clone verified T6.1 2.8.6 transfer ref is historical
-evidence only. The v2.8.7 A7/B7/C7/T7 chain has completed its independent
-source/release/transfer/fresh-clone verification and is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This permits controlled package
-carriage only, never real Workspace execution, Automation, deployment, or
-real-data use.
+evidence only. The v2.8.7 A7/B7/C7/T7 chain completed its independent
+source/release/transfer/fresh-clone verification but is now historical because
+`PHASE8B-DASHBOARD-01` supersedes T7 as an execution target. Source A8 remains
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` until its direct-child release,
+transfer, normal publication, and detached fresh-clone evidence are complete.

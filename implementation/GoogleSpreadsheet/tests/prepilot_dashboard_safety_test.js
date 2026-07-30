@@ -221,8 +221,11 @@ function makeGrid(options = {}) {
   const canonicalProtectionAccess = {
     isWarningOnly: () => false,
     canDomainEdit: () => false,
+    canEdit: () => true,
+    getTargetAudiences: () => [],
     getUnprotectedRanges: () => [],
-    getEditors: () => [owner]
+    getEditors: () => [owner],
+    getRangeName: () => null
   };
   protections.push(Object.assign({
     type: context.SpreadsheetApp.ProtectionType.SHEET,
@@ -239,6 +242,7 @@ function makeGrid(options = {}) {
   }, canonicalProtectionAccess));
   const spreadsheet = {
     getSheetByName: () => sheet,
+    getOwner: () => owner,
     getNamedRanges: () => {
       reads.namedRanges += 1;
       return namedRanges.slice();
@@ -331,6 +335,11 @@ const context = {
   },
   SpreadsheetApp: {
     ProtectionType: { RANGE: 'RANGE', SHEET: 'SHEET' }
+  },
+  Session: {
+    getEffectiveUser: () => ({
+      getEmail: () => 'owner@example.invalid'
+    })
   },
   Utilities: {
     formatDate: (value, timezone, format) =>
@@ -572,7 +581,7 @@ test('PREP-DASH-07_LAYOUT_SCAN_USES_ONE_SURFACE_SNAPSHOT', () => {
       `${key} must be read exactly once`
     );
   });
-  assert.strictEqual(grid.reads.protections, 3);
+  assert.strictEqual(grid.reads.protections, 2);
   assert.strictEqual(grid.reads.hiddenColumns, 3);
   assert.strictEqual(grid.reads.hiddenRows, 34);
 });

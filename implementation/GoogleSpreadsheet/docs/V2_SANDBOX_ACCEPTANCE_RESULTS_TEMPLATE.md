@@ -2,14 +2,15 @@
 
 This retained historical template describes `2.8.1-prepilot` / Schema `2.2` /
 Migration `0`, 10 Sheets, and 44 Task columns. It is not an acceptance record
-or checklist for the current Code `2.8.7-prepilot` / Schema `2.6` / AI Schema
+or checklist for the current Code `2.8.8-prepilot` / Schema `2.6` / AI Schema
 `2.0` / Migration `3` contract (11 Sheets, 5 hidden, 50 Task columns, and a
 21-column Task Authority Ledger).
 
 Do not use the failed historical `../transfer/v2.8.5-prepilot/` envelope. A
-new result template may be used only from a separately verified 2.8.7 transfer
-envelope after its explicit approval. T6.1 is historical evidence; do not copy
-any historical version values into a current result record.
+new result template may be used only from a separately verified v2.8.8
+transfer envelope after its explicit approval. T6.1 and T7 are historical
+evidence; do not copy any historical version values into a current result
+record.
 
 # Google Workspace Personal Work OS v2
 # Sandbox Acceptance Results

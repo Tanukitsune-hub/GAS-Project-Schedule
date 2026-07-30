@@ -1,12 +1,43 @@
 # Current Status
 
 Last updated: 2026-07-30
-Candidate version: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Candidate version: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Overall status: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
-## Current 2.8.7 Quick Diagnostic remediation candidate
+## Current 2.8.8 Dashboard surface remediation candidate
+
+`PHASE8B-DASHBOARD-01` is High for Phase 8B execution readiness. The real
+Sandbox safely stopped at S90 with `DASHBOARD_LAYOUT_OWNERSHIP`,
+`E_DASHBOARD_LAYOUT_CONFLICT`, and `UNSAFE_DASHBOARD_SURFACE`; S00–S80 remain
+complete and S90/S99 remain incomplete. No Workspace IDs, URLs, screenshots,
+account names, user identities, or business data are recorded.
+
+The exact root cause is the v2.8.7 predicate requiring one ordinary explicit
+Protection editor. Apps Script can represent the proven Spreadsheet owner as
+able to edit while `getEditors()` does not list that owner as an ordinary
+explicit editor. v2.8.8 now requires internally equal owner/effective-user
+identities and `canEdit() === true`, then accepts only either the implicit-owner
+zero-editor representation or one explicit owner. Owner unavailable, different
+effective user, warning-only, domain edit, target audience, foreign/blank
+editor, duplicate/wrong Protection, unprotected range, or foreign overlapping
+Protection remains fail-closed.
+
+Dashboard surface inspection now returns only closed reason/subreason enums
+and counts for Protection, named range, value, formula, validation, note,
+merge, hidden state, background, font, number format, and seed/marker
+contracts. It never exposes identity, value, formula, note, range address, ID,
+or URL. The corrected S90 path remains byte-for-byte read-only and preserves
+S00–S80 resources, Automation OFF, and the absent five-minute trigger.
+
+Source A8 is `SELF (this source commit)` until committed. It contains source,
+tests, tools, canonical documents, visualization, safe incident evidence, and
+recovery guidance only. It excludes the v2.8.8 packages, implementation report,
+and transfer envelope. Release B8 and fixed transfer T8 are not yet generated
+at this boundary.
+
+## Historical 2.8.7 Quick Diagnostic remediation chain
 
 `PHASE8B-QUICK-DIAGNOSTIC-01` records four safe, real-Sandbox observations
 without Workspace IDs, URLs, screenshots, or business data:
@@ -31,10 +62,11 @@ verifier without changing package bytes. Fixed transfer T7
 envelope and raw-byte-derived company-PC patch manifest. T7 was normally
 pushed, GitHub-resolved, and verified from a detached fresh HTTPS clone.
 
-Evidence E7 is `SELF (this evidence-only commit)`: it records the final remote
+Evidence E7 records the final remote
 and fresh-clone proof and is not a transfer target. It changes no package,
 transfer, source, test, or tool file. Real Workspace retransfer/retest remains
-`NOT_EXECUTED`.
+`NOT_EXECUTED`. T7 is immutable historical evidence and is superseded as an
+execution transfer target by `PHASE8B-DASHBOARD-01`.
 
 ## Why the 2.8.5 transfer gate is superseded
 
@@ -77,6 +109,9 @@ evidence, not the current transfer target or an execution authorization.
 | Transfer verifier C7 | `ba175d3994c86dacc76bad3537df97e3e644dc09` | post-B7 tool-only correction for an independently demonstrated manifest-verifier defect; immutable package bytes unchanged |
 | Fixed transfer T7 | `008c643b85c6b234ad489d946033cb9c06d32920` | normally pushed, GitHub-resolved fixed v2.8.7 transfer ref; raw-byte patch manifest, checksums, and detached fresh-clone verification PASS |
 | Evidence E7 | `SELF (this evidence-only commit)` | records final remote/fresh-clone proof; not a transfer target and changes no package/transfer/source/test/tool file |
+| Phase 8B Dashboard surface blocker | `PHASE8B-DASHBOARD-01` | High; safe S90 evidence; v2.8.8 corrected-package real Workspace retransfer/retest `NOT_EXECUTED` |
+| Source A8 | `SELF (this source commit)` | source/tests/tools/canonical-docs/visualization/incident/recovery only; excludes v2.8.8 package, report, and transfer envelope |
+| Release B8 / fixed transfer T8 | `NOT YET GENERATED` | required after Source A8; no carriage authorization at the source boundary |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.

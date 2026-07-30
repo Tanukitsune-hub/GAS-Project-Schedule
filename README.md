@@ -5,11 +5,11 @@ Google Workspace Personal Work OS.
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.7-prepilot` |
+| Code | `2.8.8-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -28,9 +28,10 @@ Google Workspace Personal Work OS.
 - Historical failed P10 release artifacts (immutable, not executable):
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
   and `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
-- Corrected 2.8.6 source/release/transfer chain remains immutable historical
-  evidence. The current 2.8.7 Source A7 candidate is additive and does not
-  replace any v2.8.5 or v2.8.6 byte or transfer identity.
+- Corrected 2.8.6 and 2.8.7 source/release/transfer chains remain immutable
+  historical evidence. The current 2.8.8 Source A8 candidate is additive and
+  does not replace any v2.8.5, v2.8.6, or v2.8.7 package, transfer, or audit
+  byte.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.
@@ -47,9 +48,37 @@ Worker, Review, and Calendar work.
 See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 [workflow visualization](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html).
 
-## Phase 8B Quick Diagnostic remediation and verified retransfer package
+## Phase 8B Dashboard surface real-runtime remediation
 
-The current candidate corrects the four safe real-Sandbox findings
+`PHASE8B-DASHBOARD-01` records a safe real-Sandbox S90 failure:
+`DASHBOARD_LAYOUT_OWNERSHIP` / `E_DASHBOARD_LAYOUT_CONFLICT` /
+`UNSAFE_DASHBOARD_SURFACE`. The Sandbox remains S00–S80 complete and S90/S99
+incomplete. No Workspace identifier, URL, account, screenshot, user identity,
+or business data is retained.
+
+The confirmed v2.8.7 defect was an invalid ownership predicate:
+`getEditors().length === 1` treated a canonical owner-created Protection as
+unsafe when the Spreadsheet owner could edit implicitly but was absent from
+the ordinary explicit-editor list. Code `2.8.8-prepilot` compares Spreadsheet
+owner and effective user internally, requires `Protection.canEdit()`, and
+accepts only either zero explicit editors for that proven owner or the one
+explicit owner. It still rejects Shared Drive / unavailable owner, foreign or
+blank editors, domain edit, target audiences, warning-only mode, duplicate or
+wrong protections, non-empty unprotected ranges, and foreign range
+protections.
+
+Dashboard values, formulas, input rules, notes, merges, hidden state,
+background, font, number format, named ranges, seed, and marker are inspected
+as separate closed non-sensitive reason codes and counts. Diagnostics expose
+neither identities nor cell/range content. Source A8 is source/tests/tools/
+canonical-docs/visualization/incident/recovery only; v2.8.8 package, release
+report, and transfer envelope are not part of Source A8. Until the additive
+A8/B8/T8 chain passes remote and detached fresh-clone verification, the gate
+remains `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`.
+
+## Historical Phase 8B Quick Diagnostic remediation and T7 package
+
+The historical v2.8.7 candidate corrected the four safe real-Sandbox findings
 `DASHBOARD_LAYOUT_OWNERSHIP`, `TASK_PROTECTIONS`,
 `BLANK_ROW_BOOLEAN_VALUES`, and `TASK_VALIDATION_TYPES`. Dashboard accepts
 only the exact Setup-owned sheet/header protection control plane and exact
@@ -66,7 +95,9 @@ The published v2.8.7 chain is Source A7
 `ba175d3994c86dacc76bad3537df97e3e644dc09` (package bytes unchanged), and
 fixed transfer T7 `008c643b85c6b234ad489d946033cb9c06d32920`. T7 was normally
 pushed, GitHub-resolved, and independently verified from a detached HTTPS
-clone. The resulting gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`.
+clone. Its then-current carriage gate was
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; `PHASE8B-DASHBOARD-01` now
+supersedes T7 as an executable transfer target.
 
 The transfer envelope contains a raw-Git-blob-derived company-PC patch manifest
 against historical T6.1. The real Workspace retransfer/retest remains
@@ -157,12 +188,14 @@ Do not copy this repository, the entire `release/` tree, the failed P10
 package, or the Phase 8C candidate to a company PC.  The P10 envelope remains
 historical failed evidence and is not executable. The corrected 2.8.6 Phase
 8B package is represented only by the historical T6.1 transfer envelope. The
-current executable carriage artifact is the verified v2.8.7 T7 envelope,
-including `implementation/GoogleSpreadsheet/transfer/v2.8.7-prepilot/COMPANY_PC_PATCH_MANIFEST_ja.md`
-and its JSON companion. The historical recovery instructions are
+verified v2.8.7 T7 envelope and its patch manifest are now immutable historical
+evidence and must not be used for execution because `PHASE8B-DASHBOARD-01`
+supersedes them. No v2.8.8 carriage artifact exists at the Source A8 boundary.
+The historical recovery instructions are
 `implementation/GoogleSpreadsheet/docs/PHASE8B_SETUP_BLOCKER_RECOVERY_GUIDE_ja.md`.
 
-Corrected transfer material remains outside its immutable package and does not
-alter its checksums. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is carriage-only:
-it does not authorize Setup, diagnostics, OAuth approval, deployment, `clasp
-push`, Automation enablement, real data, or real Workspace operation.
+Corrected transfer material will remain outside its immutable package and
+will not alter package checksums. Even if a later verified v2.8.8 chain reaches
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, that status is carriage-only: it does
+not authorize Setup, diagnostics, OAuth approval, deployment, `clasp push`,
+Automation enablement, real data, or real Workspace operation.

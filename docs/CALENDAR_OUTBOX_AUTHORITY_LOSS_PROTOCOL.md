@@ -1,9 +1,9 @@
 # Calendar Outbox Authority-Loss Compensation Protocol
 
-Contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` /
+Contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; real Workspace retransfer/retest is
 still `NOT_EXECUTED`
 
 ## Purpose and boundary

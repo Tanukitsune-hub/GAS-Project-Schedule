@@ -889,6 +889,17 @@ var WorkOsDiagnostics = (function () {
                   {
                     layout_status: dashboardLayout.status,
                     writable: dashboardLayout.writable === true,
+                    protection_access_mode: String(
+                      dashboardLayout.protection_access_mode || ''
+                    ),
+                    conflict_reason_code: String(
+                      dashboardLayout.conflict_reason_code || ''
+                    ),
+                    conflict_subreason_code: String(
+                      dashboardLayout.conflict_subreason_code || ''
+                    ),
+                    conflict_counts:
+                      dashboardLayout.conflict_counts || {},
                     external_services_called: false,
                     repair_performed: false
                   }
@@ -906,8 +917,16 @@ var WorkOsDiagnostics = (function () {
                     conflict_reason_code: String(
                       dashboardLayoutError &&
                       dashboardLayoutError.dashboard_conflict_reason ||
-                      'UNSAFE_DASHBOARD_SURFACE'
+                      'DASHBOARD_SEED_OR_MARKER_CONTRACT'
                     ),
+                    conflict_subreason_code: String(
+                      dashboardLayoutError &&
+                      dashboardLayoutError.dashboard_conflict_subreason ||
+                      'DASHBOARD_CONTRACT_UNCLASSIFIED'
+                    ),
+                    conflict_counts:
+                      dashboardLayoutError &&
+                      dashboardLayoutError.dashboard_conflict_counts || {},
                     external_services_called: false,
                     repair_performed: false
                   }

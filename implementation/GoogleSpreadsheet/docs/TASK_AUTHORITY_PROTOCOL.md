@@ -1,9 +1,9 @@
 # Task Authority Protocol — Source Copy
 
-Code `2.8.7-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
-Current corrective-integration gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
-after verified Source A7 / direct-child Release B7 / C7 verifier correction /
-fixed T7 transfer / detached fresh-clone proof; real Workspace retest remains
+Code `2.8.8-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
+Current corrective-integration gate:
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; Source A8 excludes generated
+package/report/transfer outputs and real Workspace retest remains
 `NOT_EXECUTED`.
 
 The canonical publication-facing protocol is
@@ -59,6 +59,16 @@ implementation without using a legacy external context.
 - Dashboard pre-refresh ownership accepts only the exact Setup-owned
   Dashboard sheet/header protection and exact three-row canonical seed.
   Diagnostics neither write a marker nor repair an unsafe layout.
+- Dashboard Protection access proves non-null owner/effective-user equality
+  and `canEdit()`. It accepts either the implicit proven owner with no ordinary
+  explicit editors or exactly the explicit owner. Shared Drive / null owner,
+  different user, blank/foreign editor, warning-only, domain edit, target
+  audiences, duplicate/wrong/overlapping protections, and unprotected ranges
+  remain fail-closed.
+- Dashboard surface checks return only closed reason/subreason enums and
+  whitelisted counts for Protection, name, value, formula, validation, note,
+  merge, hidden, background, font, number-format, and seed/marker contracts.
+  They never return identity or Workspace content.
 
 The canonical state/failure matrix is
 `../../docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`. The F016 local

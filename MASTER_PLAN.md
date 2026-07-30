@@ -2,10 +2,23 @@
 
 Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
-Current contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
 
-## Phase 8B Quick Diagnostic remediation
+## Phase 8B Dashboard surface remediation
+
+| Step | Deliverable | State |
+|---|---|---|
+| P8B-DS-1 | Preserve v2.8.5/P10, v2.8.6/T6.1, and v2.8.7/T7 history | Complete; all historical package, transfer, audit, and incident bytes remain immutable. |
+| P8B-DS-2 | Exact root cause / native Protection model | Complete in source: owner/effective-user identity plus `canEdit()`, explicit-or-implicit owner mode, and fail-closed foreign/domain/audience/duplicate/wrong controls. |
+| P8B-DS-3 | Closed Dashboard surface inspection | Complete in source: Protection, named range, value, formula, validation, note, merge, hidden state, background, font, number format, and seed/marker produce only safe enums/counts. |
+| P8B-DS-4 | Runtime/regression coverage | In progress: canonical explicit/implicit owner, shared-drive/different-user/foreign access, every surface conflict, byte-stable diagnostics, and S00–S80 resume are required. |
+| P8B-DS-5 | Source A8 | Pending commit: source/tests/tools/canonical docs/visualization/incident/recovery only; no v2.8.8 package/report/transfer. |
+| P8B-DS-6 | Direct-child Release B8 | Not started until A8 is fixed; limited to two v2.8.8 packages and the implementation report. |
+| P8B-DS-7 | Transfer T8 / raw-byte company-PC manifest | Not started until B8; compare fixed T7 payload to final v2.8.8 payload without assuming changed files. |
+| P8B-DS-8 | Normal push / detached HTTPS fresh clone / Draft PR #8 | Not started; the gate cannot advance before all remote/fresh-clone checks pass. |
+
+## Historical Phase 8B Quick Diagnostic remediation
 
 | Step | Deliverable | State |
 |---|---|---|
@@ -96,7 +109,11 @@ report, or transfer envelope.  Its direct-child Release B6 must contain only:
 P10 proof and the corrected T6.1 ref remain historical. T6.1 was verified from
 GitHub in a detached target-branch fresh clone, but
 `PHASE8B-QUICK-DIAGNOSTIC-01` supersedes it as the current transfer target.
-The A7/B7/C7/T7/evidence path is complete and its maximum carriage-only status
-is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This permits only controlled
-non-confidential package retransfer; it does not authorize real Workspace
-execution, Automation, deployment, real data, or later-stage readiness.
+The A7/B7/C7/T7/evidence path is complete historical evidence, but
+`PHASE8B-DASHBOARD-01` supersedes T7 as an executable transfer target. The
+current gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. Only after the
+additive A8/B8/T8 path passes normal remote publication and detached
+fresh-clone verification may the maximum carriage-only status become
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. Neither status authorizes real
+Workspace execution, Automation, deployment, real data, or later-stage
+readiness.

@@ -1,9 +1,26 @@
-# Google Workspace Personal Work OS v2 - 2.8.7-prepilot / Phase 8B Quick Diagnostic Real-Runtime Remediation
+# Google Workspace Personal Work OS v2 - 2.8.8-prepilot / Phase 8B Dashboard Surface Real-Runtime Remediation
 
 ## Current authority and Setup boundary
 
-`2.8.7-prepilot` retains the R4/R5 authority contract and the historical
-`PHASE8B-SETUP-01` Ledger bootstrap remediation.  It corrects the separate
+`2.8.8-prepilot` retains the R4/R5 authority contract, historical
+`PHASE8B-SETUP-01`, and v2.8.7 Quick Diagnostic remediation. It corrects
+`PHASE8B-DASHBOARD-01`: v2.8.7 assumed a safe Protection always had exactly
+one ordinary explicit editor. Apps Script may instead represent the proven
+Spreadsheet owner only through inherent `canEdit()` capability. The corrected
+contract internally requires owner/effective-user equality and `canEdit()`,
+then accepts only either zero explicit editors for that owner or exactly the
+explicit owner. It rejects unavailable owner / Shared Drive, different
+effective user, foreign/blank editor, warning-only, domain edit, target
+audience, duplicate/wrong Protection, non-empty unprotected ranges, and
+foreign range Protection.
+
+Dashboard inspection now emits only closed reason/subreason enums and numeric
+counts for Protection, named range, value, formula, validation, note, merge,
+hidden state, background, font, number format, and seed/marker contracts.
+It never emits user identity, cell content, formulas, notes, range addresses,
+IDs, or URLs. Quick Diagnostic is byte-for-byte read-only.
+
+The historical `2.8.7-prepilot` release corrected the separate
 high-severity `PHASE8B-QUICK-DIAGNOSTIC-01` runtime contract mismatch observed
 after S00 through S80 in an otherwise empty Phase 8B Sandbox: Setup-owned
 Dashboard seed/control-plane recognition, two-row/50-column Task header
@@ -50,19 +67,21 @@ ledger has 21 columns.
 
 Canonical state-transition documentation is in
 `docs/TASK_AUTHORITY_PROTOCOL.md`; the current offline workflow visualization
-is `visualizations/task_authority_protocol_v2_8_7.html`.  The prior Round 3
+is `visualizations/task_authority_protocol_v2_8_8.html`.  The prior Round 3
 backup directory was local-only and was not present in GitHub; this historical
 fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
-Current versions are Code `2.8.7-prepilot`, Schema `2.6`, AI Schema `2.0`,
+Current versions are Code `2.8.8-prepilot`, Schema `2.6`, AI Schema `2.0`,
 and Migration `3`. Automation remains OFF by default. The verified v2.8.7
 chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `95bc7240d99124b245e188b8e646eccf6c3ead48`, C7
 `ba175d3994c86dacc76bad3537df97e3e644dc09` (verifier only), and fixed T7
 `008c643b85c6b234ad489d946033cb9c06d32920`. Its carriage-only gate is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. T6.1 remains immutable historical
-evidence; it is not the v2.8.7 transfer target. Real Workspace retransfer/retest
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is historical and T7 is now superseded
+as an executable target by `PHASE8B-DASHBOARD-01`. The Source A8 gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; v2.8.8 package and transfer
+artifacts are generated only after Source A8. Real Workspace retransfer/retest
 remains `NOT_EXECUTED`.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。

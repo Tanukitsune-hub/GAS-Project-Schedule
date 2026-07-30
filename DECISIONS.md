@@ -39,10 +39,35 @@ accepting arbitrary data with familiar keys, would weaken the safety boundary.
 formulas, notes, named ranges, merges, hidden state, non-default formatting,
 missing/unexpected checkbox validation, `true`, string boolean, non-checkbox
 data, and partial identity all remain fail-closed. S00–S80 can be preserved;
-S90/S99 may resume only through normal Setup. Automation remains OFF. Until
-  the v2.8.7 source/release/transfer/evidence chain is independently verified,
-  the current gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for controlled
-  carriage only.
+S90/S99 may resume only through normal Setup. Automation remains OFF. The
+v2.8.7 A7/B7/T7 chain was verified, but its exact editor-count ownership rule
+was later superseded by D-042 and `PHASE8B-DASHBOARD-01`.
+
+## D-042 — Dashboard Protection ownership uses proven owner capability, not an editor count
+
+**Decision.** A canonical Dashboard sheet or header Protection is safe only
+when Spreadsheet owner and effective user are both available and internally
+equal, `Protection.canEdit()` is true, warning-only and domain edit are false,
+target audiences and unprotected ranges are empty, and geometry/description
+match exactly. The explicit editor list may be empty for the proven implicit
+owner, or contain exactly that owner. It may not contain a blank, foreign, or
+additional editor. Shared Drive / unavailable owner remains fail-closed.
+
+**Rationale.** Apps Script exposes the owner’s inherent edit capability
+separately from the ordinary explicit editor list. Therefore
+`getEditors().length === 1` is not a valid cross-runtime ownership proof and
+caused the real canonical S20/S30/S40 Dashboard to fail S90.
+
+**Consequences.** Diagnostics never expose owner/editor identities. They emit
+only the closed access modes `OWNER_IMPLICIT_CAN_EDIT` or
+`OWNER_EXPLICIT_EDITOR`, or safe enum reason/subreason codes and numeric
+counts. Foreign editors, domain edit, target audiences, warning-only
+protection, duplicate/wrong/overlapping protections, named ranges, values,
+formulas, validation, notes, merges, hidden state, background, font, number
+format, and seed/marker mismatch remain fail-closed. Quick Diagnostic remains
+read-only. The Source A8 gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` until the complete A8/B8/T8 remote
+and fresh-clone chain is proven.
 
 ## D-037 — Independent Task Authority Ledger with two-slot recovery
 

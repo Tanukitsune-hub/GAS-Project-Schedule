@@ -705,7 +705,7 @@ test('R4-08_QUARANTINE_WRITES_SAFE_ERROR_AUDIT_WITHOUT_RAW_TASK_CONTENT', () => 
 test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', () => {
   const config = fs.readFileSync(path.join(appsRoot, '00_Config.gs'), 'utf8');
   const html = fs.readFileSync(path.join(root, 'visualizations',
-    'task_authority_protocol_v2_8_7.html'), 'utf8');
+    'task_authority_protocol_v2_8_8.html'), 'utf8');
   const currentStatus = fs.readFileSync(
     path.resolve(root, '..', '..', 'CURRENT_STATUS.md'), 'utf8'
   );
@@ -729,6 +729,7 @@ test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', (
   assert.ok([
     'PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER',
     'PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC',
+    'PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE',
     'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
   ].includes(gateMatch[1]), 'unexpected current gate: ' + gateMatch[1]);
   assert.ok(html.includes(`data-release-status="${gateMatch[1]}"`));
@@ -738,6 +739,7 @@ test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', (
   assert.ok(html.includes('PREPARED'));
   assert.ok(html.includes('COMMITTED'));
   assert.ok(html.includes('PHASE8B-QUICK-DIAGNOSTIC-01'));
+  assert.ok(html.includes('PHASE8B-DASHBOARD-01'));
   assert.ok(html.includes('calendar_reconcile_required'));
 });
 

@@ -1,10 +1,10 @@
-# Manual Acceptance Guide — 2.8.7 Phase 8B Quick Diagnostic Candidate
+# Manual Acceptance Guide — 2.8.8 Phase 8B Dashboard Surface Candidate
 
-Code Version: `2.8.7-prepilot`
+Code Version: `2.8.8-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; controlled carriage only
+Current gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; no v2.8.8 carriage yet
 Automation default: `OFF`
 
 ## Purpose
@@ -42,6 +42,8 @@ information in this repository.
 | Foreign Event compensation | Event is retained and fails closed | NOT EXECUTED |
 | Diagnostics | Quick/Deep remain read-only | NOT EXECUTED |
 | Dashboard pre-refresh ownership | exact Setup sheet/header protection and exact seed; no marker write | NOT EXECUTED |
+| Dashboard native Protection access | owner/effective user match; implicit or explicit proven owner only; no domain/audience/foreign access | NOT EXECUTED |
+| Dashboard conflict output | closed reason/subreason enums and counts only; no identity/content/address | NOT EXECUTED |
 | Empty Task checkboxes | only schema-defined checkbox `false` in identity-empty rows | NOT EXECUTED |
 | Migration | Schema 2.5 anchor-only conversion and pause/resume behavior | NOT EXECUTED |
 
@@ -56,18 +58,18 @@ historical envelope. Do not manually hide its Ledger, continue its Setup, or
 run its diagnostics. After corrected 2.8.6 publication and independent
 verification only, use the separately generated Japanese procedure, 8B-only
 allow-list, acceptance checklist, stop/rollback checklist, synthetic-data
-specification, results template, and failed-Sandbox recovery guide in the new
-2.8.7 transfer envelope after its separate verification.
+specification, results template, and failed-Sandbox recovery guide in a new
+v2.8.8 transfer envelope only after its separate verification. T7 is immutable
+historical evidence and is superseded by `PHASE8B-DASHBOARD-01`.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. Source A7, direct-child Release
-B7, C7 verifier correction, fixed transfer T7, remote resolution, and detached
-fresh-clone evidence are complete. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
-remains only a retransfer authorization, never a Sandbox execution
-authorization. Real Workspace retransfer/retest is `NOT_EXECUTED`.
+This guide never declares execution readiness. Source A8 is source-only and
+its gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. A future fully verified
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` remains only a retransfer
+authorization, never a Sandbox execution authorization. Real Workspace
+retransfer/retest is `NOT_EXECUTED`.
 
-Historical source/package-generation material correctly recorded the earlier
-cap as `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` before the A7/B7/C7/T7
-publication and detached-clone proof. That historical marker is not the current
-operational gate.
+Historical source/package-generation material correctly recorded
+`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7
+chain. Those markers are not the current operational gate.

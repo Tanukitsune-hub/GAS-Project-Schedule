@@ -1,5 +1,45 @@
 # Changelog
 
+## 2.8.8-prepilot - 2026-07-30 Phase 8B Dashboard surface real-runtime remediation
+
+### Fixed
+
+- `PHASE8B-DASHBOARD-01`: replaced the invalid
+  `getEditors().length === 1` ownership assumption with internally proven
+  Spreadsheet-owner/effective-user equality plus `Protection.canEdit()`.
+  Both implicit-owner/no-explicit-editor and explicit-owner representations
+  are accepted; Shared Drive / unavailable owner, different user, foreign or
+  blank editors, domain edit, target audiences, warning-only, wrong/duplicate
+  protections, unprotected ranges, and foreign range protections fail closed.
+- Split the former Boolean `UNSAFE_DASHBOARD_SURFACE` path into closed safe
+  reason/subreason enums and counts for Protection, named range, value,
+  formula, validation, note, merge, hidden state, background, font, number
+  format, and seed/marker contracts. No identity, content, address, ID, or URL
+  is returned.
+- Quick Diagnostic remains byte-for-byte read-only; Setup resume preserves
+  S00–S80 resources, keeps S90/S99 incomplete on a real conflict, keeps
+  Automation OFF, and creates no five-minute trigger.
+
+### Added
+
+- `phase8b_dashboard_surface_real_runtime_test.js` covers explicit and
+  implicit owner representations, owner/effective-user mismatch, null owner,
+  `canEdit=false`, foreign access, domain/audience/warning controls,
+  wrong/duplicate/unprotected/overlapping protections, all surface conflict
+  classes, exact seed/marker states, and byte-stable diagnostics.
+- v2.8.8 release, Phase 8C, raw-Git-blob patch-manifest builders/verifiers,
+  current visualization, safe incident record, and recovery guidance.
+
+### Version and status
+
+- Contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; `TEST_MODE=true` for Phase 8B and Automation default `OFF`.
+- Source A8 contains source/tests/tools/canonical docs/visualization/incident/
+  recovery only; it excludes v2.8.8 packages, release report, and transfer.
+- Source-boundary gate:
+  `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. Real Workspace retransfer/retest
+  remains `NOT_EXECUTED`.
+
 ## 2.8.7-prepilot - 2026-07-30 Phase 8B Quick Diagnostic real-runtime remediation
 
 ### Fixed

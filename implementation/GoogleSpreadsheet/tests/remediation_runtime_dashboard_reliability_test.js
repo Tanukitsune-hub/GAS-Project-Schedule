@@ -183,6 +183,8 @@ const dashboardContext = {
   Date,
   WorkOsConfig: {
     TIMEZONE: 'Asia/Tokyo',
+    HEADER_ID_ROW: 1,
+    HEADER_LABEL_ROW: 2,
     DATA_START_ROW: 3,
     ROW_EXPANSION_UNIT: 100,
     LOCK_WAIT_MS: 5000,
@@ -233,6 +235,14 @@ const dashboardContext = {
   WorkOsAppError: class WorkOsAppError extends Error {},
   WorkOsRuntimeSettings: {
     summarizeHealth: () => ({ status: 'ACTION_REQUIRED', note: 'Gate pending' })
+  },
+  SpreadsheetApp: {
+    ProtectionType: { RANGE: 'RANGE', SHEET: 'SHEET' }
+  },
+  Session: {
+    getEffectiveUser: () => ({
+      getEmail: () => 'synthetic.owner@example.invalid'
+    })
   }
 };
 vm.createContext(dashboardContext);
@@ -376,11 +386,36 @@ test('R-DASH-06_KEYED_UPSERT_IS_IDEMPOTENT_AND_PRESERVES_CUSTOM_ROW', () => {
     () => ['', '', '']
   );
   let customFormula = '=ROW()';
+  const owner = {
+    getEmail: () => 'synthetic.owner@example.invalid'
+  };
+  function canonicalProtection(description, range = null) {
+    return {
+      getDescription: () => description,
+      getRange: () => range,
+      getRangeName: () => null,
+      isWarningOnly: () => false,
+      canDomainEdit: () => false,
+      canEdit: () => true,
+      getTargetAudiences: () => [],
+      getEditors: () => [owner],
+      getUnprotectedRanges: () => []
+    };
+  }
+  let headerProtection = null;
+  const sheetProtection = canonicalProtection(
+    `WORK_OS_V2_PHASE1_${
+      dashboardContext.WorkOsConfig.SHEETS.DASHBOARD
+    }_SYSTEM_OWNED_EDIT_POLICY`
+  );
   const sheet = {
     getDataRange: () => ({ getValues: () => structuredClone(cells) }),
     getMaxRows: () => 100,
     getMaxColumns: () => 3,
-    getProtections: () => [],
+    getProtections: (type) => type ===
+      dashboardContext.SpreadsheetApp.ProtectionType.SHEET
+      ? [sheetProtection]
+      : [headerProtection],
     isRowHiddenByUser: () => false,
     isRowHiddenByFilter: () => false,
     isColumnHiddenByUser: () => false,
@@ -471,8 +506,15 @@ test('R-DASH-06_KEYED_UPSERT_IS_IDEMPOTENT_AND_PRESERVES_CUSTOM_ROW', () => {
     },
     insertRowsAfter: () => {}
   };
+  headerProtection = canonicalProtection(
+    `WORK_OS_V2_PHASE1_${
+      dashboardContext.WorkOsConfig.SHEETS.DASHBOARD
+    }_HEADER_IDS`,
+    sheet.getRange(1, 1, 2, 3)
+  );
   const spreadsheet = {
     getSheetByName: () => sheet,
+    getOwner: () => owner,
     getNamedRanges: () => []
   };
   const desired = dashboardContext.WorkOsDashboard.METRIC_ORDER.map(
@@ -572,7 +614,7 @@ test('R-UX-03_PAUSED_ACTION_DEPENDS_ON_OPERATION', () => {
 test('R-META-01_PHASE_BOUNDARY_AND_VERSIONS_ARE_CURRENT', () => {
   const config = source('00_Config.gs');
   const setup = source('02_Setup.gs');
-  assert.match(config, /CODE_VERSION:\s*'2\.8\.7-prepilot'/);
+  assert.match(config, /CODE_VERSION:\s*'2\.8\.8-prepilot'/);
   assert.match(config, /SCHEMA_VERSION:\s*'2\.6'/);
   assert.match(config, /AI_SCHEMA_VERSION:\s*'2\.0'/);
   assert.match(config, /MIGRATION_VERSION:\s*'3'/);

@@ -1,10 +1,10 @@
-# Requirements Traceability — 2.8.7 Quick Diagnostic Candidate
+# Requirements Traceability — 2.8.8 Dashboard Surface Candidate
 
 Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
-Specification: `instructions/GoogleWorkspace_v2_8_7_Implementation_Execution_and_Company_PC_Patch_Manifest_2026-07-30.md`
-Version contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Google Workspace
+Specification: `instructions/GoogleWorkspace_v2_8_8_Phase8B_Dashboard_Surface_Real_Runtime_Remediation_2026-07-30.md`
+Version contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; real Google Workspace
 retransfer/retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
@@ -79,6 +79,16 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 | QD-02 | Task rows 1–2 / 50-column protection, five schema-defined checkbox validation, and narrow identity-empty `false` contract | `01_TypesAndSchemas.gs`; `03_SheetBuilder.gs`; `16_Diagnostics.gs`; runtime suite; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 | QD-03 | S00–S80 preserved; S90/S99 resume neither duplicates nor deletes synthetic label/calendar/edit-trigger resources | `phase8b_setup_ledger_visibility_test.js`; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 | QD-04 | Company-PC replacement list is Git raw-byte derived from T6.1 and final B7 payload | v2.8.7 patch-manifest tools; T7 manifest verifier | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
+
+## Phase 8B Dashboard surface traceability
+
+| ID | Requirement | Primary evidence | Current evidence |
+|---|---|---|---|
+| DS-01 | Accept explicit owner and proven implicit owner Protection representations without relying on editor count alone | `15_Dashboard.gs`; `phase8b_dashboard_surface_real_runtime_test.js` | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
+| DS-02 | Reject null owner / Shared Drive, different effective user, `canEdit=false`, foreign/blank editor, domain edit, target audience, warning-only, duplicate/wrong/unprotected/overlapping protections | `15_Dashboard.gs`; native-protection fake-runtime cases | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
+| DS-03 | Separate Protection/name/value/formula/validation/note/merge/hidden/background/font/number-format/seed-marker conflicts into closed safe enums/counts | `15_Dashboard.gs`; `16_Diagnostics.gs`; surface conflict matrix | LOCAL_REGRESSION_PASS; no content/identity emitted |
+| DS-04 | Quick Diagnostic is byte-stable and S00–S80 resume preserves labels, Calendar, Properties, edit trigger, Automation OFF, and no five-minute trigger | dashboard runtime suite; prior Setup/Quick Diagnostic suites | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
+| DS-05 | Company-PC patch is raw-Git-blob derived from fixed T7 and final B8 | v2.8.8 patch-manifest builder/verifier | PENDING_SOURCE_A8_RELEASE_B8_TRANSFER_T8 |
 
 ## Task write-route inventory (13 routes)
 

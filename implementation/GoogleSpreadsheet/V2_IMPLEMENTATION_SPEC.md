@@ -1,8 +1,8 @@
 # Google Workspace Personal Work OS v2 — Implementation Specification
 
 Last updated: 2026-07-30
-Code: `2.8.7-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` (controlled carriage only; real Workspace retransfer/retest `NOT_EXECUTED`)
+Code: `2.8.8-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
+Current gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` (Source A8 boundary; real Workspace retransfer/retest `NOT_EXECUTED`)
 
 ## 1. Scope and non-goals
 
@@ -50,6 +50,23 @@ and the exact `DASHBOARD_LEGACY_SEED_ROWS` before explicit refresh. It rejects
 foreign controls, data, formulas, notes, names, merges, hidden state, and
 non-default data-block formatting. This is a compatibility correction, not a
 repair/write permission or a status upgrade.
+
+### Dashboard native Protection and surface compatibility
+
+Dashboard Protection ownership requires a non-null Spreadsheet owner, a
+non-null effective user equal to that owner, and `canEdit() === true`.
+`getEditors()` may be empty for the proven implicit owner or contain exactly
+that owner. Null owner / Shared Drive, different effective user, blank or
+foreign editor, warning-only mode, domain edit, target audience, duplicate or
+wrong description/geometry, unprotected ranges, and foreign range Protection
+remain fail-closed.
+
+The pre-refresh/owned surface inspector uses a closed enum for sheet/header/
+foreign Protection, named range, value, formula, validation, note, merge,
+hidden row/column, background, font, number format, and seed/marker conflicts.
+It emits only those codes and whitelisted counts. User identities, cell
+contents, formulas, notes, range addresses, IDs, and URLs are never diagnostic
+output. This is the `PHASE8B-DASHBOARD-01` contract.
 
 ## 3. Authority architecture
 

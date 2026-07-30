@@ -63,7 +63,7 @@ const moduleDocs = [
   'docs/TASK_AUTHORITY_PROTOCOL.md',
   'docs/V2_REQUIREMENTS_TRACEABILITY.md',
   'docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
-  'visualizations/task_authority_protocol_v2_8_7.html'
+  'visualizations/task_authority_protocol_v2_8_8.html'
 ];
 
 test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () => {
@@ -77,7 +77,7 @@ test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () =>
 test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const config = source('apps-script-v2/00_Config.gs');
   [
-    "CODE_VERSION: '2.8.7-prepilot'",
+    "CODE_VERSION: '2.8.8-prepilot'",
     "SCHEMA_VERSION: '2.6'",
     "AI_SCHEMA_VERSION: '2.0'",
     "MIGRATION_VERSION: '3'",
@@ -92,11 +92,11 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
   const declaredGate = gateMatch[1];
   assert.ok([
-    'PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC',
+    'PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE',
     'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
   ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
-    '2.8.7-prepilot',
+    '2.8.8-prepilot',
     '2.6',
     declaredGate,
     'Task Authority Ledger',
@@ -133,6 +133,8 @@ test('RPC-03_SCHEMA_COUNTS_AND_MATRIX_TRACEABILITY_ARE_CANONICAL', () => {
   assert.strictEqual((matrix.match(/^\| W-\d{2} \|/gm) || []).length, 13);
   assert.strictEqual((matrix.match(/^\| PHASE8B-SETUP-01 \|/gm) || []).length,
     1, 'current Setup blocker must be traced without changing historical R4 counts');
+  assert.strictEqual((matrix.match(/^\| PHASE8B-DASHBOARD-01 \|/gm) || []).length,
+    1, 'Dashboard surface blocker must be traced without changing historical R4 counts');
 });
 
 test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
@@ -207,10 +209,10 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
 
 test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () => {
   const toolNames = [
-    'build_v2_8_7_release.ps1',
-    'build_v2_8_7_phase8c_release.ps1',
-    'verify_v2_8_7_release.ps1',
-    'verify_v2_8_7_phase8c_release.ps1'
+    'build_v2_8_8_release.ps1',
+    'build_v2_8_8_phase8c_release.ps1',
+    'verify_v2_8_8_release.ps1',
+    'verify_v2_8_8_phase8c_release.ps1'
   ];
   toolNames.forEach((name) => {
     const text = source(path.join('tools', name));
@@ -223,7 +225,7 @@ test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () 
     assert.ok(text.includes('Join-Path $moduleRoot "release\\$'),
       name + ': release must be rooted at canonical module path');
   });
-  ['build_v2_8_7_release.ps1', 'build_v2_8_7_phase8c_release.ps1']
+  ['build_v2_8_8_release.ps1', 'build_v2_8_8_phase8c_release.ps1']
     .forEach((name) => {
       const text = source(path.join('tools', name));
       assert.ok(text.includes('function Assert-CleanCanonicalSourceInputs'),
@@ -257,13 +259,13 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
     assert.ok(!names.includes(name), 'root duplicate forbidden: ' + name);
   });
   [
-    'build_v2_8_7_company_pc_patch_manifest.ps1',
-    'verify_v2_8_7_company_pc_patch_manifest.ps1'
+    'build_v2_8_8_company_pc_patch_manifest.ps1',
+    'verify_v2_8_8_company_pc_patch_manifest.ps1'
   ].forEach((name) => {
     const text = source(path.join('tools', name));
     assert.ok(text.includes('git_blob_raw_bytes_sha256'),
       name + ': raw Git byte comparison required');
-    assert.ok(text.includes('v2.8.6-prepilot') && text.includes('v2.8.7-prepilot'),
+    assert.ok(text.includes('v2.8.7-prepilot') && text.includes('v2.8.8-prepilot'),
       name + ': old/new payload versions required');
   });
   [
@@ -282,15 +284,23 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
     'implementation/GoogleSpreadsheet/release/v2.8.6-prepilot-phase8c/'
   ].forEach((prefix) => assert.ok(allNames.some((name) => name.startsWith(prefix)),
   'historical v2.8.6 package must remain present: ' + prefix));
-  const currentReport =
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_QUICK_DIAGNOSTIC_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
-  assert.ok(!allNames.includes(currentReport),
-    'Source A7 must not contain the Quick Diagnostic release report');
   [
     'implementation/GoogleSpreadsheet/release/v2.8.7-prepilot/',
     'implementation/GoogleSpreadsheet/release/v2.8.7-prepilot-phase8c/'
+  ].forEach((prefix) => assert.ok(allNames.some((name) => name.startsWith(prefix)),
+  'historical v2.8.7 package must remain present: ' + prefix));
+  assert.ok(allNames.includes(
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_QUICK_DIAGNOSTIC_REAL_RUNTIME_IMPLEMENTATION_REPORT.md'
+  ), 'historical v2.8.7 release report must remain present');
+  const currentReport =
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_SURFACE_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
+  assert.ok(!allNames.includes(currentReport),
+    'Source A8 must not contain the Dashboard surface release report');
+  [
+    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot-phase8c/'
   ].forEach((prefix) => assert.ok(!allNames.some((name) => name.startsWith(prefix)),
-    'Source A7 must not contain new release payload: ' + prefix));
+    'Source A8 must not contain new release payload: ' + prefix));
 });
 
 test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
@@ -302,14 +312,14 @@ test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
   const lineage = git(['rev-list', '--parents', '-n', '1', releaseCommit])
     .split(/\s+/).filter(Boolean);
   assert.deepStrictEqual(lineage, [releaseCommit, sourceCommit],
-    'Release B7 must be a direct child of Source A7');
+    'Release B8 must be a direct child of Source A8');
   const allowedPrefixes = [
-    'implementation/GoogleSpreadsheet/release/v2.8.7-prepilot/',
-    'implementation/GoogleSpreadsheet/release/v2.8.7-prepilot-phase8c/'
+    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot-phase8c/'
   ];
   const report =
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_QUICK_DIAGNOSTIC_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
-  assert.ok(changed.includes(report), 'Quick Diagnostic report missing from Release B7');
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_SURFACE_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
+  assert.ok(changed.includes(report), 'Dashboard surface report missing from Release B8');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[0])),
     'Phase 8B package missing from Release commit');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[1])),

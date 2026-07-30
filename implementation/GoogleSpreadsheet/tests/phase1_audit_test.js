@@ -264,6 +264,9 @@ class FakeSheet {
 class FakeSpreadsheet {
   constructor(sheets) {
     this.sheets = sheets;
+    this.owner = {
+      getEmail: () => 'synthetic.user@example.invalid'
+    };
     this.sheets.forEach((sheet) => {
       sheet.parent = this;
     });
@@ -275,6 +278,10 @@ class FakeSpreadsheet {
 
   getSheetByName(name) {
     return this.sheets.find((sheet) => sheet.getName() === name) || null;
+  }
+
+  getOwner() {
+    return this.owner;
   }
 }
 
@@ -310,6 +317,14 @@ class FakeProtection {
     return this.domainEdit;
   }
 
+  canEdit() {
+    return true;
+  }
+
+  getTargetAudiences() {
+    return [];
+  }
+
   getEditors() {
     return this.editorEmails.map((email) => ({
       getEmail: () => email
@@ -339,6 +354,10 @@ class FakeProtection {
 
   getRange() {
     return this.range;
+  }
+
+  getRangeName() {
+    return null;
   }
 
   setRange(range) {
