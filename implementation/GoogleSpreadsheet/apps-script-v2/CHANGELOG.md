@@ -1,5 +1,48 @@
 # Changelog
 
+## 2.8.10-prepilot - 2026-07-31 Dashboard write-visibility / module-skew remediation
+
+### Fixed
+
+- `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`: the v2.8.9 Setup-only
+  normalizer wrote the exact 17×3 Dashboard system block and then performed a
+  strict read in the same execution without first making queued Spreadsheet
+  writes visible. The v2.8.10 contract requires one
+  `SpreadsheetApp.flush()` after a write, reacquires a fresh exact Range, and
+  verifies all 51 cells before S90 may continue.
+- An unavailable flush API, fresh-Range/read failure, or a still-noncanonical
+  post-flush read fails closed as
+  `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`. Safe Setup evidence is retained
+  even if the subsequent read-only Quick Diagnostic throws, and is limited to
+  a closed normalization state, write/flush/postcondition Booleans, checked
+  cell count, and noncanonical count; it contains no locale, format strings,
+  values, addresses, identifiers, or identities.
+- `WorkOsConfig`, `WorkOsSetup`, and `WorkOsDashboard` now participate in one
+  deterministic S90 module-contract check. A partial manual module replacement
+  fails before the format write as `E_MODULE_VERSION_SKEW`.
+
+### Added
+
+- Buffered fake-runtime coverage queues format writes until flush, proves the
+  historical no-flush sequence fails, verifies fresh-Range postconditions,
+  and covers unavailable/failed/stale flush, fresh-Range acquisition,
+  postcondition-read, and post-normalization Diagnostic failure paths.
+- Module-skew and canonical-document consistency coverage, a v2.8.10 workflow
+  visualization, and a non-sensitive repeated-finding incident/recovery note.
+
+### Version and status
+
+- Contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; `TEST_MODE=true` for Phase 8B and Automation default `OFF`.
+- Source A10 contains source/tests/tools/canonical docs/specification/
+  visualization/incident/recovery/changelog material only. Source A10,
+  direct-child Release B10, fixed transfer T10, and evidence E10 remain
+  `PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and `PENDING_E10` at this
+  source-edit stage.
+- Source-boundary gate:
+  `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. Real Workspace
+  retransfer/retest remains `NOT_EXECUTED`.
+
 ## 2.8.9-prepilot - 2026-07-30 Phase 8B Dashboard number-format real-runtime remediation
 
 ### Fixed

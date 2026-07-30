@@ -6,6 +6,7 @@
  * ID, credential reference or external payload is copied to the Dashboard.
  */
 var WorkOsDashboard = (function () {
+  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_10';
   var METRIC_ORDER = Object.freeze([
     'AUTOMATION_STATUS',
     'LAST_SUCCESS_AT',
@@ -93,6 +94,8 @@ var WorkOsDashboard = (function () {
     FONT_NONCANONICAL: true,
     NUMBER_FORMAT_NONCANONICAL: true,
     NUMBER_FORMAT_API_UNAVAILABLE: true,
+    NUMBER_FORMAT_FLUSH_UNAVAILABLE: true,
+    NUMBER_FORMAT_POSTCONDITION_FAILED: true,
     SEED_VALUES_NONCANONICAL: true,
     MARKER_NONCANONICAL: true,
     DUPLICATE_METRIC_KEY: true,
@@ -424,6 +427,96 @@ var WorkOsDashboard = (function () {
       closedDashboardSubreason(subreasonCode);
     error.dashboard_conflict_counts = safeDashboardConflictCounts(counts);
     return error;
+  }
+
+  function normalizationEvidence(
+      status,
+      writePerformed,
+      flushPerformed,
+      postconditionVerified,
+      checkedCellCount,
+      noncanonicalCount) {
+    return {
+      normalization_status: String(status),
+      status: String(status),
+      write_performed: writePerformed === true,
+      flush_performed: flushPerformed === true,
+      postcondition_verified: postconditionVerified === true,
+      checked_cell_count: Math.max(0, Math.floor(
+        Number(checkedCellCount) || 0
+      )),
+      noncanonical_count: Math.max(0, Math.floor(
+        Number(noncanonicalCount) || 0
+      ))
+    };
+  }
+
+  function numberFormatPostconditionError(evidence, subreasonCode) {
+    var error = new WorkOsAppError(
+      'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION',
+      'DASHBOARD',
+      false,
+      'Dashboard number-format postcondition could not be verified.'
+    );
+    error.dashboard_conflict_reason =
+      'DASHBOARD_NUMBER_FORMAT_CONFLICT';
+    error.dashboard_conflict_subreason = closedDashboardSubreason(
+      subreasonCode || 'NUMBER_FORMAT_POSTCONDITION_FAILED'
+    );
+    error.dashboard_conflict_counts = {
+      number_format_conflict_count: Math.max(
+        0,
+        Math.floor(Number(evidence && evidence.noncanonical_count) || 0)
+      )
+    };
+    error.dashboard_normalization_evidence = evidence;
+    return error;
+  }
+
+  function moduleVersionSkewError() {
+    var error = new WorkOsAppError(
+      'E_MODULE_VERSION_SKEW',
+      'S90_QUICK_DIAGNOSTIC',
+      false,
+      'Setup-critical module contract is not aligned.'
+    );
+    error.module_contract_status = 'MISMATCH';
+    return error;
+  }
+
+  function assertModuleContract() {
+    if (String(WorkOsConfig.S90_MODULE_CONTRACT_ID || '') !==
+        MODULE_CONTRACT_ID ||
+        typeof WorkOsSetup === 'undefined' ||
+        !WorkOsSetup ||
+        String(WorkOsSetup.MODULE_CONTRACT_ID || '') !==
+          MODULE_CONTRACT_ID) {
+      throw moduleVersionSkewError();
+    }
+  }
+
+  function countNoncanonicalFormats(formats, rowCount, columnCount) {
+    if (!Array.isArray(formats) || formats.length !== rowCount) {
+      return rowCount * columnCount;
+    }
+    var count = 0;
+    for (var rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+      if (!Array.isArray(formats[rowIndex]) ||
+          formats[rowIndex].length !== columnCount) {
+        count += columnCount;
+        continue;
+      }
+      for (var columnIndex = 0;
+          columnIndex < columnCount;
+          columnIndex += 1) {
+        if (!isCanonicalSystemBlockNumberFormat(
+          formats[rowIndex][columnIndex]
+        )) {
+          count += 1;
+        }
+      }
+    }
+    return count;
   }
 
   function dashboardInspection(
@@ -1568,7 +1661,9 @@ var WorkOsDashboard = (function () {
   }
 
   function normalizeSystemBlockNumberFormatForSetup(spreadsheet) {
+    assertModuleContract();
     var keys = METRIC_ORDER.slice();
+    var checkedCellCount = keys.length * 3;
     var layout = inspectLayoutInternal(
       spreadsheet,
       keys,
@@ -1602,26 +1697,129 @@ var WorkOsDashboard = (function () {
       );
     }
     var formats = range.getNumberFormats();
-    var canonical = Array.isArray(formats) && formats.length === keys.length &&
-      formats.every(
-      function (row) {
-        return Array.isArray(row) && row.length === 3 && row.every(
-          isCanonicalSystemBlockNumberFormat
-        );
-      }
+    var noncanonicalCount = countNoncanonicalFormats(
+      formats,
+      keys.length,
+      3
     );
-    if (canonical) {
-      return {
-        status: 'CANONICAL',
-        write_performed: false,
-        row_count: keys.length,
-        column_count: 3,
-        layout_status: layout.status
-      };
+    if (noncanonicalCount === 0) {
+      var canonicalEvidence = normalizationEvidence(
+        'CANONICAL',
+        false,
+        false,
+        true,
+        checkedCellCount,
+        0
+      );
+      canonicalEvidence.row_count = keys.length;
+      canonicalEvidence.column_count = 3;
+      canonicalEvidence.layout_status = layout.status;
+      return canonicalEvidence;
+    }
+    if (typeof SpreadsheetApp === 'undefined' ||
+        !SpreadsheetApp ||
+        typeof SpreadsheetApp.flush !== 'function') {
+      throw numberFormatPostconditionError(
+        normalizationEvidence(
+          'FAILED_POSTCONDITION',
+          false,
+          false,
+          false,
+          checkedCellCount,
+          noncanonicalCount
+        ),
+        'NUMBER_FORMAT_FLUSH_UNAVAILABLE'
+      );
     }
     range.setNumberFormat(CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT);
-    // Post-write strict inspection proves the exact canonical format without
-    // relaxing the normal read-only Quick/Deep Diagnostic contract.
+    try {
+      SpreadsheetApp.flush();
+    } catch (flushError) {
+      throw numberFormatPostconditionError(
+        normalizationEvidence(
+          'FAILED_POSTCONDITION',
+          true,
+          false,
+          false,
+          checkedCellCount,
+          noncanonicalCount
+        ),
+        'NUMBER_FORMAT_FLUSH_UNAVAILABLE'
+      );
+    }
+    // Reacquire a fresh Range after the write boundary. Apps Script may bundle
+    // Spreadsheet writes, so a pre-flush Range must never prove postcondition.
+    var freshRange;
+    try {
+      freshRange = sheet.getRange(
+        layout.block_start_row,
+        1,
+        keys.length,
+        3
+      );
+    } catch (freshRangeError) {
+      throw numberFormatPostconditionError(
+        normalizationEvidence(
+          'FAILED_POSTCONDITION',
+          true,
+          true,
+          false,
+          checkedCellCount,
+          checkedCellCount
+        ),
+        'NUMBER_FORMAT_POSTCONDITION_FAILED'
+      );
+    }
+    if (!freshRange ||
+        typeof freshRange.getNumberFormats !== 'function') {
+      throw numberFormatPostconditionError(
+        normalizationEvidence(
+          'FAILED_POSTCONDITION',
+          true,
+          true,
+          false,
+          checkedCellCount,
+          checkedCellCount
+        ),
+        'NUMBER_FORMAT_POSTCONDITION_FAILED'
+      );
+    }
+    var postconditionFormats;
+    try {
+      postconditionFormats = freshRange.getNumberFormats();
+    } catch (postconditionReadError) {
+      throw numberFormatPostconditionError(
+        normalizationEvidence(
+          'FAILED_POSTCONDITION',
+          true,
+          true,
+          false,
+          checkedCellCount,
+          checkedCellCount
+        ),
+        'NUMBER_FORMAT_POSTCONDITION_FAILED'
+      );
+    }
+    var postconditionNoncanonicalCount = countNoncanonicalFormats(
+      postconditionFormats,
+      keys.length,
+      3
+    );
+    if (postconditionNoncanonicalCount !== 0) {
+      throw numberFormatPostconditionError(
+        normalizationEvidence(
+          'FAILED_POSTCONDITION',
+          true,
+          true,
+          false,
+          checkedCellCount,
+          postconditionNoncanonicalCount
+        ),
+        'NUMBER_FORMAT_POSTCONDITION_FAILED'
+      );
+    }
+    // The strict read-only inspector still verifies the complete Dashboard
+    // surface after the format postcondition is visible.
     var verified = inspectLayout(spreadsheet, keys);
     if (!verified.writable || verified.block_start_row !==
         layout.block_start_row || verified.block_end_row !==
@@ -1632,13 +1830,18 @@ var WorkOsDashboard = (function () {
         verified.conflict_counts || {}
       );
     }
-    return {
-      status: 'NORMALIZED',
-      write_performed: true,
-      row_count: keys.length,
-      column_count: 3,
-      layout_status: verified.status
-    };
+    var normalizedEvidence = normalizationEvidence(
+      'NORMALIZED',
+      true,
+      true,
+      true,
+      checkedCellCount,
+      0
+    );
+    normalizedEvidence.row_count = keys.length;
+    normalizedEvidence.column_count = 3;
+    normalizedEvidence.layout_status = verified.status;
+    return normalizedEvidence;
   }
 
   function safeUpsertMetricRows(spreadsheet, desiredRows) {
@@ -1786,6 +1989,7 @@ var WorkOsDashboard = (function () {
   }
 
   return Object.freeze({
+    MODULE_CONTRACT_ID: MODULE_CONTRACT_ID,
     METRIC_ORDER: METRIC_ORDER,
     collectOperationalMetrics: collectOperationalMetrics,
     buildMetricRows: buildMetricRows,

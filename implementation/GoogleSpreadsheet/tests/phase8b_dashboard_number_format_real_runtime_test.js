@@ -58,29 +58,92 @@ const SYNTHETIC_NONCANONICAL_FORMAT = 'SYNTHETIC_NONCANONICAL_FORMAT';
 const SYNTHETIC_CUSTOM_FORMAT = 'SYNTHETIC_CUSTOM_FORMAT';
 
 function installNumberFormatRuntime() {
-  const originalSetNumberFormat = fixture.FakeRange.prototype.setNumberFormat;
+  const originalGetNumberFormats =
+    fixture.FakeRange.prototype.getNumberFormats;
+  const pendingSheets = new Set();
+  const runtimeState = {
+    flush_count: 0,
+    apply_on_flush: true,
+    throw_on_flush: false
+  };
   fixture.FakeRange.prototype.setNumberFormat = function (format) {
-    const result = originalSetNumberFormat.call(this, format);
+    this.sheet.pendingNumberFormatWrites =
+      this.sheet.pendingNumberFormatWrites || [];
+    this.sheet.pendingNumberFormatWrites.push({
+      row: this.row,
+      column: this.column,
+      row_count: this.rowCount,
+      column_count: this.columnCount,
+      format: String(format == null ? '' : format)
+    });
+    pendingSheets.add(this.sheet);
     this.sheet.numberFormatWrites = this.sheet.numberFormatWrites || [];
     this.sheet.numberFormatWrites.push({
       operation: 'setNumberFormat',
       row: this.row,
       column: this.column,
       row_count: this.rowCount,
-      column_count: this.columnCount
+      column_count: this.columnCount,
+      range_instance_id: Number(this.rangeInstanceId || 0)
     });
-    return result;
+    return this;
+  };
+  fixture.FakeRange.prototype.getNumberFormats = function () {
+    this.sheet.numberFormatReads = this.sheet.numberFormatReads || [];
+    this.sheet.numberFormatReads.push({
+      row: this.row,
+      column: this.column,
+      row_count: this.rowCount,
+      column_count: this.columnCount,
+      range_instance_id: Number(this.rangeInstanceId || 0),
+      flush_count_at_read: runtimeState.flush_count
+    });
+    return originalGetNumberFormats.call(this);
+  };
+  sandbox.SpreadsheetApp.flush = function () {
+    runtimeState.flush_count += 1;
+    if (runtimeState.throw_on_flush) {
+      throw new Error('SYNTHETIC_FLUSH_FAILURE');
+    }
+    if (!runtimeState.apply_on_flush) {
+      return;
+    }
+    pendingSheets.forEach((sheet) => {
+      const pending = sheet.pendingNumberFormatWrites || [];
+      pending.forEach((write) => {
+        for (let rowOffset = 0;
+            rowOffset < write.row_count;
+            rowOffset += 1) {
+          for (let columnOffset = 0;
+              columnOffset < write.column_count;
+              columnOffset += 1) {
+            sheet.formats[write.row - 1 + rowOffset][
+              write.column - 1 + columnOffset
+            ] = write.formats
+              ? write.formats[rowOffset][columnOffset]
+              : write.format;
+          }
+        }
+      });
+      sheet.pendingNumberFormatWrites = [];
+    });
   };
   fixture.FakeRange.prototype.setNumberFormats = function (formats) {
     assert.strictEqual(formats.length, this.rowCount);
-    formats.forEach((sourceRow, rowOffset) => {
+    const normalizedFormats = formats.map((sourceRow) => {
       assert.strictEqual(sourceRow.length, this.columnCount);
-      sourceRow.forEach((value, columnOffset) => {
-        this.sheet.formats[this.row - 1 + rowOffset][
-          this.column - 1 + columnOffset
-        ] = String(value == null ? '' : value);
-      });
+      return sourceRow.map((value) => String(value == null ? '' : value));
     });
+    this.sheet.pendingNumberFormatWrites =
+      this.sheet.pendingNumberFormatWrites || [];
+    this.sheet.pendingNumberFormatWrites.push({
+      row: this.row,
+      column: this.column,
+      row_count: this.rowCount,
+      column_count: this.columnCount,
+      formats: normalizedFormats
+    });
+    pendingSheets.add(this.sheet);
     this.sheet.numberFormatWrites = this.sheet.numberFormatWrites || [];
     this.sheet.numberFormatWrites.push({
       operation: 'setNumberFormats',
@@ -110,13 +173,30 @@ function installNumberFormatRuntime() {
     });
     return this;
   };
+  return runtimeState;
 }
-installNumberFormatRuntime();
+const formatRuntime = installNumberFormatRuntime();
 
 function environment() {
   const result = fixture.buildCanonicalEnvironment();
   const sheet = fixture.dashboardSheet(result);
+  if (!sheet.rangeAcquisitionInstrumented) {
+    const originalGetRange = sheet.getRange.bind(sheet);
+    sheet.rangeAcquisitionSequence = 0;
+    sheet.getRange = function (...args) {
+      const range = originalGetRange(...args);
+      sheet.rangeAcquisitionSequence += 1;
+      range.rangeInstanceId = sheet.rangeAcquisitionSequence;
+      return range;
+    };
+    sheet.rangeAcquisitionInstrumented = true;
+  }
   sheet.numberFormatWrites = [];
+  sheet.numberFormatReads = [];
+  sheet.pendingNumberFormatWrites = [];
+  formatRuntime.flush_count = 0;
+  formatRuntime.apply_on_flush = true;
+  formatRuntime.throw_on_flush = false;
   return result;
 }
 
@@ -124,12 +204,28 @@ function dashboardSheet(target) {
   return fixture.dashboardSheet(target);
 }
 
-function formatWrites(target) {
+function rawFormatWrites(target) {
   return dashboardSheet(target).numberFormatWrites || [];
+}
+
+function formatWrites(target) {
+  return rawFormatWrites(target).map((item) => ({
+    operation: item.operation,
+    row: item.row,
+    column: item.column,
+    row_count: item.row_count,
+    column_count: item.column_count
+  }));
+}
+
+function formatReads(target) {
+  return dashboardSheet(target).numberFormatReads || [];
 }
 
 function resetFormatWrites(target) {
   dashboardSheet(target).numberFormatWrites = [];
+  dashboardSheet(target).numberFormatReads = [];
+  formatRuntime.flush_count = 0;
 }
 
 function setSystemFormat(target, value) {
@@ -285,6 +381,176 @@ function installCompletedResumeStubs(target) {
   };
 }
 
+function validationMatrixSnapshot(matrixValue) {
+  return matrixValue.map((row) => row.map((validation) => {
+    if (!validation) return null;
+    return {
+      criteria_type: validation.getCriteriaType
+        ? String(validation.getCriteriaType())
+        : 'UNKNOWN',
+      criteria_values: validation.getCriteriaValues
+        ? JSON.parse(JSON.stringify(validation.getCriteriaValues()))
+        : []
+    };
+  }));
+}
+
+function rangeGeometrySnapshot(range) {
+  return {
+    row: range.getRow(),
+    column: range.getColumn(),
+    row_count: range.getNumRows(),
+    column_count: range.getNumColumns()
+  };
+}
+
+function diagnosticWorkbookSnapshot(target) {
+  return JSON.stringify(target.sheets.map((sheet) => ({
+    name: sheet.getName(),
+    max_rows: sheet.getMaxRows(),
+    max_columns: sheet.getMaxColumns(),
+    hidden: sheet.isSheetHidden ? sheet.isSheetHidden() : sheet.hidden === true,
+    cells: sheet.cells,
+    formulas: sheet.formulas,
+    notes: sheet.notes,
+    validations: validationMatrixSnapshot(sheet.validations),
+    formats: sheet.formats,
+    backgrounds: sheet.backgrounds,
+    font_weights: sheet.fontWeights,
+    font_styles: sheet.fontStyles,
+    merged_ranges: (sheet.mergedRanges || []).map(rangeGeometrySnapshot),
+    hidden_rows_by_user: Array.from(sheet.hiddenRowsByUser || []).sort(),
+    hidden_rows_by_filter: Array.from(sheet.hiddenRowsByFilter || []).sort(),
+    hidden_columns_by_user:
+      Array.from(sheet.hiddenColumnsByUser || []).sort(),
+    range_protections: (sheet.rangeProtections || []).map((protection) => ({
+      description: String(protection.getDescription() || ''),
+      geometry: protection.getRange
+        ? rangeGeometrySnapshot(protection.getRange())
+        : null,
+      warning_only: protection.isWarningOnly
+        ? protection.isWarningOnly()
+        : false,
+      domain_edit: protection.canDomainEdit
+        ? protection.canDomainEdit()
+        : false
+    })),
+    sheet_protections: (sheet.sheetProtections || []).map((protection) => ({
+      description: String(protection.getDescription() || ''),
+      warning_only: protection.isWarningOnly
+        ? protection.isWarningOnly()
+        : false,
+      domain_edit: protection.canDomainEdit
+        ? protection.canDomainEdit()
+        : false
+    })),
+    write_log: sheet.writeLog
+  })));
+}
+
+function diagnosticPropertySnapshot() {
+  const properties = sandbox.PropertiesService.getScriptProperties();
+  return JSON.stringify(
+    Object.keys(sandbox.WorkOsConfig.PROPERTIES)
+      .map((name) => sandbox.WorkOsConfig.PROPERTIES[name])
+      .sort()
+      .map((key) => [key, properties.getProperty(key)])
+  );
+}
+
+function installDiagnosticMutationSentinels() {
+  const originals = {
+    PropertiesService: sandbox.PropertiesService,
+    GmailApp: sandbox.GmailApp,
+    CalendarApp: sandbox.CalendarApp,
+    ScriptApp: sandbox.ScriptApp,
+    Gmail: sandbox.Gmail,
+    Calendar: sandbox.Calendar
+  };
+  const counters = {
+    properties: 0,
+    gmail: 0,
+    calendar: 0,
+    triggers: 0
+  };
+  const baseProperties =
+    originals.PropertiesService.getScriptProperties();
+  sandbox.PropertiesService = {
+    getScriptProperties: () => ({
+      getProperty: (key) => baseProperties.getProperty(key),
+      setProperty: () => {
+        counters.properties += 1;
+      },
+      setProperties: () => {
+        counters.properties += 1;
+      },
+      deleteProperty: () => {
+        counters.properties += 1;
+      },
+      deleteAllProperties: () => {
+        counters.properties += 1;
+      }
+    })
+  };
+  sandbox.GmailApp = {
+    createLabel: () => {
+      counters.gmail += 1;
+    }
+  };
+  sandbox.CalendarApp = {
+    createCalendar: () => {
+      counters.calendar += 1;
+    }
+  };
+  sandbox.ScriptApp = {
+    newTrigger: () => {
+      counters.triggers += 1;
+    },
+    deleteTrigger: () => {
+      counters.triggers += 1;
+    }
+  };
+  sandbox.Gmail = {
+    Users: {
+      Labels: {
+        create: () => {
+          counters.gmail += 1;
+        },
+        delete: () => {
+          counters.gmail += 1;
+        },
+        update: () => {
+          counters.gmail += 1;
+        }
+      }
+    }
+  };
+  sandbox.Calendar = {
+    Events: {
+      insert: () => {
+        counters.calendar += 1;
+      },
+      update: () => {
+        counters.calendar += 1;
+      },
+      remove: () => {
+        counters.calendar += 1;
+      }
+    }
+  };
+  return {
+    counters,
+    restore: () => {
+      sandbox.PropertiesService = originals.PropertiesService;
+      sandbox.GmailApp = originals.GmailApp;
+      sandbox.CalendarApp = originals.CalendarApp;
+      sandbox.ScriptApp = originals.ScriptApp;
+      sandbox.Gmail = originals.Gmail;
+      sandbox.Calendar = originals.Calendar;
+    }
+  };
+}
+
 const tests = [];
 function test(id, body) {
   const startedAt = Date.now();
@@ -335,7 +601,13 @@ test('P8B-NF-02_SETUP_NORMALIZES_ONLY_THE_EXACT_SYSTEM_BLOCK', () => {
   const result = sandbox.WorkOsDashboard
     .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet);
   assert.strictEqual(result.status, 'NORMALIZED');
+  assert.strictEqual(result.normalization_status, 'NORMALIZED');
   assert.strictEqual(result.write_performed, true);
+  assert.strictEqual(result.flush_performed, true);
+  assert.strictEqual(result.postcondition_verified, true);
+  assert.strictEqual(result.checked_cell_count, BLOCK_ROWS * BLOCK_COLUMNS);
+  assert.strictEqual(result.noncanonical_count, 0);
+  assert.strictEqual(formatRuntime.flush_count, 1);
   assert.deepStrictEqual(formatWrites(target), [{
     operation: 'setNumberFormat',
     row: sandbox.WorkOsConfig.DATA_START_ROW,
@@ -343,6 +615,21 @@ test('P8B-NF-02_SETUP_NORMALIZES_ONLY_THE_EXACT_SYSTEM_BLOCK', () => {
     row_count: BLOCK_ROWS,
     column_count: BLOCK_COLUMNS
   }]);
+  const writeRangeId = rawFormatWrites(target)[0].range_instance_id;
+  const postconditionReads = formatReads(target).filter((item) =>
+    item.row === sandbox.WorkOsConfig.DATA_START_ROW &&
+    item.column === 1 &&
+    item.row_count === BLOCK_ROWS &&
+    item.column_count === BLOCK_COLUMNS &&
+    item.flush_count_at_read === 1
+  );
+  assert.ok(writeRangeId > 0);
+  assert.ok(postconditionReads.length >= 1);
+  assert.notStrictEqual(
+    postconditionReads[0].range_instance_id,
+    writeRangeId,
+    'postcondition must use a freshly reacquired Range'
+  );
   assertCanonicalSystemFormat(target);
   assert.strictEqual(sheet.formats[outsideRow][1], SYNTHETIC_CUSTOM_FORMAT);
   const quick = fixture.runDiagnostic(target);
@@ -356,6 +643,9 @@ test('P8B-NF-03_SECOND_NORMALIZATION_IS_IDEMPOTENT', () => {
     .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet);
   assert.strictEqual(result.status, 'CANONICAL');
   assert.strictEqual(result.write_performed, false);
+  assert.strictEqual(result.flush_performed, false);
+  assert.strictEqual(result.postcondition_verified, true);
+  assert.strictEqual(formatRuntime.flush_count, 0);
   assert.deepStrictEqual(formatWrites(target), []);
 });
 
@@ -376,16 +666,42 @@ test('P8B-NF-05_QUICK_AND_DEEP_DIAGNOSTICS_NEVER_REPAIR', () => {
   const target = environment();
   setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
   resetFormatWrites(target);
-  fixture.runDiagnostic(target);
-  const afterQuick = formatWrites(target).slice();
-  const deep = sandbox.WorkOsDiagnostics.runDeepDiagnostic(
-    target.spreadsheet,
-    { now: new Date('2026-07-30T00:00:00.000Z') }
-  );
-  assert.ok(deep && Array.isArray(deep.checks));
-  assert.deepStrictEqual(afterQuick, []);
-  assert.deepStrictEqual(formatWrites(target), []);
-  assert.strictEqual(systemFormats(target)[0][0], SYNTHETIC_NONCANONICAL_FORMAT);
+  const sentinels = installDiagnosticMutationSentinels();
+  try {
+    const workbookBefore = diagnosticWorkbookSnapshot(target);
+    const propertiesBefore = diagnosticPropertySnapshot();
+    fixture.runDiagnostic(target);
+    assert.strictEqual(diagnosticWorkbookSnapshot(target), workbookBefore);
+    assert.strictEqual(diagnosticPropertySnapshot(), propertiesBefore);
+    assert.deepStrictEqual(formatWrites(target), []);
+    assert.deepStrictEqual(sentinels.counters, {
+      properties: 0,
+      gmail: 0,
+      calendar: 0,
+      triggers: 0
+    });
+    const deep = sandbox.WorkOsDiagnostics.runDeepDiagnostic(
+      target.spreadsheet,
+      { now: new Date('2026-07-30T00:00:00.000Z') }
+    );
+    assert.ok(deep && Array.isArray(deep.checks));
+    assert.strictEqual(diagnosticWorkbookSnapshot(target), workbookBefore);
+    assert.strictEqual(diagnosticPropertySnapshot(), propertiesBefore);
+    assert.deepStrictEqual(formatWrites(target), []);
+    assert.deepStrictEqual(sentinels.counters, {
+      properties: 0,
+      gmail: 0,
+      calendar: 0,
+      triggers: 0
+    });
+    assert.strictEqual(formatRuntime.flush_count, 0);
+    assert.strictEqual(
+      systemFormats(target)[0][0],
+      SYNTHETIC_NONCANONICAL_FORMAT
+    );
+  } finally {
+    sentinels.restore();
+  }
 });
 
 test('P8B-NF-06_FOREIGN_SURFACES_BLOCK_NORMALIZATION_FAIL_CLOSED', () => {
@@ -487,6 +803,37 @@ test('P8B-NF-09_SETUP_RESUME_NORMALIZES_BEFORE_S90_WITHOUT_DUPLICATION', () => {
       JSON.stringify(result.stage_results.map((item) => item.stage)),
       JSON.stringify(['S90_QUICK_DIAGNOSTIC', 'S99_COMPLETE'])
     );
+    assert.strictEqual(
+      result.stage_results[0].safe_summary.module_contract_status,
+      'ALIGNED'
+    );
+    assert.strictEqual(
+      JSON.stringify(
+        result.stage_results[0].safe_summary
+          .dashboard_number_format_normalization
+      ),
+      JSON.stringify({
+        normalization_status: 'NORMALIZED',
+        write_performed: true,
+        flush_performed: true,
+        postcondition_verified: true,
+        checked_cell_count: BLOCK_ROWS * BLOCK_COLUMNS,
+        noncanonical_count: 0
+      })
+    );
+    const storedResult = JSON.parse(runtime.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.SETUP_LAST_RESULT
+    ));
+    assert.strictEqual(storedResult.module_contract_status, 'ALIGNED');
+    assert.strictEqual(
+      JSON.stringify(
+        storedResult.dashboard_number_format_normalization
+      ),
+      JSON.stringify(
+        result.stage_results[0].safe_summary
+          .dashboard_number_format_normalization
+      )
+    );
     assertCanonicalSystemFormat(target);
     assert.strictEqual(formatWrites(target).length, 1);
     assert.strictEqual(runtime.resources.labels.created, 0);
@@ -512,7 +859,11 @@ test('P8B-NF-10_FAKE_RUNTIME_MODELS_MATRIX_FORMAT_WRITE_SEPARATELY', () => {
   const target = environment();
   const range = dashboardSheet(target).getRange(3, 1, 1, 3);
   resetFormatWrites(target);
-  range.setNumberFormats([[CANONICAL_FORMAT, CANONICAL_FORMAT, CANONICAL_FORMAT]]);
+  range.setNumberFormats([[
+    SYNTHETIC_CUSTOM_FORMAT,
+    SYNTHETIC_CUSTOM_FORMAT,
+    SYNTHETIC_CUSTOM_FORMAT
+  ]]);
   assert.deepStrictEqual(formatWrites(target), [{
     operation: 'setNumberFormats',
     row: 3,
@@ -526,6 +877,15 @@ test('P8B-NF-10_FAKE_RUNTIME_MODELS_MATRIX_FORMAT_WRITE_SEPARATELY', () => {
       CANONICAL_FORMAT,
       CANONICAL_FORMAT,
       CANONICAL_FORMAT
+    ]])
+  );
+  sandbox.SpreadsheetApp.flush();
+  assert.strictEqual(
+    JSON.stringify(range.getNumberFormats()),
+    JSON.stringify([[
+      SYNTHETIC_CUSTOM_FORMAT,
+      SYNTHETIC_CUSTOM_FORMAT,
+      SYNTHETIC_CUSTOM_FORMAT
     ]])
   );
 });
@@ -562,6 +922,403 @@ test('P8B-NF-12_FORMAT_API_UNAVAILABLE_FAILS_CLOSED_WITHOUT_FALLBACK', () => {
       .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet));
   } finally {
     fixture.FakeRange.prototype.setNumberFormat = original;
+  }
+});
+
+test('P8B-NF-13_OLD_NO_FLUSH_SEQUENCE_FAILS_BUFFERED_POSTCONDITION', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const range = dashboardSheet(target).getRange(
+    sandbox.WorkOsConfig.DATA_START_ROW,
+    1,
+    BLOCK_ROWS,
+    BLOCK_COLUMNS
+  );
+  range.setNumberFormat(CANONICAL_FORMAT);
+  assert.throws(
+    () => sandbox.WorkOsDashboard.inspectLayout(target.spreadsheet),
+    (error) => error && error.code === 'E_DASHBOARD_LAYOUT_CONFLICT'
+  );
+  assert.strictEqual(formatRuntime.flush_count, 0);
+  assert.strictEqual(
+    systemFormats(target)[0][0],
+    SYNTHETIC_NONCANONICAL_FORMAT
+  );
+  sandbox.SpreadsheetApp.flush();
+  assertCanonicalSystemFormat(target);
+});
+
+test('P8B-NF-14_FLUSH_API_UNAVAILABLE_FAILS_BEFORE_WRITE', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const originalFlush = sandbox.SpreadsheetApp.flush;
+  sandbox.SpreadsheetApp.flush = undefined;
+  try {
+    let captured;
+    assert.throws(
+      () => sandbox.WorkOsDashboard
+        .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet),
+      (error) => {
+        captured = error;
+        return error &&
+          error.code === 'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION';
+      }
+    );
+    assert.deepStrictEqual(formatWrites(target), []);
+    assert.strictEqual(
+      captured.dashboard_conflict_subreason,
+      'NUMBER_FORMAT_FLUSH_UNAVAILABLE'
+    );
+    assert.strictEqual(
+      JSON.stringify(captured.dashboard_normalization_evidence),
+      JSON.stringify({
+        normalization_status: 'FAILED_POSTCONDITION',
+        status: 'FAILED_POSTCONDITION',
+        write_performed: false,
+        flush_performed: false,
+        postcondition_verified: false,
+        checked_cell_count: BLOCK_ROWS * BLOCK_COLUMNS,
+        noncanonical_count: BLOCK_ROWS * BLOCK_COLUMNS
+      })
+    );
+  } finally {
+    sandbox.SpreadsheetApp.flush = originalFlush;
+  }
+});
+
+test('P8B-NF-15_POST_FLUSH_STALE_STATE_FAILS_WITH_SAFE_COUNT', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  formatRuntime.apply_on_flush = false;
+  try {
+    let captured;
+    assert.throws(
+      () => sandbox.WorkOsDashboard
+        .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet),
+      (error) => {
+        captured = error;
+        return error &&
+          error.code === 'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION';
+      }
+    );
+    assert.strictEqual(formatWrites(target).length, 1);
+    assert.strictEqual(formatRuntime.flush_count, 1);
+    assert.strictEqual(
+      captured.dashboard_conflict_subreason,
+      'NUMBER_FORMAT_POSTCONDITION_FAILED'
+    );
+    assert.strictEqual(
+      JSON.stringify(captured.dashboard_normalization_evidence),
+      JSON.stringify({
+        normalization_status: 'FAILED_POSTCONDITION',
+        status: 'FAILED_POSTCONDITION',
+        write_performed: true,
+        flush_performed: true,
+        postcondition_verified: false,
+        checked_cell_count: BLOCK_ROWS * BLOCK_COLUMNS,
+        noncanonical_count: BLOCK_ROWS * BLOCK_COLUMNS
+      })
+    );
+  } finally {
+    formatRuntime.apply_on_flush = true;
+    sandbox.SpreadsheetApp.flush();
+  }
+});
+
+test('P8B-NF-16_FLUSH_FAILURE_FAILS_CLOSED_WITHOUT_FALLBACK', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  formatRuntime.throw_on_flush = true;
+  try {
+    let captured;
+    assert.throws(
+      () => sandbox.WorkOsDashboard
+        .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet),
+      (error) => {
+        captured = error;
+        return error &&
+          error.code === 'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION';
+      }
+    );
+    assert.strictEqual(formatWrites(target).length, 1);
+    assert.strictEqual(
+      captured.dashboard_normalization_evidence.write_performed,
+      true
+    );
+    assert.strictEqual(
+      captured.dashboard_normalization_evidence.flush_performed,
+      false
+    );
+    assert.strictEqual(
+      captured.dashboard_normalization_evidence.postcondition_verified,
+      false
+    );
+  } finally {
+    formatRuntime.throw_on_flush = false;
+    sandbox.SpreadsheetApp.flush();
+  }
+});
+
+test('P8B-NF-17_SETUP_RETURNS_BOUNDED_POSTCONDITION_FAILURE_EVIDENCE', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const runtime = installCompletedResumeStubs(target);
+  formatRuntime.apply_on_flush = false;
+  try {
+    const result = sandbox.WorkOsSetup.executeSetup();
+    assert.strictEqual(result.status, 'FAILED');
+    assert.strictEqual(
+      result.code,
+      'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION'
+    );
+    assert.strictEqual(
+      JSON.stringify(result.dashboard_number_format_normalization),
+      JSON.stringify({
+        normalization_status: 'FAILED_POSTCONDITION',
+        write_performed: true,
+        flush_performed: true,
+        postcondition_verified: false,
+        checked_cell_count: BLOCK_ROWS * BLOCK_COLUMNS,
+        noncanonical_count: BLOCK_ROWS * BLOCK_COLUMNS
+      })
+    );
+    const storedResult = JSON.parse(runtime.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.SETUP_LAST_RESULT
+    ));
+    assert.strictEqual(
+      JSON.stringify(storedResult.dashboard_number_format_normalization),
+      JSON.stringify(result.dashboard_number_format_normalization)
+    );
+    assert.strictEqual(runtime.resources.labels.created, 0);
+    assert.strictEqual(runtime.resources.calendar.created, 0);
+    assert.strictEqual(runtime.resources.edit_trigger.created, 0);
+    assert.strictEqual(runtime.resources.five_minute_trigger_created, 0);
+  } finally {
+    formatRuntime.apply_on_flush = true;
+    sandbox.SpreadsheetApp.flush();
+    runtime.restore();
+  }
+});
+
+test('P8B-NF-18_IMMUTABLE_V2_8_9_SOURCE_REPRODUCES_NO_FLUSH_DEFECT', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const currentDashboard = sandbox.WorkOsDashboard;
+  const historicalDashboardPath = path.join(
+    __dirname,
+    '..',
+    'release',
+    'v2.8.9-prepilot',
+    'apps-script',
+    '15_Dashboard.gs'
+  );
+  vm.runInContext(
+    fs.readFileSync(historicalDashboardPath, 'utf8'),
+    sandbox,
+    { filename: 'release/v2.8.9-prepilot/apps-script/15_Dashboard.gs' }
+  );
+  try {
+    let captured;
+    assert.throws(
+      () => sandbox.WorkOsDashboard
+        .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet),
+      (error) => {
+        captured = error;
+        return error && error.code === 'E_DASHBOARD_LAYOUT_CONFLICT';
+      }
+    );
+    assert.strictEqual(
+      captured.dashboard_conflict_counts.number_format_conflict_count,
+      BLOCK_ROWS * BLOCK_COLUMNS
+    );
+    assert.strictEqual(formatRuntime.flush_count, 0);
+    assert.strictEqual(formatWrites(target).length, 1);
+    assert.strictEqual(
+      systemFormats(target)[0][0],
+      SYNTHETIC_NONCANONICAL_FORMAT
+    );
+  } finally {
+    sandbox.WorkOsDashboard = currentDashboard;
+    sandbox.SpreadsheetApp.flush();
+  }
+});
+
+test('P8B-NF-19_FRESH_RANGE_ACQUISITION_FAILURE_RETURNS_SAFE_POSTCONDITION', () => {
+  const target = environment();
+  const sheet = dashboardSheet(target);
+  const originalGetRange = sheet.getRange;
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  sheet.getRange = function (...args) {
+    if (formatRuntime.flush_count > 0 &&
+        args[0] === sandbox.WorkOsConfig.DATA_START_ROW &&
+        args[1] === 1 &&
+        args[2] === BLOCK_ROWS &&
+        args[3] === BLOCK_COLUMNS) {
+      throw new Error('SYNTHETIC_FRESH_RANGE_ACQUISITION_FAILURE');
+    }
+    return originalGetRange.apply(this, args);
+  };
+  try {
+    let captured;
+    assert.throws(
+      () => sandbox.WorkOsDashboard
+        .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet),
+      (error) => {
+        captured = error;
+        return error &&
+          error.code === 'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION';
+      }
+    );
+    assert.strictEqual(formatWrites(target).length, 1);
+    assert.strictEqual(formatRuntime.flush_count, 1);
+    assert.strictEqual(
+      captured.dashboard_conflict_subreason,
+      'NUMBER_FORMAT_POSTCONDITION_FAILED'
+    );
+    assert.strictEqual(
+      JSON.stringify(captured.dashboard_normalization_evidence),
+      JSON.stringify({
+        normalization_status: 'FAILED_POSTCONDITION',
+        status: 'FAILED_POSTCONDITION',
+        write_performed: true,
+        flush_performed: true,
+        postcondition_verified: false,
+        checked_cell_count: BLOCK_ROWS * BLOCK_COLUMNS,
+        noncanonical_count: BLOCK_ROWS * BLOCK_COLUMNS
+      })
+    );
+  } finally {
+    sheet.getRange = originalGetRange;
+  }
+});
+
+test('P8B-NF-20_POSTCONDITION_READ_FAILURE_RETURNS_SAFE_POSTCONDITION', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const originalGetNumberFormats =
+    fixture.FakeRange.prototype.getNumberFormats;
+  fixture.FakeRange.prototype.getNumberFormats = function () {
+    if (formatRuntime.flush_count > 0 &&
+        this.row === sandbox.WorkOsConfig.DATA_START_ROW &&
+        this.column === 1 &&
+        this.rowCount === BLOCK_ROWS &&
+        this.columnCount === BLOCK_COLUMNS) {
+      throw new Error('SYNTHETIC_POSTCONDITION_READ_FAILURE');
+    }
+    return originalGetNumberFormats.call(this);
+  };
+  try {
+    let captured;
+    assert.throws(
+      () => sandbox.WorkOsDashboard
+        .normalizeSystemBlockNumberFormatForSetup(target.spreadsheet),
+      (error) => {
+        captured = error;
+        return error &&
+          error.code === 'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION';
+      }
+    );
+    assert.strictEqual(formatWrites(target).length, 1);
+    assert.strictEqual(formatRuntime.flush_count, 1);
+    assert.strictEqual(
+      captured.dashboard_normalization_evidence.noncanonical_count,
+      BLOCK_ROWS * BLOCK_COLUMNS
+    );
+  } finally {
+    fixture.FakeRange.prototype.getNumberFormats =
+      originalGetNumberFormats;
+  }
+});
+
+test('P8B-NF-21_QUICK_THROW_PRESERVES_SUCCESSFUL_NORMALIZATION_EVIDENCE', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const runtime = installCompletedResumeStubs(target);
+  sandbox.WorkOsDiagnostics = {
+    runQuickDiagnostic: () => {
+      throw new sandbox.WorkOsAppError(
+        'E_SYNTHETIC_QUICK_FAILURE',
+        'S90_QUICK_DIAGNOSTIC',
+        false,
+        'Synthetic read-only diagnostic failure.'
+      );
+    }
+  };
+  try {
+    const result = sandbox.WorkOsSetup.executeSetup();
+    assert.strictEqual(result.status, 'FAILED');
+    assert.strictEqual(result.code, 'E_SYNTHETIC_QUICK_FAILURE');
+    assert.strictEqual(result.module_contract_status, 'ALIGNED');
+    assert.strictEqual(
+      JSON.stringify(result.dashboard_number_format_normalization),
+      JSON.stringify({
+        normalization_status: 'NORMALIZED',
+        write_performed: true,
+        flush_performed: true,
+        postcondition_verified: true,
+        checked_cell_count: BLOCK_ROWS * BLOCK_COLUMNS,
+        noncanonical_count: 0
+      })
+    );
+    const storedResult = JSON.parse(runtime.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.SETUP_LAST_RESULT
+    ));
+    assert.strictEqual(storedResult.module_contract_status, 'ALIGNED');
+    assert.strictEqual(
+      JSON.stringify(storedResult.dashboard_number_format_normalization),
+      JSON.stringify(result.dashboard_number_format_normalization)
+    );
+    assert.strictEqual(formatWrites(target).length, 1);
+    assert.strictEqual(formatRuntime.flush_count, 1);
+    assert.strictEqual(runtime.resources.labels.created, 0);
+    assert.strictEqual(runtime.resources.calendar.created, 0);
+    assert.strictEqual(runtime.resources.edit_trigger.created, 0);
+    assert.strictEqual(runtime.resources.five_minute_trigger_created, 0);
+  } finally {
+    runtime.restore();
+  }
+});
+
+test('P8B-NF-22_EXECUTE_SETUP_PERSISTS_MODULE_SKEW_BEFORE_ANY_WRITE', () => {
+  const target = environment();
+  setSystemFormat(target, SYNTHETIC_NONCANONICAL_FORMAT);
+  resetFormatWrites(target);
+  const runtime = installCompletedResumeStubs(target);
+  const currentDashboard = sandbox.WorkOsDashboard;
+  sandbox.WorkOsDashboard = Object.freeze(Object.assign(
+    {},
+    currentDashboard,
+    { MODULE_CONTRACT_ID: 'WORK_OS_V2_S90_CONTRACT_SYNTHETIC_STALE' }
+  ));
+  try {
+    const result = sandbox.WorkOsSetup.executeSetup();
+    assert.strictEqual(result.status, 'FAILED');
+    assert.strictEqual(result.code, 'E_MODULE_VERSION_SKEW');
+    assert.strictEqual(result.module_contract_status, 'MISMATCH');
+    const storedResult = JSON.parse(runtime.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.SETUP_LAST_RESULT
+    ));
+    assert.strictEqual(storedResult.status, 'FAILED');
+    assert.strictEqual(storedResult.code, 'E_MODULE_VERSION_SKEW');
+    assert.strictEqual(storedResult.module_contract_status, 'MISMATCH');
+    assert.deepStrictEqual(formatWrites(target), []);
+    assert.strictEqual(formatRuntime.flush_count, 0);
+    assert.strictEqual(runtime.resources.labels.created, 0);
+    assert.strictEqual(runtime.resources.calendar.created, 0);
+    assert.strictEqual(runtime.resources.edit_trigger.created, 0);
+    assert.strictEqual(runtime.resources.five_minute_trigger_created, 0);
+  } finally {
+    sandbox.WorkOsDashboard = currentDashboard;
+    runtime.restore();
   }
 });
 

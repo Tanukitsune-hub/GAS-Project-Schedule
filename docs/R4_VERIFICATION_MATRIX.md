@@ -1,8 +1,8 @@
 # R4/R5 Verification Matrix
 
-Date: 2026-07-30
-Candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED`
+Date: 2026-07-31
+Candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; real Workspace retransfer/retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -69,6 +69,12 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 |---|---|---|---|
 | PHASE8B-DASHBOARD-NUMBER-FORMAT-01 | A strictly proven, seeded or owned 17×3 Dashboard system block is normalized by Setup only to the deterministic canonical plain-text contract; every other surface remains fail-closed and Quick/Deep Diagnostic remain read-only | `phase8b_dashboard_number_format_real_runtime_test.js`; `PHASE8B_DASHBOARD_NUMBER_FORMAT_RECOVERY_GUIDE_ja.md`; fixed T9 detached-clone audit | FIXED_TRANSFER_VERIFIED; corrected-package real Workspace retransfer/retest `NOT_EXECUTED` |
 
+## Phase 8B Dashboard write-visibility / module-skew traceability
+
+| ID | Requirement | Evidence | State |
+|---|---|---|---|
+| PHASE8B-DASHBOARD-WRITE-VISIBILITY-01 | An actual Setup-only format write is followed by exactly one flush, a fresh exact Range, and a strict 51-cell postcondition; Config/Setup/Dashboard contract skew fails before any write; bounded Setup evidence is retained; Quick/Deep Diagnostic remain read-only | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_module_version_skew_test.js`; `canonical_document_consistency_test.js`; safe incident record | LOCAL_REGRESSION_PASS; A10/B10/T10/E10 `PENDING`; real Workspace retransfer/retest `NOT_EXECUTED` |
+
 ## 13 write routes
 
 | ID | Route | Authority path |
@@ -102,6 +108,10 @@ evidence. The corrected v2.8.9 Source A9.1
 `b451d2361db99b4efbde036dafa3e2baf6b5cb97`, and fixed transfer T9
 `781f408fcf0853a5fffee9c00d3022ee5e17b1d7` completed normal publication,
 remote resolution, package/transfer verification, and detached HTTPS
-fresh-clone proof. The maximum carriage-only status is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix authorizes no Workspace
-operation; real Google Workspace evidence remains `NOT_EXECUTED`.
+fresh-clone proof. That carriage-only status is historical: the repeated
+write-visibility finding supersedes T9 as an execution transfer target.
+Until Source A10, direct-child Release B10, fixed T10, Evidence E10, normal
+publication, and detached T10 verification all pass, the current gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` and no carriage is
+authorized. This matrix authorizes no Workspace operation; real Google
+Workspace evidence remains `NOT_EXECUTED`.

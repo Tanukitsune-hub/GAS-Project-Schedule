@@ -2,6 +2,86 @@
  * New-environment-only, staged setup available through the Phase 4 build.
  */
 var WorkOsSetup = (function () {
+  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_10';
+
+  function safeNormalizationEvidence(value) {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+    var allowedStatus = {
+      CANONICAL: true,
+      NORMALIZED: true,
+      FAILED_POSTCONDITION: true
+    };
+    var status = String(
+      value.normalization_status || value.status || ''
+    );
+    if (!allowedStatus[status]) {
+      return null;
+    }
+    var checkedCellCount = Number(value.checked_cell_count);
+    var noncanonicalCount = Number(value.noncanonical_count);
+    return {
+      normalization_status: status,
+      write_performed: value.write_performed === true,
+      flush_performed: value.flush_performed === true,
+      postcondition_verified: value.postcondition_verified === true,
+      checked_cell_count:
+        Number.isFinite(checkedCellCount) && checkedCellCount >= 0
+          ? Math.floor(checkedCellCount)
+          : 0,
+      noncanonical_count:
+        Number.isFinite(noncanonicalCount) && noncanonicalCount >= 0
+          ? Math.floor(noncanonicalCount)
+          : 0
+    };
+  }
+
+  function moduleVersionSkewError() {
+    var error = new WorkOsAppError(
+      'E_MODULE_VERSION_SKEW',
+      'S90_QUICK_DIAGNOSTIC',
+      false,
+      'Setup-critical module contract is not aligned.'
+    );
+    error.module_contract_status = 'MISMATCH';
+    return error;
+  }
+
+  function assertS90ModuleContract() {
+    if (String(WorkOsConfig.S90_MODULE_CONTRACT_ID || '') !==
+        MODULE_CONTRACT_ID ||
+        typeof WorkOsDashboard === 'undefined' ||
+        !WorkOsDashboard ||
+        String(WorkOsDashboard.MODULE_CONTRACT_ID || '') !==
+          MODULE_CONTRACT_ID) {
+      throw moduleVersionSkewError();
+    }
+    return { status: 'ALIGNED' };
+  }
+
+  function normalizationEvidenceFromResult(result) {
+    var direct = safeNormalizationEvidence(
+      result && result.dashboard_number_format_normalization
+    );
+    if (direct) {
+      return direct;
+    }
+    var stages = result && Array.isArray(result.stage_results)
+      ? result.stage_results
+      : [];
+    for (var index = 0; index < stages.length; index += 1) {
+      var summary = stages[index] && stages[index].safe_summary;
+      var nested = safeNormalizationEvidence(
+        summary && summary.dashboard_number_format_normalization
+      );
+      if (nested) {
+        return nested;
+      }
+    }
+    return null;
+  }
+
   function getBoundSpreadsheet() {
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     if (!spreadsheet) {
@@ -345,14 +425,35 @@ var WorkOsSetup = (function () {
   }
 
   function storeLastResult(result) {
+    var stored = {
+      status: result.status,
+      code: result.code || '',
+      next_stage: result.next_stage || '',
+      recorded_at: new Date().toISOString()
+    };
+    var normalization = normalizationEvidenceFromResult(result);
+    if (normalization) {
+      stored.dashboard_number_format_normalization = normalization;
+    }
+    if (result.module_contract_status === 'ALIGNED' ||
+        result.module_contract_status === 'MISMATCH') {
+      stored.module_contract_status = result.module_contract_status;
+    } else if (Array.isArray(result.stage_results)) {
+      for (var index = 0; index < result.stage_results.length; index += 1) {
+        var safeSummary = result.stage_results[index] &&
+          result.stage_results[index].safe_summary;
+        if (safeSummary &&
+            (safeSummary.module_contract_status === 'ALIGNED' ||
+             safeSummary.module_contract_status === 'MISMATCH')) {
+          stored.module_contract_status =
+            safeSummary.module_contract_status;
+          break;
+        }
+      }
+    }
     properties().setProperty(
       WorkOsConfig.PROPERTIES.SETUP_LAST_RESULT,
-      JSON.stringify({
-        status: result.status,
-        code: result.code || '',
-        next_stage: result.next_stage || '',
-        recorded_at: new Date().toISOString()
-      })
+      JSON.stringify(stored)
     );
   }
 
@@ -588,14 +689,28 @@ var WorkOsSetup = (function () {
           'Dashboard number-format control-plane module is unavailable.'
         );
       }
+      var moduleContract = assertS90ModuleContract();
       // This is the only Setup-owned number-format repair path. It proves
       // the exact Dashboard control plane before writing the 17 x 3 system
       // block, then leaves Quick Diagnostic itself read-only.
-      WorkOsDashboard.normalizeSystemBlockNumberFormatForSetup(spreadsheet);
-      return WorkOsDiagnostics.runQuickDiagnostic(
-        spreadsheet,
-        { budget: budget }
-      );
+      var normalization =
+        WorkOsDashboard.normalizeSystemBlockNumberFormatForSetup(spreadsheet);
+      var safeEvidence = safeNormalizationEvidence(normalization);
+      var diagnostic;
+      try {
+        diagnostic = WorkOsDiagnostics.runQuickDiagnostic(
+          spreadsheet,
+          { budget: budget }
+        );
+      } catch (diagnosticFailure) {
+        diagnosticFailure.module_contract_status = moduleContract.status;
+        diagnosticFailure.dashboard_normalization_evidence = safeEvidence;
+        throw diagnosticFailure;
+      }
+      diagnostic.module_contract_status = moduleContract.status;
+      diagnostic.dashboard_number_format_normalization =
+        safeEvidence;
+      return diagnostic;
     }
     if (stage === 'S99_COMPLETE') {
       return {
@@ -706,19 +821,34 @@ var WorkOsSetup = (function () {
           budget
         );
         if (stage === 'S90_QUICK_DIAGNOSTIC' && output.status === 'FAIL') {
-          throw new WorkOsAppError(
+          var diagnosticError = new WorkOsAppError(
             'E_QUICK_DIAGNOSTIC_FAILED',
             stage,
             false,
             'Quick Diagnosticが不合格のためSetupを完了しません。'
           );
+          diagnosticError.module_contract_status =
+            output.module_contract_status;
+          diagnosticError.dashboard_normalization_evidence =
+            output.dashboard_number_format_normalization;
+          throw diagnosticError;
         }
         recordCompletedStage(stage);
-        stageResults.push({
+        var stageResult = {
           stage: stage,
           duration_ms: Date.now() - stageStartedAt,
           result: output ? 'COMPLETED' : 'COMPLETED'
-        });
+        };
+        if (stage === 'S90_QUICK_DIAGNOSTIC') {
+          stageResult.safe_summary = {
+            module_contract_status: output.module_contract_status,
+            dashboard_number_format_normalization:
+              safeNormalizationEvidence(
+                output.dashboard_number_format_normalization
+              )
+          };
+        }
+        stageResults.push(stageResult);
         completed = getCompletedStages();
       }
       var completeResult = {
@@ -737,6 +867,9 @@ var WorkOsSetup = (function () {
       return completeResult;
     } catch (error) {
       var safe = WorkOsUtilities.safeError(error, 'SETUP');
+      var failedNormalization = safeNormalizationEvidence(
+        error && error.dashboard_normalization_evidence
+      );
       var failedResult = {
         status: safe.code === 'E_BUDGET_EXHAUSTED'
           ? 'PAUSED'
@@ -750,6 +883,16 @@ var WorkOsSetup = (function () {
         completed_stages: getCompletedStagesSafely(),
         duration_ms: Date.now() - startedAt
       };
+      if (failedNormalization) {
+        failedResult.dashboard_number_format_normalization =
+          failedNormalization;
+      }
+      if (error &&
+          (error.module_contract_status === 'ALIGNED' ||
+           error.module_contract_status === 'MISMATCH')) {
+        failedResult.module_contract_status =
+          error.module_contract_status;
+      }
       try {
         storeLastResult(failedResult);
       } catch (storeError) {
@@ -840,6 +983,7 @@ var WorkOsSetup = (function () {
   }
 
   return Object.freeze({
+    MODULE_CONTRACT_ID: MODULE_CONTRACT_ID,
     snapshotEnvironment: snapshotEnvironment,
     classifyEnvironmentDescriptors: classifyEnvironmentDescriptors,
     validateEnvironment: validateEnvironment,

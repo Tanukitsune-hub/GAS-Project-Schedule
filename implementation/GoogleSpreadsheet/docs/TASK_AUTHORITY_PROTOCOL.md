@@ -1,13 +1,12 @@
 # Task Authority Protocol — Source Copy
 
-Code `2.8.8-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
+Code `2.8.10-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; Source A8
-`4140054b03c850f4a1e669b3aa562b305ef78bf5` excludes generated
-package/report/transfer outputs, its direct-child Release B8 is
-`a17d34422ed521cee81340902d9a19e2da372201`, fixed transfer T8 is
-`69f843f6ea426ccb45d721a40508a35b0a59795d`, and real Workspace retest
-remains `NOT_EXECUTED`.
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; Source A10,
+direct-child Release B10, fixed transfer T10, and evidence E10 are
+`PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and `PENDING_E10`. Real
+Workspace retest remains `NOT_EXECUTED`. Historical A8/B8/T8 and
+A9/A9.1/B9.1/T9 evidence is preserved and is not the current execution target.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept
@@ -72,6 +71,14 @@ implementation without using a legacy external context.
   whitelisted counts for Protection, name, value, formula, validation, note,
   merge, hidden, background, font, number-format, and seed/marker contracts.
   They never return identity or Workspace content.
+- Before an S90 Dashboard format write, Config, Setup, and Dashboard expose
+  one matching v2.8.10 module-contract identifier. Skew fails as
+  `E_MODULE_VERSION_SKEW` before the write.
+- When a proven 17×3 block needs normalization, Setup writes once, flushes
+  pending Spreadsheet operations, reacquires a fresh exact Range, and verifies
+  the strict 51-cell postcondition. Flush unavailable/failure or a
+  noncanonical reread fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`.
+  Quick/Deep Diagnostic remain read-only and never flush to repair state.
 
 The canonical state/failure matrix is
 `../../docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`. The F016 local

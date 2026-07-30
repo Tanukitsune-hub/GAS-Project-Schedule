@@ -1,10 +1,40 @@
 # Project Context
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
-Current candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
+
+<!-- CURRENT_TRANSFER_CONTRACT_START -->
+| Field | Value |
+|---|---|
+| Code | `2.8.10-prepilot` |
+| Schema | `2.6` |
+| AI Schema | `2.0` |
+| Migration | `3` |
+| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
+| Fixed transfer | `PENDING_T10` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
+<!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+v2.8.10 preserves the exact owner-proven Dashboard control plane and its
+deterministic Setup-only plain-text contract for the exact 17-by-3 system
+block. After an actual write, Setup flushes pending writes, reacquires a fresh
+exact Range, and requires all 51 formats to be canonical before S90 continues.
+Config, Setup, and Dashboard module-contract skew fails closed before any
+write. Quick/Deep Diagnostic remain read-only; arbitrary formats and foreign
+or ambiguous surface state remain fail-closed.
+
+Historical corrected Source A9.1, direct-child corrected Release B9.1, fixed
+T9, and evidence E9 were normal-published and independently verified in a
+detached HTTPS clone. They remain immutable evidence, but
+`PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes T9 as an execution transfer
+target. Source A10, direct-child Release B10, fixed T10, and evidence E10 are
+pending. No current carriage is authorized; real Workspace work remains
+`NOT_EXECUTED` and Automation remains `OFF`.
+
+## Historical v2.8.9/T9 context
 
 v2.8.9 retains the exact owner-proven Dashboard control plane and adds one
 deterministic, Setup-only plain-text number-format contract for the exact 17×3
@@ -14,12 +44,12 @@ Deep Diagnostic remain read-only; arbitrary formats and foreign/ambiguous
 surface state remain fail-closed. Real Workspace work is `NOT_EXECUTED`.
 
 Corrected Source A9.1, direct-child corrected Release B9.1, and fixed T9 were
-normal-published and independently verified in a detached HTTPS clone. This
-permits only carriage of the non-sensitive Phase 8B Sandbox retransfer
-envelope; it is not a Phase 8B PASS, Phase 8C GO, production-ready, or
-pilot-ready declaration.
+normal-published and independently verified in a detached HTTPS clone. At that
+historical gate this permitted only carriage of the non-sensitive Phase 8B
+Sandbox retransfer envelope; it was not a Phase 8B PASS, Phase 8C GO,
+production-ready, or pilot-ready declaration.
 
-The current additive correction addresses `PHASE8B-DASHBOARD-01` without
+The historical v2.8.8 additive correction addresses `PHASE8B-DASHBOARD-01` without
 replacing the historical v2.8.5/P10, v2.8.6/T6.1, or v2.8.7/T7 chains. It
 models native Protection ownership with internally equal owner/effective-user
 identity and `canEdit()`, not an assumed one-entry explicit-editor list. It
@@ -106,6 +136,16 @@ packages and its implementation report. Fixed transfer T8
 envelope. The normal-pushed chain resolves on GitHub, and a detached HTTPS
 clone passed all required source/package/transfer/rebuild/scanning checks.
 
+The subsequent historical number-format chain is Source A9
+`a448b8d856abd5eb32baa60117f5fdb9f8e56de9`, corrected Source A9.1
+`4a145588b01a5f7ae7e9bce86efb9bd5b3d8345d`, direct-child corrected Release
+B9.1 `b451d2361db99b4efbde036dafa3e2baf6b5cb97`, fixed transfer T9
+`781f408fcf0853a5fffee9c00d3022ee5e17b1d7`, and evidence E9
+`63841d85da478e401986e80db77e9308c8af9655`. It was normally published and
+verified from a detached HTTPS clone. The repeated write-visibility finding
+now makes that complete chain historical rather than the current execution
+transfer target.
+
 ## Repository layout
 
 - Canonical context: this file, `MASTER_PLAN.md`, `DECISIONS.md`, and
@@ -119,12 +159,13 @@ clone passed all required source/package/transfer/rebuild/scanning checks.
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`.
 - Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
-- Corrected 2.8.6/T6.1 and v2.8.7/T7 package and transfer directories are
-  immutable historical evidence. Neither is the current transfer target.
-- The verified current carriage artifact is
-  `implementation/GoogleSpreadsheet/transfer/v2.8.8-prepilot/` at fixed T8.
-  It was generated only after direct-child Release B8 and is not part of
-  Source A8.
+- Corrected 2.8.6/T6.1, v2.8.7/T7, v2.8.8/T8, and v2.8.9/T9 package and
+  transfer directories are immutable historical evidence. None is the
+  current execution transfer target.
+- The intended v2.8.10 carriage path is
+  `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`, but fixed
+  T10 is `PENDING_T10`. It must be generated only after direct-child Release
+  B10 and is not part of Source A10.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -142,8 +183,9 @@ silently rewritten.
 The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
-evidence. The current `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status approves
-only controlled non-confidential carriage of exact fixed T8. It does not
-approve real data, OAuth, Apps Script import, Setup, Dashboard refresh,
-Provider configuration, deployment, Automation, triggers, or any real
-Workspace operation.
+evidence. T6.1, T7, T8, and T9 are also historical and are not current
+execution transfer targets. The current
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` status approves no
+carriage while fixed T10 remains `PENDING_T10`. It does not approve real data,
+OAuth, Apps Script import, Setup, Dashboard refresh, Provider configuration,
+deployment, Automation, triggers, or any real Workspace operation.

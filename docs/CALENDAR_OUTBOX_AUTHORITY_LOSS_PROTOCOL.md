@@ -1,10 +1,10 @@
 # Calendar Outbox Authority-Loss Compensation Protocol
 
-Contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` /
+Contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest is
-still `NOT_EXECUTED`
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer is
+`PENDING_T10` and real Workspace retransfer/retest is still `NOT_EXECUTED`
 
 ## Purpose and boundary
 
@@ -21,6 +21,11 @@ Ledger protection and hidden visibility are Setup bootstrap controls, not a
 Calendar recovery mechanism. Calendar never repairs a visible or unprotected
 Ledger; it relies on the same fail-closed validator after Setup has established
 the control plane.
+
+The v2.8.10 S90 Dashboard module-contract and write-visibility guard does not
+change this Calendar protocol. A module mismatch or Dashboard format
+postcondition failure stops Setup before S90/S99 completion; it grants no
+Calendar I/O, outbox rewrite, trigger activation, or authority recovery path.
 
 The protocol applies only to a deterministic Work OS-owned Event ID. It never
 deletes an Event unless ownership verification succeeds. Real Google

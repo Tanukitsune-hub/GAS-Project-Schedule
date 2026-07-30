@@ -5,14 +5,26 @@ Google Workspace Personal Work OS.
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.9-prepilot` |
+| Code | `2.8.10-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
+
+<!-- CURRENT_TRANSFER_CONTRACT_START -->
+| Field | Value |
+|---|---|
+| Code | `2.8.10-prepilot` |
+| Schema | `2.6` |
+| AI Schema | `2.0` |
+| Migration | `3` |
+| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
+| Fixed transfer | `PENDING_T10` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
+<!-- CURRENT_TRANSFER_CONTRACT_END -->
 
 ## Canonical paths
 
@@ -28,12 +40,13 @@ Google Workspace Personal Work OS.
 - Historical failed P10 release artifacts (immutable, not executable):
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
   and `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
-- Corrected 2.8.6 and 2.8.7 source/release/transfer chains remain immutable
-  historical evidence. The published v2.8.9 corrected A9.1/B9.1/T9 chain is
-  additive and does not replace any v2.8.5 through v2.8.8 package, transfer,
-  or audit byte. Its carriage-only status is
-  `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retest is still
-  `NOT_EXECUTED`.
+- Corrected 2.8.6 through 2.8.9 source/release/transfer chains remain
+  immutable historical evidence. The published v2.8.9 corrected
+  A9.1/B9.1/T9 chain is additive and does not replace any v2.8.5 through
+  v2.8.8 package, transfer, or audit byte. T9 is superseded as an execution
+  transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. The v2.8.10
+  T10 transfer is still pending, so no current carriage artifact is
+  authorized and real Workspace retest remains `NOT_EXECUTED`.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.
@@ -50,7 +63,27 @@ Worker, Review, and Calendar work.
 See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 [workflow visualization](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html).
 
-## Phase 8B Dashboard number-format real-runtime remediation
+## Phase 8B Dashboard write-visibility and module-skew remediation
+
+`PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` records the repeated safe 51-cell
+finding after the historical v2.8.9 transfer. The confirmed product defect is
+that Setup wrote the exact Dashboard number-format block and immediately read
+it back without first making pending Apps Script writes visible. The v2.8.10
+source correction keeps the strict ownership and surface preconditions, calls
+`SpreadsheetApp.flush()` after an actual write, reacquires a fresh exact
+Range, and requires the canonical postcondition before S90 may continue.
+It also fails closed on mismatched S90-critical Config, Setup, and Dashboard
+module contracts before any format write. Quick/Deep Diagnostic remain
+read-only, Automation remains `OFF`, and real Workspace work is
+`NOT_EXECUTED`.
+
+Source A10, direct-child Release B10, fixed transfer T10, and evidence E10 are
+not yet complete at this source stage. Until their required validation and
+normal publication finish, the gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` and T10 is
+`PENDING_T10`.
+
+## Historical Phase 8B Dashboard number-format real-runtime remediation
 
 `PHASE8B-DASHBOARD-NUMBER-FORMAT-01` records a safe S90 precondition failure:
 the exact 17×3 Dashboard system surface has number-format drift while every
@@ -143,9 +176,9 @@ The historical fixed transfer ref is T6.1
 target-branch fresh clone independently passed all 42 Node suites (619 PASS /
 0 FAIL / 11 explicit skips), F016, the 11/11 Apps Script validator, both
 package verifiers, parity rebuilds, checksums, allow-list, transfer checksums,
-and secret/local-path scans. This historical evidence is superseded as the
-current transfer target by the separately verified v2.8.7 A7/B7/C7/T7 chain.
-Neither historical nor current verification authorizes Setup, OAuth,
+and secret/local-path scans. This historical evidence was next superseded by
+the separately verified v2.8.7 A7/B7/C7/T7 chain, which is itself historical.
+None of these historical verification records authorizes Setup, OAuth,
 deployment, `clasp push`, Automation, triggers, real data, or any real Google
 Workspace action.
 
@@ -201,20 +234,15 @@ target. The resulting status is transfer-only.
 ## Company-PC transfer boundary
 
 Do not copy this repository, the entire `release/` tree, the failed P10
-package, or the Phase 8C candidate to a company PC.  The P10 envelope remains
-historical failed evidence and is not executable. The corrected 2.8.6 Phase
-8B package is represented only by the historical T6.1 transfer envelope. The
-verified v2.8.7 T7 envelope and its patch manifest are now immutable historical
-evidence and must not be used for execution because `PHASE8B-DASHBOARD-01`
-supersedes them. The exact current carriage artifact is fixed T8
-`69f843f6ea426ccb45d721a40508a35b0a59795d` and
-`implementation/GoogleSpreadsheet/transfer/v2.8.8-prepilot/`. Its raw-byte
-manifest requires only `00_Config.gs`, `15_Dashboard.gs`, and
-`16_Diagnostics.gs`; `appsscript.json` and 20 other payload files are
-unchanged.
+package, or the Phase 8C candidate to a company PC. The P10, T6.1, T7, T8, and
+T9 envelopes remain immutable historical evidence. T8 and T9 are not the
+current execution transfer target. The only intended future carriage path is
+`implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`, but its fixed
+T10 ref is `PENDING_T10` and no v2.8.10 carriage is authorized at the Source
+A10 pre-publication stage.
 
-Corrected transfer material remains outside its immutable package and does not
-alter package checksums. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is
-carriage-only: it does
-not authorize Setup, diagnostics, OAuth approval, deployment, `clasp push`,
-Automation enablement, real data, or real Workspace operation.
+The current `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate does not
+authorize Setup, diagnostics, OAuth approval, deployment, `clasp push`,
+Automation enablement, real data, or real Workspace operation. A later
+evidence-only update may raise the gate only after the complete A10/B10/T10
+chain and detached fixed-ref verification pass.

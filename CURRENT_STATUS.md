@@ -1,12 +1,44 @@
 # Current Status
 
-Last updated: 2026-07-30
-Candidate version: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Last updated: 2026-07-31
+Candidate version: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Overall status: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
-## Current 2.8.9 Dashboard number-format transfer evidence
+<!-- CURRENT_TRANSFER_CONTRACT_START -->
+| Field | Value |
+|---|---|
+| Code | `2.8.10-prepilot` |
+| Schema | `2.6` |
+| AI Schema | `2.0` |
+| Migration | `3` |
+| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
+| Fixed transfer | `PENDING_T10` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
+<!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Current 2.8.10 Dashboard write-visibility remediation
+
+`PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes fixed T9 as an execution
+transfer target after the same bounded 51-cell conflict recurred in the real
+Sandbox. The confirmed defect is a Setup write-visibility gap: v2.8.9 called
+`setNumberFormat()` and then performed its strict readback in the same
+execution without `SpreadsheetApp.flush()`. The synchronous fake runtime hid
+that behavior.
+
+The v2.8.10 source candidate keeps the strict Dashboard ownership and
+non-format surface contract. After an actual Setup-only write it flushes,
+reacquires a fresh exact Range, and requires all 51 formats to satisfy the
+canonical postcondition before S90 continues. It also rejects Config, Setup,
+or Dashboard module-contract skew before any write and records only bounded
+normalization evidence. Quick/Deep Diagnostic remain read-only. Source A10,
+direct-child Release B10, fixed T10, and evidence E10 are pending; therefore
+the current gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`, fixed
+transfer is `PENDING_T10`, Automation is `OFF`, and real Workspace retest is
+`NOT_EXECUTED`.
+
+## Historical 2.8.9 Dashboard number-format transfer evidence
 
 `PHASE8B-DASHBOARD-NUMBER-FORMAT-01` is a safe Phase 8B Setup blocker. The
 real Sandbox reached S00–S80 and stopped before S90/S99 with closed Dashboard
@@ -37,8 +69,9 @@ envelope. Normal non-force publication, GitHub resolution, and a detached
 HTTPS clone of T9 passed 45 suites / 658 assertions / 0 failures, validator
 11/11, package/transfer verifiers, raw-blob patch parity, checksums,
 allow-lists, provenance, and scans. The highest carriage-only status is now
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. Real Workspace retransfer/retest
-remains `NOT_EXECUTED`; Automation remains `OFF`.
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for that historical T9 verification.
+T9 has since been superseded as an execution target. Real Workspace
+retransfer/retest remains `NOT_EXECUTED`; Automation remains `OFF`.
 
 ## Historical 2.8.8 Dashboard surface remediation candidate
 
@@ -157,6 +190,11 @@ evidence, not the current transfer target or an execution authorization.
 | Release B8 | `a17d34422ed521cee81340902d9a19e2da372201` | direct child of A8; exactly both v2.8.8 packages and the implementation report |
 | Fixed transfer T8 | `69f843f6ea426ccb45d721a40508a35b0a59795d` | normal-pushed, GitHub-resolved fixed v2.8.8 transfer; 3-file raw-byte patch manifest and detached fresh-clone verification PASS |
 | Evidence E8 | `SELF (this evidence-only commit)` | records final remote/fresh-clone proof; not a transfer target and changes no source/test/tool/package/transfer file |
+| Source A9 | `a448b8d856abd5eb32baa60117f5fdb9f8e56de9` | historical v2.8.9 source/tests/tools/canonical-docs/visualization/incident/recovery commit; no v2.8.9 package, report, or transfer envelope |
+| Corrected Source A9.1 | `4a145588b01a5f7ae7e9bce86efb9bd5b3d8345d` | historical additive source correction binding the patch-manifest baseline to fixed T8 |
+| Corrected Release B9.1 | `b451d2361db99b4efbde036dafa3e2baf6b5cb97` | direct child of A9.1; contains only both v2.8.9 packages and its implementation report |
+| Fixed transfer T9 | `781f408fcf0853a5fffee9c00d3022ee5e17b1d7` | historical v2.8.9 transfer envelope; normal-pushed and detached-clone verified, then superseded by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` |
+| Evidence E9 | `63841d85da478e401986e80db77e9308c8af9655` | records fixed-T9 fresh-clone proof; not a transfer target and changes no source/test/tool/package/transfer file |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.
@@ -181,6 +219,8 @@ The v2.8.7 final detached-clone verification is
 `audits/2026-07-30/GoogleWorkspace_v2_8_7_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-30.md`.
 The v2.8.8 fixed-T8 detached-clone verification is
 `audits/2026-07-30/GoogleWorkspace_v2_8_8_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-30.md`.
+The v2.8.9 fixed-T9 detached-clone verification is
+`audits/2026-07-30/GoogleWorkspace_v2_8_9_Fixed_T9_Fresh_Clone_Publication_Audit_2026-07-30.md`.
 
 ## Historical R5 and 2.8.6 correction
 
@@ -213,11 +253,11 @@ Release B6 / transfer chain was created and independently verified. Automation
 remains OFF. Do not manually hide the Ledger, continue Setup, or run
 diagnostics with P10; preserve the failed workbook as evidence.
 
-The normal-pushed T6.1 fixed ref passed its required target-branch fresh-clone
-checks and remains historical. The v2.8.7 A7/B7/C7/T7 chain has separately
-passed normal publication, GitHub resolution, raw-byte patch-manifest checks,
-and detached fresh-clone verification. The current status therefore permits
-only retransfer carriage. It does not authorize OAuth consent, deployment,
+The normal-pushed T6.1, T7, T8, and T9 fixed refs passed their respective
+historical verification and remain immutable evidence. T9 is superseded as an
+execution transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`; no
+current retransfer carriage is authorized while T10 remains `PENDING_T10`.
+The current no-go status does not authorize OAuth consent, deployment,
 `clasp push`, Automation enablement, real data, or real Workspace action.
 
 No GitHub Actions run or combined-status evidence exists for this PR #8 scope.

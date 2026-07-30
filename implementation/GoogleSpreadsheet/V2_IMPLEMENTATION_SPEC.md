@@ -1,8 +1,8 @@
 # Google Workspace Personal Work OS v2 — Implementation Specification
 
-Last updated: 2026-07-30
-Code: `2.8.9-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` (real Workspace retransfer/retest `NOT_EXECUTED`)
+Last updated: 2026-07-31
+Code: `2.8.10-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` (fixed transfer `PENDING_T10`; real Workspace retransfer/retest `NOT_EXECUTED`)
 
 ## 1. Scope and non-goals
 
@@ -76,6 +76,20 @@ canonical schema, owner-proven protections, exact seed/owned versioned state,
 and every non-format surface check are safe. Empty, ambiguous, foreign, or
 user-owned surfaces fail closed. Quick and Deep Diagnostic remain read-only;
 blank, default, or arbitrary system formats are not generally accepted.
+
+When a write is required, Setup must call `SpreadsheetApp.flush()` before any
+post-write read, reacquire a fresh exact Range, and verify the canonical
+contract over all 51 cells. A canonical block performs no write and no
+unnecessary flush. Flush unavailable/failure or a still-noncanonical reread
+fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`; no locale or actual format
+string is emitted.
+
+`WorkOsConfig`, `WorkOsSetup`, and `WorkOsDashboard` expose one independent,
+matching S90 module-contract identifier. Setup and Dashboard check it before
+normalization. Any partial-version skew fails as `E_MODULE_VERSION_SKEW`
+before a format write. Safe Setup evidence is limited to a closed
+normalization state, write/flush/postcondition Booleans, checked-cell count,
+and noncanonical count.
 
 ## 3. Authority architecture
 

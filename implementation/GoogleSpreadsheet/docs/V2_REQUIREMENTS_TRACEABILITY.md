@@ -1,10 +1,10 @@
-# Requirements Traceability — 2.8.9 Dashboard Number-Format Transfer Evidence
+# Requirements Traceability — 2.8.10 Dashboard Write-Visibility / Module-Skew Remediation
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
-Specification: `instructions/GoogleWorkspace_v2_8_8_Phase8B_Dashboard_Surface_Real_Runtime_Remediation_2026-07-30.md`
-Version contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Google Workspace
+Specification: `instructions/GoogleWorkspace_v2_8_10_Phase8B_Dashboard_Number_Format_Write_Visibility_and_Module_Skew_Remediation_2026-07-31.md`
+Version contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer `PENDING_T10`; real Google Workspace
 retransfer/retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
@@ -99,6 +99,23 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 | NF-03 | Seed, owned marker, and full versioned states are idempotent; empty/foreign/ambiguous surfaces fail closed and leave the range unchanged | number-format runtime suite; recovery guide | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
 | NF-04 | S00〜S80 resume preserves external-resource identity, Automation OFF, and absent five-minute trigger while S90/S99 resume | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_setup_ledger_visibility_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
 | NF-05 | Company-PC patch list is raw Git-blob derived from fixed T8 and corrected final B9.1 payload | v2.8.9 patch-manifest builder/verifier; fixed T9 detached-clone audit | FIXED_TRANSFER_VERIFIED; exactly 3 changed / 20 unchanged; `appsscript.json` unchanged; real Workspace retest `NOT_EXECUTED` |
+
+## Phase 8B Dashboard write-visibility / module-skew traceability
+
+The rows below are Source A10 requirements. Their status remains
+`PENDING_A10_VERIFICATION`; no local test result is asserted here before the
+complete Source verification run.
+
+| ID | Requirement | Primary evidence | Current evidence |
+|---|---|---|---|
+| WV-01 | A queued format write is made visible with one `SpreadsheetApp.flush()` before the strict reread | `15_Dashboard.gs`; buffered-write runtime suite | PENDING_A10_VERIFICATION; real Workspace retest `NOT_EXECUTED` |
+| WV-02 | Postcondition uses a fresh exact Range and requires all 51 system cells to be canonical | `15_Dashboard.gs`; fresh-Range instrumentation | PENDING_A10_VERIFICATION |
+| WV-03 | Flush unavailable/failure or stale post-flush state fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION` with bounded evidence | Dashboard runtime suite; recovery guide | PENDING_A10_VERIFICATION; no locale/format string captured |
+| WV-04 | Canonical block is idempotent with zero write/flush; Quick/Deep remain zero-write and zero-flush | Dashboard and Diagnostic runtime suites | PENDING_A10_VERIFICATION |
+| WV-05 | Config/Setup/Dashboard mismatch fails as `E_MODULE_VERSION_SKEW` before a write; aligned identifiers may proceed | `00_Config.gs`; `02_Setup.gs`; `15_Dashboard.gs`; module-skew suite | PENDING_A10_VERIFICATION |
+| WV-06 | S00–S80 resume records safe normalization evidence without changing Gmail-label, Calendar, Property, edit-trigger, Automation-OFF, or no-five-minute-trigger invariants | Setup resume/runtime suites | PENDING_A10_VERIFICATION; real Workspace retest `NOT_EXECUTED` |
+| WV-07 | Four canonical documents agree on current version/gate/fixed-ref/path and synthetic T8/T9 skew fails | canonical-document consistency suite | PENDING_A10_VERIFICATION |
+| WV-08 | T10 patch list is produced only from fixed T9 versus final B10 raw Git blobs | v2.8.10 patch-manifest builder/verifier | `PENDING_B10` / `PENDING_T10`; changed files and hashes not pre-assumed |
 
 ## Task write-route inventory (13 routes)
 

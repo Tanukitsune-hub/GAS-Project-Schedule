@@ -551,9 +551,21 @@ test('P4-P05_EVENT_SEARCH_AND_STATIC_RUNTIME_GUARDS_ARE_BOUNDED', () => {
     /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
     true
   );
-  assert.strictEqual(
-    (allSource.match(/SpreadsheetApp\.flush\s*\(/g) || []).length,
-    1
+  const flushCallInventory = sources
+    .map((item) => ({
+      name: item.name,
+      count:
+        (item.source.match(/SpreadsheetApp\.flush\s*\(/g) || []).length
+    }))
+    .filter((item) => item.count > 0);
+  assert.deepStrictEqual(
+    flushCallInventory,
+    [
+      { name: '03_SheetBuilder.gs', count: 1 },
+      { name: '15_Dashboard.gs', count: 1 }
+    ],
+    'Spreadsheet flush is allowed only at the schema and Setup-owned ' +
+      'Dashboard write-visibility boundaries'
   );
   assert.strictEqual(sandbox.WorkOsConfig.ROW_EXPANSION_UNIT, 100);
   assert.strictEqual(sandbox.WorkOsConfig.CALENDAR_MAX_JOBS_PER_RUN, 1);

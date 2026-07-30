@@ -1,11 +1,34 @@
 # Master Plan
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
-Current contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
 
-## Phase 8B Dashboard number-format remediation
+<!-- CURRENT_TRANSFER_CONTRACT_START -->
+| Field | Value |
+|---|---|
+| Code | `2.8.10-prepilot` |
+| Schema | `2.6` |
+| AI Schema | `2.0` |
+| Migration | `3` |
+| Gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` |
+| Fixed transfer | `PENDING_T10` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
+<!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Phase 8B Dashboard write-visibility / module-skew remediation
+
+| Step | Deliverable | State |
+|---|---|---|
+| P8B-WV-1 | Preserve v2.8.5 through v2.8.9 history | Complete; historical source, release, transfer, audit, and incident bytes remain immutable. |
+| P8B-WV-2 | Flush-safe Setup normalization | In Source A10 preparation: actual writes must flush once, reacquire a fresh exact Range, and pass the strict 51-cell postcondition before S90 continues. |
+| P8B-WV-3 | Module-contract skew guard | In Source A10 preparation: Config, Setup, and Dashboard must expose the aligned v2.8.10 S90 contract before any normalization write. |
+| P8B-WV-4 | Buffered-runtime and document consistency tests | In progress; pending complete local validation and Source A10 commit. |
+| P8B-WV-5 | Source A10 / direct-child Release B10 | Pending; Source A10 must exclude v2.8.10 packages, release report, and transfer material. |
+| P8B-WV-6 | Fixed transfer T10 / evidence E10 | Pending; no carriage authorization until normal publication and detached fixed-ref verification pass. |
+
+## Historical Phase 8B Dashboard number-format remediation
 
 | Step | Deliverable | State |
 |---|---|---|
@@ -119,11 +142,12 @@ report, or transfer envelope.  Its direct-child Release B6 must contain only:
 
 P10 proof and the corrected T6.1 ref remain historical. T6.1 was verified from
 GitHub in a detached target-branch fresh clone, but
-`PHASE8B-QUICK-DIAGNOSTIC-01` supersedes it as the current transfer target.
+`PHASE8B-QUICK-DIAGNOSTIC-01` superseded it as the then-current transfer target.
 The A7/B7/C7/T7/evidence path is complete historical evidence, but
-`PHASE8B-DASHBOARD-01` supersedes T7 as an executable transfer target. The
-additive A8/B8/T8 path completed normal remote publication and detached
-fresh-clone verification, so the current maximum carriage-only status is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It authorizes only exact fixed T8
-carriage and does not authorize real Workspace execution, Automation,
-deployment, real data, or later-stage readiness.
+`PHASE8B-DASHBOARD-01` superseded T7 as an executable transfer target. The
+additive A8/B8/T8 and A9/A9.1/B9.1/T9 paths completed their historical normal
+publication and detached fresh-clone verification. T8 and T9 are immutable
+evidence, but `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes T9 as an
+execution transfer target. The current gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed T10 is
+`PENDING_T10`, so no carriage or real Workspace execution is authorized.

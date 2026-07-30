@@ -1,15 +1,16 @@
-# Manual Acceptance Guide — 2.8.9 Phase 8B Dashboard Number-Format Transfer Evidence
+# Manual Acceptance Guide — 2.8.10 Dashboard Write-Visibility / Module-Skew Candidate
 
-Code Version: `2.8.9-prepilot`
+Code Version: `2.8.10-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest `NOT_EXECUTED`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer `PENDING_T10`; real Workspace retransfer/retest `NOT_EXECUTED`
 Automation default: `OFF`
 
-Historical note: the Source A9 package-generation gate was
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`. It is retained as historical
-provenance, not as the current operational status.
+Historical note: A9/A9.1/B9.1/T9 and the
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` source gate are retained as
+immutable provenance. The repeated 51-cell finding supersedes T9 as an
+execution target.
 
 ## Purpose
 
@@ -48,7 +49,9 @@ information in this repository.
 | Dashboard pre-refresh ownership | exact Setup sheet/header protection and exact seed; no marker write | NOT EXECUTED |
 | Dashboard native Protection access | owner/effective user match; implicit or explicit proven owner only; no domain/audience/foreign access | NOT EXECUTED |
 | Dashboard conflict output | closed reason/subreason enums and counts only; no identity/content/address | NOT EXECUTED |
-| Dashboard number-format normalization | Setup before S90 writes only the exact 17×3 proven system block; Quick/Deep remain read-only | NOT EXECUTED |
+| Dashboard number-format normalization | Setup before S90 writes only the exact 17×3 proven system block, flushes, reacquires a fresh Range, and proves all 51 cells; Quick/Deep remain read-only | NOT EXECUTED |
+| Module contract | Config/Setup/Dashboard identifiers match; skew fails before any format write | NOT EXECUTED |
+| Safe Setup evidence | closed normalization state plus write/flush/postcondition Booleans and counts only | NOT EXECUTED |
 | Empty Task checkboxes | only schema-defined checkbox `false` in identity-empty rows | NOT EXECUTED |
 | Migration | Schema 2.5 anchor-only conversion and pause/resume behavior | NOT EXECUTED |
 
@@ -58,21 +61,21 @@ transcribed as real Workspace PASS.
 
 ## Company-PC material
 
-Do not use `../transfer/v2.8.5-prepilot/`: it is the immutable failed P10
-historical envelope. Do not manually hide its Ledger, continue its Setup, or
-run its diagnostics. After corrected 2.8.6 publication and independent
-verification only, use the separately generated Japanese procedure, 8B-only
-allow-list, acceptance checklist, stop/rollback checklist, synthetic-data
-specification, results template, and failed-Sandbox recovery guide from exact
-fixed T8 `69f843f6ea426ccb45d721a40508a35b0a59795d`. T7 is immutable historical
-evidence and is superseded by `PHASE8B-DASHBOARD-01`.
+Do not use any v2.8.5 through v2.8.9 transfer as the current execution target.
+They are immutable historical evidence. Do not manually hide the Ledger,
+change Dashboard formats, continue Setup, or run diagnostics as a workaround.
+The v2.8.10 company-PC replacement list must be generated from raw Git blob
+comparison between fixed T9 and final B10. Until fixed T10 and detached-clone
+evidence are complete, no transfer path or changed-file/hash list is approved;
+those items remain `PENDING_T10`.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. Corrected Source A9.1,
-direct-child corrected Release B9.1, fixed T9, and detached-clone evidence now
-support only `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It is never a Sandbox
-execution authorization. Real Workspace retransfer/retest is `NOT_EXECUTED`.
+This guide never declares execution readiness. The current gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; A10/B10/T10/E10 are
+pending. Even a later `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` would mean
+controlled carriage only, never Sandbox PASS or execution authorization.
+Real Workspace retransfer/retest is `NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7

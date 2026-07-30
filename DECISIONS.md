@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 This file records current governing decisions. Superseded detail remains
 available in Git history and is not silently reinterpreted as a current gate.
@@ -159,9 +159,10 @@ authority from a Task raw row, note, or snapshot cell.  The P10 package and
 transfer evidence remain immutable historical failures.  Automation stays OFF;
 the package-generation gate was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until
 the separate 2.8.6 source/release/transfer chain was independently verified.
-  That result is historical. The current v2.8.7 fixed transfer ref T7 is
-  `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; this carriage-only status does not
-  authorize any real Workspace action.
+  That result and the later v2.8.7 fixed transfer ref T7 are historical.
+  T7 reached the carriage-only `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status
+  at that point; it is not a current execution target and never authorized a
+  real Workspace action.
 
 ## D-043 — Dashboard number format is a Setup-owned deterministic control plane
 
@@ -181,7 +182,7 @@ remain fail-closed with closed non-sensitive enum/count output; no cell outside
 the exact block is written. S00–S80 resume preserves existing resources,
 Automation remains OFF, and real Workspace verification is `NOT_EXECUTED`.
 
-## D-044 — v2.8.9 transfer status is carriage-only after fixed-ref proof
+## D-044 — Historical v2.8.9 transfer status was carriage-only after fixed-ref proof
 
 **Decision.** Corrected Source A9.1, direct-child corrected Release B9.1, and
 fixed T9 must be normal-published and independently checked from a detached
@@ -199,3 +200,32 @@ non-sensitive Phase 8B Sandbox retransfer envelope. It does not declare Phase
 Workspace, OAuth, import, Setup, Diagnostic, Dashboard refresh, Gmail,
 Calendar, deployment, trigger enablement, and Provider configuration remain
 `NOT_EXECUTED`.
+
+## D-045 — S90 format writes require explicit visibility and aligned modules
+
+**Decision.** A permitted Setup-only write to the exact 17×3 Dashboard system
+block must be followed by exactly one `SpreadsheetApp.flush()`, a newly
+acquired exact Range, and a strict 51-cell canonical postcondition before S90
+continues. Config, Setup, and Dashboard independently expose one matching
+v2.8.10 S90 module-contract identifier; mismatch fails before a write as
+`E_MODULE_VERSION_SKEW`. Flush unavailable/failure or a noncanonical reread
+fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`.
+
+**Rationale.** The real Sandbox repeated the bounded 51-cell finding after the
+historical v2.8.9 transfer. The immutable v2.8.9 implementation wrote and
+immediately reread without flushing or reacquiring a Range, while its fake
+runtime applied writes synchronously. In addition, the manually replaced
+files provided no product-level proof that all S90-critical modules were one
+compatible version. The safe observation alone therefore cannot distinguish
+queued-write invisibility from a partial module replacement.
+
+**Consequences.** A canonical block performs no write and no unnecessary
+flush. Quick/Deep Diagnostic remain read-only and perform no repair. Setup
+evidence is restricted to a closed normalization state,
+write/flush/postcondition Booleans, checked-cell count, and noncanonical count;
+it excludes locale, actual format strings, content, addresses, IDs, URLs, and
+identities. T9 remains immutable historical evidence but is superseded as an
+execution target. Until the A10/B10/T10/E10 chain and detached-clone proof are
+complete, the gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`, fixed transfer is
+`PENDING_T10`, and real Workspace retransfer/retest is `NOT_EXECUTED`.

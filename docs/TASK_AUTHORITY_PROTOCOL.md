@@ -1,13 +1,13 @@
-# Task Authority Protocol — Code 2.8.8-prepilot
+# Task Authority Protocol — Code 2.8.10-prepilot
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.8-prepilot` |
+| Code | `2.8.10-prepilot` |
 | Task Schema | `2.6` / 50 columns |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer `PENDING_T10`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
 
 ## Quick Diagnostic runtime control plane
 
@@ -39,6 +39,23 @@ It returns only a closed reason/subreason enum and whitelisted counts. It does
 not return identities, values, formulas, notes, range addresses, IDs, or URLs.
 The exact three-row Setup seed and the explicit-refresh owned marker are the
 only accepted content states. This contract is `PHASE8B-DASHBOARD-01`.
+
+## S90 Dashboard write-visibility and module contract
+
+The v2.8.10 S90 path adds no Task-authority fallback. Before the Setup-owned
+Dashboard format write, `WorkOsConfig`, `WorkOsSetup`, and `WorkOsDashboard`
+must expose one matching deterministic module-contract identifier. A missing
+or mismatched identifier fails as `E_MODULE_VERSION_SKEW` before any write.
+
+If strict ownership and non-format surface proof permits normalization, Setup
+writes only the exact 17×3 system block, calls `SpreadsheetApp.flush()`,
+reacquires a fresh exact Range, and verifies the canonical postcondition over
+all 51 cells. Flush unavailable, flush failure, or a stale/noncanonical
+postcondition fails closed as
+`E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`. The safe result contains only a
+closed normalization state, write/flush/postcondition Booleans, checked-cell
+count, and noncanonical count. Quick and Deep Diagnostic remain read-only and
+perform neither write nor flush.
 
 ## Selected design
 
@@ -194,6 +211,9 @@ source/release/transfer/fresh-clone verification but is now historical because
 `4140054b03c850f4a1e669b3aa562b305ef78bf5`, direct-child Release B8
 `a17d34422ed521cee81340902d9a19e2da372201`, and fixed transfer T8
 `69f843f6ea426ccb45d721a40508a35b0a59795d` completed normal publication,
-GitHub resolution, and detached HTTPS fresh-clone verification. The current
-maximum status is the carriage-only `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`;
-real Workspace retransfer/retest remains `NOT_EXECUTED`.
+GitHub resolution, and detached HTTPS fresh-clone verification. The later
+v2.8.9 A9/A9.1/B9.1/T9 chain is also retained as immutable historical
+evidence. The repeated 51-cell finding supersedes T9 as an execution target.
+At the v2.8.10 Source stage, A10/B10/T10/E10 remain pending and the current
+gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; real Workspace
+retransfer/retest remains `NOT_EXECUTED`.

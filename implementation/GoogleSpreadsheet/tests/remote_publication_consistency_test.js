@@ -63,7 +63,7 @@ const moduleDocs = [
   'docs/TASK_AUTHORITY_PROTOCOL.md',
   'docs/V2_REQUIREMENTS_TRACEABILITY.md',
   'docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
-  'visualizations/task_authority_protocol_v2_8_9.html'
+  'visualizations/task_authority_protocol_v2_8_10.html'
 ];
 
 test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () => {
@@ -77,7 +77,7 @@ test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () =>
 test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const config = source('apps-script-v2/00_Config.gs');
   [
-    "CODE_VERSION: '2.8.9-prepilot'",
+    "CODE_VERSION: '2.8.10-prepilot'",
     "SCHEMA_VERSION: '2.6'",
     "AI_SCHEMA_VERSION: '2.0'",
     "MIGRATION_VERSION: '3'",
@@ -92,12 +92,11 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
   const declaredGate = gateMatch[1];
   assert.ok([
-    'PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE',
-    'PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT',
+    'PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY',
     'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
   ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
-    '2.8.9-prepilot',
+    '2.8.10-prepilot',
     '2.6',
     declaredGate,
     'Task Authority Ledger',
@@ -138,6 +137,8 @@ test('RPC-03_SCHEMA_COUNTS_AND_MATRIX_TRACEABILITY_ARE_CANONICAL', () => {
     1, 'Dashboard surface blocker must be traced without changing historical R4 counts');
   assert.strictEqual((matrix.match(/^\| PHASE8B-DASHBOARD-NUMBER-FORMAT-01 \|/gm) || []).length,
     1, 'Dashboard number-format blocker must be traced without changing historical R4 counts');
+  assert.strictEqual((matrix.match(/^\| PHASE8B-DASHBOARD-WRITE-VISIBILITY-01 \|/gm) || []).length,
+    1, 'Dashboard write-visibility blocker must be traced without changing historical R4 counts');
 });
 
 test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
@@ -207,8 +208,70 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
     'CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT',
     'normalizeSystemBlockNumberFormatForSetup',
     'NUMBER_FORMAT_API_UNAVAILABLE',
+    'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION',
+    'NUMBER_FORMAT_FLUSH_UNAVAILABLE',
+    'NUMBER_FORMAT_POSTCONDITION_FAILED',
+    'SpreadsheetApp.flush()',
+    'freshRange = sheet.getRange(',
+    'postconditionFormats = freshRange.getNumberFormats()',
+    'postcondition_verified',
+    'checked_cell_count',
+    'noncanonical_count',
     'setNumberFormat'
   ].forEach((literal) => assert.ok(dashboard.includes(literal), literal));
+  const expectedContract = 'WORK_OS_V2_S90_CONTRACT_2_8_10';
+  assert.strictEqual(
+    (source('apps-script-v2/00_Config.gs').match(
+      /S90_MODULE_CONTRACT_ID: 'WORK_OS_V2_S90_CONTRACT_2_8_10'/g
+    ) || []).length,
+    1,
+    'Config must independently bind the S90 module contract exactly once'
+  );
+  [setup, dashboard].forEach((text) => assert.strictEqual(
+    (text.match(
+      /var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_10'/g
+    ) || []).length,
+    1,
+    'Setup and Dashboard must independently bind the S90 module contract'
+  ));
+  assert.ok(setup.includes('assertS90ModuleContract'));
+  assert.ok(setup.includes('E_MODULE_VERSION_SKEW'));
+  assert.ok(setup.includes('module_contract_status'));
+  assert.ok(setup.includes('dashboard_number_format_normalization'));
+  assert.ok(dashboard.includes('assertModuleContract'));
+  assert.ok(dashboard.includes('E_MODULE_VERSION_SKEW'));
+  assert.ok(source('apps-script-v2/00_Config.gs').includes(expectedContract));
+  const normalizerStart = dashboard.indexOf(
+    'function normalizeSystemBlockNumberFormatForSetup'
+  );
+  const writeIndex = dashboard.indexOf(
+    'range.setNumberFormat(CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT)',
+    normalizerStart
+  );
+  const flushIndex = dashboard.indexOf('SpreadsheetApp.flush()', writeIndex);
+  const freshRangeIndex = dashboard.indexOf(
+    'freshRange = sheet.getRange(',
+    flushIndex
+  );
+  const postconditionIndex = dashboard.indexOf(
+    'postconditionFormats = freshRange.getNumberFormats()',
+    freshRangeIndex
+  );
+  assert.ok(normalizerStart >= 0 && writeIndex > normalizerStart,
+    'Setup-owned normalizer write boundary missing');
+  assert.ok(flushIndex > writeIndex,
+    'SpreadsheetApp.flush must occur after number-format write');
+  assert.ok(freshRangeIndex > flushIndex,
+    'strict postcondition must reacquire a fresh Range after flush');
+  assert.ok(postconditionIndex > freshRangeIndex,
+    'strict postcondition must read formats from the fresh Range');
+  [
+    'setNumberFormat(',
+    'setNumberFormats(',
+    'SpreadsheetApp.flush()',
+    'normalizeSystemBlockNumberFormatForSetup('
+  ].forEach((literal) => assert.ok(!diagnostics.includes(literal),
+    'Diagnostics must remain read-only: ' + literal));
   [
     'DEADLINE_CALENDAR_ARMED',
     'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION',
@@ -221,10 +284,10 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
 
 test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () => {
   const toolNames = [
-    'build_v2_8_9_release.ps1',
-    'build_v2_8_9_phase8c_release.ps1',
-    'verify_v2_8_9_release.ps1',
-    'verify_v2_8_9_phase8c_release.ps1'
+    'build_v2_8_10_release.ps1',
+    'build_v2_8_10_phase8c_release.ps1',
+    'verify_v2_8_10_release.ps1',
+    'verify_v2_8_10_phase8c_release.ps1'
   ];
   toolNames.forEach((name) => {
     const text = source(path.join('tools', name));
@@ -236,8 +299,17 @@ test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () 
       name + ': canonical source root');
     assert.ok(text.includes('Join-Path $moduleRoot "release\\$'),
       name + ': release must be rooted at canonical module path');
+    [
+      'WORK_OS_V2_S90_CONTRACT_2_8_10',
+      'E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION',
+      'SpreadsheetApp.flush()',
+      'freshRange = sheet.getRange(',
+      'postconditionFormats = freshRange.getNumberFormats()',
+      'Diagnostics must remain read-only'
+    ].forEach((literal) => assert.ok(text.includes(literal),
+      name + ': write-visibility invariant ' + literal));
   });
-  ['build_v2_8_9_release.ps1', 'build_v2_8_9_phase8c_release.ps1']
+  ['build_v2_8_10_release.ps1', 'build_v2_8_10_phase8c_release.ps1']
     .forEach((name) => {
       const text = source(path.join('tools', name));
       assert.ok(text.includes('function Assert-CleanCanonicalSourceInputs'),
@@ -293,6 +365,19 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
       name + ': fixed T8 must be the safe default baseline');
   });
   [
+    'build_v2_8_10_company_pc_patch_manifest.ps1',
+    'verify_v2_8_10_company_pc_patch_manifest.ps1'
+  ].forEach((name) => {
+    const text = source(path.join('tools', name));
+    assert.ok(text.includes('git_blob_raw_bytes_sha256'),
+      name + ': raw Git byte comparison required');
+    assert.ok(text.includes('v2.8.9-prepilot') &&
+      text.includes('v2.8.10-prepilot'),
+    name + ': T9/B10 payload versions required');
+    assert.ok(text.includes('781f408fcf0853a5fffee9c00d3022ee5e17b1d7'),
+      name + ': fixed T9 must be the safe default baseline');
+  });
+  [
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md',
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md',
     'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_5.html'
@@ -316,15 +401,26 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
   assert.ok(allNames.includes(
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_QUICK_DIAGNOSTIC_REAL_RUNTIME_IMPLEMENTATION_REPORT.md'
   ), 'historical v2.8.7 release report must remain present');
-  const currentReport =
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_NUMBER_FORMAT_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
-  assert.ok(!allNames.includes(currentReport),
-    'Source A9 must not contain the Dashboard number-format release report');
   [
+    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot-phase8c/',
     'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot/',
     'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot-phase8c/'
+  ].forEach((prefix) => assert.ok(allNames.some((name) => name.startsWith(prefix)),
+    'historical package must remain present in Source A10: ' + prefix));
+  assert.ok(allNames.includes(
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_NUMBER_FORMAT_REAL_RUNTIME_IMPLEMENTATION_REPORT.md'
+  ), 'historical v2.8.9 release report must remain present');
+  const currentReport =
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_WRITE_VISIBILITY_MODULE_SKEW_IMPLEMENTATION_REPORT.md';
+  assert.ok(!allNames.includes(currentReport),
+    'Source A10 must not contain the write-visibility release report');
+  [
+    'implementation/GoogleSpreadsheet/release/v2.8.10-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.10-prepilot-phase8c/',
+    'implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/'
   ].forEach((prefix) => assert.ok(!allNames.some((name) => name.startsWith(prefix)),
-    'Source A9 must not contain new release payload: ' + prefix));
+    'Source A10 must not contain generated v2.8.10 artifact: ' + prefix));
 });
 
 test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
@@ -336,14 +432,15 @@ test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
   const lineage = git(['rev-list', '--parents', '-n', '1', releaseCommit])
     .split(/\s+/).filter(Boolean);
   assert.deepStrictEqual(lineage, [releaseCommit, sourceCommit],
-    'Release B9 must be a direct child of Source A9');
+    'Release B10 must be a direct child of Source A10');
   const allowedPrefixes = [
-    'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot/',
-    'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot-phase8c/'
+    'implementation/GoogleSpreadsheet/release/v2.8.10-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.10-prepilot-phase8c/'
   ];
   const report =
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_NUMBER_FORMAT_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
-  assert.ok(changed.includes(report), 'Dashboard number-format report missing from Release B9');
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_WRITE_VISIBILITY_MODULE_SKEW_IMPLEMENTATION_REPORT.md';
+  assert.ok(changed.includes(report),
+    'Dashboard write-visibility report missing from Release B10');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[0])),
     'Phase 8B package missing from Release commit');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[1])),
@@ -351,6 +448,86 @@ test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
   changed.forEach((name) => assert.ok(name === report ||
     allowedPrefixes.some((prefix) => name.startsWith(prefix)),
   'Release boundary violation: ' + name));
+});
+
+test('RPC-05C_TRANSFER_DIFF_IS_FLAT_V2810_ENVELOPE_ONLY', () => {
+  const releaseCommit = process.env.RELEASE_COMMIT;
+  const transferCommit = process.env.TRANSFER_COMMIT;
+  if (!releaseCommit || !transferCommit) return;
+  const lineage = git(['rev-list', '--parents', '-n', '1', transferCommit])
+    .split(/\s+/).filter(Boolean);
+  assert.deepStrictEqual(lineage, [transferCommit, releaseCommit],
+    'fixed T10 must be a direct child of Release B10');
+  const prefix =
+    'implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/';
+  const expected = [
+    'COMPANY_PC_PATCH_MANIFEST.json',
+    'COMPANY_PC_PATCH_MANIFEST_ja.md',
+    'COPY_ALLOWLIST.txt',
+    'FAILED_SANDBOX_RECOVERY_GUIDE_ja.md',
+    'PHASE8B_ACCEPTANCE_CHECKLIST_ja.md',
+    'README_ja.md',
+    'RESULTS_TEMPLATE_ja.md',
+    'STOP_AND_ROLLBACK_CHECKLIST_ja.md',
+    'SYNTHETIC_TEST_DATA_SPECIFICATION_ja.md',
+    'TRANSFER_CHECKSUMS.sha256',
+    'TRANSFER_MANIFEST.md'
+  ].map((name) => prefix + name).sort();
+  const changed = git(['diff', '--name-only', releaseCommit, transferCommit])
+    .split(/\r?\n/).filter(Boolean).sort();
+  assert.deepStrictEqual(changed, expected,
+    'fixed T10 must add exactly the flat 11-file transfer envelope');
+});
+
+test('RPC-05D_EVIDENCE_DIFF_IS_CURRENT_DOCS_AND_EVIDENCE_ONLY', () => {
+  const transferCommit = process.env.TRANSFER_COMMIT;
+  const evidenceCommit = process.env.EVIDENCE_COMMIT;
+  if (!transferCommit || !evidenceCommit) return;
+  const lineage = git(['rev-list', '--parents', '-n', '1', evidenceCommit])
+    .split(/\s+/).filter(Boolean);
+  assert.deepStrictEqual(lineage, [evidenceCommit, transferCommit],
+    'Evidence E10 must be a direct child of fixed T10');
+  const changed = git(['diff', '--name-only', transferCommit, evidenceCommit])
+    .split(/\r?\n/).filter(Boolean);
+  assert.ok(changed.length > 0, 'Evidence E10 must record verification evidence');
+  const allowedExact = new Set([
+    'README.md',
+    'CURRENT_STATUS.md',
+    'DECISIONS.md',
+    'MASTER_PLAN.md',
+    'PROJECT_CONTEXT.md',
+    'docs/R4_VERIFICATION_MATRIX.md',
+    'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html',
+    'docs/visualizations/index.html',
+    'implementation/GoogleSpreadsheet/V2_CODEX_IMPLEMENTATION_PLAN.md',
+    'implementation/GoogleSpreadsheet/V2_IMPLEMENTATION_SPEC.md',
+    'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
+    'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
+    'implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md',
+    'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_10.html'
+  ]);
+  changed.forEach((name) => assert.ok(
+    allowedExact.has(name) ||
+      /^audits\/2026-07-31\/GoogleWorkspace_v2_8_10_[^/]+\.md$/.test(name),
+    'Evidence E10 boundary violation: ' + name
+  ));
+  [
+    'implementation/GoogleSpreadsheet/apps-script-v2/',
+    'implementation/GoogleSpreadsheet/tests/',
+    'implementation/GoogleSpreadsheet/tools/',
+    'implementation/GoogleSpreadsheet/release/',
+    'implementation/GoogleSpreadsheet/transfer/'
+  ].forEach((prefix) => {
+    if (prefix.endsWith('apps-script-v2/')) {
+      changed.filter((name) => name.startsWith(prefix)).forEach((name) =>
+        assert.strictEqual(name,
+          'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
+          'Evidence E10 must not change Apps Script executable source'));
+      return;
+    }
+    assert.ok(!changed.some((name) => name.startsWith(prefix)),
+      'Evidence E10 forbidden artifact prefix: ' + prefix);
+  });
 });
 
 test('RPC-06_CURRENT_CANONICAL_DOCS_AND_SOURCE_HAVE_NO_SECRET_OR_LOCAL_PATH', () => {

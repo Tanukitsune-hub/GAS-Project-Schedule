@@ -254,9 +254,15 @@ function installSetupOnlyStubs(environment) {
     })
   };
   sandbox.WorkOsDashboard = {
+    MODULE_CONTRACT_ID: sandbox.WorkOsConfig.S90_MODULE_CONTRACT_ID,
     normalizeSystemBlockNumberFormatForSetup: () => ({
+      normalization_status: 'CANONICAL',
       status: 'CANONICAL',
       write_performed: false,
+      flush_performed: false,
+      postcondition_verified: true,
+      checked_cell_count: 51,
+      noncanonical_count: 0,
       row_count: 17,
       column_count: 3,
       layout_status: 'SYNTHETIC'

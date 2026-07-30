@@ -1,8 +1,34 @@
-# Google Workspace Personal Work OS v2 - 2.8.9-prepilot / Phase 8B Dashboard Number-Format Real-Runtime Remediation
+# Google Workspace Personal Work OS v2 - 2.8.10-prepilot / Dashboard Write-Visibility and Module-Skew Remediation
 
 ## Current authority and Setup boundary
 
-`2.8.9-prepilot` retains the R4/R5 authority contract, historical
+`2.8.10-prepilot` retains the R4/R5 authority contract and every historical
+Dashboard ownership/format precondition. It closes the write-visibility gap in
+the v2.8.9 S90 path: when the exact 17×3 system block needs normalization,
+Setup writes the configured plain-text contract, calls
+`SpreadsheetApp.flush()` exactly once, reacquires a fresh exact Range, and
+requires all 51 cells to satisfy the strict postcondition before invoking the
+read-only Quick Diagnostic. A canonical block performs no write and no
+unnecessary flush. An unavailable flush API or a noncanonical post-flush read
+fails closed as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`.
+
+Before that Setup-owned write, `WorkOsConfig`, `WorkOsSetup`, and
+`WorkOsDashboard` must expose one matching S90 module-contract identifier. A
+partial module replacement fails as `E_MODULE_VERSION_SKEW` before any format
+write. Setup records only bounded evidence: a closed normalization state,
+write/flush/postcondition Booleans, checked-cell count, and noncanonical count.
+It does not record locale, actual format strings, values, formulas, notes,
+addresses, IDs, URLs, or identities. Quick and Deep Diagnostic remain
+read-only and do not flush or repair.
+
+The source-stage gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. Source A10, direct-child
+Release B10, fixed transfer T10, and evidence E10 are respectively
+`PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and `PENDING_E10`; real Workspace
+retransfer/retest is `NOT_EXECUTED`.
+
+The historical `2.8.9-prepilot` work retains the R4/R5 authority contract,
+historical
 `PHASE8B-SETUP-01`, and v2.8.7 Quick Diagnostic remediation. It corrects
 `PHASE8B-DASHBOARD-01`: v2.8.7 assumed a safe Protection always had exactly
 one ordinary explicit editor. Apps Script may instead represent the proven
@@ -67,13 +93,16 @@ ledger has 21 columns.
 
 Canonical state-transition documentation is in
 `docs/TASK_AUTHORITY_PROTOCOL.md`; the current offline workflow visualization
-is `visualizations/task_authority_protocol_v2_8_8.html`.  The prior Round 3
+is `visualizations/task_authority_protocol_v2_8_10.html`. The immutable
+v2.8.9 visualization remains historical evidence. The prior Round 3
 backup directory was local-only and was not present in GitHub; this historical
 fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
-Current versions are Code `2.8.9-prepilot`, Schema `2.6`, AI Schema `2.0`,
-and Migration `3`. Automation remains OFF by default. The verified v2.8.7
+Current versions are Code `2.8.10-prepilot`, Schema `2.6`, AI Schema `2.0`,
+and Migration `3`. Automation remains OFF by default. Source A10/B10/T10/E10
+are pending and the current source-stage gate is
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. The verified v2.8.7
 chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `95bc7240d99124b245e188b8e646eccf6c3ead48`, C7
 `ba175d3994c86dacc76bad3537df97e3e644dc09` (verifier only), and fixed T7
@@ -81,8 +110,9 @@ chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is historical and T7 is now superseded
 as an executable target by `PHASE8B-DASHBOARD-NUMBER-FORMAT-01`. Corrected
 Source A9.1, direct-child corrected Release B9.1, and fixed T9 now support
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` only. Real Workspace retransfer/retest
-remains `NOT_EXECUTED`.
+the immutable historical v2.8.9 evidence chain only; T9 is superseded as an
+execution target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Real Workspace
+retransfer/retest remains `NOT_EXECUTED`.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 

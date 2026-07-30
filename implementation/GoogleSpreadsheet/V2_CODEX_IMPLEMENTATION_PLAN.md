@@ -1,8 +1,8 @@
 # V2 Codex Implementation Plan
 
-Last updated: 2026-07-30
-Current published transfer candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Last updated: 2026-07-31
+Current remediation candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`
 
 ## Scope
 
@@ -10,10 +10,11 @@ This plan applies only to `Tanukitsune-hub/GAS-Project-Schedule`. The
 canonical implementation root is `implementation/GoogleSpreadsheet/`. It
 does not use or synchronize a legacy context hub.
 
-Corrected Source A9.1, direct-child corrected Release B9.1, and fixed T9 have
-completed normal publication and detached HTTPS fresh-clone verification. The
-status authorizes carriage of the non-sensitive retransfer material only; no
-real Workspace operation is authorized or recorded.
+Corrected Source A9.1, direct-child corrected Release B9.1, and fixed T9 are
+immutable historical evidence. The repeated 51-cell finding supersedes T9 as
+an execution target. Source A10, direct-child Release B10, fixed transfer T10,
+and evidence E10 are `PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and
+`PENDING_E10`; no real Workspace operation is authorized or recorded.
 
 ## Historical work sequence
 
@@ -35,17 +36,26 @@ The A5.1/B5.1 sequence above is retained as historical provenance only. The
 failed P10 v2.8.5 transfer package must not be replaced, manually repaired, or
 used as a current transfer target.
 
-## Current Phase 8B Dashboard number-format sequence
+## Current Phase 8B Dashboard write-visibility / module-skew sequence
 
-1. Preserve all v2.8.5–v2.8.8 package, transfer, incident, and audit bytes.
-2. Diagnose only the exact 17×3 format conflict with closed enums/counts.
-3. Allow Setup before S90 to normalize only a fully proven system block;
-   Quick/Deep Diagnostic remain read-only and foreign surfaces fail closed.
-4. Add native-runtime, Setup-resume, and fake number-format API coverage.
-5. Create Source A9, direct-child Release B9, fixed transfer T9, then an
-   evidence-only update after remote fresh-clone verification. The source gate
-   remains no-go until that later evidence; real Workspace remains
-   `NOT_EXECUTED` throughout repository work.
+1. Preserve all v2.8.5–v2.8.9 package, transfer, incident, audit, and fixed-ref
+   bytes.
+2. Keep the existing exact schema/Protection/surface preconditions. When the
+   exact 17×3 block requires normalization, write once, call
+   `SpreadsheetApp.flush()`, reacquire a fresh Range, and require the exact
+   51-cell postcondition before read-only Quick Diagnostic.
+3. Fail closed as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION` when flush is
+   unavailable/fails or the reread remains noncanonical. Persist only bounded,
+   non-sensitive normalization evidence.
+4. Require aligned Config/Setup/Dashboard S90 module-contract identifiers and
+   fail as `E_MODULE_VERSION_SKEW` before a write on partial replacement.
+5. Model queued writes in the fake runtime and cover historical no-flush,
+   fresh-Range, module-skew, S00–S80 resume, resource invariants, and
+   document-consistency negatives.
+6. Create Source A10, its direct-child Release B10, separate fixed transfer
+   T10 derived from raw Git blob comparison to T9, then evidence E10 only after
+   normal publication and detached HTTPS verification. The source gate stays
+   no-go until that proof; real Workspace remains `NOT_EXECUTED`.
 
 ## Historical Phase 8B Setup blocker sequence
 
