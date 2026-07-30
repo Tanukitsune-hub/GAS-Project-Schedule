@@ -1,16 +1,25 @@
-# Google Workspace Personal Work OS v2 - 2.8.6-prepilot / Phase 8B Setup Ledger Visibility Remediation
+# Google Workspace Personal Work OS v2 - 2.8.7-prepilot / Phase 8B Quick Diagnostic Real-Runtime Remediation
 
 ## Current authority and Setup boundary
 
-`2.8.6-prepilot` retains the R4/R5 authority contract and remediates
-`PHASE8B-SETUP-01`: the historical P10 initial Setup stopped safely with
-`E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` because S20 validated hidden visibility
-before the later S30 visibility stage.  Setup now owns an explicit idempotent
-Ledger control-plane operation: after canonical schemas, S20 establishes
-protection and hidden visibility before validation; S30 and completed Setup
-reruns reassert the same control plane.  Visibility/protection write failure
-leaves S20 incomplete and fail-closed.  This does not create a general runtime,
-diagnostic, Worker, Review, Calendar, Migration, or edit-restore repair path.
+`2.8.7-prepilot` retains the R4/R5 authority contract and the historical
+`PHASE8B-SETUP-01` Ledger bootstrap remediation.  It corrects the separate
+high-severity `PHASE8B-QUICK-DIAGNOSTIC-01` runtime contract mismatch observed
+after S00 through S80 in an otherwise empty Phase 8B Sandbox: Setup-owned
+Dashboard seed/control-plane recognition, two-row/50-column Task header
+protection geometry, Sheets-materialized blank checkbox `false` semantics,
+and schema-derived validation of all five checkbox fields.  Quick Diagnostic
+remains read-only and fail-closed for foreign controls, user values/formulas,
+notes, named ranges, merges, hidden state, unsafe formatting, malformed
+markers, duplicate keys, invalid checkbox types, partial identity, and
+business data on a logical blank row.
+
+The prior Ledger control-plane fix remains mandatory: after canonical schemas,
+S20 establishes protection and hidden visibility before validation; S30 and
+completed Setup reruns reassert the same control plane.  Visibility/protection
+write failure leaves S20 incomplete and fail-closed.  This does not create a
+general runtime, diagnostic, Worker, Review, Calendar, Migration, or
+edit-restore repair path.
 
 Task authority remains a
 protected hidden `Task Authority Ledger` with two versioned slots.  The
@@ -40,22 +49,20 @@ or pasted header edits.  The Task schema has 50 columns, including
 ledger has 21 columns.
 
 Canonical state-transition documentation is in
-`docs/TASK_AUTHORITY_PROTOCOL.md`; the offline workflow visualization is
-`visualizations/task_authority_protocol_v2_8_6.html`.  The prior Round 3
+`docs/TASK_AUTHORITY_PROTOCOL.md`; the current offline workflow visualization
+is `visualizations/task_authority_protocol_v2_8_7.html`.  The prior Round 3
 backup directory was local-only and was not present in GitHub; this historical
 fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
-Current versions are Code `2.8.6-prepilot`, Schema `2.6`, AI Schema `2.0`,
-and Migration `3`. Automation remains OFF by default. The current gate is
-`PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` while the separate corrected source,
-release, transfer, normal-publication, and fresh-clone verification chain was
-incomplete. T6.1 now has the maximum
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which permits carriage only. It does
-not declare Phase 8B GO/PASS, Phase 8C GO, production readiness, or pilot
-readiness. Corrected-package real Workspace retest remains `NOT_EXECUTED`.
-The failed P10 v2.8.5 package is immutable historical evidence and is not a
-manual-hide workaround or an executable transfer target.
+Current versions are Code `2.8.7-prepilot`, Schema `2.6`, AI Schema `2.0`,
+and Migration `3`. Automation remains OFF by default. The current source
+candidate gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until the separate
+source, release, transfer, normal-publication, and fresh-clone verification
+chain completes. T6.1 remains immutable historical evidence; it is not the
+v2.8.7 transfer target. This source state does not declare Phase 8B GO/PASS,
+Phase 8C GO, production readiness, or pilot readiness. Corrected-package real
+Workspace retest remains `NOT_EXECUTED`.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。
 
@@ -238,7 +245,7 @@ S50とS60は公開Setupから実行されます。S80はTask編集用Triggerだ�
 65. Calendar Outbox enqueue後の再実行はexact intent versionのacknowledgeとjob冪等性により重複しない。
 66. `選択したReviewを再stage`はopen Reviewの1行selectionと確認dialogだけを受け付け、最新business versionとtarget identityへ更新する。
 67. 手動Gmail候補はThread間と同一Thread内の両方で古い未処理Messageから進む。
-68. Code／Schema／AI Schema／Migrationは`2.8.6-prepilot`／`2.6`／`2.0`／`3`であり、release provenanceはRepository、Source A6、direct-child Release B6、transfer ref、evidence-only closureを区別する。
+68. Code／Schema／AI Schema／Migrationは`2.8.7-prepilot`／`2.6`／`2.0`／`3`であり、release provenanceはRepository、Source A7、direct-child Release B7、transfer ref、evidence-only closureを区別する。
 
 Google Workspace実環境で実行していない項目はPASSにせず、未実施として記録してください。
 

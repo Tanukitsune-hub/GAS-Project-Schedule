@@ -5,7 +5,7 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.6-prepilot',
+  CODE_VERSION: '2.8.7-prepilot',
   SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
   MIGRATION_VERSION: '3',
@@ -13,6 +13,26 @@ var WorkOsConfig = Object.freeze({
   HEADER_ID_ROW: 1,
   HEADER_LABEL_ROW: 2,
   DATA_START_ROW: 3,
+  // The only Dashboard rows that Setup may seed before an explicit refresh.
+  // Dashboard ownership validation compares these values exactly; it must not
+  // treat arbitrary rows with the same three keys as a safe legacy surface.
+  DASHBOARD_LEGACY_SEED_ROWS: Object.freeze([
+    Object.freeze({
+      metric_key: 'AUTOMATION_STATUS',
+      metric_value: 'OFF',
+      note: '初期停止。明示更新後に現在状態を表示します。'
+    }),
+    Object.freeze({
+      metric_key: 'SYSTEM_HEALTH',
+      metric_value: '未更新',
+      note: 'メニューから運用Dashboardを更新してください。'
+    }),
+    Object.freeze({
+      metric_key: 'QUICK_DIAGNOSTIC',
+      metric_value: 'NOT_EXECUTED',
+      note: 'Dashboard未更新'
+    })
+  ]),
   TASK_INITIAL_ROWS: 100,
   SETTINGS_INITIAL_ROWS: 50,
   DEFAULT_INITIAL_ROWS: 100,

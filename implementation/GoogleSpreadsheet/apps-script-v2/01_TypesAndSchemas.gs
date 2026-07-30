@@ -444,6 +444,21 @@ var WorkOsSchemas = (function () {
     });
   }
 
+  /*
+   * Header rows are control-plane metadata. Keep their physical geometry in
+   * the canonical schema module so Setup and read-only diagnostics cannot
+   * drift into separate one-row/two-row interpretations.
+   */
+  function headerProtectionGeometryForSheet(sheetName) {
+    return {
+      row: WorkOsConfig.HEADER_ID_ROW,
+      column: 1,
+      rows: WorkOsConfig.HEADER_LABEL_ROW -
+        WorkOsConfig.HEADER_ID_ROW + 1,
+      columns: getSheetSchema(sheetName).length
+    };
+  }
+
   function isValidDateValue(value, dateOnly) {
     if (value instanceof Date) {
       return !Number.isNaN(value.getTime());
@@ -717,6 +732,7 @@ var WorkOsSchemas = (function () {
     toSheetEnum: toSheetEnum,
     compareHeaders: compareHeaders,
     validationPlanForSheet: validationPlanForSheet,
+    headerProtectionGeometryForSheet: headerProtectionGeometryForSheet,
     isValidDateValue: isValidDateValue,
     validateTaskStateInvariant: validateTaskStateInvariant,
     validateTaskForWrite: validateTaskForWrite

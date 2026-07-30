@@ -1,8 +1,8 @@
 # Task Authority Protocol — Source Copy
 
-Code `2.8.6-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
-Current corrective-integration gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
-after the corrected Source A6/Release B6/T6.1 fresh-clone proof
+Code `2.8.7-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
+Current corrective-integration gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
+pending Source A7/Release B7/transfer/evidence proof
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept
@@ -49,6 +49,14 @@ implementation without using a legacy external context.
   A later Task enqueue cannot replace due compensation with normal
   `NOOP` / `DONE`; compensation uses only its Outbox CAS because it has no
   Task patch.
+- The Task header protection is one owner-only, non-warning, non-domain
+  editable range over rows 1–2 / 50 columns. Quick Diagnostic obtains five
+  checkbox expectations from `validationPlanForSheet(Tasks)` and treats
+  identity-empty canonical checkbox `false` as a Sheets materialization only;
+  all other raw content remains fail-closed.
+- Dashboard pre-refresh ownership accepts only the exact Setup-owned
+  Dashboard sheet/header protection and exact three-row canonical seed.
+  Diagnostics neither write a marker nor repair an unsafe layout.
 
 The canonical state/failure matrix is
 `../../docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`. The F016 local

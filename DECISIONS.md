@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 
 This file records current governing decisions. Superseded detail remains
 available in Git history and is not silently reinterpreted as a current gate.
@@ -21,6 +21,27 @@ instructions.
 the task-specific specification; older indexes and their numbered documents
 remain historical unless explicitly selected by that handoff. No legacy
 `context-hub` location participates.
+
+## D-041 — Quick Diagnostic recognizes only canonical Setup control planes
+
+**Decision.** The Dashboard pre-refresh surface is safe only when the exact
+Setup-owned sheet protection, exact rows 1–2 header protection, and exact
+three-row `DASHBOARD_LEGACY_SEED_ROWS` are present. Task validation derives all
+checkbox columns from the canonical schema, and identity-empty Task rows may
+contain only canonical checkbox Boolean `false` values materialized by Sheets.
+
+**Rationale.** The real Sandbox observations showed false findings when a
+valid runtime control plane and empty-checkbox representation were interpreted
+by stale, hard-coded diagnostic contracts. Broadly changing FAIL to WARN, or
+accepting arbitrary data with familiar keys, would weaken the safety boundary.
+
+**Consequences.** Foreign/duplicate/malformed protections, user values,
+formulas, notes, named ranges, merges, hidden state, non-default formatting,
+missing/unexpected checkbox validation, `true`, string boolean, non-checkbox
+data, and partial identity all remain fail-closed. S00–S80 can be preserved;
+S90/S99 may resume only through normal Setup. Automation remains OFF. Until
+the v2.8.7 source/release/transfer/evidence chain is independently verified,
+the current gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`.
 
 ## D-037 — Independent Task Authority Ledger with two-slot recovery
 
@@ -55,10 +76,10 @@ bounded Task-ID observation pass before ledger-only orphan reconciliation.
 row deletion/sort behavior, installable triggers, LockService, Gmail, and
 Calendar—remain `NOT_EXECUTED` after independent re-audit unless separately
 authorized. `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` prohibited reuse of the
-historical P10 package while the corrected chain was verified. The verified
-T6.1 ref now has `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which permits only
-carriage of the non-confidential corrected Phase 8B package; it is not
-execution authorization.
+historical P10 package while the corrected 2.8.6 chain was verified. The
+verified T6.1 ref is historical evidence; the current v2.8.7 candidate remains
+`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its own source/release/transfer/
+fresh-clone chain is independently verified. It is not execution authorization.
 The local fake runtime establishes regression evidence only.
 
 ## D-039 — Calendar authority loss requires durable arm and owned-event-only compensation
@@ -108,5 +129,6 @@ authority from a Task raw row, note, or snapshot cell.  The P10 package and
 transfer evidence remain immutable historical failures.  Automation stays OFF;
 the package-generation gate was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` until
 the separate 2.8.6 source/release/transfer chain was independently verified.
-The current gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; it remains
-carriage-only and does not authorize any real Workspace action.
+That result is historical. The current v2.8.7 gate is
+`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; a later carriage-only status still
+does not authorize any real Workspace action.

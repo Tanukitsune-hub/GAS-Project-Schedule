@@ -1,11 +1,10 @@
-# Manual Acceptance Guide — 2.8.6 Phase 8B Setup Ledger Visibility Candidate
+# Manual Acceptance Guide — 2.8.7 Phase 8B Quick Diagnostic Candidate
 
-Code Version: `2.8.6-prepilot`
+Code Version: `2.8.7-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` after corrected source,
-release, transfer, normal publication, and fresh-clone proof; carriage only
+Current gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; source candidate only
 Automation default: `OFF`
 
 ## Purpose
@@ -42,6 +41,8 @@ information in this repository.
 | Calendar authority loss after arm / I/O | owned deterministic Event compensation; no excluded-Task patch | NOT EXECUTED |
 | Foreign Event compensation | Event is retained and fails closed | NOT EXECUTED |
 | Diagnostics | Quick/Deep remain read-only | NOT EXECUTED |
+| Dashboard pre-refresh ownership | exact Setup sheet/header protection and exact seed; no marker write | NOT EXECUTED |
+| Empty Task checkboxes | only schema-defined checkbox `false` in identity-empty rows | NOT EXECUTED |
 | Migration | Schema 2.5 anchor-only conversion and pause/resume behavior | NOT EXECUTED |
 
 For each execution record: PASS/FAIL/NOT EXECUTED, timestamp, safe evidence
@@ -56,13 +57,13 @@ run its diagnostics. After corrected 2.8.6 publication and independent
 verification only, use the separately generated Japanese procedure, 8B-only
 allow-list, acceptance checklist, stop/rollback checklist, synthetic-data
 specification, results template, and failed-Sandbox recovery guide in the new
-2.8.6 transfer envelope.
+2.8.7 transfer envelope after its separate verification.
 
 ## Prohibited status upgrades
 
 This guide never declares Phase 8B GO/PASS, Phase 8C GO, production ready, or
 pilot ready. Before corrected publication and fresh-clone verification, the
-package-generation maximum was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. After
-those conditions and T6.1 transfer-envelope verification, the maximum status is only
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; it is not a Sandbox PASS or execution
-authorization.
+package-generation maximum is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until
+Source A7, Release B7, transfer T7, remote resolution, and fresh-clone evidence
+are complete. A later `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` remains only a
+retransfer authorization, never a Sandbox PASS or execution authorization.

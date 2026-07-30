@@ -3,8 +3,16 @@
 Last updated: 2026-07-29
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
-Current candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Publication gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
+
+The current source-only candidate addresses `PHASE8B-QUICK-DIAGNOSTIC-01`.
+It is not a replacement for the historical v2.8.5/P10 or v2.8.6/T6.1 chains.
+The four finding contracts are: exact Dashboard Setup control plane/seed,
+Task rows 1–2/50-column protection, schema-derived five-checkbox validation,
+and narrow identity-empty Boolean `false` handling. S00–S80 may be preserved;
+S90/S99 are the only intended resume stages. Real Workspace retest remains
+`NOT_EXECUTED` and Automation remains `OFF`.
 
 ## Purpose
 
@@ -64,13 +72,15 @@ itself establishes and verifies the protected-hidden Ledger control plane
 before authority validation; it never weakens the validator or silently
 recreates authority from a visible row, note, or snapshot.
 
-Source A6 `8e8e3e4a5f2288985554b3467a5b68814e7bab21`, direct-child Release B6
+Historical Source A6 `8e8e3e4a5f2288985554b3467a5b68814e7bab21`, direct-child Release B6
 `49f6774242e11f3c4ae1f0881dc4a7e13c5aad23`, and fixed transfer ref T6.1
 `863217b99dfa1ad682a8f4dd1989212b0a8d548b` are the corrected additive chain.
 T6.1 was normal-pushed, resolved from GitHub, and verified from a fresh clone
-with all local/static checks passing. The resulting status is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which permits non-confidential package
-carriage only; real Workspace retest remains `NOT_EXECUTED`.
+with all local/static checks passing. That is historical evidence only:
+`PHASE8B-QUICK-DIAGNOSTIC-01` makes the current v2.8.7 source candidate
+`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its own release, transfer,
+publication, and fresh-clone evidence is complete. Real Workspace retest
+remains `NOT_EXECUTED`.
 
 ## Repository layout
 
@@ -85,9 +95,9 @@ carriage only; real Workspace retest remains `NOT_EXECUTED`.
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`.
 - Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
-- Corrected 2.8.6 package and T6.1 transfer directories are the verified
-  additive outputs of Source A6, direct-child Release B6, normal publication,
-  and fresh-clone verification.
+- Corrected 2.8.6 package and T6.1 transfer directories are historical,
+  verified additive outputs of Source A6, direct-child Release B6, normal
+  publication, and fresh-clone verification; they are not the current target.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.

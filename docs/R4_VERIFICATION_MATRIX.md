@@ -1,8 +1,8 @@
 # R4/R5 Verification Matrix
 
-Date: 2026-07-29
-Candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; corrected-package real Workspace retest remains `NOT_EXECUTED`
+Date: 2026-07-30
+Candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; corrected-package real Workspace retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -51,6 +51,12 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 |---|---|---|---|
 | PHASE8B-SETUP-01 | Setup establishes and verifies the protected-hidden Ledger control plane before S20 authority validation; S00/S10 partial resume, control-plane failure, S30, completed rerun, and no-fallback remain fail-closed | `phase8b_setup_ledger_visibility_test.js`; safe incident record | LOCAL_REGRESSION_PASS; corrected-package real Workspace retest `NOT_EXECUTED` |
 
+## Phase 8B Quick Diagnostic traceability
+
+| ID | Requirement | Evidence | State |
+|---|---|---|---|
+| PHASE8B-QUICK-DIAGNOSTIC-01 | Exact Dashboard Setup control plane/seed, 50-column Task rows 1–2 protection, schema-driven five-checkbox validation, narrow blank-row Boolean handling, and S00–S80 resource-invariant S90/S99 resume | `phase8b_quick_diagnostic_real_runtime_test.js`; `phase8b_setup_ledger_visibility_test.js`; safe incident record | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+
 ## 13 write routes
 
 | ID | Route | Authority path |
@@ -74,7 +80,9 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 P5/R5/P10 publication is historical evidence. `PHASE8B-SETUP-01` made the
 corrective package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`.
 Source A6, direct-child Release B6, normal non-force publication, final remote
-SHA resolution, and detached T6.1 fresh-clone verification now establish the
-maximum status `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix does not
-declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.
-Corrected-package real Google Workspace evidence remains `NOT_EXECUTED`.
+SHA resolution, and detached T6.1 fresh-clone verification are historical
+evidence. The current v2.8.7 candidate remains
+`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its own source/release/transfer/
+fresh-clone proof is complete. This matrix does not declare Phase 8B GO/PASS,
+Phase 8C GO, production ready, or pilot ready. Corrected-package real Google
+Workspace evidence remains `NOT_EXECUTED`.

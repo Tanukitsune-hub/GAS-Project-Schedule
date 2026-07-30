@@ -253,10 +253,17 @@ var WorkOsDiagnostics = (function () {
     }
 
     var dataRowCount = sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1;
-    var checkboxIds = ['needs_review', 'completed', 'excluded', 'waiting_for_reply'];
     var validationFailures = [];
     var formatFailures = [];
-    var validationPlan = WorkOsSchemas.validationPlanForSheet(WorkOsConfig.SHEETS.TASKS);
+    var validationPlan = WorkOsSchemas.validationPlanForSheet(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var checkboxColumnIndexes = validationPlan.filter(function (planItem) {
+      return planItem.validation === 'CHECKBOX';
+    }).map(function (planItem) {
+      return planItem.columnIndex - 1;
+    });
+    var canonicalCheckboxValidationByRow = {};
     for (var chunkOffset = 0;
         chunkOffset < dataRowCount;
         chunkOffset += WorkOsConfig.QUICK_DIAGNOSTIC_CHUNK_ROWS) {
@@ -273,20 +280,28 @@ var WorkOsDiagnostics = (function () {
       );
       var validations = chunkRange.getDataValidations();
       validations.forEach(function (rowRules, rowIndex) {
+        var physicalRow = WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex;
+        canonicalCheckboxValidationByRow[physicalRow] = {};
         schema.forEach(function (item, index) {
           var rule = rowRules[index];
-          if (checkboxIds.indexOf(item.id) !== -1) {
-            if (!criteriaEquals(rule, SpreadsheetApp.DataValidationCriteria.CHECKBOX)) {
+          var planItem = validationPlan[index];
+          if (planItem.validation === 'CHECKBOX') {
+            if (!criteriaEquals(
+              rule,
+              SpreadsheetApp.DataValidationCriteria.CHECKBOX
+            )) {
               validationFailures.push(
                 item.id + '@' +
-                (WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex) +
+                physicalRow +
                 ': checkbox missing'
               );
+            } else {
+              canonicalCheckboxValidationByRow[physicalRow][index] = true;
             }
           } else if (criteriaEquals(rule, SpreadsheetApp.DataValidationCriteria.CHECKBOX)) {
             validationFailures.push(
               item.id + '@' +
-              (WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex) +
+              physicalRow +
               ': unexpected checkbox'
             );
           }
@@ -294,7 +309,7 @@ var WorkOsDiagnostics = (function () {
             if (!criteriaEquals(rule, SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST)) {
               validationFailures.push(
                 item.id + '@' +
-                (WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex) +
+                physicalRow +
                 ': enum validation missing'
               );
             } else if (JSON.stringify(listCriteriaValues(rule)) !==
@@ -366,7 +381,9 @@ var WorkOsDiagnostics = (function () {
         {
           description: 'WORK_OS_V2_PHASE1_' +
             WorkOsConfig.SHEETS.TASKS + '_HEADER_IDS',
-          geometry: { row: 1, column: 1, rows: 1, columns: schema.length }
+          geometry: WorkOsSchemas.headerProtectionGeometryForSheet(
+            WorkOsConfig.SHEETS.TASKS
+          )
         },
         {
           description: 'WORK_OS_V2_PHASE1_' +
@@ -380,10 +397,12 @@ var WorkOsDiagnostics = (function () {
         }
       ];
       var protectionFailures = requiredProtections.filter(function (expected) {
-        var actual = protections.filter(function (protection) {
+        var actualMatches = protections.filter(function (protection) {
           return protection.getDescription() === expected.description;
-        })[0];
-        return !actual ||
+        });
+        var actual = actualMatches[0];
+        return actualMatches.length !== 1 ||
+          !actual ||
           !protectionAccessIsRestricted(actual) ||
           JSON.stringify(rangeGeometry(actual.getRange())) !==
             JSON.stringify(expected.geometry);
@@ -434,26 +453,51 @@ var WorkOsDiagnostics = (function () {
       ));
     }
 
-    var booleanIndexes = checkboxIds.map(function (id) { return context.columnMap[id]; });
-    var blankBooleanRows = [];
+    var blankRowFailures = [];
     context.values.forEach(function (row, index) {
       var taskId = row[context.columnMap.task_id];
       var originKey = row[context.columnMap.origin_key];
       if (!WorkOsUtilities.isBlank(taskId) || !WorkOsUtilities.isBlank(originKey)) {
         return;
       }
-      var hasBooleanValue = booleanIndexes.some(function (columnIndex) {
-        return row[columnIndex] === true || row[columnIndex] === false;
+      var physicalRow = WorkOsConfig.DATA_START_ROW + index;
+      var canonicalCheckboxes = canonicalCheckboxValidationByRow[physicalRow] || {};
+      schema.forEach(function (item, columnIndex) {
+        var value = row[columnIndex];
+        if (WorkOsUtilities.isBlank(value)) {
+          return;
+        }
+        if (value === false &&
+            checkboxColumnIndexes.indexOf(columnIndex) !== -1 &&
+            canonicalCheckboxes[columnIndex] === true) {
+          return;
+        }
+        blankRowFailures.push({
+          row: physicalRow,
+          column: item.id,
+          reason: value === true
+            ? 'BOOLEAN_TRUE_ON_IDENTITY_EMPTY_ROW'
+            : (value === false
+              ? 'NONCANONICAL_BOOLEAN_FALSE_ON_IDENTITY_EMPTY_ROW'
+              : 'CONTENT_ON_IDENTITY_EMPTY_ROW')
+        });
       });
-      if (hasBooleanValue) {
-        blankBooleanRows.push(WorkOsConfig.DATA_START_ROW + index);
-      }
     });
     checks.push(check(
       'BLANK_ROW_BOOLEAN_VALUES',
-      blankBooleanRows.length ? 'FAIL' : 'PASS',
-      blankBooleanRows.length ? '論理空行にBoolean値があります。' : '',
-      { rows: blankBooleanRows.slice(0, 20) }
+      blankRowFailures.length ? 'FAIL' : 'PASS',
+      blankRowFailures.length
+        ? '論理空行にcanonical checkbox false以外の値があります。'
+        : '',
+      {
+        rows: blankRowFailures.map(function (item) {
+          return item.row;
+        }).filter(function (row, index, rows) {
+          return rows.indexOf(row) === index;
+        }).slice(0, 20),
+        failures: blankRowFailures.slice(0, 50),
+        failure_count: blankRowFailures.length
+      }
     ));
 
     checks.push(check(
@@ -467,10 +511,20 @@ var WorkOsDiagnostics = (function () {
         origin_key_duplicates: context.duplicateOriginKeys
       }
     ));
-    var incompleteKeyRows = context.logicalRows.filter(function (physicalRow) {
-      var row = context.values[physicalRow - WorkOsConfig.DATA_START_ROW];
-      return WorkOsUtilities.isBlank(row[context.columnMap.task_id]) ||
-        WorkOsUtilities.isBlank(row[context.columnMap.origin_key]);
+    // Authority validation intentionally removes untrusted rows from
+    // context.logicalRows.  Completeness is a physical raw-row invariant,
+    // however: a partial identity must remain visible to a read-only
+    // diagnostic even when the authority validator quarantines it.
+    var incompleteKeyRows = context.values.map(function (row, rowIndex) {
+      var taskId = row[context.columnMap.task_id];
+      var originKey = row[context.columnMap.origin_key];
+      var taskIdBlank = WorkOsUtilities.isBlank(taskId);
+      var originKeyBlank = WorkOsUtilities.isBlank(originKey);
+      return taskIdBlank === originKeyBlank
+        ? null
+        : WorkOsConfig.DATA_START_ROW + rowIndex;
+    }).filter(function (physicalRow) {
+      return physicalRow != null;
     });
     checks.push(check(
       'TASK_PRIMARY_KEY_COMPLETENESS',
@@ -849,6 +903,11 @@ var WorkOsDiagnostics = (function () {
                       dashboardLayoutError,
                       'DIAGNOSTIC'
                     ).code,
+                    conflict_reason_code: String(
+                      dashboardLayoutError &&
+                      dashboardLayoutError.dashboard_conflict_reason ||
+                      'UNSAFE_DASHBOARD_SURFACE'
+                    ),
                     external_services_called: false,
                     repair_performed: false
                   }

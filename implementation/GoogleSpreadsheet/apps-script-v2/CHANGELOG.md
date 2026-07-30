@@ -1,5 +1,46 @@
 # Changelog
 
+## 2.8.7-prepilot - 2026-07-30 Phase 8B Quick Diagnostic real-runtime remediation
+
+### Fixed
+
+- `DASHBOARD_LAYOUT_OWNERSHIP`: Dashboard now recognizes only the exact
+  Setup-owned sheet/header protection control plane and exact three-row
+  pre-refresh seed. Equivalent native white background forms are accepted;
+  foreign controls/data/formulas/notes/names/merges/hidden state/non-default
+  formatting remain fail-closed.
+- `TASK_PROTECTIONS`: the shared canonical header geometry is rows 1–2 across
+  all 50 Task columns. Quick Diagnostic detects wrong range, access policy,
+  or duplicate protection.
+- `BLANK_ROW_BOOLEAN_VALUES`: identity-empty rows may retain only canonical
+  checkbox Boolean `false` materialized by Sheets; `true`, string Boolean,
+  non-checkbox data, and partial identity still fail closed.
+- `TASK_VALIDATION_TYPES`: all checkbox expectations derive from the schema
+  validation plan, including hidden `calendar_reconcile_required`.
+
+### Added
+
+- `phase8b_quick_diagnostic_real_runtime_test.js` reproduces S20/S30/S40
+  local runtime state and verifies the four findings plus negative
+  control-plane/data cases with no Quick Diagnostic writes.
+- Setup visibility regression now proves S00–S80/S90–S99 resume preserves
+  synthetic Gmail-label, Calendar, and edit-trigger resources and keeps
+  Automation/time-trigger creation OFF.
+- v2.8.7 release/verifier and raw-Git-blob company-PC patch-manifest tools;
+  canonical configuration-owned Dashboard legacy seed rows; a current
+  workflow visualization and safe incident/recovery guidance.
+
+### Version and status
+
+- Contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; Automation default remains `OFF`.
+- Source A7 is source/tests/tools/canonical-docs/visualization/incident and
+  recovery guidance only. It contains no v2.8.7 release package, release
+  report, or transfer envelope.
+- Current source-candidate gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`.
+  Real Google Workspace retest is `NOT_EXECUTED`; no Phase 8B PASS, Phase 8C
+  GO, production ready, or pilot ready is declared.
+
 ## 2.8.6-prepilot - 2026-07-29 Phase 8B Setup Ledger visibility remediation
 
 ### Fixed

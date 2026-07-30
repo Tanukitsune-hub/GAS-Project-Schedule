@@ -201,15 +201,36 @@ function installSetupOnlyStubs(environment) {
   sandbox.WorkOsMigrations = {
     ensureV2ExtensionsBeforeValidation: () => ({ status: 'NOT_APPLICABLE' })
   };
+  const resources = environment.externalResources || {
+    labels: { token: 'synthetic-label-set-v1', created: 0, reused: 0, deleted: 0 },
+    calendar: { token: 'synthetic-calendar-v1', created: 0, reused: 0, deleted: 0 },
+    edit_trigger: { token: 'synthetic-edit-trigger-v1', created: 0, reused: 0, deleted: 0 },
+    time_trigger_created: 0
+  };
+  environment.externalResources = resources;
+  const ensureOnce = (resource) => {
+    if (resource.created === 0) {
+      resource.created += 1;
+    } else {
+      resource.reused += 1;
+    }
+    return resource.token;
+  };
   sandbox.WorkOsGmailGateway = {
-    ensureFormalLabels: () => ({ status: 'CONFIGURED' }),
+    ensureFormalLabels: () => ({
+      status: 'CONFIGURED',
+      synthetic_resource: ensureOnce(resources.labels)
+    }),
     inspectFormalLabels: () => ({
       complete: true,
       present_count: sandbox.WorkOsConfig.GMAIL_LABELS.length
     })
   };
   sandbox.WorkOsCalendarSync = {
-    ensureDedicatedCalendar: () => ({ status: 'CONFIGURED' }),
+    ensureDedicatedCalendar: () => ({
+      status: 'CONFIGURED',
+      synthetic_resource: ensureOnce(resources.calendar)
+    }),
     inspectDedicatedCalendarConfiguration: () => ({
       property_present: true,
       remotely_verified: true,
@@ -217,10 +238,19 @@ function installSetupOnlyStubs(environment) {
     })
   };
   sandbox.WorkOsAutomation = {
-    ensureEditTrigger: () => ({ status: 'CONFIGURED' })
+    ensureEditTrigger: () => {
+      const token = ensureOnce(resources.edit_trigger);
+      environment.properties.setProperty(
+        sandbox.WorkOsConfig.PROPERTIES.EDIT_TRIGGER_ID,
+        token
+      );
+      return { status: 'CONFIGURED', synthetic_resource: token };
+    }
   };
   sandbox.WorkOsDiagnostics = {
-    runQuickDiagnostic: () => ({ status: 'PASS' })
+    runQuickDiagnostic: () => ({
+      status: environment.quickDiagnosticStatus || 'PASS'
+    })
   };
 }
 
@@ -242,9 +272,18 @@ function newEnvironment() {
   const spreadsheet = new fixture.FakeSpreadsheet([
     new fixture.FakeSheet('Sheet1', 100, 1)
   ]);
-  const environment = { spreadsheet, properties: makeProperties({}), flushCount: 0 };
+  const environment = {
+    spreadsheet,
+    properties: makeProperties({}),
+    flushCount: 0,
+    quickDiagnosticStatus: 'PASS'
+  };
   installSetupOnlyStubs(environment);
   return environment;
+}
+
+function externalResourceSnapshot(environment) {
+  return JSON.parse(JSON.stringify(environment.externalResources));
 }
 
 function s10PartialEnvironment() {
@@ -461,6 +500,72 @@ test('P8B-SL-07_COMPLETED_SETUP_RERUN_REASSERTS_CONTROLS_WITHOUT_REBASELINE', ()
     environment.properties.getProperty(sandbox.WorkOsConfig.PROPERTIES.AUTOMATION_ENABLED),
     'false'
   );
+});
+
+test('P8B-SL-07B_S00_S80_PARTIAL_RESUME_REUSES_EXTERNAL_RESOURCES', () => {
+  const environment = newEnvironment();
+  environment.quickDiagnosticStatus = 'FAIL';
+  const failed = runSetup(environment);
+  assert.strictEqual(failed.status, 'FAILED', JSON.stringify(failed));
+  assert.strictEqual(failed.code, 'E_QUICK_DIAGNOSTIC_FAILED');
+  assert.deepStrictEqual(
+    stageList(environment),
+    Array.from(sandbox.WorkOsConfig.SETUP_STAGES).slice(0, 9)
+  );
+  const before = externalResourceSnapshot(environment);
+  assert.strictEqual(before.labels.created, 1);
+  assert.strictEqual(before.calendar.created, 1);
+  assert.strictEqual(before.edit_trigger.created, 1);
+  assert.strictEqual(before.time_trigger_created, 0);
+
+  environment.quickDiagnosticStatus = 'WARN';
+  const resumed = runSetup(environment);
+  assert.strictEqual(resumed.status, 'COMPLETE', JSON.stringify(resumed));
+  assert.deepStrictEqual(stageList(environment), Array.from(sandbox.WorkOsConfig.SETUP_STAGES));
+  const after = externalResourceSnapshot(environment);
+  ['labels', 'calendar', 'edit_trigger'].forEach((name) => {
+    assert.strictEqual(after[name].token, before[name].token);
+    assert.strictEqual(after[name].created, before[name].created);
+    assert.strictEqual(after[name].deleted, 0);
+  });
+  assert.strictEqual(after.labels.reused, before.labels.reused);
+  assert.strictEqual(after.calendar.reused, before.calendar.reused);
+  assert.strictEqual(after.edit_trigger.reused, before.edit_trigger.reused + 1);
+  assert.strictEqual(after.time_trigger_created, 0);
+  assert.strictEqual(
+    environment.properties.getProperty(sandbox.WorkOsConfig.PROPERTIES.AUTOMATION_ENABLED),
+    'false'
+  );
+  assert.strictEqual(
+    environment.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE
+    ),
+    'false'
+  );
+});
+
+test('P8B-SL-07C_TRUE_S90_FAILURE_STAYS_RESUMABLE_WITHOUT_RESOURCE_DUPLICATION', () => {
+  const environment = newEnvironment();
+  environment.quickDiagnosticStatus = 'FAIL';
+  assert.strictEqual(runSetup(environment).status, 'FAILED');
+  const before = externalResourceSnapshot(environment);
+  const repeated = runSetup(environment);
+  assert.strictEqual(repeated.status, 'FAILED');
+  assert.strictEqual(repeated.code, 'E_QUICK_DIAGNOSTIC_FAILED');
+  assert.deepStrictEqual(
+    stageList(environment),
+    Array.from(sandbox.WorkOsConfig.SETUP_STAGES).slice(0, 9)
+  );
+  const after = externalResourceSnapshot(environment);
+  ['labels', 'calendar', 'edit_trigger'].forEach((name) => {
+    assert.strictEqual(after[name].token, before[name].token);
+    assert.strictEqual(after[name].created, before[name].created);
+    assert.strictEqual(after[name].deleted, 0);
+  });
+  assert.strictEqual(after.labels.reused, before.labels.reused);
+  assert.strictEqual(after.calendar.reused, before.calendar.reused);
+  assert.strictEqual(after.edit_trigger.reused, before.edit_trigger.reused + 1);
+  assert.strictEqual(after.time_trigger_created, 0);
 });
 
 test('P8B-SL-08_RAW_ROW_SNAPSHOT_AND_NOTE_NEVER_CREATE_SETUP_AUTHORITY', () => {

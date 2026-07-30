@@ -1,8 +1,8 @@
 # V2 Codex Implementation Plan
 
-Last updated: 2026-07-29
-Current source candidate: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Last updated: 2026-07-30
+Current source candidate: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
 
 ## Scope
 
@@ -49,7 +49,22 @@ used as a current transfer target.
 6. Create a separate corrected transfer candidate and verify it from GitHub in
    a detached fresh HTTPS clone. T6.1 `863217b...` completed that proof; the
    evidence-only closure states `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, which
-   remains carriage-only.
+remains carriage-only.
+
+## Current Phase 8B Quick Diagnostic sequence
+
+1. Preserve all historical packages, T6.1, and their evidence without
+   replacement.
+2. In Source A7, correct only the four diagnostic contracts, add the
+   S20/S30/S40 runtime reproduction and S00–S80 resume coverage, and add
+   v2.8.7 tools/docs/visualization/incident/recovery guidance. Do not include
+   a v2.8.7 package, release report, or transfer envelope.
+3. Create direct-child Release B7 with only both v2.8.7 package directories
+   and the implementation report.
+4. Create transfer T7 with raw Git-blob company-PC patch manifests comparing
+   T6.1 to B7. Create evidence E7 only after remote and fresh-clone proof.
+5. Until E7 succeeds, retain `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`. No
+   status means Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
 
 ## Safety rules
 

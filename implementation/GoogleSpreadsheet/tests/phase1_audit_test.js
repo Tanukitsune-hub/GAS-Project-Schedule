@@ -988,10 +988,17 @@ test('P1-AUD-16B_PROTECTION_POLICY_CHECKS_GEOMETRY_AND_ACCESS', () => {
     (column) => column.visible === false
   );
   const prefix = `WORK_OS_V2_PHASE1_${sandbox.WorkOsConfig.SHEETS.TASKS}`;
+  const headerGeometry = sandbox.WorkOsSchemas
+    .headerProtectionGeometryForSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   const rangeProtections = [
     new FakeProtection(
       `${prefix}_HEADER_IDS`,
-      sheet.getRange(1, 1, 1, schema.length)
+      sheet.getRange(
+        headerGeometry.row,
+        headerGeometry.column,
+        headerGeometry.rows,
+        headerGeometry.columns
+      )
     ),
     new FakeProtection(
       `${prefix}_MANAGEMENT_COLUMNS`,
@@ -1037,6 +1044,38 @@ test('P1-AUD-16B_PROTECTION_POLICY_CHECKS_GEOMETRY_AND_ACCESS', () => {
   assert.strictEqual(
     result.checks.find((item) => item.id === 'TASK_EDIT_POLICY').status,
     'PASS'
+  );
+
+  rangeProtections[0].setRange(sheet.getRange(1, 1, 1, schema.length));
+  result = sandbox.WorkOsDiagnostics.runQuickDiagnostic(
+    new FakeSpreadsheet([sheet, ledger])
+  );
+  assert.strictEqual(
+    result.checks.find((item) => item.id === 'TASK_PROTECTIONS').status,
+    'FAIL'
+  );
+
+  rangeProtections[0].setRange(sheet.getRange(
+    headerGeometry.row,
+    headerGeometry.column,
+    headerGeometry.rows,
+    headerGeometry.columns
+  ));
+  rangeProtections.push(new FakeProtection(
+    `${prefix}_HEADER_IDS`,
+    sheet.getRange(
+      headerGeometry.row,
+      headerGeometry.column,
+      headerGeometry.rows,
+      headerGeometry.columns
+    )
+  ));
+  result = sandbox.WorkOsDiagnostics.runQuickDiagnostic(
+    new FakeSpreadsheet([sheet, ledger])
+  );
+  assert.strictEqual(
+    result.checks.find((item) => item.id === 'TASK_PROTECTIONS').status,
+    'FAIL'
   );
 
   taskPolicy.editorEmails.push('unexpected.editor@example.invalid');

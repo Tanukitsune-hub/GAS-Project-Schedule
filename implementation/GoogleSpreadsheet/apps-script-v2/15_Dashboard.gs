@@ -30,11 +30,11 @@ var WorkOsDashboard = (function () {
   var OWNED_SHEET_PROTECTION_DESCRIPTION =
     'WORK_OS_V2_PHASE1_ダッシュボード_SYSTEM_OWNED_EDIT_POLICY';
   var BLOCK_MARKER_VERSION = 1;
-  var LEGACY_SEED_KEYS = Object.freeze([
-    'AUTOMATION_STATUS',
-    'SYSTEM_HEALTH',
-    'QUICK_DIAGNOSTIC'
-  ]);
+  var LEGACY_SEED_ROWS = WorkOsConfig.DASHBOARD_LEGACY_SEED_ROWS ||
+    Object.freeze([]);
+  var LEGACY_SEED_KEYS = Object.freeze(LEGACY_SEED_ROWS.map(
+    function (row) { return row.metric_key; }
+  ));
 
   function assertBudget(budget, stage) {
     if (budget &&
@@ -297,13 +297,20 @@ var WorkOsDashboard = (function () {
     });
   }
 
-  function dashboardLayoutConflict() {
-    return new WorkOsAppError(
+  function dashboardLayoutConflict(reasonCode) {
+    var error = new WorkOsAppError(
       'E_DASHBOARD_LAYOUT_CONFLICT',
       'DASHBOARD',
       false,
       'Dashboardのsystem領域と利用者領域を安全に区別できないため更新を停止しました。'
     );
+    // This is a closed, non-user-data enum for the read-only diagnostic.  It
+    // deliberately never carries a cell value, range address, or Workspace
+    // identifier into the diagnostic/reporting path.
+    error.dashboard_conflict_reason = String(
+      reasonCode || 'UNSAFE_DASHBOARD_SURFACE'
+    );
+    return error;
   }
 
   function emptyMatrix(rows, columns, value) {
@@ -366,24 +373,132 @@ var WorkOsDashboard = (function () {
         protection.isWarningOnly()) {
       return false;
     }
-    return typeof protection.getUnprotectedRanges !== 'function' ||
-      protection.getUnprotectedRanges().length === 0;
+    if (typeof protection.canDomainEdit === 'function' &&
+        protection.canDomainEdit()) {
+      return false;
+    }
+    if (typeof protection.getUnprotectedRanges === 'function' &&
+        protection.getUnprotectedRanges().length !== 0) {
+      return false;
+    }
+    return protectionHasSingleOwnerEditor(protection);
+  }
+
+  function protectionHasSingleOwnerEditor(protection) {
+    if (!protection || typeof protection.getEditors !== 'function') {
+      return false;
+    }
+    var editors = protection.getEditors() || [];
+    if (editors.length !== 1 ||
+        !editors[0] ||
+        typeof editors[0].getEmail !== 'function' ||
+        !String(editors[0].getEmail() || '').trim()) {
+      return false;
+    }
+    return true;
+  }
+
+  function dashboardHeaderProtectionGeometry(width) {
+    return {
+      first_row: WorkOsConfig.HEADER_ID_ROW,
+      last_row: WorkOsConfig.HEADER_LABEL_ROW,
+      first_column: 1,
+      last_column: width
+    };
+  }
+
+  function sameBounds(left, right) {
+    return left && right &&
+      left.first_row === right.first_row &&
+      left.last_row === right.last_row &&
+      left.first_column === right.first_column &&
+      left.last_column === right.last_column;
+  }
+
+  function isOwnedDashboardHeaderProtection(protection, width) {
+    if (!protection ||
+        typeof protection.getDescription !== 'function' ||
+        protection.getDescription() !==
+          'WORK_OS_V2_PHASE1_' + WorkOsConfig.SHEETS.DASHBOARD +
+            '_HEADER_IDS' ||
+        typeof protection.getRange !== 'function') {
+      return false;
+    }
+    if (typeof protection.isWarningOnly === 'function' &&
+        protection.isWarningOnly()) {
+      return false;
+    }
+    if (typeof protection.canDomainEdit === 'function' &&
+        protection.canDomainEdit()) {
+      return false;
+    }
+    return sameBounds(
+      rangeBounds(protection.getRange()),
+      dashboardHeaderProtectionGeometry(width)
+    ) && protectionHasSingleOwnerEditor(protection);
+  }
+
+  function dashboardControlPlane(sheet, width) {
+    if (typeof sheet.getProtections !== 'function' ||
+        typeof SpreadsheetApp === 'undefined' ||
+        !SpreadsheetApp.ProtectionType) {
+      return { safe: false, reason: 'DASHBOARD_CONTROL_PLANE_UNAVAILABLE' };
+    }
+    var sheetProtections = sheet.getProtections(
+      SpreadsheetApp.ProtectionType.SHEET
+    ) || [];
+    if (sheetProtections.length !== 1 ||
+        !isOwnedDashboardSheetProtection(sheetProtections[0])) {
+      return { safe: false, reason: 'DASHBOARD_SHEET_PROTECTION_CONTRACT' };
+    }
+    var rangeProtections = sheet.getProtections(
+      SpreadsheetApp.ProtectionType.RANGE
+    ) || [];
+    if (rangeProtections.length !== 1 ||
+        !isOwnedDashboardHeaderProtection(rangeProtections[0], width)) {
+      return { safe: false, reason: 'DASHBOARD_HEADER_PROTECTION_CONTRACT' };
+    }
+    return { safe: true, reason: '' };
+  }
+
+  function isDefaultDashboardBackground(value) {
+    var normalized = String(value == null ? '' : value)
+      .toLowerCase()
+      .replace(/\s+/g, '');
+    // Google Sheets can report the default white background in either hex or
+    // RGB notation.  These are the same canonical unformatted surface, not
+    // an invitation to accept arbitrary formatting.
+    return normalized === '' ||
+      normalized === '#ffffff' ||
+      normalized === '#fff' ||
+      normalized === 'white' ||
+      normalized === 'rgb(255,255,255)' ||
+      normalized === 'rgba(255,255,255,1)';
+  }
+
+  function matchesCanonicalLegacySeed(values) {
+    if (!LEGACY_SEED_ROWS.length) {
+      return false;
+    }
+    return LEGACY_SEED_ROWS.every(function (expected, index) {
+      var actual = values[index] || [];
+      return String(actual[0] == null ? '' : actual[0]) ===
+          expected.metric_key &&
+        String(actual[1] == null ? '' : actual[1]) ===
+          expected.metric_value &&
+        String(actual[2] == null ? '' : actual[2]) === expected.note;
+    });
   }
 
   function rangeHasProtectionOrMarker(spreadsheet, sheet, range) {
     var targetBounds = rangeBounds(range);
+    var width = targetBounds
+      ? targetBounds.last_column - targetBounds.first_column + 1
+      : 0;
     if (typeof sheet.getProtections === 'function' &&
         typeof SpreadsheetApp !== 'undefined' &&
         SpreadsheetApp.ProtectionType) {
-      var sheetProtections = sheet.getProtections(
-        SpreadsheetApp.ProtectionType.SHEET
-      ) || [];
-      var unknownSheetProtection = sheetProtections.some(function (
-          protection
-      ) {
-        return !isOwnedDashboardSheetProtection(protection);
-      });
-      if (unknownSheetProtection) {
+      if (!dashboardControlPlane(sheet, width).safe) {
         return true;
       }
       var rangeProtections = sheet.getProtections(
@@ -546,9 +661,7 @@ var WorkOsDashboard = (function () {
       'General'
     );
     return matrixSome(backgrounds, function (value) {
-      var normalized = String(value || '').toLowerCase();
-      return normalized && normalized !== '#ffffff' &&
-        normalized !== 'white';
+      return !isDefaultDashboardBackground(value);
     }) ||
       matrixSome(fontWeights, function (value) {
         return String(value || '').toLowerCase() === 'bold';
@@ -570,6 +683,7 @@ var WorkOsDashboard = (function () {
       rowCount,
       width) {
     var unsafeBounds = [];
+    var controlPlane = dashboardControlPlane(sheet, width);
     if (typeof dataRange.getMergedRanges === 'function') {
       (dataRange.getMergedRanges() || []).forEach(function (range) {
         var bounds = rangeBounds(range);
@@ -583,11 +697,7 @@ var WorkOsDashboard = (function () {
         SpreadsheetApp &&
         SpreadsheetApp.ProtectionType &&
         typeof sheet.getProtections === 'function') {
-      sheetProtected = (sheet.getProtections(
-        SpreadsheetApp.ProtectionType.SHEET
-      ) || []).some(function (protection) {
-        return !isOwnedDashboardSheetProtection(protection);
-      });
+      sheetProtected = !controlPlane.safe;
       (sheet.getProtections(
         SpreadsheetApp.ProtectionType.RANGE
       ) || []).forEach(function (protection) {
@@ -687,6 +797,7 @@ var WorkOsDashboard = (function () {
       hiddenRows: {},
       hiddenColumn: hiddenColumn,
       sheetProtected: sheetProtected,
+      control_plane_reason: controlPlane.reason,
       sheet: sheet,
       width: width
     };
@@ -767,11 +878,9 @@ var WorkOsDashboard = (function () {
         if (note && !markerAllowed) {
           return true;
         }
-        var background = String(
-          snapshot.backgrounds[sourceRow][columnIndex] || ''
-        ).toLowerCase();
-        if (background && background !== '#ffffff' &&
-            background !== 'white') {
+        if (!isDefaultDashboardBackground(
+          snapshot.backgrounds[sourceRow][columnIndex]
+        )) {
           return true;
         }
         if (String(
@@ -1018,7 +1127,7 @@ var WorkOsDashboard = (function () {
         return systemRows[index] &&
           systemRows[index].index === index &&
           systemRows[index].key === key;
-      });
+      }) && matchesCanonicalLegacySeed(values);
     if (systemRows.length && !legacySeed) {
       throw dashboardLayoutConflict();
     }

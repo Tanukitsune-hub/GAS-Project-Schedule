@@ -229,11 +229,14 @@ var WorkOsSheetBuilder = (function () {
     var rangeProtections = sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
     var headerDescription = PROTECTION_PREFIX + sheetName + '_HEADER_IDS';
     var headerProtection = findProtectionByDescription(rangeProtections, headerDescription);
+    var headerGeometry = WorkOsSchemas.headerProtectionGeometryForSheet(
+      sheetName
+    );
     var headerRange = sheet.getRange(
-      WorkOsConfig.HEADER_ID_ROW,
-      1,
-      WorkOsConfig.HEADER_LABEL_ROW,
-      schema.length
+      headerGeometry.row,
+      headerGeometry.column,
+      headerGeometry.rows,
+      headerGeometry.columns
     );
     if (!headerProtection) {
       headerProtection = headerRange
@@ -862,23 +865,13 @@ var WorkOsSheetBuilder = (function () {
       spreadsheet.getSheetByName(WorkOsConfig.SHEETS.DASHBOARD),
       WorkOsConfig.SHEETS.DASHBOARD,
       'metric_key',
-      [
-        {
-          metric_key: 'AUTOMATION_STATUS',
-          metric_value: 'OFF',
-          note: '初期停止。明示更新後に現在状態を表示します。'
-        },
-        {
-          metric_key: 'SYSTEM_HEALTH',
-          metric_value: '未更新',
-          note: 'メニューから運用Dashboardを更新してください。'
-        },
-        {
-          metric_key: 'QUICK_DIAGNOSTIC',
-          metric_value: 'NOT_EXECUTED',
-          note: 'Dashboard未更新'
-        }
-      ]
+      WorkOsConfig.DASHBOARD_LEGACY_SEED_ROWS.map(function (row) {
+        return {
+          metric_key: row.metric_key,
+          metric_value: row.metric_value,
+          note: row.note
+        };
+      })
     );
     seedRowsByKey(
       spreadsheet.getSheetByName(WorkOsConfig.SHEETS.SYSTEM_CONFIG),

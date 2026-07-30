@@ -1,9 +1,19 @@
 # Master Plan
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
-Current contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
+
+## Phase 8B Quick Diagnostic remediation
+
+| Step | Deliverable | State |
+|---|---|---|
+| P8B-QD-1 | Preserve 2.8.5/P10 and 2.8.6/T6.1 history | Complete; historical packages, transfer material, and proofs remain immutable. |
+| P8B-QD-2 | Source A7 | In progress in `SELF`: four runtime findings, real-runtime fake regression, S00–S80 resume test, v2.8.7 tools/docs/visualization/incident/recovery guidance; no v2.8.7 package/report/transfer. |
+| P8B-QD-3 | Direct-child Release B7 | Pending; only two v2.8.7 packages and the implementation report are allowed. |
+| P8B-QD-4 | Transfer T7 / company-PC patch manifest | Pending; raw Git-blob comparison against T6.1 must determine every replacement hash. |
+| P8B-QD-5 | Evidence E7 / remote fresh clone | Pending; only this evidence step may advance the publication status to `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. |
 
 ## Completed historic publication path
 
@@ -72,7 +82,7 @@ The package manifests record A5.4 and `SELF` for the historical Release
 commit. The historical Round 4 report remains a B5.2 package-generation record
 and is not rewritten.
 
-The current Source A6 must contain source, tests, tools, canonical documents,
+The historical Source A6 contains source, tests, tools, canonical documents,
 the workflow visualization, incident record, and Japanese recovery guide.  It
 must not contain any `v2.8.6-prepilot` release package, release implementation
 report, or transfer envelope.  Its direct-child Release B6 must contain only:
@@ -83,9 +93,10 @@ report, or transfer envelope.  Its direct-child Release B6 must contain only:
 
 ## Gate discipline
 
-P10 proof remains historical but `PHASE8B-SETUP-01` makes it no longer
-transfer-ready. The corrected T6.1 ref was verified from GitHub in a detached
-target-branch fresh clone, so the current maximum is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It permits non-confidential package
-carriage only and never means Phase 8B GO/PASS, Phase 8C GO, production ready,
-or pilot ready.
+P10 proof and the corrected T6.1 ref remain historical. T6.1 was verified from
+GitHub in a detached target-branch fresh clone, but
+`PHASE8B-QUICK-DIAGNOSTIC-01` supersedes it as the current transfer target.
+The current A7 gate is `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; only the
+separate A7/B7/T7/evidence path may later reach carriage-only
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. Neither status means Phase 8B GO/PASS,
+Phase 8C GO, production ready, or pilot ready.

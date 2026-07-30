@@ -1,9 +1,8 @@
 # Google Workspace Personal Work OS v2 — Implementation Specification
 
-Last updated: 2026-07-29
-Code: `2.8.6-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Historical package-generation gate: `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`
-Current transfer-readiness gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Last updated: 2026-07-30
+Code: `2.8.7-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
+Current gate: `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`
 
 ## 1. Scope and non-goals
 
@@ -39,6 +38,18 @@ safe S20 failure and must leave S20 unrecorded. This bootstrap privilege does
 not extend to diagnostics, Worker, Review, Calendar, Migration, or edit
 restoration; none may silently repair the control plane or trust a raw row,
 note, or snapshot as authority.
+
+### Quick Diagnostic runtime compatibility
+
+Quick Diagnostic is read-only. It derives every Task checkbox expectation from
+the canonical validation plan (five current columns), verifies the exact
+rows-1–2 / 50-column Task header protection contract, and permits `false` only
+in an identity-empty cell that has the canonical checkbox validation. The
+Dashboard accepts only the Setup-owned sheet/header protection control plane
+and the exact `DASHBOARD_LEGACY_SEED_ROWS` before explicit refresh. It rejects
+foreign controls, data, formulas, notes, names, merges, hidden state, and
+non-default data-block formatting. This is a compatibility correction, not a
+repair/write permission or a status upgrade.
 
 ## 3. Authority architecture
 

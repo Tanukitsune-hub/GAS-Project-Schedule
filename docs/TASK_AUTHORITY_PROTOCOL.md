@@ -1,13 +1,25 @@
-# Task Authority Protocol — Code 2.8.6-prepilot
+# Task Authority Protocol — Code 2.8.7-prepilot
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.6-prepilot` |
+| Code | `2.8.7-prepilot` |
 | Task Schema | `2.6` / 50 columns |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; corrected-package real Workspace retest remains `NOT_EXECUTED` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC`; corrected-package real Workspace retest remains `NOT_EXECUTED` |
+
+## Quick Diagnostic runtime control plane
+
+The diagnostic is read-only and does not repair a Workbook. The Task header
+control plane is exactly one owner-only, non-warning, non-domain-editable
+protection covering rows 1–2 and all 50 Task columns. Its checkbox expectations
+come only from `validationPlanForSheet(Tasks)`, including the hidden
+`calendar_reconcile_required` column. An identity-empty physical row may have
+canonical checkbox `false` values only when that row's validation is the same
+canonical checkbox contract; all other content remains a failure. The exact
+Dashboard Setup sheet/header protections and exact three-row seed are handled
+by the Dashboard ownership protocol, never by a raw-data fallback.
 
 ## Selected design
 
@@ -156,7 +168,8 @@ GitHub, and independently rechecked in a new fresh clone. Those facts remain
 historical, but the exact P10 package then failed first-time Setup with
 `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN`; `PHASE8B-SETUP-01` made the corrective
 package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The separately
-published and fresh-clone verified T6.1 2.8.6 transfer ref has now advanced
-only to `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`: carriage of a
-non-confidential corrected package, not Phase 8B PASS, Phase 8C GO,
-production ready, or pilot ready.
+published and fresh-clone verified T6.1 2.8.6 transfer ref is historical
+evidence only. The current v2.8.7 Quick Diagnostic candidate is
+`PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` until its independent source/release/
+transfer/fresh-clone chain completes. Any later carriage-only status remains
+not Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
