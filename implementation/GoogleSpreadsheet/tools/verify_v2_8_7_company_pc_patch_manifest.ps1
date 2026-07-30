@@ -44,6 +44,10 @@ function Get-GitPath {
   if (-not $git) { throw 'Git executable is required for patch manifest verification.' }
   return $git.Path
 }
+function New-UnicodeString {
+  param([int[]]$CodePoints)
+  return -join ($CodePoints | ForEach-Object { [char]$_ })
+}
 function Quote-GitArgument { param([string]$Value) return '"' + $Value.Replace('"', '\"') + '"' }
 function Invoke-GitText {
   param([string[]]$Arguments, [string]$Purpose)
@@ -124,7 +128,7 @@ foreach ($path in $expected.Keys) {
   if (-not $actual.ContainsKey($path) -or $actual[$path] -ne $expected[$path]) { throw "Raw-byte patch record mismatch: $path" }
 }
 $expectedUnchanged = @($expectedUnchanged | Sort-Object)
-if ((@($manifest.unchanged_payload_files) | Sort-Object) -join "`n" -ne ($expectedUnchanged -join "`n")) { throw 'Unchanged payload file list mismatch.' }
+if ((@(@($manifest.unchanged_payload_files) | Sort-Object) -join "`n") -ne ($expectedUnchanged -join "`n")) { throw 'Unchanged payload file list mismatch.' }
 if ([int]$manifest.unchanged_payload_file_count -ne $expectedUnchanged.Count) { throw 'Unchanged payload count mismatch.' }
 $manifestChanged = $expected.ContainsKey('appsscript.json')
 if ([bool]$manifest.appsscript_manifest_changed -ne $manifestChanged) { throw 'appsscript.json change flag mismatch.' }
@@ -133,16 +137,19 @@ $priority = @{'00_Config.gs'=10;'01_TypesAndSchemas.gs'=20;'02_Setup.gs'=30;'03_
 $expectedOrder = @($expected.Keys | Where-Object { -not $expected[$_].StartsWith('removed|') } | Sort-Object @{ Expression = { if ($priority.ContainsKey($_)) { $priority[$_] } else { 70 } } }, @{ Expression = { $_ } })
 if ((@($manifest.replacement_order) -join "`n") -ne ($expectedOrder -join "`n")) { throw 'Replacement order mismatch or contains a removed file.' }
 $expectedRemoved = @($expected.Keys | Where-Object { $expected[$_].StartsWith('removed|') } | Sort-Object)
-if ((@($manifest.removed_payload_files) | Sort-Object) -join "`n" -ne ($expectedRemoved -join "`n")) { throw 'Removed payload list mismatch.' }
+if ((@(@($manifest.removed_payload_files) | Sort-Object) -join "`n") -ne ($expectedRemoved -join "`n")) { throw 'Removed payload list mismatch.' }
 
 $config = $manifest.expected_post_update_config
 if ($config.code_version -ne '2.8.7-prepilot' -or $config.schema_version -ne '2.6' -or $config.ai_schema_version -ne '2.0' -or $config.migration_version -ne '3' -or [bool]$config.test_mode -ne $true -or [bool]$config.automation_enabled -ne $false) { throw 'Expected post-update configuration mismatch.' }
 if ((@($manifest.safe_resume_stage.completed) -join "`n") -ne ($safeCompletedStages -join "`n") -or (@($manifest.safe_resume_stage.incomplete) -join "`n") -ne ($safeIncompleteStages -join "`n")) { throw 'Safe resume stage contract mismatch.' }
 if ([bool]$manifest.automation_enabled -ne $false -or $manifest.real_workspace_retest -ne 'NOT_EXECUTED') { throw 'Automation/retest safety binding mismatch.' }
-if ((@($manifest.manual_repair_forbidden) | Sort-Object) -join "`n" -ne ($manualRepairForbidden | Sort-Object) -join "`n") { throw 'Manual-repair prohibition mismatch.' }
+if ((@(@($manifest.manual_repair_forbidden) | Sort-Object) -join "`n") -ne (@($manualRepairForbidden | Sort-Object) -join "`n")) { throw 'Manual-repair prohibition mismatch.' }
 
+$companyReplacementHeading = New-UnicodeString @(0x4F1A,0x793E,0x0050,0x0043,0x3067,0x5DEE,0x3057,0x66FF,0x3048,0x308B,0x30D5,0x30A1,0x30A4,0x30EB)
+$unchangedHeading = New-UnicodeString @(0x5909,0x66F4,0x4E0D,0x8981,0x30D5,0x30A1,0x30A4,0x30EB)
+$manualRepairText = New-UnicodeString @(0x624B,0x52D5,0x4FEE,0x5FA9)
 $md = Get-Content -Raw -Encoding UTF8 -LiteralPath $mdPath
-foreach ($literal in @('会社PCで差し替えるファイル', '変更不要ファイル', 'CODE_VERSION=2.8.7-prepilot', 'TEST_MODE=true', 'AUTOMATION_ENABLED=false', 'S00-S80', 'S90/S99', 'old SHA-256', 'new SHA-256', '手動修復')) {
+foreach ($literal in @($companyReplacementHeading, $unchangedHeading, 'CODE_VERSION=2.8.7-prepilot', 'TEST_MODE=true', 'AUTOMATION_ENABLED=false', 'S00-S80', 'S90/S99', 'old SHA-256', 'new SHA-256', $manualRepairText)) {
   if (-not $md.Contains($literal)) { throw "Required patch-manifest instruction is missing: $literal" }
 }
 
@@ -155,7 +162,7 @@ foreach ($line in Get-Content -LiteralPath $checksumPath -Encoding UTF8) {
   $checksumRecords[$match.Groups['name'].Value] = $match.Groups['hash'].Value
 }
 $checksumNames = @($actualFiles | Where-Object { $_ -ne 'TRANSFER_CHECKSUMS.sha256' })
-if (($checksumRecords.Keys | Sort-Object) -join "`n" -ne ($checksumNames | Sort-Object) -join "`n") { throw 'Transfer checksum inventory mismatch.' }
+if ((@($checksumRecords.Keys | Sort-Object) -join "`n") -ne (@($checksumNames | Sort-Object) -join "`n")) { throw 'Transfer checksum inventory mismatch.' }
 foreach ($name in $checksumNames) {
   if ((Get-CanonicalTextSha256 -Path (Join-Path $transferRoot $name)) -ne $checksumRecords[$name]) { throw "Transfer canonical checksum mismatch: $name" }
 }
