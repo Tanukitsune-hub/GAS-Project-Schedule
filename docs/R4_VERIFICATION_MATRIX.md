@@ -2,7 +2,7 @@
 
 Date: 2026-07-30
 Candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; real Workspace retransfer/retest remains `NOT_EXECUTED`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -67,7 +67,7 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 
 | ID | Requirement | Evidence | State |
 |---|---|---|---|
-| PHASE8B-DASHBOARD-NUMBER-FORMAT-01 | A strictly proven, seeded or owned 17×3 Dashboard system block is normalized by Setup only to the deterministic canonical plain-text contract; every other surface remains fail-closed and Quick/Deep Diagnostic remain read-only | `phase8b_dashboard_number_format_real_runtime_test.js`; `PHASE8B_DASHBOARD_NUMBER_FORMAT_RECOVERY_GUIDE_ja.md`; safe incident record | SOURCE_A9_CANDIDATE; corrected-package real Workspace retransfer/retest `NOT_EXECUTED` |
+| PHASE8B-DASHBOARD-NUMBER-FORMAT-01 | A strictly proven, seeded or owned 17×3 Dashboard system block is normalized by Setup only to the deterministic canonical plain-text contract; every other surface remains fail-closed and Quick/Deep Diagnostic remain read-only | `phase8b_dashboard_number_format_real_runtime_test.js`; `PHASE8B_DASHBOARD_NUMBER_FORMAT_RECOVERY_GUIDE_ja.md`; fixed T9 detached-clone audit | FIXED_TRANSFER_VERIFIED; corrected-package real Workspace retransfer/retest `NOT_EXECUTED` |
 
 ## 13 write routes
 
@@ -97,6 +97,11 @@ evidence. The v2.8.7 A7/B7/C7/T7 chain passed its own historical
 source/release/transfer/fresh-clone proof. `PHASE8B-DASHBOARD-01` supersedes T7
 as an execution target. The A8/B8/T8 chain completed normal publication,
 GitHub resolution, and detached HTTPS fresh-clone verification as historical
-evidence. `PHASE8B-DASHBOARD-NUMBER-FORMAT-01` now blocks the v2.8.9 candidate
-until its own A9/B9/T9/fresh-clone proof is complete. This matrix authorizes no
-Workspace operation; real Google Workspace evidence remains `NOT_EXECUTED`.
+evidence. The corrected v2.8.9 Source A9.1
+`4a145588b01a5f7ae7e9bce86efb9bd5b3d8345d`, direct-child Release B9.1
+`b451d2361db99b4efbde036dafa3e2baf6b5cb97`, and fixed transfer T9
+`781f408fcf0853a5fffee9c00d3022ee5e17b1d7` completed normal publication,
+remote resolution, package/transfer verification, and detached HTTPS
+fresh-clone proof. The maximum carriage-only status is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This matrix authorizes no Workspace
+operation; real Google Workspace evidence remains `NOT_EXECUTED`.

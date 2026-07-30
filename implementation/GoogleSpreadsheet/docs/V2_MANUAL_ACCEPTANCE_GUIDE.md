@@ -1,11 +1,15 @@
-# Manual Acceptance Guide — 2.8.8 Phase 8B Dashboard Surface Candidate
+# Manual Acceptance Guide — 2.8.9 Phase 8B Dashboard Number-Format Transfer Evidence
 
 Code Version: `2.8.9-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current source gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; real Workspace retransfer/retest `NOT_EXECUTED`
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest `NOT_EXECUTED`
 Automation default: `OFF`
+
+Historical note: the Source A9 package-generation gate was
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`. It is retained as historical
+provenance, not as the current operational status.
 
 ## Purpose
 
@@ -65,11 +69,10 @@ evidence and is superseded by `PHASE8B-DASHBOARD-01`.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. The current Source A9 boundary
-uses `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; package, transfer, and
-fresh-clone evidence must be completed before a later evidence-only record can
-raise the carriage-only status. It is never a Sandbox execution authorization.
-Real Workspace retransfer/retest is `NOT_EXECUTED`.
+This guide never declares execution readiness. Corrected Source A9.1,
+direct-child corrected Release B9.1, fixed T9, and detached-clone evidence now
+support only `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It is never a Sandbox
+execution authorization. Real Workspace retransfer/retest is `NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7

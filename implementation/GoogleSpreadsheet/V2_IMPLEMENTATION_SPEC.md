@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-30
 Code: `2.8.9-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current source gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` (real Workspace retransfer/retest `NOT_EXECUTED`)
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` (real Workspace retransfer/retest `NOT_EXECUTED`)
 
 ## 1. Scope and non-goals
 

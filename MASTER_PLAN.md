@@ -3,7 +3,7 @@
 Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Phase 8B Dashboard number-format remediation
 
@@ -13,8 +13,8 @@ Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
 | P8B-NF-2 | Exact root cause and strict contract | Complete in source: all 51 format cells remain strict conflicts until the exact control plane and non-format surface are proven safe. |
 | P8B-NF-3 | Setup-only normalization | Complete in source: Setup immediately before S90 may set only the exact 17×3 system block; Diagnostics remain read-only. |
 | P8B-NF-4 | Native runtime / resume coverage | Complete locally: 12 number-format cases plus preserved Dashboard, Quick Diagnostic, and Ledger suites. |
-| P8B-NF-5 | Source A9 | Pending source commit; source/tests/tools/canonical docs/visualization/incident/recovery only, without package/report/transfer. |
-| P8B-NF-6 | Release B9 / Transfer T9 / evidence E9 | Pending after A9; each has a separate boundary and no real Workspace execution. |
+| P8B-NF-5 | Source A9 / corrected A9.1 | Complete: A9 `a448b8d856abd5eb32baa60117f5fdb9f8e56de9` excludes package/report/transfer; corrected A9.1 `4a145588b01a5f7ae7e9bce86efb9bd5b3d8345d` binds the patch tool default to fixed T8. |
+| P8B-NF-6 | Corrected Release B9.1 / Transfer T9 / evidence E9 | Complete: B9.1 `b451d2361db99b4efbde036dafa3e2baf6b5cb97` is a direct child of A9.1; T9 `781f408fcf0853a5fffee9c00d3022ee5e17b1d7` contains only transfer material; E9 records fresh-clone evidence. No real Workspace execution. |
 
 ## Historical Phase 8B Dashboard surface remediation
 

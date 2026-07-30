@@ -79,9 +79,9 @@ chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `ba175d3994c86dacc76bad3537df97e3e644dc09` (verifier only), and fixed T7
 `008c643b85c6b234ad489d946033cb9c06d32920`. Its carriage-only gate is
 `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is historical and T7 is now superseded
-as an executable target by `PHASE8B-DASHBOARD-NUMBER-FORMAT-01`. The Source A9
-gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; v2.8.9 package and
-transfer artifacts are generated only after Source A9. Real Workspace retransfer/retest
+as an executable target by `PHASE8B-DASHBOARD-NUMBER-FORMAT-01`. Corrected
+Source A9.1, direct-child corrected Release B9.1, and fixed T9 now support
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` only. Real Workspace retransfer/retest
 remains `NOT_EXECUTED`.
 
 このDirectoryは、Phase 1「最小Sheets基盤」からPhase 7「Retry・Dead Letter・診断」までを実装したApps Scriptです。新しい空のGoogle Sheetsへ紐づけて使用します。

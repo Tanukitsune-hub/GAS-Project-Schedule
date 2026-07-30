@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -29,9 +29,11 @@ Google Workspace Personal Work OS.
   `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot/`
   and `implementation/GoogleSpreadsheet/release/v2.8.5-prepilot-phase8c/`
 - Corrected 2.8.6 and 2.8.7 source/release/transfer chains remain immutable
-  historical evidence. The current 2.8.8 Source A8 candidate is additive and
-  does not replace any v2.8.5, v2.8.6, or v2.8.7 package, transfer, or audit
-  byte.
+  historical evidence. The published v2.8.9 corrected A9.1/B9.1/T9 chain is
+  additive and does not replace any v2.8.5 through v2.8.8 package, transfer,
+  or audit byte. Its carriage-only status is
+  `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retest is still
+  `NOT_EXECUTED`.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.

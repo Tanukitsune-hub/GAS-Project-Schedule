@@ -1,14 +1,19 @@
 # V2 Codex Implementation Plan
 
 Last updated: 2026-07-30
-Current source candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
+Current published transfer candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Scope
 
 This plan applies only to `Tanukitsune-hub/GAS-Project-Schedule`. The
 canonical implementation root is `implementation/GoogleSpreadsheet/`. It
 does not use or synchronize a legacy context hub.
+
+Corrected Source A9.1, direct-child corrected Release B9.1, and fixed T9 have
+completed normal publication and detached HTTPS fresh-clone verification. The
+status authorizes carriage of the non-sensitive retransfer material only; no
+real Workspace operation is authorized or recorded.
 
 ## Historical work sequence
 

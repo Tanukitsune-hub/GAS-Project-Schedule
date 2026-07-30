@@ -2,11 +2,11 @@
 
 Last updated: 2026-07-30
 Candidate version: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
+Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
-## Current 2.8.9 Dashboard number-format remediation candidate
+## Current 2.8.9 Dashboard number-format transfer evidence
 
 `PHASE8B-DASHBOARD-NUMBER-FORMAT-01` is a safe Phase 8B Setup blocker. The
 real Sandbox reached S00–S80 and stopped before S90/S99 with closed Dashboard
@@ -25,10 +25,20 @@ Only then may Setup change the exact 17×3 system block. Empty, ambiguous,
 foreign, or user-owned surfaces remain fail-closed; Quick/Deep Diagnostic
 remain read-only.
 
-Source A9 is pending creation and may contain source, tests, tools, canonical
-documents, visualization, safe incident evidence, and recovery guidance only.
-It must not contain v2.8.9 packages, release report, or transfer. Real
-Workspace retransfer/retest remains `NOT_EXECUTED`; Automation remains `OFF`.
+Source A9 `a448b8d856abd5eb32baa60117f5fdb9f8e56de9` contains source, tests,
+tools, canonical documents, visualization, incident evidence, and recovery
+guidance only. Corrected Source A9.1
+`4a145588b01a5f7ae7e9bce86efb9bd5b3d8345d` binds the patch-manifest default
+to fixed T8. Direct-child corrected Release B9.1
+`b451d2361db99b4efbde036dafa3e2baf6b5cb97` contains only both v2.8.9
+packages and the implementation report. Fixed transfer T9
+`781f408fcf0853a5fffee9c00d3022ee5e17b1d7` contains only the transfer
+envelope. Normal non-force publication, GitHub resolution, and a detached
+HTTPS clone of T9 passed 45 suites / 658 assertions / 0 failures, validator
+11/11, package/transfer verifiers, raw-blob patch parity, checksums,
+allow-lists, provenance, and scans. The highest carriage-only status is now
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. Real Workspace retransfer/retest
+remains `NOT_EXECUTED`; Automation remains `OFF`.
 
 ## Historical 2.8.8 Dashboard surface remediation candidate
 

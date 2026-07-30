@@ -4,7 +4,7 @@ Last updated: 2026-07-30
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 v2.8.9 retains the exact owner-proven Dashboard control plane and adds one
 deterministic, Setup-only plain-text number-format contract for the exact 17×3
@@ -12,6 +12,12 @@ system block. It is allowed only immediately before S90 after all schema,
 Protection, seed/marker, and non-format surface checks are safe. Quick and
 Deep Diagnostic remain read-only; arbitrary formats and foreign/ambiguous
 surface state remain fail-closed. Real Workspace work is `NOT_EXECUTED`.
+
+Corrected Source A9.1, direct-child corrected Release B9.1, and fixed T9 were
+normal-published and independently verified in a detached HTTPS clone. This
+permits only carriage of the non-sensitive Phase 8B Sandbox retransfer
+envelope; it is not a Phase 8B PASS, Phase 8C GO, production-ready, or
+pilot-ready declaration.
 
 The current additive correction addresses `PHASE8B-DASHBOARD-01` without
 replacing the historical v2.8.5/P10, v2.8.6/T6.1, or v2.8.7/T7 chains. It

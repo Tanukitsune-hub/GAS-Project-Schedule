@@ -180,3 +180,22 @@ format contract exactly. Empty, foreign, ambiguous, or API-unavailable states
 remain fail-closed with closed non-sensitive enum/count output; no cell outside
 the exact block is written. S00–S80 resume preserves existing resources,
 Automation remains OFF, and real Workspace verification is `NOT_EXECUTED`.
+
+## D-044 — v2.8.9 transfer status is carriage-only after fixed-ref proof
+
+**Decision.** Corrected Source A9.1, direct-child corrected Release B9.1, and
+fixed T9 must be normal-published and independently checked from a detached
+HTTPS clone before the canonical status becomes
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`.
+
+**Rationale.** The status depends on source/release boundary proof, package
+parity and checksums, raw Git-blob company-PC patch parity from fixed T8,
+allow-list/provenance/secret scans, and a fresh clone—not on a previous local
+report or an observed Workspace operation.
+
+**Consequences.** The resulting status permits only carriage of the
+non-sensitive Phase 8B Sandbox retransfer envelope. It does not declare Phase
+8B PASS, Phase 8C GO, production readiness, or pilot readiness. Real Google
+Workspace, OAuth, import, Setup, Diagnostic, Dashboard refresh, Gmail,
+Calendar, deployment, trigger enablement, and Provider configuration remain
+`NOT_EXECUTED`.
