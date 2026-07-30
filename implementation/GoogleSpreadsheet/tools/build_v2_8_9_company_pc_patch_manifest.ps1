@@ -4,7 +4,7 @@ param(
   [ValidatePattern('^[0-9a-f]{40}$')]
   [string]$NewPayloadCommit,
   [ValidatePattern('^[0-9a-f]{40}$')]
-  [string]$OldFixedRef = '008c643b85c6b234ad489d946033cb9c06d32920',
+  [string]$OldFixedRef = '69f843f6ea426ccb45d721a40508a35b0a59795d',
   [string]$OutputDirectory = ''
 )
 
@@ -167,4 +167,3 @@ $checksumFiles = @(Get-ChildItem -LiteralPath $outputRoot -File | Where-Object {
 $checksum = ($checksumFiles | ForEach-Object { "$(Get-CanonicalTextSha256 $_.FullName)  $($_.Name)" }) -join "`n"
 Write-Utf8NoBom (Join-Path $outputRoot 'TRANSFER_CHECKSUMS.sha256') ($checksum + "`n")
 [pscustomobject]@{OldFixedRef=$OldFixedRef;NewPayloadCommit=$NewPayloadCommit;ChangedPayloadFiles=$changes.Count;UnchangedPayloadFiles=$unchangedPaths.Count;AppsscriptManifestChanged=$manifest.appsscript_manifest_changed;TransferFiles=$checksumFiles.Count;Comparison='git_blob_raw_bytes_sha256'} | Format-List
-

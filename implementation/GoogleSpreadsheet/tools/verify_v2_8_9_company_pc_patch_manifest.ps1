@@ -2,7 +2,7 @@
 param(
   [string]$TransferDirectory = '',
   [ValidatePattern('^[0-9a-f]{40}$')]
-  [string]$OldFixedRef = '008c643b85c6b234ad489d946033cb9c06d32920',
+  [string]$OldFixedRef = '69f843f6ea426ccb45d721a40508a35b0a59795d',
   [Parameter(Mandatory = $true)]
   [ValidatePattern('^[0-9a-f]{40}$')]
   [string]$NewPayloadCommit
@@ -179,4 +179,3 @@ foreach ($name in $checksumNames) {
   AutomationDefault = 'OFF'
   RealWorkspaceRetest = 'NOT_EXECUTED'
 } | Format-List
-

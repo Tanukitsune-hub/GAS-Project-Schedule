@@ -289,6 +289,8 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
       name + ': raw Git byte comparison required');
     assert.ok(text.includes('v2.8.8-prepilot') && text.includes('v2.8.9-prepilot'),
       name + ': T8/B9 payload versions required');
+    assert.ok(text.includes('69f843f6ea426ccb45d721a40508a35b0a59795d'),
+      name + ': fixed T8 must be the safe default baseline');
   });
   [
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md',
