@@ -1,0 +1,29 @@
+# Phase 8B package-relative allow-list; copy no other package or repository file.
+# Source package: implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/
+apps-script/00_Config.gs
+apps-script/01_TypesAndSchemas.gs
+apps-script/02_Setup.gs
+apps-script/03_SheetBuilder.gs
+apps-script/04_MessageStateRepository.gs
+apps-script/05_GmailGateway.gs
+apps-script/06_EmailPreprocessor.gs
+apps-script/07_AiAdapter.gs
+apps-script/08_TaskRepository.gs
+apps-script/09_TaskReviewPolicy.gs
+apps-script/10_CalendarSync.gs
+apps-script/11_EditHandler.gs
+apps-script/12_Triggers.gs
+apps-script/13_LogAndDeadLetter.gs
+apps-script/14_Migrations.gs
+apps-script/15_Dashboard.gs
+apps-script/16_Diagnostics.gs
+apps-script/17_Utilities.gs
+apps-script/18_Worker.gs
+apps-script/19_RuntimeSettings.gs
+apps-script/99_TestHarness.gs
+apps-script/Menu.gs
+apps-script/appsscript.json
+CHECKSUMS.sha256
+DEPLOYMENT_MANIFEST.md
+MANUAL_ACCEPTANCE_GUIDE.md
+SANDBOX_QUICKSTART.md

@@ -1,0 +1,100 @@
+{
+    "manifest_version":  1,
+    "old_fixed_ref":  "008c643b85c6b234ad489d946033cb9c06d32920",
+    "new_fixed_ref":  "SELF (the Git commit containing this transfer envelope)",
+    "new_payload_commit":  "a17d34422ed521cee81340902d9a19e2da372201",
+    "old_version":  "v2.8.7-prepilot",
+    "new_version":  "v2.8.8-prepilot",
+    "old_payload_root":  "implementation/GoogleSpreadsheet/release/v2.8.7-prepilot/apps-script",
+    "new_payload_root":  "implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/apps-script",
+    "comparison_method":  "git_blob_raw_bytes_sha256",
+    "changed_payload_files":  [
+                                  {
+                                      "path":  "00_Config.gs",
+                                      "change_type":  "modified",
+                                      "old_sha256":  "a0c5f8a26d2211bb6c57da0712da0ae61f372404856136c12a949b35c9e0c8a2",
+                                      "new_sha256":  "4718462506c1b417269552e2859e7c4f90f98583b0075fbdf14a940c39dff152"
+                                  },
+                                  {
+                                      "path":  "15_Dashboard.gs",
+                                      "change_type":  "modified",
+                                      "old_sha256":  "fa2cb636997aa756b7f804b14672f9ac9a80944c5b36e09bb17380eb7b67bc42",
+                                      "new_sha256":  "3e15db636b1cb501b07840ce5c0a37c553b78669eb9869cd3c8cdfd0caa16d7b"
+                                  },
+                                  {
+                                      "path":  "16_Diagnostics.gs",
+                                      "change_type":  "modified",
+                                      "old_sha256":  "22b4d57fa491c9b3ddc08dc5bccfaa5dd91ca36700137b081cb67c492ce6c8f0",
+                                      "new_sha256":  "c299030a10893f9d8360ccbe9b0be9149ab9bf91a12b215ea2880acc9e1a5382"
+                                  }
+                              ],
+    "unchanged_payload_files":  [
+                                    "01_TypesAndSchemas.gs",
+                                    "02_Setup.gs",
+                                    "03_SheetBuilder.gs",
+                                    "04_MessageStateRepository.gs",
+                                    "05_GmailGateway.gs",
+                                    "06_EmailPreprocessor.gs",
+                                    "07_AiAdapter.gs",
+                                    "08_TaskRepository.gs",
+                                    "09_TaskReviewPolicy.gs",
+                                    "10_CalendarSync.gs",
+                                    "11_EditHandler.gs",
+                                    "12_Triggers.gs",
+                                    "13_LogAndDeadLetter.gs",
+                                    "14_Migrations.gs",
+                                    "17_Utilities.gs",
+                                    "18_Worker.gs",
+                                    "19_RuntimeSettings.gs",
+                                    "99_TestHarness.gs",
+                                    "appsscript.json",
+                                    "Menu.gs"
+                                ],
+    "unchanged_payload_file_count":  20,
+    "appsscript_manifest_changed":  false,
+    "replacement_order":  [
+                              "00_Config.gs",
+                              "15_Dashboard.gs",
+                              "16_Diagnostics.gs"
+                          ],
+    "removed_payload_files":  [
+
+                              ],
+    "expected_post_update_config":  {
+                                        "code_version":  "2.8.8-prepilot",
+                                        "schema_version":  "2.6",
+                                        "ai_schema_version":  "2.0",
+                                        "migration_version":  "3",
+                                        "test_mode":  true,
+                                        "automation_enabled":  false
+                                    },
+    "safe_resume_stage":  {
+                              "completed":  [
+                                                "S00_VALIDATE_ENV",
+                                                "S10_CREATE_SHEETS",
+                                                "S20_CREATE_SCHEMAS",
+                                                "S30_APPLY_SMALL_VALIDATIONS",
+                                                "S40_SEED_SAFE_SETTINGS",
+                                                "S50_CREATE_GMAIL_LABELS",
+                                                "S60_CREATE_DEADLINE_CALENDAR",
+                                                "S70_STORE_PROPERTIES",
+                                                "S80_CREATE_EDIT_TRIGGER"
+                                            ],
+                              "incomplete":  [
+                                                 "S90_QUICK_DIAGNOSTIC",
+                                                 "S99_COMPLETE"
+                                             ]
+                          },
+    "automation_enabled":  false,
+    "real_workspace_retest":  "NOT_EXECUTED",
+    "manual_repair_forbidden":  [
+                                    "Task Authority Ledger",
+                                    "Task checkbox values",
+                                    "Task/Dashboard protections",
+                                    "Dashboard seed rows",
+                                    "Gmail labels",
+                                    "Calendar",
+                                    "triggers",
+                                    "Task data"
+                                ]
+}
