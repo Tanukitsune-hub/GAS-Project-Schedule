@@ -4,7 +4,7 @@ Code Version: `2.8.8-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; no v2.8.8 carriage yet
+Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T8 carriage only
 Automation default: `OFF`
 
 ## Purpose
@@ -58,14 +58,15 @@ historical envelope. Do not manually hide its Ledger, continue its Setup, or
 run its diagnostics. After corrected 2.8.6 publication and independent
 verification only, use the separately generated Japanese procedure, 8B-only
 allow-list, acceptance checklist, stop/rollback checklist, synthetic-data
-specification, results template, and failed-Sandbox recovery guide in a new
-v2.8.8 transfer envelope only after its separate verification. T7 is immutable
-historical evidence and is superseded by `PHASE8B-DASHBOARD-01`.
+specification, results template, and failed-Sandbox recovery guide from exact
+fixed T8 `69f843f6ea426ccb45d721a40508a35b0a59795d`. T7 is immutable historical
+evidence and is superseded by `PHASE8B-DASHBOARD-01`.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. Source A8 is source-only and
-its gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. A future fully verified
+This guide never declares execution readiness. The historical Source A8
+boundary used `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; after the full
+A8/B8/T8 remote and detached-clone proof, the current
 `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` remains only a retransfer
 authorization, never a Sandbox execution authorization. Real Workspace
 retransfer/retest is `NOT_EXECUTED`.

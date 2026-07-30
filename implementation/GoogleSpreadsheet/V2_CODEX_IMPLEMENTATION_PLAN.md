@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-30
 Current source candidate: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
+Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Scope
 
@@ -68,7 +68,7 @@ remains carriage-only.
 5. E7 records the completed remote and detached fresh-clone proof. The maximum
    status is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for carriage only.
 
-## Current Phase 8B Dashboard surface sequence
+## Completed Phase 8B Dashboard surface sequence
 
 1. Preserve all historical v2.8.5, v2.8.6, and v2.8.7 package, transfer,
    audit, incident, and ref evidence byte-for-byte.
@@ -80,18 +80,21 @@ remains carriage-only.
    implicit owner modes. Keep foreign editor, domain/audience, wrong/duplicate
    Protection, unprotected range, and every data/format surface conflict
    fail-closed through closed safe enums/counts.
-4. Run all local suites and the static validator before fixing Source A8.
-5. Generate the Phase 8B and Phase 8C packages from exact clean A8 and create
-   direct-child Release B8 containing only those packages and the v2.8.8
-   implementation report.
-6. Generate a separate T8 envelope. Its Japanese/JSON company-PC manifest must
-   be derived from raw Git blob comparison of fixed T7 and final B8, including
-   all changed and unchanged payload files and exact hashes.
-7. Normal-push the linear chain, verify remote SHA resolution, then run all
-   tests, package/parity/checksum/allow-list/provenance/scans, and transfer
-   checks from a detached HTTPS clone of fixed T8.
-8. Only if every required check passes may evidence raise the maximum status
-   to `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; this remains carriage-only.
+4. All local suites and the static validator passed before Source A8
+   `4140054b03c850f4a1e669b3aa562b305ef78bf5` was fixed.
+5. Phase 8B and Phase 8C packages were generated from exact clean A8.
+   Direct-child Release B8
+   `a17d34422ed521cee81340902d9a19e2da372201` contains only those packages
+   and the v2.8.8 implementation report.
+6. Separate T8 `69f843f6ea426ccb45d721a40508a35b0a59795d` contains the Japanese/JSON
+   company-PC manifest derived from raw Git blob comparison of fixed T7 and
+   final B8, including all changed and unchanged payload files and exact
+   hashes.
+7. The linear chain was normal-pushed and remote-resolved. All tests,
+   package/parity/checksum/allow-list/provenance/scans, and transfer checks
+   passed from a detached HTTPS clone of fixed T8.
+8. The resulting maximum status is
+   `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; this remains carriage-only.
 
 ## Safety rules
 

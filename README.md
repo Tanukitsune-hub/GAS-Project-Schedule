@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -70,11 +70,14 @@ protections.
 Dashboard values, formulas, input rules, notes, merges, hidden state,
 background, font, number format, named ranges, seed, and marker are inspected
 as separate closed non-sensitive reason codes and counts. Diagnostics expose
-neither identities nor cell/range content. Source A8 is source/tests/tools/
-canonical-docs/visualization/incident/recovery only; v2.8.8 package, release
-report, and transfer envelope are not part of Source A8. Until the additive
-A8/B8/T8 chain passes remote and detached fresh-clone verification, the gate
-remains `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`.
+neither identities nor cell/range content. Source A8
+`4140054b03c850f4a1e669b3aa562b305ef78bf5` is source/tests/tools/
+canonical-docs/visualization/incident/recovery only. Direct-child Release B8
+is `a17d34422ed521cee81340902d9a19e2da372201`; fixed transfer T8 is
+`69f843f6ea426ccb45d721a40508a35b0a59795d`. GitHub resolved the full
+normally pushed chain, and a detached HTTPS clone passed all required
+source/package/transfer/rebuild/scanning checks. The resulting carriage-only
+gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`.
 
 ## Historical Phase 8B Quick Diagnostic remediation and T7 package
 
@@ -190,12 +193,15 @@ historical failed evidence and is not executable. The corrected 2.8.6 Phase
 8B package is represented only by the historical T6.1 transfer envelope. The
 verified v2.8.7 T7 envelope and its patch manifest are now immutable historical
 evidence and must not be used for execution because `PHASE8B-DASHBOARD-01`
-supersedes them. No v2.8.8 carriage artifact exists at the Source A8 boundary.
-The historical recovery instructions are
-`implementation/GoogleSpreadsheet/docs/PHASE8B_SETUP_BLOCKER_RECOVERY_GUIDE_ja.md`.
+supersedes them. The exact current carriage artifact is fixed T8
+`69f843f6ea426ccb45d721a40508a35b0a59795d` and
+`implementation/GoogleSpreadsheet/transfer/v2.8.8-prepilot/`. Its raw-byte
+manifest requires only `00_Config.gs`, `15_Dashboard.gs`, and
+`16_Diagnostics.gs`; `appsscript.json` and 20 other payload files are
+unchanged.
 
-Corrected transfer material will remain outside its immutable package and
-will not alter package checksums. Even if a later verified v2.8.8 chain reaches
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, that status is carriage-only: it does
+Corrected transfer material remains outside its immutable package and does not
+alter package checksums. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is
+carriage-only: it does
 not authorize Setup, diagnostics, OAuth approval, deployment, `clasp push`,
 Automation enablement, real data, or real Workspace operation.

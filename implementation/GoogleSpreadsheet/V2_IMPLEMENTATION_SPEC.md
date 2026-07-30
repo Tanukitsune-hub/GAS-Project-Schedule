@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-30
 Code: `2.8.8-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` (Source A8 boundary; real Workspace retransfer/retest `NOT_EXECUTED`)
+Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` (fixed T8 verified; real Workspace retransfer/retest `NOT_EXECUTED`)
 
 ## 1. Scope and non-goals
 

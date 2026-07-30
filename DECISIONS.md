@@ -65,9 +65,13 @@ counts. Foreign editors, domain edit, target audiences, warning-only
 protection, duplicate/wrong/overlapping protections, named ranges, values,
 formulas, validation, notes, merges, hidden state, background, font, number
 format, and seed/marker mismatch remain fail-closed. Quick Diagnostic remains
-read-only. The Source A8 gate is
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` until the complete A8/B8/T8 remote
-and fresh-clone chain is proven.
+read-only. Source A8 `4140054b03c850f4a1e669b3aa562b305ef78bf5`,
+direct-child Release B8 `a17d34422ed521cee81340902d9a19e2da372201`,
+and fixed transfer T8 `69f843f6ea426ccb45d721a40508a35b0a59795d`
+completed normal publication, GitHub resolution, and detached HTTPS
+fresh-clone verification. The resulting maximum status is the carriage-only
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest
+remains `NOT_EXECUTED`.
 
 ## D-037 — Independent Task Authority Ledger with two-slot recovery
 

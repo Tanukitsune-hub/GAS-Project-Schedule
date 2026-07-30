@@ -3,7 +3,8 @@
 対象: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 
-現在の状態は `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` です。この文書は
+現在の状態は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` です。これは固定T8の
+非機密Phase 8B packageを搬入できるcarriage-only statusです。この文書は
 ローカル実装・搬入資料の作成手順を定義するもので、実Google Workspace
 操作、Apps Script import、Setup、診断実行、Dashboard更新、OAuth、
 deployment、`clasp push`、Automation有効化を承認しません。
@@ -45,6 +46,7 @@ owner表現のどちらかだけを許可します。
 ## 会社PCへの将来の差し替え
 
 固定T7 payloadと最終v2.8.8 payloadのraw Git blob byte比較から生成された
+固定T8 `69f843f6ea426ccb45d721a40508a35b0a59795d` 内の
 `COMPANY_PC_PATCH_MANIFEST_ja.md` とJSON companionだけを正としてください。
 推測でファイルを追加・除外しないでください。
 

@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-30
 Candidate version: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
+Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
@@ -31,11 +31,20 @@ contracts. It never exposes identity, value, formula, note, range address, ID,
 or URL. The corrected S90 path remains byte-for-byte read-only and preserves
 S00–S80 resources, Automation OFF, and the absent five-minute trigger.
 
-Source A8 is `SELF (this source commit)` until committed. It contains source,
-tests, tools, canonical documents, visualization, safe incident evidence, and
-recovery guidance only. It excludes the v2.8.8 packages, implementation report,
-and transfer envelope. Release B8 and fixed transfer T8 are not yet generated
-at this boundary.
+Source A8 `4140054b03c850f4a1e669b3aa562b305ef78bf5` contains source, tests,
+tools, canonical documents, visualization, safe incident evidence, and recovery
+guidance only. Direct-child Release B8
+`a17d34422ed521cee81340902d9a19e2da372201` contains only both v2.8.8
+packages and the implementation report. Fixed transfer T8
+`69f843f6ea426ccb45d721a40508a35b0a59795d` contains only the transfer
+envelope.
+
+A normal non-force push published the linear chain. GitHub resolved all three
+SHAs. A detached HTTPS clone of T8 passed 44 suites / 646 PASS / 0 FAIL / 11
+explicit SKIPPED, validator 11/11, both package verifiers, independent raw-byte
+rebuild parity, 27/27 allow-list, T7-to-B8 raw-blob patch parity, transfer
+checksums, provenance, and scans. Evidence E8 is
+`SELF (this evidence-only commit)` and is not a transfer target.
 
 ## Historical 2.8.7 Quick Diagnostic remediation chain
 
@@ -110,8 +119,10 @@ evidence, not the current transfer target or an execution authorization.
 | Fixed transfer T7 | `008c643b85c6b234ad489d946033cb9c06d32920` | normally pushed, GitHub-resolved fixed v2.8.7 transfer ref; raw-byte patch manifest, checksums, and detached fresh-clone verification PASS |
 | Evidence E7 | `SELF (this evidence-only commit)` | records final remote/fresh-clone proof; not a transfer target and changes no package/transfer/source/test/tool file |
 | Phase 8B Dashboard surface blocker | `PHASE8B-DASHBOARD-01` | High; safe S90 evidence; v2.8.8 corrected-package real Workspace retransfer/retest `NOT_EXECUTED` |
-| Source A8 | `SELF (this source commit)` | source/tests/tools/canonical-docs/visualization/incident/recovery only; excludes v2.8.8 package, report, and transfer envelope |
-| Release B8 / fixed transfer T8 | `NOT YET GENERATED` | required after Source A8; no carriage authorization at the source boundary |
+| Source A8 | `4140054b03c850f4a1e669b3aa562b305ef78bf5` | source/tests/tools/canonical-docs/visualization/incident/recovery only; excludes v2.8.8 package, report, and transfer envelope |
+| Release B8 | `a17d34422ed521cee81340902d9a19e2da372201` | direct child of A8; exactly both v2.8.8 packages and the implementation report |
+| Fixed transfer T8 | `69f843f6ea426ccb45d721a40508a35b0a59795d` | normal-pushed, GitHub-resolved fixed v2.8.8 transfer; 3-file raw-byte patch manifest and detached fresh-clone verification PASS |
+| Evidence E8 | `SELF (this evidence-only commit)` | records final remote/fresh-clone proof; not a transfer target and changes no source/test/tool/package/transfer file |
 
 The immutable P5 publication evidence remains at
 `audits/2026-07-28/GoogleWorkspace_v2_8_5_Remote_Publication_Verification_2026-07-28.md`.
@@ -134,6 +145,8 @@ The final T6.1 fresh-clone verification is
 `audits/2026-07-29/GoogleWorkspace_v2_8_6_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-29.md`.
 The v2.8.7 final detached-clone verification is
 `audits/2026-07-30/GoogleWorkspace_v2_8_7_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-30.md`.
+The v2.8.8 fixed-T8 detached-clone verification is
+`audits/2026-07-30/GoogleWorkspace_v2_8_8_Phase8B_Sandbox_Retransfer_Fresh_Clone_Verification_2026-07-30.md`.
 
 ## Historical R5 and 2.8.6 correction
 

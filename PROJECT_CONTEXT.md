@@ -4,7 +4,7 @@ Last updated: 2026-07-30
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
+Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 The current additive correction addresses `PHASE8B-DASHBOARD-01` without
 replacing the historical v2.8.5/P10, v2.8.6/T6.1, or v2.8.7/T7 chains. It
@@ -84,8 +84,14 @@ The historical additive v2.8.7 chain is Source A7
 a detached HTTPS clone passed its full local/static and transfer verification.
 Real Workspace retransfer/retest remains `NOT_EXECUTED`. The later safe S90
 Dashboard ownership finding supersedes T7 as an executable transfer target.
-Source A8 is source/tests/tools/canonical-docs/visualization/incident/recovery
-only, and no v2.8.8 package or transfer exists at its boundary.
+Source A8 `4140054b03c850f4a1e669b3aa562b305ef78bf5` contains only
+source/tests/tools/canonical-docs/visualization/incident/recovery material.
+Direct-child Release B8
+`a17d34422ed521cee81340902d9a19e2da372201` contains only both v2.8.8
+packages and its implementation report. Fixed transfer T8
+`69f843f6ea426ccb45d721a40508a35b0a59795d` contains only its transfer
+envelope. The normal-pushed chain resolves on GitHub, and a detached HTTPS
+clone passed all required source/package/transfer/rebuild/scanning checks.
 
 ## Repository layout
 
@@ -101,9 +107,11 @@ only, and no v2.8.8 package or transfer exists at its boundary.
 - Historical failed P10 transfer envelope (not executable):
   `implementation/GoogleSpreadsheet/transfer/v2.8.5-prepilot/`.
 - Corrected 2.8.6/T6.1 and v2.8.7/T7 package and transfer directories are
-  immutable historical evidence. Neither is the current executable target.
-  The v2.8.8 transfer directory must not exist in Source A8 and is generated
-  only after direct-child Release B8.
+  immutable historical evidence. Neither is the current transfer target.
+- The verified current carriage artifact is
+  `implementation/GoogleSpreadsheet/transfer/v2.8.8-prepilot/` at fixed T8.
+  It was generated only after direct-child Release B8 and is not part of
+  Source A8.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -121,8 +129,8 @@ silently rewritten.
 The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
-evidence. The current `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` status permits
-no v2.8.8 carriage. A later `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`, if every
-remote and fresh-clone check passes, would approve controlled non-confidential
-carriage only—not real data, OAuth, Apps Script import, Setup, Provider
-configuration, deployment, Automation, triggers, or real Workspace operation.
+evidence. The current `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status approves
+only controlled non-confidential carriage of exact fixed T8. It does not
+approve real data, OAuth, Apps Script import, Setup, Dashboard refresh,
+Provider configuration, deployment, Automation, triggers, or any real
+Workspace operation.

@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
+| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
 
 ## Quick Diagnostic runtime control plane
 
@@ -190,6 +190,10 @@ package-generation gate `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The separately
 published and fresh-clone verified T6.1 2.8.6 transfer ref is historical
 evidence only. The v2.8.7 A7/B7/C7/T7 chain completed its independent
 source/release/transfer/fresh-clone verification but is now historical because
-`PHASE8B-DASHBOARD-01` supersedes T7 as an execution target. Source A8 remains
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE` until its direct-child release,
-transfer, normal publication, and detached fresh-clone evidence are complete.
+`PHASE8B-DASHBOARD-01` supersedes T7 as an execution target. Source A8
+`4140054b03c850f4a1e669b3aa562b305ef78bf5`, direct-child Release B8
+`a17d34422ed521cee81340902d9a19e2da372201`, and fixed transfer T8
+`69f843f6ea426ccb45d721a40508a35b0a59795d` completed normal publication,
+GitHub resolution, and detached HTTPS fresh-clone verification. The current
+maximum status is the carriage-only `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`;
+real Workspace retransfer/retest remains `NOT_EXECUTED`.

@@ -6,11 +6,12 @@ or checklist for the current Code `2.8.8-prepilot` / Schema `2.6` / AI Schema
 `2.0` / Migration `3` contract (11 Sheets, 5 hidden, 50 Task columns, and a
 21-column Task Authority Ledger).
 
-Do not use the failed historical `../transfer/v2.8.5-prepilot/` envelope. A
-new result template may be used only from a separately verified v2.8.8
-transfer envelope after its explicit approval. T6.1 and T7 are historical
-evidence; do not copy any historical version values into a current result
-record.
+Do not use the failed historical `../transfer/v2.8.5-prepilot/` envelope.
+Fixed T8 `69f843f6ea426ccb45d721a40508a35b0a59795d` is the separately verified
+v2.8.8 carriage reference, but this retained v2.8.1 template remains
+historical and must not be used as its current result template. T6.1 and T7
+are historical evidence; do not copy any historical version values into a
+current result record.
 
 # Google Workspace Personal Work OS v2
 # Sandbox Acceptance Results

@@ -3,7 +3,7 @@
 Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
+Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 
 ## Phase 8B Dashboard surface remediation
 
@@ -12,11 +12,11 @@ Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`
 | P8B-DS-1 | Preserve v2.8.5/P10, v2.8.6/T6.1, and v2.8.7/T7 history | Complete; all historical package, transfer, audit, and incident bytes remain immutable. |
 | P8B-DS-2 | Exact root cause / native Protection model | Complete in source: owner/effective-user identity plus `canEdit()`, explicit-or-implicit owner mode, and fail-closed foreign/domain/audience/duplicate/wrong controls. |
 | P8B-DS-3 | Closed Dashboard surface inspection | Complete in source: Protection, named range, value, formula, validation, note, merge, hidden state, background, font, number format, and seed/marker produce only safe enums/counts. |
-| P8B-DS-4 | Runtime/regression coverage | In progress: canonical explicit/implicit owner, shared-drive/different-user/foreign access, every surface conflict, byte-stable diagnostics, and S00–S80 resume are required. |
-| P8B-DS-5 | Source A8 | Pending commit: source/tests/tools/canonical docs/visualization/incident/recovery only; no v2.8.8 package/report/transfer. |
-| P8B-DS-6 | Direct-child Release B8 | Not started until A8 is fixed; limited to two v2.8.8 packages and the implementation report. |
-| P8B-DS-7 | Transfer T8 / raw-byte company-PC manifest | Not started until B8; compare fixed T7 payload to final v2.8.8 payload without assuming changed files. |
-| P8B-DS-8 | Normal push / detached HTTPS fresh clone / Draft PR #8 | Not started; the gate cannot advance before all remote/fresh-clone checks pass. |
+| P8B-DS-4 | Runtime/regression coverage | Complete: 17 Dashboard runtime cases plus all prior suites; 44 suites / 646 PASS / 0 FAIL / 11 explicit SKIPPED in detached T8 HTTPS clone. |
+| P8B-DS-5 | Source A8 | Complete: `4140054b03c850f4a1e669b3aa562b305ef78bf5`; source/tests/tools/canonical docs/visualization/incident/recovery only; no v2.8.8 package/report/transfer. |
+| P8B-DS-6 | Direct-child Release B8 | Complete: `a17d34422ed521cee81340902d9a19e2da372201`; exactly two v2.8.8 packages and the implementation report. |
+| P8B-DS-7 | Transfer T8 / raw-byte company-PC manifest | Complete: `69f843f6ea426ccb45d721a40508a35b0a59795d`; raw Git-blob comparison proves exactly three changed files and 20 unchanged payload files. |
+| P8B-DS-8 | Normal push / detached HTTPS fresh clone / Draft PR #8 | Complete: linear non-force publication, GitHub SHA resolution, full detached-clone verification, and Draft PR update evidence. |
 
 ## Historical Phase 8B Quick Diagnostic remediation
 
@@ -111,9 +111,8 @@ GitHub in a detached target-branch fresh clone, but
 `PHASE8B-QUICK-DIAGNOSTIC-01` supersedes it as the current transfer target.
 The A7/B7/C7/T7/evidence path is complete historical evidence, but
 `PHASE8B-DASHBOARD-01` supersedes T7 as an executable transfer target. The
-current gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. Only after the
-additive A8/B8/T8 path passes normal remote publication and detached
-fresh-clone verification may the maximum carriage-only status become
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. Neither status authorizes real
-Workspace execution, Automation, deployment, real data, or later-stage
-readiness.
+additive A8/B8/T8 path completed normal remote publication and detached
+fresh-clone verification, so the current maximum carriage-only status is
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It authorizes only exact fixed T8
+carriage and does not authorize real Workspace execution, Automation,
+deployment, real data, or later-stage readiness.

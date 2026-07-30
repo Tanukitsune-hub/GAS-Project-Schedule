@@ -2,9 +2,12 @@
 
 Code `2.8.8-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
 Current corrective-integration gate:
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; Source A8 excludes generated
-package/report/transfer outputs and real Workspace retest remains
-`NOT_EXECUTED`.
+`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; Source A8
+`4140054b03c850f4a1e669b3aa562b305ef78bf5` excludes generated
+package/report/transfer outputs, its direct-child Release B8 is
+`a17d34422ed521cee81340902d9a19e2da372201`, fixed transfer T8 is
+`69f843f6ea426ccb45d721a40508a35b0a59795d`, and real Workspace retest
+remains `NOT_EXECUTED`.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept
