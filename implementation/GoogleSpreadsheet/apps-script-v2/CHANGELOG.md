@@ -1,5 +1,41 @@
 # Changelog
 
+## 2.8.9-prepilot - 2026-07-30 Phase 8B Dashboard number-format real-runtime remediation
+
+### Fixed
+
+- `PHASE8B-DASHBOARD-NUMBER-FORMAT-01`: the Dashboard inspection previously
+  detected a noncanonical number format but Setup had no ownership-proven,
+  deterministic way to establish it before S90. The exact 17×3 Dashboard
+  system block now uses one configured plain-text contract.
+- Normalization is restricted to Setup immediately before S90, only after the
+  exact canonical schema, owner-proven sheet/header Protection, exact seed or
+  owned/versioned block, and every non-format surface check are safe. Empty,
+  ambiguous, foreign, or user-owned surfaces fail closed without a write.
+- Quick and Deep Diagnostic remain read-only and require the canonical text
+  format exactly. Blank, default, or arbitrary formats remain conflicts; the
+  change does not broaden diagnostic acceptance.
+
+### Added
+
+- `phase8b_dashboard_number_format_real_runtime_test.js` has 12 native fake
+  runtime cases: exact 51-cell pre-normalization detection, seed/owned/full
+  state normalization, idempotence, Quick/Deep zero writes, foreign-surface
+  rejection, outside-block preservation, explicit refresh preservation,
+  S00–S80 resume invariants, and format API failure behavior.
+- v2.8.9 source/release/transfer builders, verifier templates, safe incident
+  and recovery guidance, and a v2.8.9 authority workflow visualization.
+
+### Version and status
+
+- Contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; `TEST_MODE=true` for Phase 8B and Automation default `OFF`.
+- Source A9 contains source/tests/tools/canonical docs/visualization/incident/
+  recovery only; it excludes v2.8.9 packages, release report, and transfer.
+- Source-boundary gate:
+  `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`. Real Workspace
+  retransfer/retest remains `NOT_EXECUTED`.
+
 ## 2.8.8-prepilot - 2026-07-30 Phase 8B Dashboard surface real-runtime remediation
 
 ### Fixed

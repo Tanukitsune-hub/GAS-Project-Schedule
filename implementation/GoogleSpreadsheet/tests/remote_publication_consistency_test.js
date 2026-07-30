@@ -63,7 +63,7 @@ const moduleDocs = [
   'docs/TASK_AUTHORITY_PROTOCOL.md',
   'docs/V2_REQUIREMENTS_TRACEABILITY.md',
   'docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
-  'visualizations/task_authority_protocol_v2_8_8.html'
+  'visualizations/task_authority_protocol_v2_8_9.html'
 ];
 
 test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () => {
@@ -77,7 +77,7 @@ test('RPC-01_CANONICAL_PATHS_EXIST_AND_ROOT_SOURCE_DUPLICATES_ARE_ABSENT', () =>
 test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const config = source('apps-script-v2/00_Config.gs');
   [
-    "CODE_VERSION: '2.8.8-prepilot'",
+    "CODE_VERSION: '2.8.9-prepilot'",
     "SCHEMA_VERSION: '2.6'",
     "AI_SCHEMA_VERSION: '2.0'",
     "MIGRATION_VERSION: '3'",
@@ -93,10 +93,11 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const declaredGate = gateMatch[1];
   assert.ok([
     'PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE',
+    'PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT',
     'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
   ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
-    '2.8.8-prepilot',
+    '2.8.9-prepilot',
     '2.6',
     declaredGate,
     'Task Authority Ledger',
@@ -135,6 +136,8 @@ test('RPC-03_SCHEMA_COUNTS_AND_MATRIX_TRACEABILITY_ARE_CANONICAL', () => {
     1, 'current Setup blocker must be traced without changing historical R4 counts');
   assert.strictEqual((matrix.match(/^\| PHASE8B-DASHBOARD-01 \|/gm) || []).length,
     1, 'Dashboard surface blocker must be traced without changing historical R4 counts');
+  assert.strictEqual((matrix.match(/^\| PHASE8B-DASHBOARD-NUMBER-FORMAT-01 \|/gm) || []).length,
+    1, 'Dashboard number-format blocker must be traced without changing historical R4 counts');
 });
 
 test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
@@ -143,6 +146,7 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   const setup = source('apps-script-v2/02_Setup.gs');
   const sheetBuilder = source('apps-script-v2/03_SheetBuilder.gs');
   const diagnostics = source('apps-script-v2/16_Diagnostics.gs');
+  const dashboard = source('apps-script-v2/15_Dashboard.gs');
   const calendar = source('apps-script-v2/10_CalendarSync.gs');
   const worker = source('apps-script-v2/18_Worker.gs');
   const review = source('apps-script-v2/09_TaskReviewPolicy.gs');
@@ -157,6 +161,8 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
   assert.ok(migration.includes('reconcileMissingAuthorityRecords'));
   assert.ok(migration.includes('reconciliation_pending'));
   assert.ok(setup.includes('mark_orphaned: true'));
+  assert.ok(setup.includes('normalizeSystemBlockNumberFormatForSetup'),
+    'only Setup S90 may normalize the Dashboard number-format control plane');
   assert.ok(diagnostics.includes('recover_relocated: false'));
   assert.ok(diagnostics.includes('mark_orphaned: false'));
   assert.ok(repository.includes('E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN'),
@@ -198,6 +204,12 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
     'Ledger repair authority must remain scoped to Setup bootstrap/resume'
   ));
   [
+    'CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT',
+    'normalizeSystemBlockNumberFormatForSetup',
+    'NUMBER_FORMAT_API_UNAVAILABLE',
+    'setNumberFormat'
+  ].forEach((literal) => assert.ok(dashboard.includes(literal), literal));
+  [
     'DEADLINE_CALENDAR_ARMED',
     'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION',
     'function isAuthorityCompensationRecord',
@@ -209,10 +221,10 @@ test('RPC-04_SHARED_AUTHORITY_AND_FAILURE_RECOVERY_WIRING_EXISTS', () => {
 
 test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () => {
   const toolNames = [
-    'build_v2_8_8_release.ps1',
-    'build_v2_8_8_phase8c_release.ps1',
-    'verify_v2_8_8_release.ps1',
-    'verify_v2_8_8_phase8c_release.ps1'
+    'build_v2_8_9_release.ps1',
+    'build_v2_8_9_phase8c_release.ps1',
+    'verify_v2_8_9_release.ps1',
+    'verify_v2_8_9_phase8c_release.ps1'
   ];
   toolNames.forEach((name) => {
     const text = source(path.join('tools', name));
@@ -225,7 +237,7 @@ test('RPC-04B_CANONICAL_RELEASE_TOOLS_USE_MODULE_SOURCE_AND_MODULE_RELEASE', () 
     assert.ok(text.includes('Join-Path $moduleRoot "release\\$'),
       name + ': release must be rooted at canonical module path');
   });
-  ['build_v2_8_8_release.ps1', 'build_v2_8_8_phase8c_release.ps1']
+  ['build_v2_8_9_release.ps1', 'build_v2_8_9_phase8c_release.ps1']
     .forEach((name) => {
       const text = source(path.join('tools', name));
       assert.ok(text.includes('function Assert-CleanCanonicalSourceInputs'),
@@ -269,6 +281,16 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
       name + ': old/new payload versions required');
   });
   [
+    'build_v2_8_9_company_pc_patch_manifest.ps1',
+    'verify_v2_8_9_company_pc_patch_manifest.ps1'
+  ].forEach((name) => {
+    const text = source(path.join('tools', name));
+    assert.ok(text.includes('git_blob_raw_bytes_sha256'),
+      name + ': raw Git byte comparison required');
+    assert.ok(text.includes('v2.8.8-prepilot') && text.includes('v2.8.9-prepilot'),
+      name + ': T8/B9 payload versions required');
+  });
+  [
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND4_IMPLEMENTATION_REPORT.md',
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_ROUND5_CALENDAR_OUTBOX_AUTHORITY_IMPLEMENTATION_REPORT.md',
     'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_5.html'
@@ -293,14 +315,14 @@ test('RPC-05_SOURCE_COMMIT_TREE_EXCLUDES_RELEASE_PAYLOADS', () => {
     'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_QUICK_DIAGNOSTIC_REAL_RUNTIME_IMPLEMENTATION_REPORT.md'
   ), 'historical v2.8.7 release report must remain present');
   const currentReport =
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_SURFACE_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_NUMBER_FORMAT_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
   assert.ok(!allNames.includes(currentReport),
-    'Source A8 must not contain the Dashboard surface release report');
+    'Source A9 must not contain the Dashboard number-format release report');
   [
-    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/',
-    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot-phase8c/'
+    'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot-phase8c/'
   ].forEach((prefix) => assert.ok(!allNames.some((name) => name.startsWith(prefix)),
-    'Source A8 must not contain new release payload: ' + prefix));
+    'Source A9 must not contain new release payload: ' + prefix));
 });
 
 test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
@@ -312,14 +334,14 @@ test('RPC-05B_RELEASE_DIFF_IS_LIMITED_TO_CANONICAL_PACKAGES_AND_REPORT', () => {
   const lineage = git(['rev-list', '--parents', '-n', '1', releaseCommit])
     .split(/\s+/).filter(Boolean);
   assert.deepStrictEqual(lineage, [releaseCommit, sourceCommit],
-    'Release B8 must be a direct child of Source A8');
+    'Release B9 must be a direct child of Source A9');
   const allowedPrefixes = [
-    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot/',
-    'implementation/GoogleSpreadsheet/release/v2.8.8-prepilot-phase8c/'
+    'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot/',
+    'implementation/GoogleSpreadsheet/release/v2.8.9-prepilot-phase8c/'
   ];
   const report =
-    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_SURFACE_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
-  assert.ok(changed.includes(report), 'Dashboard surface report missing from Release B8');
+    'implementation/GoogleSpreadsheet/AUDIT_REMEDIATION_PHASE8B_DASHBOARD_NUMBER_FORMAT_REAL_RUNTIME_IMPLEMENTATION_REPORT.md';
+  assert.ok(changed.includes(report), 'Dashboard number-format report missing from Release B9');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[0])),
     'Phase 8B package missing from Release commit');
   assert.ok(changed.some((name) => name.startsWith(allowedPrefixes[1])),

@@ -57,7 +57,8 @@ const originalModules = {
   WorkOsGmailGateway: sandbox.WorkOsGmailGateway,
   WorkOsCalendarSync: sandbox.WorkOsCalendarSync,
   WorkOsAutomation: sandbox.WorkOsAutomation,
-  WorkOsDiagnostics: sandbox.WorkOsDiagnostics
+  WorkOsDiagnostics: sandbox.WorkOsDiagnostics,
+  WorkOsDashboard: sandbox.WorkOsDashboard
 };
 
 function matrixColumns(matrix, count, value) {
@@ -250,6 +251,15 @@ function installSetupOnlyStubs(environment) {
   sandbox.WorkOsDiagnostics = {
     runQuickDiagnostic: () => ({
       status: environment.quickDiagnosticStatus || 'PASS'
+    })
+  };
+  sandbox.WorkOsDashboard = {
+    normalizeSystemBlockNumberFormatForSetup: () => ({
+      status: 'CANONICAL',
+      write_performed: false,
+      row_count: 17,
+      column_count: 3,
+      layout_status: 'SYNTHETIC'
     })
   };
 }

@@ -162,3 +162,21 @@ the separate 2.8.6 source/release/transfer chain was independently verified.
   That result is historical. The current v2.8.7 fixed transfer ref T7 is
   `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; this carriage-only status does not
   authorize any real Workspace action.
+
+## D-043 — Dashboard number format is a Setup-owned deterministic control plane
+
+**Decision.** The exact 17×3 Dashboard system block has one deterministic
+plain-text format contract. Setup alone may establish it, immediately before
+S90, only after canonical schema, owner-proven sheet/header Protection, exact
+seed or owned/versioned state, and every other surface check are safe.
+
+**Rationale.** The real Sandbox number-format finding was bounded exactly to
+the system surface. Diagnostics correctly detected it but cannot safely infer
+ownership or repair it. Broadly accepting default or arbitrary formats would
+hide foreign changes and weaken the fail-closed boundary.
+
+**Consequences.** Quick/Deep Diagnostic remain read-only and require the
+format contract exactly. Empty, foreign, ambiguous, or API-unavailable states
+remain fail-closed with closed non-sensitive enum/count output; no cell outside
+the exact block is written. S00–S80 resume preserves existing resources,
+Automation remains OFF, and real Workspace verification is `NOT_EXECUTED`.

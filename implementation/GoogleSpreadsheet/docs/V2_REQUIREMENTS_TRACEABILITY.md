@@ -3,8 +3,8 @@
 Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/GoogleWorkspace_v2_8_8_Phase8B_Dashboard_Surface_Real_Runtime_Remediation_2026-07-30.md`
-Version contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; real Google Workspace
+Version contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current source gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; real Google Workspace
 retransfer/retest remains `NOT_EXECUTED`.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
@@ -89,6 +89,16 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 | DS-03 | Separate Protection/name/value/formula/validation/note/merge/hidden/background/font/number-format/seed-marker conflicts into closed safe enums/counts | `15_Dashboard.gs`; `16_Diagnostics.gs`; surface conflict matrix | LOCAL_REGRESSION_PASS; no content/identity emitted |
 | DS-04 | Quick Diagnostic is byte-stable and S00–S80 resume preserves labels, Calendar, Properties, edit trigger, Automation OFF, and no five-minute trigger | dashboard runtime suite; prior Setup/Quick Diagnostic suites | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
 | DS-05 | Company-PC patch is raw-Git-blob derived from fixed T7 and final B8 | v2.8.8 patch-manifest builder/verifier; fixed T8 detached-clone audit | FIXED_TRANSFER_VERIFIED; exactly 3 changed / 20 unchanged; `appsscript.json` unchanged |
+
+## Phase 8B Dashboard number-format traceability
+
+| ID | Requirement | Primary evidence | Current evidence |
+|---|---|---|---|
+| NF-01 | Strict Diagnostic reports the exact 17×3 system-block format conflict with closed enum/count output only | `15_Dashboard.gs`; `phase8b_dashboard_number_format_real_runtime_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+| NF-02 | Setup, and only Setup before S90, may establish the deterministic plain-text contract after full control-plane and non-format surface proof | `02_Setup.gs`; `15_Dashboard.gs`; number-format runtime suite | LOCAL_REGRESSION_PASS; no Diagnostic repair path |
+| NF-03 | Seed, owned marker, and full versioned states are idempotent; empty/foreign/ambiguous surfaces fail closed and leave the range unchanged | number-format runtime suite; recovery guide | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+| NF-04 | S00〜S80 resume preserves external-resource identity, Automation OFF, and absent five-minute trigger while S90/S99 resume | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_setup_ledger_visibility_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+| NF-05 | Company-PC patch list is raw Git-blob derived from fixed T8 and final B9 payload | v2.8.9 patch-manifest builder/verifier | PENDING_SOURCE_A9; generated after Source A9 only |
 
 ## Task write-route inventory (13 routes)
 

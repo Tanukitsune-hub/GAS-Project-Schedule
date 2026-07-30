@@ -225,6 +225,9 @@ function buildCanonicalEnvironment() {
   sandbox.WorkOsSheetBuilder.applyValidationsAndFormats(spreadsheet);
   sandbox.WorkOsSheetBuilder.applyVisibility(spreadsheet);
   sandbox.WorkOsSheetBuilder.seedSafeSettings(spreadsheet);
+  sandbox.WorkOsDashboard.normalizeSystemBlockNumberFormatForSetup(
+    spreadsheet
+  );
   return { spreadsheet, sheets };
 }
 

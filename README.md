@@ -5,11 +5,11 @@ Google Workspace Personal Work OS.
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.8-prepilot` |
+| Code | `2.8.9-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -48,7 +48,18 @@ Worker, Review, and Calendar work.
 See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 [workflow visualization](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html).
 
-## Phase 8B Dashboard surface real-runtime remediation
+## Phase 8B Dashboard number-format real-runtime remediation
+
+`PHASE8B-DASHBOARD-NUMBER-FORMAT-01` records a safe S90 precondition failure:
+the exact 17×3 Dashboard system surface has number-format drift while every
+other Dashboard conflict count is zero. v2.8.9 does not weaken diagnostics or
+accept arbitrary formats. Setup alone, immediately before S90, may establish a
+deterministic plain-text contract after exact schema, owner-proven Protection,
+seed/marker, and all other surface checks pass. Quick/Deep Diagnostic remain
+read-only; foreign or ambiguous content fails closed. Real Workspace retest is
+`NOT_EXECUTED` and Automation remains `OFF`.
+
+## Historical Phase 8B Dashboard surface real-runtime remediation
 
 `PHASE8B-DASHBOARD-01` records a safe real-Sandbox S90 failure:
 `DASHBOARD_LAYOUT_OWNERSHIP` / `E_DASHBOARD_LAYOUT_CONFLICT` /

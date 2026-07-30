@@ -1,12 +1,36 @@
 # Current Status
 
 Last updated: 2026-07-30
-Candidate version: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Candidate version: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Overall status: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
 Automation default: `OFF`  
 Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 
-## Current 2.8.8 Dashboard surface remediation candidate
+## Current 2.8.9 Dashboard number-format remediation candidate
+
+`PHASE8B-DASHBOARD-NUMBER-FORMAT-01` is a safe Phase 8B Setup blocker. The
+real Sandbox reached S00–S80 and stopped before S90/S99 with closed Dashboard
+ownership/number-format conflict evidence. The exact conflict count matches
+the 17×3 system surface; other Dashboard conflict counts are zero. No
+Workspace identifier, URL, identity, screenshot, locale, observed format
+string, business content, or credential is stored.
+
+The root cause is not a Diagnostic false positive: v2.8.8 detects a
+noncanonical Dashboard number format, but Setup did not own a narrow path to
+establish the deterministic text contract before S90. v2.8.9 keeps the strict
+Diagnostic contract and adds an ownership-proven Setup-only normalization:
+canonical schema, owner-proven sheet/header protection, exact seed or
+owned/versioned state, and every other surface control must first be safe.
+Only then may Setup change the exact 17×3 system block. Empty, ambiguous,
+foreign, or user-owned surfaces remain fail-closed; Quick/Deep Diagnostic
+remain read-only.
+
+Source A9 is pending creation and may contain source, tests, tools, canonical
+documents, visualization, safe incident evidence, and recovery guidance only.
+It must not contain v2.8.9 packages, release report, or transfer. Real
+Workspace retransfer/retest remains `NOT_EXECUTED`; Automation remains `OFF`.
+
+## Historical 2.8.8 Dashboard surface remediation candidate
 
 `PHASE8B-DASHBOARD-01` is High for Phase 8B execution readiness. The real
 Sandbox safely stopped at S90 with `DASHBOARD_LAYOUT_OWNERSHIP`,

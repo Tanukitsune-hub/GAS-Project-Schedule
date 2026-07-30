@@ -1,10 +1,10 @@
 # Manual Acceptance Guide — 2.8.8 Phase 8B Dashboard Surface Candidate
 
-Code Version: `2.8.8-prepilot`
+Code Version: `2.8.9-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T8 carriage only
+Current source gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; real Workspace retransfer/retest `NOT_EXECUTED`
 Automation default: `OFF`
 
 ## Purpose
@@ -44,6 +44,7 @@ information in this repository.
 | Dashboard pre-refresh ownership | exact Setup sheet/header protection and exact seed; no marker write | NOT EXECUTED |
 | Dashboard native Protection access | owner/effective user match; implicit or explicit proven owner only; no domain/audience/foreign access | NOT EXECUTED |
 | Dashboard conflict output | closed reason/subreason enums and counts only; no identity/content/address | NOT EXECUTED |
+| Dashboard number-format normalization | Setup before S90 writes only the exact 17×3 proven system block; Quick/Deep remain read-only | NOT EXECUTED |
 | Empty Task checkboxes | only schema-defined checkbox `false` in identity-empty rows | NOT EXECUTED |
 | Migration | Schema 2.5 anchor-only conversion and pause/resume behavior | NOT EXECUTED |
 
@@ -64,12 +65,11 @@ evidence and is superseded by `PHASE8B-DASHBOARD-01`.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. The historical Source A8
-boundary used `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`; after the full
-A8/B8/T8 remote and detached-clone proof, the current
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` remains only a retransfer
-authorization, never a Sandbox execution authorization. Real Workspace
-retransfer/retest is `NOT_EXECUTED`.
+This guide never declares execution readiness. The current Source A9 boundary
+uses `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`; package, transfer, and
+fresh-clone evidence must be completed before a later evidence-only record can
+raise the carriage-only status. It is never a Sandbox execution authorization.
+Real Workspace retransfer/retest is `NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7

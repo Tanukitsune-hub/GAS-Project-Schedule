@@ -1,8 +1,8 @@
 # V2 Codex Implementation Plan
 
 Last updated: 2026-07-30
-Current source candidate: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current source candidate: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
 
 ## Scope
 
@@ -30,7 +30,19 @@ The A5.1/B5.1 sequence above is retained as historical provenance only. The
 failed P10 v2.8.5 transfer package must not be replaced, manually repaired, or
 used as a current transfer target.
 
-## Current Phase 8B Setup blocker sequence
+## Current Phase 8B Dashboard number-format sequence
+
+1. Preserve all v2.8.5–v2.8.8 package, transfer, incident, and audit bytes.
+2. Diagnose only the exact 17×3 format conflict with closed enums/counts.
+3. Allow Setup before S90 to normalize only a fully proven system block;
+   Quick/Deep Diagnostic remain read-only and foreign surfaces fail closed.
+4. Add native-runtime, Setup-resume, and fake number-format API coverage.
+5. Create Source A9, direct-child Release B9, fixed transfer T9, then an
+   evidence-only update after remote fresh-clone verification. The source gate
+   remains no-go until that later evidence; real Workspace remains
+   `NOT_EXECUTED` throughout repository work.
+
+## Historical Phase 8B Setup blocker sequence
 
 1. Preserve P10, all v2.8.5 packages, transfer material, and previous evidence
    unchanged; record only safe `PHASE8B-SETUP-01` incident facts.

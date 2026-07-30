@@ -5,7 +5,7 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.8-prepilot',
+  CODE_VERSION: '2.8.9-prepilot',
   SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
   MIGRATION_VERSION: '3',
@@ -33,6 +33,11 @@ var WorkOsConfig = Object.freeze({
       note: 'Dashboard未更新'
     })
   ]),
+  // The Dashboard system block contains only string values. Setup may
+  // establish this deterministic plain-text contract after (and only after)
+  // the Dashboard control plane and the exact system surface are proven safe.
+  // Diagnostics remain read-only and require this value exactly.
+  DASHBOARD_SYSTEM_BLOCK_TEXT_FORMAT: '@',
   TASK_INITIAL_ROWS: 100,
   SETTINGS_INITIAL_ROWS: 50,
   DEFAULT_INITIAL_ROWS: 100,

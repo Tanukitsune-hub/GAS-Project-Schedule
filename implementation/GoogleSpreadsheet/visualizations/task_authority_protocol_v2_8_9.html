@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja" data-code-version="2.8.9-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>v2.8.9 Task Authority and Dashboard Number-Format Control Plane</title>
+  <style>
+    :root{--ink:#172033;--line:#c6d2e3;--blue:#195cab;--warn:#8a4b00;--bad:#b42318;--surface:#f5f7fb}
+    body{margin:0;background:var(--surface);color:var(--ink);font:15px system-ui,sans-serif}
+    main{max-width:1120px;margin:32px auto;padding:0 24px}.meta,.flow{display:flex;gap:12px;flex-wrap:wrap}
+    .badge,.node{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}.gate{color:var(--warn);font-weight:700}
+    .node{flex:1 1 190px}.owned{border-color:var(--blue)}.blocked{border-color:var(--bad)}
+    h1,h2,h3{margin-top:0}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+    code{background:#edf2f8;padding:2px 4px;border-radius:4px}@media(max-width:640px){main{padding:0 14px}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>v2.8.9 Task Authority / Dashboard control plane</h1>
+  <div class="meta">
+    <span class="badge">Code 2.8.9-prepilot</span><span class="badge">Schema 2.6 / AI Schema 2.0 / Migration 3</span>
+    <span class="badge">11 Sheets / hidden 5 / Task columns 50</span>
+    <span class="badge gate">PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT</span>
+  </div>
+  <h2>Setup-only Dashboard format normalization</h2>
+  <section class="flow">
+    <article class="node owned"><h3>1. prove control plane</h3><p>Canonical schema, owner-proven sheet/header Protection, exact 17×3 system block, exact seed or owned/versioned marker state are required.</p></article>
+    <article class="node owned"><h3>2. prove safe surface</h3><p>Foreign Protection, named range, value, formula, validation, note, merge, hidden state, background, font, seed/marker, or user content stops the operation.</p></article>
+    <article class="node owned"><h3>3. normalize exact block</h3><p>Only Setup before S90 may establish the deterministic plain-text contract for the exact system block. Re-run is idempotent.</p></article>
+    <article class="node"><h3>4. read-only diagnostics</h3><p>Quick/Deep Diagnostic do not repair. Any noncanonical system format remains a closed-enum failure until Setup proves and performs the narrow repair.</p></article>
+  </section>
+  <p><code>PHASE8B-DASHBOARD-01</code> remains the protection/surface contract. During <code>S20_CREATE_SCHEMAS</code>, <code>PHASE8B-SETUP-01</code> establishes the hidden Task Authority Ledger before authority validation. <code>PHASE8B-QUICK-DIAGNOSTIC-01</code> remains read-only.</p>
+  <h2>Task Authority / Calendar boundary</h2>
+  <section class="flow">
+    <article class="node owned"><h3>Task Authority Ledger</h3><p>Protected hidden control plane: one full Task-row write is bracketed by <code>PREPARED</code> then <code>COMMITTED</code> durable slots.</p></article>
+    <article class="node"><h3>Visible Task projection</h3><p>Visible Task cells are business state, not a recovery authority. <code>calendar_reconcile_required</code> is schema-driven.</p></article>
+    <article class="node blocked"><h3>Invalid authority</h3><p><code>QUARANTINED</code>, <code>UNRECOVERABLE</code>, or <code>ORPHANED</code> rows are excluded. No snapshot, note, or raw-row fallback exists.</p></article>
+    <article class="node"><h3>Calendar derived intent</h3><p>Final authority validation precedes external I/O; only verified owned-event compensation is allowed after durable arm.</p></article>
+  </section>
+  <h2>v2.8.9 safety matrix</h2>
+  <table>
+    <thead><tr><th>State</th><th>Permitted action</th><th>Forbidden action</th></tr></thead>
+    <tbody>
+      <tr><td>Exact proven 17×3 Dashboard system surface with format-only drift</td><td>Setup applies the deterministic text contract to that range only.</td><td>Writing user space, generalizing accepted formats, or running repair from diagnostics.</td></tr>
+      <tr><td>Any foreign surface/control-plane drift</td><td>Fail closed with safe enum/count; preserve evidence.</td><td>Normalization, Dashboard write, silent rebaseline, manual repair.</td></tr>
+      <tr><td>S00–S80 complete; S90/S99 incomplete</td><td>Resume normal Setup after the narrow proof; preserve labels, Calendar, Properties, and edit-trigger identity.</td><td>Automation enablement or a five-minute trigger.</td></tr>
+    </tbody>
+  </table>
+  <p>Real Google Workspace, OAuth, import, Setup, Diagnostic, Dashboard refresh, Gmail, Calendar, deployment, <code>clasp push</code>, provider configuration, and real data are NOT EXECUTED by this repository evidence. This visualization does not declare Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.</p>
+</main>
+</body>
+</html>

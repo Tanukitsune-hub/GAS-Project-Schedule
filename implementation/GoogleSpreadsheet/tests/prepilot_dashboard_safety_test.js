@@ -54,7 +54,7 @@ function makeGrid(options = {}) {
   const backgrounds = blankMatrix(rows, columns, '#ffffff');
   const fontWeights = blankMatrix(rows, columns, 'normal');
   const fontStyles = blankMatrix(rows, columns, 'normal');
-  const numberFormats = blankMatrix(rows, columns, 'General');
+  const numberFormats = blankMatrix(rows, columns, '@');
   values[0] = ['metric_key', 'metric_value', 'note'];
   values[1] = ['項目', '値', '注記'];
   const merged = new Set();
@@ -282,6 +282,7 @@ const context = {
     LOCK_WAIT_MS: 5000,
     DASHBOARD_RESERVE_MS: 5000,
     DASHBOARD_SOFT_LIMIT_MS: 60000,
+    DASHBOARD_SYSTEM_BLOCK_TEXT_FORMAT: '@',
     TEST_MODE: true,
     PROPERTIES: { INSTANCE_ID: 'WORK_OS_V2_INSTANCE_ID' },
     SHEETS: {

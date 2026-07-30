@@ -577,6 +577,21 @@ var WorkOsSetup = (function () {
       return WorkOsAutomation.ensureEditTrigger();
     }
     if (stage === 'S90_QUICK_DIAGNOSTIC') {
+      if (typeof WorkOsDashboard === 'undefined' ||
+          !WorkOsDashboard ||
+          typeof WorkOsDashboard
+            .normalizeSystemBlockNumberFormatForSetup !== 'function') {
+        throw new WorkOsAppError(
+          'E_DASHBOARD_MODULE_MISSING',
+          stage,
+          false,
+          'Dashboard number-format control-plane module is unavailable.'
+        );
+      }
+      // This is the only Setup-owned number-format repair path. It proves
+      // the exact Dashboard control plane before writing the 17 x 3 system
+      // block, then leaves Quick Diagnostic itself read-only.
+      WorkOsDashboard.normalizeSystemBlockNumberFormatForSetup(spreadsheet);
       return WorkOsDiagnostics.runQuickDiagnostic(
         spreadsheet,
         { budget: budget }

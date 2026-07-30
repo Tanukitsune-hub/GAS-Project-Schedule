@@ -1,8 +1,8 @@
 # Google Workspace Personal Work OS v2 — Implementation Specification
 
 Last updated: 2026-07-30
-Code: `2.8.8-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` (fixed T8 verified; real Workspace retransfer/retest `NOT_EXECUTED`)
+Code: `2.8.9-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
+Current source gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` (real Workspace retransfer/retest `NOT_EXECUTED`)
 
 ## 1. Scope and non-goals
 
@@ -67,6 +67,15 @@ hidden row/column, background, font, number format, and seed/marker conflicts.
 It emits only those codes and whitelisted counts. User identities, cell
 contents, formulas, notes, range addresses, IDs, and URLs are never diagnostic
 output. This is the `PHASE8B-DASHBOARD-01` contract.
+
+### Dashboard deterministic number-format compatibility
+
+The exact 17×3 Dashboard system block has one deterministic plain-text
+contract. Setup alone, immediately before S90, may establish it after the
+canonical schema, owner-proven protections, exact seed/owned versioned state,
+and every non-format surface check are safe. Empty, ambiguous, foreign, or
+user-owned surfaces fail closed. Quick and Deep Diagnostic remain read-only;
+blank, default, or arbitrary system formats are not generally accepted.
 
 ## 3. Authority architecture
 

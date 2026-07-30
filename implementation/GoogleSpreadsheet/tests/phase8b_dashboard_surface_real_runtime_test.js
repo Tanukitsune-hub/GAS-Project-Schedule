@@ -131,7 +131,8 @@ function clearDashboardSeed(target) {
       sheet.backgrounds[row][column] = '#ffffff';
       sheet.fontWeights[row][column] = 'normal';
       sheet.fontStyles[row][column] = 'normal';
-      sheet.formats[row][column] = 'General';
+      sheet.formats[row][column] =
+        sandbox.WorkOsConfig.DASHBOARD_SYSTEM_BLOCK_TEXT_FORMAT;
     }
   }
   sheet.mergedRanges = [];

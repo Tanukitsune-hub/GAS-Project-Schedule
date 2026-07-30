@@ -35,6 +35,13 @@ var WorkOsDashboard = (function () {
   var LEGACY_SEED_KEYS = Object.freeze(LEGACY_SEED_ROWS.map(
     function (row) { return row.metric_key; }
   ));
+  var CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT = String(
+    WorkOsConfig.DASHBOARD_SYSTEM_BLOCK_TEXT_FORMAT || '@'
+  );
+  // This sentinel is intentionally private. It permits Setup to defer only
+  // the number-format failure decision while retaining every other ownership
+  // and surface check. It is not an externally configurable inspection mode.
+  var SETUP_NUMBER_FORMAT_NORMALIZATION_MODE = Object.freeze({});
   var DASHBOARD_CONFLICT_REASONS = Object.freeze({
     DASHBOARD_SHEET_PROTECTION_CONTRACT: true,
     DASHBOARD_HEADER_PROTECTION_CONTRACT: true,
@@ -85,6 +92,7 @@ var WorkOsDashboard = (function () {
     BACKGROUND_NONCANONICAL: true,
     FONT_NONCANONICAL: true,
     NUMBER_FORMAT_NONCANONICAL: true,
+    NUMBER_FORMAT_API_UNAVAILABLE: true,
     SEED_VALUES_NONCANONICAL: true,
     MARKER_NONCANONICAL: true,
     DUPLICATE_METRIC_KEY: true,
@@ -866,6 +874,11 @@ var WorkOsDashboard = (function () {
       normalized === 'rgba(255,255,255,1)';
   }
 
+  function isCanonicalSystemBlockNumberFormat(value) {
+    return String(value == null ? '' : value) ===
+      CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT;
+  }
+
   function matchesCanonicalLegacySeed(values) {
     if (!LEGACY_SEED_ROWS.length) {
       return false;
@@ -1022,7 +1035,8 @@ var WorkOsDashboard = (function () {
       startIndex,
       rowCount,
       allowedValues,
-      allowedMarkerNotes) {
+      allowedMarkerNotes,
+      inspectionMode) {
     if (!snapshot.controlPlane.safe) {
       return snapshot.controlPlane;
     }
@@ -1115,11 +1129,9 @@ var WorkOsDashboard = (function () {
             (fontStyle && fontStyle !== 'normal')) {
           counts.font_conflict_count += 1;
         }
-        var numberFormat = String(
-          snapshot.numberFormats[sourceRow][columnIndex] || ''
-        );
-        if (numberFormat && numberFormat !== 'General' &&
-            numberFormat !== '@') {
+        if (!isCanonicalSystemBlockNumberFormat(
+          snapshot.numberFormats[sourceRow][columnIndex]
+        )) {
           counts.number_format_conflict_count += 1;
         }
       }
@@ -1175,6 +1187,10 @@ var WorkOsDashboard = (function () {
         resultIndex < surfaceResultOrder.length;
         resultIndex += 1) {
       var item = surfaceResultOrder[resultIndex];
+      if (item[0] === 'number_format_conflict_count' &&
+          inspectionMode === SETUP_NUMBER_FORMAT_NORMALIZATION_MODE) {
+        continue;
+      }
       if (counts[item[0]] > 0) {
         return dashboardInspection(
           false,
@@ -1265,7 +1281,7 @@ var WorkOsDashboard = (function () {
     }
   }
 
-  function inspectLayout(spreadsheet, desiredKeys) {
+  function inspectLayoutInternal(spreadsheet, desiredKeys, inspectionMode) {
     var keys = desiredKeys || METRIC_ORDER.slice();
     var sheet = spreadsheet.getSheetByName(
       WorkOsConfig.SHEETS.DASHBOARD
@@ -1396,7 +1412,8 @@ var WorkOsDashboard = (function () {
         start.index,
         keys.length,
         allowedValues,
-        allowedNotes
+        allowedNotes,
+        inspectionMode
       );
       if (!ownedInspection.safe) {
         throwDashboardInspection(ownedInspection);
@@ -1442,7 +1459,8 @@ var WorkOsDashboard = (function () {
         fullStart,
         keys.length,
         emptyMatrix(keys.length, width, true),
-        null
+        null,
+        inspectionMode
       );
       if (!fullInspection.safe) {
         throwDashboardInspection(fullInspection);
@@ -1482,7 +1500,8 @@ var WorkOsDashboard = (function () {
         0,
         keys.length,
         seedAllowed,
-        null
+        null,
+        inspectionMode
       );
       if (!seedInspection.safe) {
         throwDashboardInspection(seedInspection);
@@ -1507,7 +1526,8 @@ var WorkOsDashboard = (function () {
         emptyStart,
         keys.length,
         null,
-        null
+        null,
+        inspectionMode
       );
       if (emptyInspection.safe) {
         return {
@@ -1540,6 +1560,84 @@ var WorkOsDashboard = (function () {
       conflict_reason_code: firstUnsafeInspection.reason,
       conflict_subreason_code: firstUnsafeInspection.subreason,
       conflict_counts: firstUnsafeInspection.counts
+    };
+  }
+
+  function inspectLayout(spreadsheet, desiredKeys) {
+    return inspectLayoutInternal(spreadsheet, desiredKeys, null);
+  }
+
+  function normalizeSystemBlockNumberFormatForSetup(spreadsheet) {
+    var keys = METRIC_ORDER.slice();
+    var layout = inspectLayoutInternal(
+      spreadsheet,
+      keys,
+      SETUP_NUMBER_FORMAT_NORMALIZATION_MODE
+    );
+    if (!layout.writable || [
+      'LEGACY_SEED',
+      'LEGACY_FULL',
+      'OWNED'
+    ].indexOf(layout.status) === -1 ||
+        layout.block_end_row - layout.block_start_row + 1 !== keys.length) {
+      throw dashboardLayoutConflict(
+        layout.conflict_reason_code || 'DASHBOARD_SEED_OR_MARKER_CONTRACT',
+        layout.conflict_subreason_code || 'NO_SAFE_BLOCK',
+        layout.conflict_counts || {}
+      );
+    }
+    var sheet = spreadsheet.getSheetByName(WorkOsConfig.SHEETS.DASHBOARD);
+    var range = sheet.getRange(
+      layout.block_start_row,
+      1,
+      keys.length,
+      3
+    );
+    if (typeof range.getNumberFormats !== 'function' ||
+        typeof range.setNumberFormat !== 'function') {
+      throw dashboardLayoutConflict(
+        'DASHBOARD_NUMBER_FORMAT_CONFLICT',
+        'NUMBER_FORMAT_API_UNAVAILABLE',
+        { number_format_conflict_count: keys.length * 3 }
+      );
+    }
+    var formats = range.getNumberFormats();
+    var canonical = Array.isArray(formats) && formats.length === keys.length &&
+      formats.every(
+      function (row) {
+        return Array.isArray(row) && row.length === 3 && row.every(
+          isCanonicalSystemBlockNumberFormat
+        );
+      }
+    );
+    if (canonical) {
+      return {
+        status: 'CANONICAL',
+        write_performed: false,
+        row_count: keys.length,
+        column_count: 3,
+        layout_status: layout.status
+      };
+    }
+    range.setNumberFormat(CANONICAL_SYSTEM_BLOCK_TEXT_FORMAT);
+    // Post-write strict inspection proves the exact canonical format without
+    // relaxing the normal read-only Quick/Deep Diagnostic contract.
+    var verified = inspectLayout(spreadsheet, keys);
+    if (!verified.writable || verified.block_start_row !==
+        layout.block_start_row || verified.block_end_row !==
+        layout.block_end_row) {
+      throw dashboardLayoutConflict(
+        verified.conflict_reason_code || 'DASHBOARD_NUMBER_FORMAT_CONFLICT',
+        verified.conflict_subreason_code || 'NUMBER_FORMAT_NONCANONICAL',
+        verified.conflict_counts || {}
+      );
+    }
+    return {
+      status: 'NORMALIZED',
+      write_performed: true,
+      row_count: keys.length,
+      column_count: 3,
+      layout_status: verified.status
     };
   }
 
@@ -1692,6 +1790,8 @@ var WorkOsDashboard = (function () {
     collectOperationalMetrics: collectOperationalMetrics,
     buildMetricRows: buildMetricRows,
     inspectLayout: inspectLayout,
+    normalizeSystemBlockNumberFormatForSetup:
+      normalizeSystemBlockNumberFormatForSetup,
     upsertMetricRows: safeUpsertMetricRows,
     refresh: refresh
   });

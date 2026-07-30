@@ -2,10 +2,21 @@
 
 Last updated: 2026-07-30
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
-Current contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`
 
-## Phase 8B Dashboard surface remediation
+## Phase 8B Dashboard number-format remediation
+
+| Step | Deliverable | State |
+|---|---|---|
+| P8B-NF-1 | Preserve historical v2.8.5–v2.8.8 artifacts | Complete; no historical package, transfer, audit, or incident byte is replaced. |
+| P8B-NF-2 | Exact root cause and strict contract | Complete in source: all 51 format cells remain strict conflicts until the exact control plane and non-format surface are proven safe. |
+| P8B-NF-3 | Setup-only normalization | Complete in source: Setup immediately before S90 may set only the exact 17×3 system block; Diagnostics remain read-only. |
+| P8B-NF-4 | Native runtime / resume coverage | Complete locally: 12 number-format cases plus preserved Dashboard, Quick Diagnostic, and Ledger suites. |
+| P8B-NF-5 | Source A9 | Pending source commit; source/tests/tools/canonical docs/visualization/incident/recovery only, without package/report/transfer. |
+| P8B-NF-6 | Release B9 / Transfer T9 / evidence E9 | Pending after A9; each has a separate boundary and no real Workspace execution. |
+
+## Historical Phase 8B Dashboard surface remediation
 
 | Step | Deliverable | State |
 |---|---|---|
