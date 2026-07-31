@@ -16,13 +16,13 @@ assert.strictEqual(result.status, 0, result.stderr || result.stdout);
 const report = JSON.parse(result.stdout);
 assert.strictEqual(report.suite, 'local_clasp_dev_self_test');
 assert.strictEqual(report.failed, 0);
-assert.ok(report.passed >= 8);
+assert.ok(report.passed >= 9);
 assert.ok(report.tests.every((item) => item.status === 'PASS'));
 
 process.stdout.write(`${JSON.stringify({
   suite: 'local_clasp_validation_gate',
   environment: 'LOCAL_NON_GOOGLE',
-  passed: 8,
+  passed: 9,
   failed: 0,
   local_clasp_authentication: 'NOT_EXECUTED'
 }, null, 2)}\n`);

@@ -243,9 +243,16 @@ function assertTargetGuard(requireEnvironment) {
   return { config, target };
 }
 
-function claspExecutable() {
-  const name = process.platform === 'win32' ? 'clasp.cmd' : 'clasp';
-  const candidate = path.join(moduleRoot, 'node_modules', '.bin', name);
+function claspEntrypoint() {
+  const candidate = path.join(
+    moduleRoot,
+    'node_modules',
+    '@google',
+    'clasp',
+    'build',
+    'src',
+    'index.js'
+  );
   if (!fs.existsSync(candidate)) {
     fail('LOCAL_CLASP_NOT_INSTALLED', 'LOCAL_CLASP_NOT_INSTALLED');
   }
@@ -253,8 +260,8 @@ function claspExecutable() {
 }
 
 function runClasp(args, cwd) {
-  const command = claspExecutable();
-  const result = childProcess.spawnSync(command, args, {
+  const entrypoint = claspEntrypoint();
+  const result = childProcess.spawnSync(process.execPath, [entrypoint].concat(args), {
     cwd,
     encoding: 'utf8',
     windowsHide: true,
@@ -437,6 +444,11 @@ function selfTest() {
       'REMOTE_PULLBACK_UNEXPECTED_CONTENT'
     ), (error) => error && error.code === 'REMOTE_PULLBACK_UNEXPECTED_CONTENT');
   });
+  test('LOCAL_CLASP_ENTRYPOINT_IS_PROJECT_LOCAL', () => {
+    const entrypoint = claspEntrypoint();
+    assert.ok(entrypoint.startsWith(moduleRoot));
+    assert.ok(entrypoint.endsWith(path.join('build', 'src', 'index.js')));
+  });
   test('TARGET_GUARD_REJECTS_PLACEHOLDER', () => {
     assert.throws(() => assertTargetObjects(
       { scriptId: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID', rootDir: 'payload' },
@@ -585,6 +597,7 @@ module.exports = {
   canonicalPayloadFileNames,
   assertExactPayloadNames,
   assertExactPayloadDirectory,
+  claspEntrypoint,
   inventoryFor,
   assertTargetObjects,
   GateError
