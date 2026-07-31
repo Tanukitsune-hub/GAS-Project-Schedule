@@ -235,6 +235,17 @@ function changedTrackedFilesSinceInstruction() {
   return output ? output.split(/\r?\n/).filter(Boolean).sort() : [];
 }
 
+function addedTextSinceInstruction() {
+  const diff = git([
+    'diff', '--no-ext-diff', '--unified=0', '--diff-filter=ACMR',
+    `${instruction0006}..HEAD`, '--'
+  ]);
+  return diff.split(/\r?\n/)
+    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+    .map((line) => line.slice(1))
+    .join('\n');
+}
+
 function isForbiddenCredentialPath(file) {
   const segments = String(file).split('/');
   const base = segments[segments.length - 1];
@@ -252,22 +263,24 @@ function isForbiddenCredentialPath(file) {
 function checkTrackedSecretsAndLocalArtifacts() {
   const files = trackedFiles(['.']);
   const actualScriptIdPattern = /"scriptId"\s*:\s*"(?!REPLACE_WITH)[^"]+"/i;
-  const changedFiles = new Set(changedTrackedFilesSinceInstruction());
+  const changedFiles = changedTrackedFilesSinceInstruction();
+  const addedText = addedTextSinceInstruction();
   const hits = [];
   for (const file of files) {
     if (isForbiddenCredentialPath(file)) hits.push({ file, kind: 'forbidden_path' });
     const full = path.join(repositoryRoot, file);
     const content = fs.readFileSync(full);
-    if (changedFiles.has(file) && contentHasSensitivePattern(content)) {
-      hits.push({ file, kind: 'secret_or_local_path' });
-    }
     if (actualScriptIdPattern.test(content)) hits.push({ file, kind: 'tracked_script_id' });
+  }
+  if (contentHasSensitivePattern(addedText)) {
+    hits.push({ kind: 'secret_or_local_path_in_added_content' });
   }
   if (hits.length) throw new Error('TRACKED_SECRET_OR_LOCAL_ARTIFACT_FOUND');
   return {
     command: 'tracked secret/credential/local-path/clasp scan',
     file_count: files.length,
-    changed_content_scan_file_count: changedFiles.size,
+    changed_content_scan_file_count: changedFiles.length,
+    added_content_line_count: addedText ? addedText.split('\n').length : 0,
     content_scan_baseline: 'instruction_0006',
     canonical_source_doc_scan: 'RPC-06 regression suite',
     hit_count: 0
