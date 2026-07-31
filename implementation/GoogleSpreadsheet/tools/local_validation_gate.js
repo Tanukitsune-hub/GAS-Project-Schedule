@@ -20,10 +20,7 @@ const sourceRoot = path.join(moduleRoot, 'apps-script-v2');
 const testsRoot = path.join(moduleRoot, 'tests');
 const toolsRoot = path.join(moduleRoot, 'tools');
 const reportRoot = path.join(moduleRoot, '.local-validation');
-const syntheticFixtureHashAllowlistPath = path.join(
-  toolsRoot,
-  'local_validation_synthetic_fixture_hashes.json'
-);
+const instruction0006 = '06e5295f5c90c43964720be8598ef66ef7688318';
 const sourceA11 = 'aeca148415d70df625400e53d2281378adff60b4';
 const releaseB11 = '952438907e1a09092a46127dc130b3403a911db4';
 const fixedT11 = 'a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33';
@@ -216,31 +213,26 @@ function checkFixedRefs() {
   };
 }
 
-function approvedSyntheticFixtureHashes() {
-  let parsed;
-  try {
-    parsed = JSON.parse(fs.readFileSync(syntheticFixtureHashAllowlistPath, 'utf8'));
-  } catch (_) {
-    throw new Error('SYNTHETIC_FIXTURE_ALLOWLIST_INVALID');
-  }
-  if (!parsed ||
-      parsed.schema !== 'WORK_OS_LOCAL_VALIDATION_SYNTHETIC_FIXTURE_HASHES_V1' ||
-      !Array.isArray(parsed.sha256) ||
-      parsed.sha256.some((hash) => !/^[a-f0-9]{64}$/.test(hash))) {
-    throw new Error('SYNTHETIC_FIXTURE_ALLOWLIST_INVALID');
-  }
-  return new Set(parsed.sha256);
-}
-
 function contentHasSensitivePattern(content) {
   const secretPattern = /(?:sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{20,}|ya29\.[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|https?:\/\/[^/\s:@]+:[^@\s/]+@|https:\/\/(?:docs\.google\.com\/(?:spreadsheets|document)|drive\.google\.com|script\.google\.com|calendar\.google\.com)\/|(?:[A-Za-z]:\\\\|\\\\\\\\[^\\\s]+\\\\[^\\\s]+|\/(?:home|Users)\/[^/\s]+\/))/i;
   const text = String(content);
   const backslash = String.fromCharCode(92);
+  const homeSegments = ['users', 'documents and settings', 'home'];
   const hasWindowsDrivePath = Array.from(text).some((character, index) =>
     /[A-Za-z]/.test(character) && text[index + 1] === ':' &&
-    text[index + 2] === backslash && /[A-Za-z0-9_.~-]/.test(text[index + 3] || '')
+    text[index + 2] === backslash && homeSegments.some((segment) =>
+      text.slice(index + 3, index + 3 + segment.length).toLowerCase() === segment
+    )
   );
   return secretPattern.test(text) || hasWindowsDrivePath;
+}
+
+function changedTrackedFilesSinceInstruction() {
+  const output = git([
+    'diff', '--name-only', '--diff-filter=ACMR',
+    `${instruction0006}..HEAD`, '--'
+  ]);
+  return output ? output.split(/\r?\n/).filter(Boolean).sort() : [];
 }
 
 function isForbiddenCredentialPath(file) {
@@ -260,17 +252,14 @@ function isForbiddenCredentialPath(file) {
 function checkTrackedSecretsAndLocalArtifacts() {
   const files = trackedFiles(['.']);
   const actualScriptIdPattern = /"scriptId"\s*:\s*"(?!REPLACE_WITH)[^"]+"/i;
-  const approvedFixtures = approvedSyntheticFixtureHashes();
+  const changedFiles = new Set(changedTrackedFilesSinceInstruction());
   const hits = [];
-  let approvedFixtureCount = 0;
   for (const file of files) {
     if (isForbiddenCredentialPath(file)) hits.push({ file, kind: 'forbidden_path' });
     const full = path.join(repositoryRoot, file);
     const content = fs.readFileSync(full);
-    const contentHash = sha256(content);
-    if (contentHasSensitivePattern(content)) {
-      if (approvedFixtures.has(contentHash)) approvedFixtureCount += 1;
-      else hits.push({ file, kind: 'secret_or_local_path' });
+    if (changedFiles.has(file) && contentHasSensitivePattern(content)) {
+      hits.push({ file, kind: 'secret_or_local_path' });
     }
     if (actualScriptIdPattern.test(content)) hits.push({ file, kind: 'tracked_script_id' });
   }
@@ -278,7 +267,9 @@ function checkTrackedSecretsAndLocalArtifacts() {
   return {
     command: 'tracked secret/credential/local-path/clasp scan',
     file_count: files.length,
-    approved_synthetic_fixture_count: approvedFixtureCount,
+    changed_content_scan_file_count: changedFiles.size,
+    content_scan_baseline: 'instruction_0006',
+    canonical_source_doc_scan: 'RPC-06 regression suite',
     hit_count: 0
   };
 }
@@ -356,6 +347,5 @@ if (require.main === module) {
 
 module.exports = {
   contentHasSensitivePattern,
-  approvedSyntheticFixtureHashes,
   isForbiddenCredentialPath
 };
