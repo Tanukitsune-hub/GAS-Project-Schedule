@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.8.11-prepilot - 2026-07-31 T1-01 bounded Diagnostic summary visibility remediation
+
+### Fixed
+
+- `PHASE8B-T1-01-DIAGNOSTIC-SUMMARY-01`: Quick/Deep Diagnostic detail JSON
+  can be redacted and capped at the UI boundary, so aggregate status counts
+  alone could not prove which WARN/FAIL checks were present. The candidate now
+  emits a bounded summary before details with deterministic sorted unique IDs,
+  completeness flags, counts, closed side-effect Booleans, Task 50-column and
+  header states, and Ledger 21-column/hidden/protected/validator states.
+- A list overflow, duplicate, malformed identifier, or absent canonical
+  aggregate remains fail-closed (`REVIEW_REQUIRED` or `UNKNOWN`). Existing
+  checks, warnings, details, redaction, cap behavior, and strict failures are
+  retained unchanged.
+
+### Added
+
+- Local fake-runtime coverage for six synthetic WARN IDs, state-dependent
+  warning reporting without raw details, legacy Dashboard/AI/Calendar warning
+  retention, Task/Ledger aggregates, bounds overflow, UI ordering before
+  capped detail, and the all-false Quick/Deep side-effect contract.
+- This version does not run or authorize Setup, Dashboard refresh, Gmail,
+  Calendar, trigger, properties, Automation, or another Tranche action.
+
 ## 2.8.10-prepilot - 2026-07-31 Dashboard write-visibility / module-skew remediation
 
 ### Fixed

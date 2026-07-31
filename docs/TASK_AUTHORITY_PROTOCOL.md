@@ -1,13 +1,25 @@
-# Task Authority Protocol — Code 2.8.10-prepilot
+# Task Authority Protocol — Code 2.8.11-prepilot
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.10-prepilot` |
+| Code | `2.8.11-prepilot` |
 | Task Schema | `2.6` / 50 columns |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance remains separately gated |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable while T11 is pending; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance remains separately gated |
+
+## Diagnostic bounded-acceptance summary
+
+Quick and Deep Diagnostic preserve their read-only contract. Before any
+redacted and capped detail payload, v2.8.11 exposes a bounded summary with
+sorted unique WARN/FAIL check IDs, completeness flags, counts, explicit
+no-side-effect Booleans, Task physical 50-column/header states, and Ledger
+physical 21-column/hidden/protected/validator states. It never copies values,
+formulas, notes, ranges, Sheet names, identities, IDs, URLs, locale, or raw
+detail into this summary. A malformed, duplicate, or overflowed ID list is
+`REVIEW_REQUIRED`; an absent aggregate is `UNKNOWN`. Neither outcome repairs
+the ledger, task row, Dashboard, Calendar outbox, or version properties.
 
 ## Quick Diagnostic runtime control plane
 

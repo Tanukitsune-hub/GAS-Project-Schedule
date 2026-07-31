@@ -5,11 +5,17 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.10-prepilot',
+  CODE_VERSION: '2.8.11-prepilot',
   SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
   MIGRATION_VERSION: '3',
-  S90_MODULE_CONTRACT_ID: 'WORK_OS_V2_S90_CONTRACT_2_8_10',
+  S90_MODULE_CONTRACT_ID: 'WORK_OS_V2_S90_CONTRACT_2_8_11',
+  DIAGNOSTIC_ACCEPTANCE_SUMMARY_CONTRACT_ID:
+    'WORK_OS_V2_DIAGNOSTIC_ACCEPTANCE_SUMMARY_V1',
+  // This deliberately exceeds the known Quick Diagnostic check population
+  // while keeping the summary bounded enough to remain above UI detail caps.
+  DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_IDS: 96,
+  DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_ID_LENGTH: 48,
   TIMEZONE: 'Asia/Tokyo',
   HEADER_ID_ROW: 1,
   HEADER_LABEL_ROW: 2,

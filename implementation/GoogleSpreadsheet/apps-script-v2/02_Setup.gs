@@ -2,7 +2,7 @@
  * New-environment-only, staged setup available through the Phase 4 build.
  */
 var WorkOsSetup = (function () {
-  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_10';
+  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_11';
 
   function safeNormalizationEvidence(value) {
     if (!value || typeof value !== 'object') {

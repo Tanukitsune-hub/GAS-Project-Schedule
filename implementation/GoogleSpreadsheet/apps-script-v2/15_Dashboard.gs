@@ -6,7 +6,7 @@
  * ID, credential reference or external payload is copied to the Dashboard.
  */
 var WorkOsDashboard = (function () {
-  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_10';
+  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_11';
   var METRIC_ORDER = Object.freeze([
     'AUTOMATION_STATUS',
     'LAST_SUCCESS_AT',

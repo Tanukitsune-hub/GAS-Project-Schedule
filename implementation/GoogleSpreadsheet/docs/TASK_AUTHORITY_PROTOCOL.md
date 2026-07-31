@@ -1,6 +1,6 @@
 # Task Authority Protocol — Source Copy
 
-Code `2.8.10-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
+Code `2.8.11-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
 Current corrective-integration gate:
 `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; Source A10,
 direct-child Release B10, fixed transfer T10, and evidence E10 are
@@ -14,6 +14,12 @@ historical. The current gate is
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. One controlled
 Sandbox Setup S00-S99 observation is PASS, while functional acceptance remains
 separately authorized and `NOT_EXECUTED`.
+
+The current 0003 source-stage gate is `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`.
+T10 remains immutable and T11 is pending. Quick/Deep now expose a bounded
+pre-detail acceptance summary of closed IDs, counts, read-only Booleans, and
+Task/Ledger aggregates; an incomplete summary is `REVIEW_REQUIRED` and never
+repairs authority, Calendar, Dashboard, Setup state, or version properties.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

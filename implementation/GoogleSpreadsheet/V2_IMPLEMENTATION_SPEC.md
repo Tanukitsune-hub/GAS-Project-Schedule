@@ -1,8 +1,13 @@
 # Google Workspace Personal Work OS v2 — Implementation Specification
 
 Last updated: 2026-07-31
-Code: `2.8.10-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` (fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; one observed controlled Sandbox Setup S00-S99 run is PASS; standalone functional acceptance is `NOT_EXECUTED`)
+Code: `2.8.11-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` (fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; T11 is pending; the reported T1-01 result remains `REVIEW_REQUIRED` and functional acceptance is `NOT_EXECUTED`)
+
+The 2.8.11 scope is bounded Diagnostic-result visibility only: it adds a
+pre-detail summary of closed check IDs, completeness, counts, side-effect
+Booleans, and Task/Ledger aggregates. It does not change authority, Calendar,
+Setup, Dashboard-repair, trigger, property, or Automation behavior.
 
 ## 1. Scope and non-goals
 

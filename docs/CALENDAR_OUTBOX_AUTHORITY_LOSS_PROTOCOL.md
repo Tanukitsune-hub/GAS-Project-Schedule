@@ -1,12 +1,17 @@
 # Calendar Outbox Authority-Loss Compensation Protocol
 
-Contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` /
+Contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10 is
-`927d8567bce64461840cc6f72fbae0c1e636a8e6`. One observed Setup S00-S99 run
+`PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 is
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` and T11 is pending. One observed Setup S00-S99 run
 is PASS; Calendar reconciliation remains separately authorized and
 `NOT_EXECUTED`.
+
+The v2.8.11 bounded Diagnostic summary also does not alter this protocol. It
+is a read-only UI/result visibility contract: all Calendar API and repair
+Booleans remain false, and a T1-01 recheck cannot reconcile Calendar intent or
+write an authority record.
 
 ## Purpose and boundary
 

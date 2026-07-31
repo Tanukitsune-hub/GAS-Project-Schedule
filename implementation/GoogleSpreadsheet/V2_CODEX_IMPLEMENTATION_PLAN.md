@@ -1,8 +1,13 @@
 # V2 Codex Implementation Plan
 
 Last updated: 2026-07-31
-Current remediation candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
+Current remediation candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
+
+Current instruction 0003 adds only a bounded Diagnostic acceptance summary.
+The closed T1-01 `77 PASS / 6 WARN / 0 FAIL` observation remains
+`REVIEW_REQUIRED`; no sixth warning ID is inferred and no Setup or later
+Tranche action is authorized until T11 is generated and verified.
 
 ## Scope
 

@@ -1,8 +1,8 @@
 # Current Status
 
 Last updated: 2026-07-31
-Candidate version: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
+Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Overall status: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -10,14 +10,31 @@ functional acceptance: `NOT_EXECUTED`
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
 |---|---|
-| Code | `2.8.10-prepilot` |
+| Code | `2.8.11-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
-| Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
+| Gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
+| Fixed transfer | `PENDING_T11` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Current 2.8.11 T1-01 bounded-summary visibility remediation
+
+The reported controlled-Sandbox T1-01 record is closed evidence only:
+`77 PASS / 6 WARN / 0 FAIL`, `REVIEW_REQUIRED`, and no action authorization.
+Its detailed JSON was truncated or out of view, so the sixth warning is not
+asserted or inferred here. The 2.8.11 candidate retains all checks and emits,
+before details, sorted unique WARN/FAIL IDs with completeness flags, counts,
+read-only side-effect Booleans, Task 50-column/header states, and Ledger
+21-column/hidden/protected/validator states. Any incomplete list remains
+fail-closed as `REVIEW_REQUIRED`.
+
+T10 remains immutable historical evidence. A completed Sandbox must not run
+Setup to apply this visibility-only candidate: any future carriage may permit
+only the exact T1-01 Quick Diagnostic retest specified by the T11 transfer
+guide, with no Dashboard refresh, Gmail, Calendar, properties, trigger, or
+Automation operation.
 
 ## Current 2.8.10 Dashboard write-visibility remediation
 

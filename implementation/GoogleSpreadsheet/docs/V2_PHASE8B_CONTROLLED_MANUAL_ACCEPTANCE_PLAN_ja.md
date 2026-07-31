@@ -105,6 +105,17 @@ Phase 8C、external provider／credential、deployment、`clasp push`、producti
 | Phase 8C GO | NOT_DECLARED |
 | Production / pilot readiness | NOT_DECLARED |
 
+## 6A. Current 0003 supersession / T1-01-only boundary
+
+The 0002 Tranche plan remains historical planning context. Current 0003 does
+not authorize any Tranche action: T1-01's closed `77 PASS / 6 WARN / 0 FAIL`
+observation is `REVIEW_REQUIRED` because the complete warning-ID set was not
+safely visible. Code `2.8.11-prepilot` is
+`PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` until T11 is verified. For the completed
+T10 Sandbox, Setup must not be rerun; a separately authorized T11 procedure
+may run only T1-01 Quick Diagnostic once, record its bounded summary, and
+STOP. T1-02 through T1-08 remain `NOT_EXECUTED` / not authorized.
+
 ## 7. Operator handoff / rollback rule
 
 Each action must end with one of `PASS`, `STOP`, or `REVIEW_REQUIRED` using only the closed fields permitted above. `STOP` and `REVIEW_REQUIRED` mean no same-session retry, no repair, no external-resource cleanup, and no next tranche. The operator records whether the documented stop/rollback checklist was consulted, but does not record sensitive operational detail. A future instruction and explicit authorization are required to alter this plan or to advance the gate.

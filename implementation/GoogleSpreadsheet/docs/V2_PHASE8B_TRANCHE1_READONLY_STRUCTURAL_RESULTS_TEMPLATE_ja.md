@@ -1,5 +1,13 @@
 # Phase 8B Tranche 1 Read-only / Structural Acceptance — Closed Results Template
 
+> Current 0003 remediation notice: record no new action until fixed T11 is
+> verified. The prior T1-01 `77 PASS / 6 WARN / 0 FAIL` result remains
+> `REVIEW_REQUIRED`; do not infer the sixth warning ID. A T11-authorized
+> T1-01 observation records only the bounded summary contract fields (counts,
+> sorted WARN/FAIL IDs and completeness, all-false side-effect Booleans, Task
+> 50-column/header states, and Ledger 21-column/control states). Do not attach
+> detail JSON or run T1-02.
+
 指示番号: `0002`
 対象 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 固定 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`

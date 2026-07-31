@@ -1,5 +1,14 @@
 # Phase 8B Tranche 1 Read-only / Structural Acceptance — Operator Runbook
 
+> Current 0003 remediation notice (2026-07-31): T1-01 reported `77 PASS / 6
+> WARN / 0 FAIL` but its detail display did not safely expose all warning IDs.
+> It is `REVIEW_REQUIRED`, not PASS. The current candidate is Code
+> `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`, at
+> `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` until fixed T11 is verified. T1-02
+> through T1-08 are not authorized. For a completed T10 Sandbox, do not run
+> Setup: use only the T11 hash-verified replacement guide and one separately
+> authorized T1-01 Quick Diagnostic observation, then STOP.
+
 指示番号: `0002`
 対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 固定 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`

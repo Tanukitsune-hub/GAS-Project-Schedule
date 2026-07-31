@@ -3,7 +3,7 @@
 /**
  * Canonical current-transfer contract consistency check.
  *
- * Historical T8/T9 references remain valid evidence. This verifier reads only
+ * Historical T8/T9/T10 references remain valid evidence. This verifier reads only
  * the explicit current-transfer block in the four canonical documents.
  */
 const assert = require('assert');
@@ -28,15 +28,14 @@ const expectedKeys = [
   'Fixed transfer',
   'Transfer path'
 ];
-const noGoGate = 'PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY';
-const readyGate = 'READY_FOR_PHASE8B_SANDBOX_RETRANSFER';
-const controlledManualAcceptanceGate =
-  'READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE';
+const noGoGate = 'PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY';
+const readyGate = 'READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER';
 const expectedPath =
-  'implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/';
+  'implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/';
 const historicalFixedRefs = [
   '69f843f6ea426ccb45d721a40508a35b0a59795d',
-  '781f408fcf0853a5fffee9c00d3022ee5e17b1d7'
+  '781f408fcf0853a5fffee9c00d3022ee5e17b1d7',
+  '927d8567bce64461840cc6f72fbae0c1e636a8e6'
 ];
 
 function parseContract(text, label) {
@@ -76,23 +75,22 @@ function validateContracts(contracts) {
       `${entry.name}: current-transfer contract differs`
     );
   });
-  assert.strictEqual(reference.Code, '2.8.10-prepilot');
+  assert.strictEqual(reference.Code, '2.8.11-prepilot');
   assert.strictEqual(reference.Schema, '2.6');
   assert.strictEqual(reference['AI Schema'], '2.0');
   assert.strictEqual(reference.Migration, '3');
   assert.strictEqual(reference['Transfer path'], expectedPath);
   assert.ok(
     reference.Gate === noGoGate ||
-      reference.Gate === readyGate ||
-      reference.Gate === controlledManualAcceptanceGate,
-    'current gate is not an allowed v2.8.10 gate'
+      reference.Gate === readyGate,
+    'current gate is not an allowed v2.8.11 gate'
   );
   assert.ok(
     !historicalFixedRefs.includes(reference['Fixed transfer']),
-    'historical T8/T9 must not be the current fixed transfer'
+    'historical T8/T9/T10 must not be the current fixed transfer'
   );
   if (reference.Gate === noGoGate) {
-    assert.strictEqual(reference['Fixed transfer'], 'PENDING_T10');
+    assert.strictEqual(reference['Fixed transfer'], 'PENDING_T11');
   } else {
     assert.match(reference['Fixed transfer'], /^[0-9a-f]{40}$/);
   }
@@ -142,7 +140,7 @@ test('DOC-02_SYNTHETIC_STALE_T8_CURRENT_REF_IS_REJECTED', () => {
   }));
   assert.throws(
     () => validateContracts(contractsFromTexts(fixture)),
-    /historical T8\/T9/
+    /historical T8\/T9\/T10/
   );
 });
 
@@ -156,7 +154,21 @@ test('DOC-03_SYNTHETIC_STALE_T9_CURRENT_REF_IS_REJECTED', () => {
   }));
   assert.throws(
     () => validateContracts(contractsFromTexts(fixture)),
-    /historical T8\/T9/
+    /historical T8\/T9\/T10/
+  );
+});
+
+test('DOC-03B_SYNTHETIC_STALE_T10_CURRENT_REF_IS_REJECTED', () => {
+  const fixture = sourceTexts.map((item) => ({
+    name: item.name,
+    text: item.text.replace(
+      /^\|\s*Fixed transfer\s*\|\s*`[^`]+`\s*\|$/m,
+      `| Fixed transfer | \`${historicalFixedRefs[2]}\` |`
+    )
+  }));
+  assert.throws(
+    () => validateContracts(contractsFromTexts(fixture)),
+    /historical T8\/T9\/T10/
   );
 });
 

@@ -5,11 +5,11 @@ Google Workspace Personal Work OS.
 
 | Contract | Value |
 |---|---|
-| Code | `2.8.10-prepilot` |
+| Code | `2.8.11-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
+| Current gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -17,14 +17,20 @@ Google Workspace Personal Work OS.
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
 |---|---|
-| Code | `2.8.10-prepilot` |
+| Code | `2.8.11-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
-| Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
+| Gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
+| Fixed transfer | `PENDING_T11` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+The 2.8.11 candidate preserves every Quick/Deep Diagnostic check and adds a
+bounded, privacy-safe acceptance summary before the redacted detail payload.
+Until a separately generated fixed T11 is verified and carried, T1-01 remains
+`REVIEW_REQUIRED`; no Setup rerun, Dashboard refresh, or later Tranche action
+is authorized by this source candidate.
 
 ## Canonical paths
 

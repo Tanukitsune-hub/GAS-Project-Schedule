@@ -1,11 +1,18 @@
-# Manual Acceptance Guide — 2.8.10 Dashboard Write-Visibility / Module-Skew Candidate
+# Manual Acceptance Guide — 2.8.11 T1-01 Diagnostic Summary Visibility Candidate
 
-Code Version: `2.8.10-prepilot`
+Code Version: `2.8.11-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
 Historical E10 carriage gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. The current gate is `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; the controlled-manual-acceptance plan, not this historical pre-observation guide, governs future actions.
 Automation default: `OFF`
+
+Current 0003 source-stage gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`.
+The new T11 guide, not any historical Setup procedure, governs the completed
+Sandbox. It may authorize only one T1-01 Quick Diagnostic display/retest after
+hash-verified replacement; Setup, Dashboard refresh, Gmail, Calendar,
+properties, triggers, Automation, T1-02, and repair are prohibited. Any
+version-property mismatch remains an explicit WARN and is not reconciled.
 
 Historical note: A9/A9.1/B9.1/T9 and the
 `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` source gate are retained as

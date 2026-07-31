@@ -1,11 +1,15 @@
-# Requirements Traceability — 2.8.10 Dashboard Write-Visibility / Module-Skew Remediation
+# Requirements Traceability — 2.8.11 T1-01 Diagnostic Summary Visibility Remediation
 
 Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
-Specification: `instructions/GoogleWorkspace_v2_8_10_Phase8B_Dashboard_Number_Format_Write_Visibility_and_Module_Skew_Remediation_2026-07-31.md`
-Version contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; one controlled
-Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`.
+Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
+Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable while T11 is pending. The controlled T1-01 observation is `REVIEW_REQUIRED`; standalone functional acceptance remains `NOT_EXECUTED`.
+
+| 0003-01 | Bounded Quick/Deep summary before capped details | `16_Diagnostics.gs`, `Menu.gs`, `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS; no Workspace retest |
+| 0003-02 | Sorted/unique/complete WARN and FAIL identifiers; overflow and malformed input fail closed | same test | LOCAL_PASS |
+| 0003-03 | Closed T1-01 Task 50-column and Ledger 21-column/control aggregates | same test | LOCAL_PASS |
+| 0003-04 | All Diagnostic side-effect Booleans false; no Setup/property/Calendar/Gmail/trigger repair | same test, source scan | LOCAL_PASS |
 
 The row-level real-Workspace `NOT_EXECUTED` labels below retain their
 historical pre-0001 fixed-transfer traceability meaning. They do not override

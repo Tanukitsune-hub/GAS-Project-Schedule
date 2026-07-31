@@ -1,6 +1,23 @@
-# Google Workspace Personal Work OS v2 - 2.8.10-prepilot / Dashboard Write-Visibility and Module-Skew Remediation
+# Google Workspace Personal Work OS v2 - 2.8.11-prepilot / T1-01 Diagnostic Summary Visibility Remediation
 
 ## Current authority and Setup boundary
+
+### Current 2.8.11 candidate
+
+`2.8.11-prepilot` adds a bounded acceptance summary to both read-only Quick
+and Deep Diagnostic results before the pre-existing redacted/capped JSON
+detail. The summary contains only sorted unique WARN/FAIL check IDs,
+completeness flags, counts, explicit side-effect Booleans, and closed
+Task/Ledger control-plane aggregates needed for T1-01 review. A malformed,
+duplicate, missing, or over-bound list is fail-closed as `REVIEW_REQUIRED`; no
+finding is suppressed or promoted to PASS.
+
+The candidate is `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` until its direct-child
+release, fixed transfer, and evidence chain are independently verified. Fixed
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical
+evidence. A completed Sandbox must not rerun Setup to apply this
+visibility-only patch: any later carriage may authorize only the exact T1-01
+Quick Diagnostic retest documented in the T11 transfer guide.
 
 `2.8.10-prepilot` retains the R4/R5 authority contract and every historical
 Dashboard ownership/format precondition. It closes the write-visibility gap in

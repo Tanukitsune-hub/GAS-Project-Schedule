@@ -11,6 +11,214 @@ var WorkOsDiagnostics = (function () {
     };
   }
 
+  // The acceptance summary is intentionally derived from diagnostic check
+  // metadata only. It never copies safe_message or details to the UI summary,
+  // so a detailed JSON payload may remain redacted/capped without hiding the
+  // closed acceptance facts needed by the operator.
+  function summaryContractId() {
+    return String(
+      WorkOsConfig.DIAGNOSTIC_ACCEPTANCE_SUMMARY_CONTRACT_ID ||
+      'WORK_OS_V2_DIAGNOSTIC_ACCEPTANCE_SUMMARY_V1'
+    );
+  }
+
+  function summaryMaximumCheckIds() {
+    var configured = Number(
+      WorkOsConfig.DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_IDS
+    );
+    if (!isFinite(configured) || configured < 1) {
+      return 1;
+    }
+    return Math.min(96, Math.floor(configured));
+  }
+
+  function summaryMaximumCheckIdLength() {
+    var configured = Number(
+      WorkOsConfig.DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_ID_LENGTH
+    );
+    if (!isFinite(configured) || configured < 1) {
+      return 1;
+    }
+    return Math.min(48, Math.floor(configured));
+  }
+
+  function normalizedSummaryCheckStatus(item) {
+    return String(item && item.status || 'UNKNOWN');
+  }
+
+  function isBoundedSummaryCheckId(value) {
+    var id = String(value || '');
+    return id.length <= summaryMaximumCheckIdLength() &&
+      /^[A-Za-z][A-Za-z0-9_]*$/.test(id);
+  }
+
+  function isWarningStatus(status) {
+    return status === 'WARN' || status === 'NOT_YET_IMPLEMENTED';
+  }
+
+  function buildBoundedCheckIdList(checks, statusPredicate) {
+    var candidates = [];
+    var seen = {};
+    var malformed = false;
+    var duplicate = false;
+    (checks || []).forEach(function (item) {
+      if (!statusPredicate(normalizedSummaryCheckStatus(item))) {
+        return;
+      }
+      var id = String(item && item.id || '');
+      if (!isBoundedSummaryCheckId(id)) {
+        malformed = true;
+        return;
+      }
+      if (seen[id]) {
+        duplicate = true;
+        return;
+      }
+      seen[id] = true;
+      candidates.push(id);
+    });
+    candidates.sort();
+    var maximum = summaryMaximumCheckIds();
+    return {
+      ids: candidates.slice(0, maximum),
+      complete: !malformed && !duplicate && candidates.length <= maximum
+    };
+  }
+
+  function countChecksWithStatus(checks, statusPredicate) {
+    return (checks || []).filter(function (item) {
+      return statusPredicate(normalizedSummaryCheckStatus(item));
+    }).length;
+  }
+
+  function uniqueCheckForSummary(checks, id) {
+    var matches = (checks || []).filter(function (item) {
+      return String(item && item.id || '') === id;
+    });
+    return matches.length === 1 ? matches[0] : null;
+  }
+
+  function closedCheckState(checks, id) {
+    var item = uniqueCheckForSummary(checks, id);
+    if (!item) {
+      return 'UNKNOWN';
+    }
+    var status = normalizedSummaryCheckStatus(item);
+    return /^(PASS|WARN|FAIL|NOT_EXECUTED|NOT_YET_IMPLEMENTED)$/.test(status)
+      ? status
+      : 'UNKNOWN';
+  }
+
+  function closedColumnCount(checks, id) {
+    var item = uniqueCheckForSummary(checks, id);
+    var value = item && item.details ? Number(item.details.columns) : NaN;
+    if (!isFinite(value) || value < 0 || Math.floor(value) !== value) {
+      return 'UNKNOWN';
+    }
+    return value;
+  }
+
+  function closedBooleanState(checks, id) {
+    var state = closedCheckState(checks, id);
+    if (state === 'PASS') {
+      return true;
+    }
+    if (state === 'FAIL') {
+      return false;
+    }
+    return 'UNKNOWN';
+  }
+
+  function readOnlyExecutionPolicy() {
+    return {
+      external_services_called: false,
+      writes_performed: false,
+      spreadsheet_write_performed: false,
+      properties_write_performed: false,
+      trigger_write_performed: false,
+      flush_performed: false,
+      calendar_api_called: false,
+      gmail_api_called: false,
+      external_ai_request_performed: false,
+      dashboard_repair_performed: false
+    };
+  }
+
+  function buildAcceptanceSummary(checks, diagnosticKind) {
+    var list = Array.isArray(checks) ? checks : [];
+    var warningIds = buildBoundedCheckIdList(list, isWarningStatus);
+    var failureIds = buildBoundedCheckIdList(list, function (status) {
+      return status === 'FAIL';
+    });
+    var policy = readOnlyExecutionPolicy();
+    return {
+      summary_contract_id: summaryContractId(),
+      diagnostic_kind: diagnosticKind === 'DEEP_MANUAL_READ_ONLY'
+        ? 'DEEP_MANUAL_READ_ONLY'
+        : 'QUICK',
+      status: list.some(function (item) {
+        return normalizedSummaryCheckStatus(item) === 'FAIL';
+      }) ? 'FAIL' : (list.some(function (item) {
+        return isWarningStatus(normalizedSummaryCheckStatus(item));
+      }) ? 'WARN' : 'PASS'),
+      pass_count: countChecksWithStatus(list, function (status) {
+        return status === 'PASS';
+      }),
+      warn_count: countChecksWithStatus(list, isWarningStatus),
+      fail_count: countChecksWithStatus(list, function (status) {
+        return status === 'FAIL';
+      }),
+      not_executed_count: countChecksWithStatus(list, function (status) {
+        return status === 'NOT_EXECUTED';
+      }),
+      warn_check_ids: warningIds.ids,
+      fail_check_ids: failureIds.ids,
+      warn_ids_complete: warningIds.complete,
+      fail_ids_complete: failureIds.complete,
+      acceptance_summary_status: warningIds.complete && failureIds.complete
+        ? 'COMPLETE'
+        : 'REVIEW_REQUIRED',
+      external_services_called: policy.external_services_called,
+      writes_performed: policy.writes_performed,
+      spreadsheet_write_performed: policy.spreadsheet_write_performed,
+      properties_write_performed: policy.properties_write_performed,
+      trigger_write_performed: policy.trigger_write_performed,
+      flush_performed: policy.flush_performed,
+      calendar_api_called: policy.calendar_api_called,
+      gmail_api_called: policy.gmail_api_called,
+      external_ai_request_performed: policy.external_ai_request_performed,
+      dashboard_repair_performed: policy.dashboard_repair_performed,
+      task_physical_column_count: closedColumnCount(
+        list,
+        'COLUMNS_ae919285'
+      ),
+      task_schema_ids_state: closedCheckState(list, 'TASK_SCHEMA_IDS'),
+      task_schema_headers_state: closedCheckState(list, 'TASK_SCHEMA_HEADERS'),
+      ledger_physical_column_count: closedColumnCount(
+        list,
+        'COLUMNS_69e0d98c'
+      ),
+      ledger_hidden_state: closedBooleanState(list, 'VISIBILITY_69e0d98c'),
+      ledger_protection_state: closedBooleanState(
+        list,
+        'PROTECTION_69e0d98c'
+      ),
+      ledger_authority_validator_state: closedCheckState(
+        list,
+        'TASK_AUTHORITY_VALIDATOR'
+      )
+    };
+  }
+
+  function attachAcceptanceSummary(result, diagnosticKind) {
+    var value = result || {};
+    value.acceptance_summary = buildAcceptanceSummary(
+      value.checks || [],
+      diagnosticKind
+    );
+    return value;
+  }
+
   function aiReasonPresent(readiness, reason) {
     return readiness &&
       Array.isArray(readiness.reasons) &&
@@ -800,13 +1008,14 @@ var WorkOsDiagnostics = (function () {
     var target = spreadsheet || SpreadsheetApp.getActiveSpreadsheet();
     var checks = [];
     if (!target) {
-      return {
+      return attachAcceptanceSummary({
         status: 'FAIL',
+        diagnostic_type: 'QUICK',
         code_version: WorkOsConfig.CODE_VERSION,
         schema_version: WorkOsConfig.SCHEMA_VERSION,
         duration_ms: Date.now() - startedAt,
         checks: [check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheetがありません。')]
-      };
+      }, 'QUICK');
     }
 
     for (var sheetIndex = 0; sheetIndex < WorkOsSheetOrder.length; sheetIndex += 1) {
@@ -1377,15 +1586,16 @@ var WorkOsDiagnostics = (function () {
       }
     }
 
-    return {
+    return attachAcceptanceSummary({
       status: hasFailure ? 'FAIL' : (hasWarning ? 'WARN' : 'PASS'),
+      diagnostic_type: 'QUICK',
       code_version: WorkOsConfig.CODE_VERSION,
       schema_version: WorkOsConfig.SCHEMA_VERSION,
       migration_version: WorkOsConfig.MIGRATION_VERSION,
       setup_completed_stages: completedStages,
       duration_ms: Date.now() - startedAt,
       checks: checks
-    };
+    }, 'QUICK');
   }
 
   function runDeepDiagnostic(spreadsheet, options) {
@@ -1405,7 +1615,7 @@ var WorkOsDiagnostics = (function () {
     );
     var target = spreadsheet || SpreadsheetApp.getActiveSpreadsheet();
     if (!target) {
-      return {
+      return attachAcceptanceSummary({
         status: 'FAIL',
         diagnostic_type: 'DEEP_MANUAL_READ_ONLY',
         code_version: WorkOsConfig.CODE_VERSION,
@@ -1413,7 +1623,7 @@ var WorkOsDiagnostics = (function () {
         checks: [
           check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheetがありません。')
         ]
-      };
+      }, 'DEEP_MANUAL_READ_ONLY');
     }
     var checks = [];
     try {
@@ -1492,7 +1702,7 @@ var WorkOsDiagnostics = (function () {
     var warned = checks.some(function (item) {
       return item.status === 'WARN';
     });
-    return {
+    return attachAcceptanceSummary({
       status: failed ? 'FAIL' : (warned ? 'WARN' : 'PASS'),
       diagnostic_type: 'DEEP_MANUAL_READ_ONLY',
       code_version: WorkOsConfig.CODE_VERSION,
@@ -1500,14 +1710,16 @@ var WorkOsDiagnostics = (function () {
       migration_version: WorkOsConfig.MIGRATION_VERSION,
       duration_ms: Date.now() - startedAt,
       checks: checks
-    };
+    }, 'DEEP_MANUAL_READ_ONLY');
   }
 
   return Object.freeze({
     runQuickDiagnostic: runQuickDiagnostic,
     runDeepDiagnostic: runDeepDiagnostic,
     inspectRecoveryState: inspectRecoveryState,
-    buildAiReadinessChecks: buildAiReadinessChecks
+    buildAiReadinessChecks: buildAiReadinessChecks,
+    buildAcceptanceSummary: buildAcceptanceSummary,
+    readOnlyExecutionPolicy: readOnlyExecutionPolicy
   });
 }());
 

@@ -120,7 +120,7 @@ function test(id, body) {
 test('P8B-MS-01_THREE_MODULES_EXPOSE_ONE_INDEPENDENT_CONTRACT', () => {
   assert.strictEqual(
     sandbox.WorkOsConfig.S90_MODULE_CONTRACT_ID,
-    'WORK_OS_V2_S90_CONTRACT_2_8_10'
+    'WORK_OS_V2_S90_CONTRACT_2_8_11'
   );
   assert.strictEqual(
     sandbox.WorkOsSetup.MODULE_CONTRACT_ID,

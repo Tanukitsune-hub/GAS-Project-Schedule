@@ -1,8 +1,8 @@
 # R4/R5 Verification Matrix
 
 Date: 2026-07-31
-Candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; one controlled Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`
+Candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable while T11 is pending; one controlled Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -44,6 +44,9 @@ under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
 | R4-31 | Calendar authority exclusion; armed authority-loss compensation survives later re-enqueue | `remediation_round5_test.js`, `prepilot_calendar_cas_failure_injection_test.js` F016 | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-32 | Release checksum/parity/provenance | `verify scripts` | REMOTE_FRESH_CLONE_PASS_P6 |
 | R4-33 | Secret scan/fresh clone/remote SHA and transfer-checksum portability | `static/fresh clone` | REMOTE_FRESH_CLONE_PASS_P9_CANONICAL_CHECKSUM |
+| R5-41 | T1-01 bounded WARN/FAIL summary visible before capped details | `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS; no real Workspace retest |
+| R5-42 | WARN/FAIL overflow, malformed IDs, and missing aggregates fail closed | `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS |
+| R5-43 | Quick/Deep summary side-effect policy remains all false | `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS |
 
 ## Phase 8B Setup blocker traceability
 

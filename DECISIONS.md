@@ -5,6 +5,23 @@ Last updated: 2026-07-31
 This file records current governing decisions. Superseded detail remains
 available in Git history and is not silently reinterpreted as a current gate.
 
+## D-047 — T1-01 bounded Diagnostic evidence must precede capped detail
+
+**Decision.** Quick and Deep Diagnostic must provide a bounded,
+privacy-safe acceptance summary before any redacted/capped JSON detail. The
+summary contains only deterministic sorted unique WARN/FAIL check IDs,
+completeness flags, closed counts/enums/Booleans, and the Task/Ledger control
+plane aggregates needed for T1-01 review.
+
+**Rationale.** The controlled Sandbox reported `77 PASS / 6 WARN / 0 FAIL`,
+but the detail UI did not safely expose all warning IDs. The missing sixth ID
+must not be inferred, suppressed, or promoted.
+
+**Consequence.** Overflow, duplicate, malformed, or unavailable summary data
+is `REVIEW_REQUIRED`; Diagnostic remains read-only. Applying its patch to an
+already completed Sandbox does not authorize Setup, version-property repair,
+Dashboard refresh, Calendar/Gmail work, Automation, or the next Tranche.
+
 ## D-036 — GitHub is the formal ChatGPT–Codex handoff medium
 
 **Decision.** Save task instructions under `instructions/`, re-read the exact
