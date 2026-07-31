@@ -2,10 +2,12 @@
 
 > Current 0003 addendum (2026-07-31): the active candidate is Code
 > `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3` at
-> `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`. It adds only a bounded Diagnostic
-> acceptance summary before capped details. The closed T1-01 `77/6/0`
-> observation remains `REVIEW_REQUIRED`; T10 remains immutable, T11 is
-> pending, and no Setup, repair, or subsequent acceptance action is authorized.
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. It adds only a bounded
+> Diagnostic acceptance summary before capped details. The closed T1-01
+> `77/6/0` observation remains `REVIEW_REQUIRED`; T10 remains immutable and
+> fixed T11 is remote-resolved and detached-HTTPS-clone verified. T11 permits
+> only the separately controlled T1-01 summary re-observation; no Setup,
+> repair, or subsequent acceptance action is authorized.
 # Phase 1〜7 Remediation Plan
 
 > Current addendum (2026-07-31): this Phase 1〜7 plan remains historical

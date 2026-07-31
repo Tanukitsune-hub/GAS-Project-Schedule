@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
+Publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,12 +13,13 @@ Publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
-| Fixed transfer | `PENDING_T11` |
+| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
+| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
-v2.8.11 is a visibility-only Diagnostic remediation. It does not interpret,
+v2.8.11 is a visibility-only Diagnostic remediation. T11 is remote-resolved
+and detached-clone verified. It does not interpret,
 remove, or downgrade any WARN/FAIL check. Its bounded summary exposes only
 closed enums, Booleans, counts, and safe check IDs before the pre-existing
 redacted/capped detail JSON. A list overflow, malformed ID, duplicate ID, or

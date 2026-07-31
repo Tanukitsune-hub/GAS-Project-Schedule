@@ -15,11 +15,14 @@ historical. The current gate is
 Sandbox Setup S00-S99 observation is PASS, while functional acceptance remains
 separately authorized and `NOT_EXECUTED`.
 
-The current 0003 source-stage gate is `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`.
-T10 remains immutable and T11 is pending. Quick/Deep now expose a bounded
-pre-detail acceptance summary of closed IDs, counts, read-only Booleans, and
-Task/Ledger aggregates; an incomplete summary is `REVIEW_REQUIRED` and never
-repairs authority, Calendar, Dashboard, Setup state, or version properties.
+The current 0003 gate is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. T10
+remains immutable, while fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and
+detached-HTTPS-clone verified. Quick/Deep now expose a bounded pre-detail
+acceptance summary of closed IDs, counts, read-only Booleans, and Task/Ledger
+aggregates; an incomplete summary is `REVIEW_REQUIRED` and never repairs
+authority, Calendar, Dashboard, Setup state, or version properties. T11
+authorizes only the separately controlled T1-01 summary re-observation.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

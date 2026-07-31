@@ -111,10 +111,11 @@ The 0002 Tranche plan remains historical planning context. Current 0003 does
 not authorize any Tranche action: T1-01's closed `77 PASS / 6 WARN / 0 FAIL`
 observation is `REVIEW_REQUIRED` because the complete warning-ID set was not
 safely visible. Code `2.8.11-prepilot` is
-`PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` until T11 is verified. For the completed
-T10 Sandbox, Setup must not be rerun; a separately authorized T11 procedure
-may run only T1-01 Quick Diagnostic once, record its bounded summary, and
-STOP. T1-02 through T1-08 remain `NOT_EXECUTED` / not authorized.
+`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: fixed T11 is remote-resolved and
+detached-HTTPS-clone verified. For the completed T10 Sandbox, Setup must not
+be rerun; the separately controlled T11 procedure may run only T1-01 Quick
+Diagnostic once, record its bounded summary, and STOP. T1-02 through T1-08
+remain `NOT_EXECUTED` / not authorized.
 
 ## 7. Operator handoff / rollback rule
 

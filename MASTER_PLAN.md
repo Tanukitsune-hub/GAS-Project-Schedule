@@ -3,7 +3,7 @@
 Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
+Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,8 +12,8 @@ Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
-| Fixed transfer | `PENDING_T11` |
+| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
+| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
@@ -24,7 +24,7 @@ Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
 | P8B-DS-1 | Preserve closed T1-01 evidence (`77/6/0`) without inferring the sixth WARN ID | Complete in Source A11 audit; `REVIEW_REQUIRED` remains. |
 | P8B-DS-2 | Bounded Quick/Deep acceptance summary | Complete in Source A11 candidate: sorted IDs, counts, completeness, side-effect Booleans, and Task/Ledger aggregates precede capped details. |
 | P8B-DS-3 | Read-only and overflow regression coverage | Complete locally; overflow or malformed IDs fail closed. |
-| P8B-DS-4 | T11/B11/E11 publication chain | Pending until generated and independently verified; T10 is immutable. |
+| P8B-DS-4 | T11/B11/E11 publication chain | Complete: A11.1, B11, T11, and E11 are normal-published and detached-HTTPS-clone verified; only controlled T1-01 re-observation is authorized. |
 
 ## Phase 8B Dashboard write-visibility / module-skew remediation
 

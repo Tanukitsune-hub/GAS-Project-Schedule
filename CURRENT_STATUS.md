@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`
+Overall status: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -14,8 +14,8 @@ functional acceptance: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
-| Fixed transfer | `PENDING_T11` |
+| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
+| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
@@ -30,11 +30,12 @@ read-only side-effect Booleans, Task 50-column/header states, and Ledger
 21-column/hidden/protected/validator states. Any incomplete list remains
 fail-closed as `REVIEW_REQUIRED`.
 
-T10 remains immutable historical evidence. A completed Sandbox must not run
-Setup to apply this visibility-only candidate: any future carriage may permit
-only the exact T1-01 Quick Diagnostic retest specified by the T11 transfer
-guide, with no Dashboard refresh, Gmail, Calendar, properties, trigger, or
-Automation operation.
+T10 remains immutable historical evidence. T11 is remote-resolved and
+detached-clone verified. A completed Sandbox must not run Setup to apply this
+visibility-only candidate: T11 permits only the exact T1-01 Quick Diagnostic
+retest specified by its transfer guide, with no Dashboard refresh, Gmail,
+Calendar, properties, trigger, or Automation operation. The retest itself
+remains `NOT_EXECUTED` and T1-01 is not declared PASS.
 
 ## Current 2.8.10 Dashboard write-visibility remediation
 

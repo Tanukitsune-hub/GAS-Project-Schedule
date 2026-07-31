@@ -12,12 +12,13 @@ Task/Ledger control-plane aggregates needed for T1-01 review. A malformed,
 duplicate, missing, or over-bound list is fail-closed as `REVIEW_REQUIRED`; no
 finding is suppressed or promoted to PASS.
 
-The candidate is `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` until its direct-child
-release, fixed transfer, and evidence chain are independently verified. Fixed
-T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical
-evidence. A completed Sandbox must not rerun Setup to apply this
-visibility-only patch: any later carriage may authorize only the exact T1-01
-Quick Diagnostic retest documented in the T11 transfer guide.
+Source A11.1, direct-child Release B11, fixed Transfer T11, and local
+evidence E11 are normal-published and detached-HTTPS-clone verified. The
+current gate is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: it authorizes
+only the separately controlled T1-01 summary re-observation described in the
+T11 transfer guide. Fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
+remains immutable historical evidence. A completed Sandbox must not rerun
+Setup to apply this visibility-only patch.
 
 `2.8.10-prepilot` retains the R4/R5 authority contract and every historical
 Dashboard ownership/format precondition. It closes the write-visibility gap in

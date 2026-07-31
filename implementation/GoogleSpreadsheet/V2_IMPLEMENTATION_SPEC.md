@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Code: `2.8.11-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` (fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; T11 is pending; the reported T1-01 result remains `REVIEW_REQUIRED` and functional acceptance is `NOT_EXECUTED`)
+Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` (fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and detached-HTTPS-clone verified; the reported T1-01 result remains `REVIEW_REQUIRED` and functional acceptance is `NOT_EXECUTED`)
 
 The 2.8.11 scope is bounded Diagnostic-result visibility only: it adds a
 pre-detail summary of closed check IDs, completeness, counts, side-effect

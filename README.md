@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
+| Current gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,16 +21,18 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY` |
-| Fixed transfer | `PENDING_T11` |
+| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
+| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
 The 2.8.11 candidate preserves every Quick/Deep Diagnostic check and adds a
 bounded, privacy-safe acceptance summary before the redacted detail payload.
-Until a separately generated fixed T11 is verified and carried, T1-01 remains
-`REVIEW_REQUIRED`; no Setup rerun, Dashboard refresh, or later Tranche action
-is authorized by this source candidate.
+Fixed T11 is remote-resolved and detached-clone verified. It authorizes only
+the separately controlled T1-01 summary re-observation described in its hash
+manifest. T1-01 remains `REVIEW_REQUIRED` until that real observation is
+recorded; no Setup rerun, Dashboard refresh, or later Tranche action is
+authorized.
 
 ## Canonical paths
 

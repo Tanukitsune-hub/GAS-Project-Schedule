@@ -2,7 +2,7 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable while T11 is pending; one controlled Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`
+Gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable and T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved/detached-clone verified; one controlled Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.

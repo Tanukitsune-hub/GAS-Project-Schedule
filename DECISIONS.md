@@ -18,8 +18,10 @@ but the detail UI did not safely expose all warning IDs. The missing sixth ID
 must not be inferred, suppressed, or promoted.
 
 **Consequence.** Overflow, duplicate, malformed, or unavailable summary data
-is `REVIEW_REQUIRED`; Diagnostic remains read-only. Applying its patch to an
-already completed Sandbox does not authorize Setup, version-property repair,
+is `REVIEW_REQUIRED`; Diagnostic remains read-only. Fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` was remote-resolved and
+detached-clone verified, so it authorizes only the separately controlled T1-01
+summary re-observation. It does not authorize Setup, version-property repair,
 Dashboard refresh, Calendar/Gmail work, Automation, or the next Tranche.
 
 ## D-036 — GitHub is the formal ChatGPT–Codex handoff medium

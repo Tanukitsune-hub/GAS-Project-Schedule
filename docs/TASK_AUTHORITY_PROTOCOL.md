@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable while T11 is pending; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance remains separately gated |
+| Current gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable and fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved/detached-clone verified; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance remains separately gated |
 
 ## Diagnostic bounded-acceptance summary
 

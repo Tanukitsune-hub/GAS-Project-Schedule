@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
 Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable while T11 is pending. The controlled T1-01 observation is `REVIEW_REQUIRED`; standalone functional acceptance remains `NOT_EXECUTED`.
+Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable, and fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and detached-HTTPS-clone verified. The controlled T1-01 observation is `REVIEW_REQUIRED`; standalone functional acceptance remains `NOT_EXECUTED`.
 
 | 0003-01 | Bounded Quick/Deep summary before capped details | `16_Diagnostics.gs`, `Menu.gs`, `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS; no Workspace retest |
 | 0003-02 | Sorted/unique/complete WARN and FAIL identifiers; overflow and malformed input fail closed | same test | LOCAL_PASS |

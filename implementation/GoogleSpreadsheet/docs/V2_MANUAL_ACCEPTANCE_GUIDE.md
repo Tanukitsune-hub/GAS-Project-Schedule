@@ -7,12 +7,19 @@ Migration Version: `3`
 Historical E10 carriage gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. The current gate is `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; the controlled-manual-acceptance plan, not this historical pre-observation guide, governs future actions.
 Automation default: `OFF`
 
-Current 0003 source-stage gate: `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`.
-The new T11 guide, not any historical Setup procedure, governs the completed
-Sandbox. It may authorize only one T1-01 Quick Diagnostic display/retest after
-hash-verified replacement; Setup, Dashboard refresh, Gmail, Calendar,
-properties, triggers, Automation, T1-02, and repair are prohibited. Any
-version-property mismatch remains an explicit WARN and is not reconciled.
+Current 0003 gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. Fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and
+detached-HTTPS-clone verified. The T11 guide, not any historical Setup
+procedure, governs the completed Sandbox. It may authorize only one separately
+controlled T1-01 Quick Diagnostic display/retest after hash-verified
+replacement; Setup, Dashboard refresh, Gmail, Calendar, properties, triggers,
+Automation, T1-02, and repair are prohibited. Any version-property mismatch
+remains an explicit WARN and is not reconciled.
+
+Historical 0003 source-stage label:
+`PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`. It is preserved as provenance for the
+pre-T11 state only; it is not the current gate and does not authorize a
+different action.
 
 Historical note: A9/A9.1/B9.1/T9 and the
 `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT` source gate are retained as
