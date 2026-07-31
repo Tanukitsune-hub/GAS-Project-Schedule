@@ -30,6 +30,13 @@
 
 Tranche 1 は既存の controlled Sandbox を壊さず、読取または安全な構造確認を優先します。実行前に一括承認ではなく action ごとの許可を得ます。任意の Setup 再実行は、明確な idempotence 検証理由がある場合だけです。
 
+指示番号 `0002` の action-by-action 実行資料は、
+[operator runbook](V2_PHASE8B_TRANCHE1_READONLY_STRUCTURAL_OPERATOR_RUNBOOK_ja.md)
+および
+[results template](V2_PHASE8B_TRANCHE1_READONLY_STRUCTURAL_RESULTS_TEMPLATE_ja.md)
+です。このリンクは実行承認や結果の宣言ではありません。各 action は引き続き
+`NOT_EXECUTED` であり、T1-01 を含めて個別の明示承認が必要です。
+
 | Action | 事前条件・operator 操作 | PASS 条件 | STOP / REVIEW 条件 | 保存できる閉じた証跡 | 禁止情報・次の扱い |
 |---|---|---|---|---|---|
 | T1-01 standalone Quick Diagnostic | T10、synthetic 条件、Automation OFF を確認してから 1 回だけ実行。 | FAIL=0、WARN はすべて事前承認済みの closed reason。 | FAIL、未承認 WARN、読取以外の書込み兆候、安全に閉じられない結果。 | outcome、FAIL/WARN 件数、closed reason category、read-only 確認。 | 値、range、ID、URL、実書式、個人情報を保存しない。Deep へ自動進行しない。 |
