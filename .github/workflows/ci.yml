@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  apps-script:
+    name: Apps Script checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate tracked JSON files
+        shell: bash
+        run: |
+          node <<'NODE'
+          const { execFileSync } = require('node:child_process');
+          const fs = require('node:fs');
+
+          const files = execFileSync(
+            'git',
+            ['ls-files', '-z', '--', '*.json'],
+            { encoding: 'buffer' }
+          )
+            .toString('utf8')
+            .split('\0')
+            .filter(Boolean);
+
+          if (files.length === 0) {
+            throw new Error('No tracked JSON files were found.');
+          }
+
+          for (const file of files) {
+            try {
+              JSON.parse(fs.readFileSync(file, 'utf8'));
+            } catch (error) {
+              throw new Error(`Invalid JSON in ${file}: ${error.message}`);
+            }
+          }
+
+          console.log(`Validated ${files.length} tracked JSON files.`);
+          NODE
+
+      - name: Run Apps Script static validation
+        run: node implementation/GoogleSpreadsheet/tools/validate_apps_script_v2.js
+
+      - name: Run local Apps Script regression suites
+        shell: bash
+        run: |
+          shopt -s nullglob
+          test_files=(implementation/GoogleSpreadsheet/tests/*_test.js)
+
+          if [ "${#test_files[@]}" -eq 0 ]; then
+            echo 'No Apps Script regression suites were found.' >&2
+            exit 1
+          fi
+
+          for test_file in "${test_files[@]}"; do
+            echo "::group::$test_file"
+            node "$test_file"
+            echo '::endgroup::'
+          done

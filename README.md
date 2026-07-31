@@ -8,6 +8,10 @@ Status: `REAUDIT_NO_GO` / additional remediation required
 
 `Tanukitsune-hub/GAS-Project-Schedule`が、context、implementation、tests、tools、release、audit、instructionsの唯一のGitHub正本です。
 
+## 継続的インテグレーション（CI）
+
+GitHub Actionsは、すべてのpull requestとpushで`.github/workflows/ci.yml`を実行します。追跡済みJSONの構文、Apps Scriptの静的検証、既存のローカルApps Script回帰テストを確認します。結果はGitHubのActionsタブ、またはpull requestのChecksから確認できます。
+
 ## 現在地
 
 Code 2.8.4-prepilotについて、Source commit AとRelease commit Bを固定した独立再監査を完了しました。
