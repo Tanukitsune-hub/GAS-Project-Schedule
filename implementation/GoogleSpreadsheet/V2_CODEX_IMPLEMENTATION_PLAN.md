@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Current remediation candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 
 ## Scope
 
@@ -17,7 +17,9 @@ an execution target. Source A10
 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed transfer T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are normally published
 and independently verified. This evidence-only commit records closure and is
-not a transfer target; no real Workspace operation is authorized or recorded.
+not a transfer target. The later 0001 evidence records one controlled Sandbox
+Setup S00-S99 PASS; only separately approved staged synthetic manual
+acceptance is now authorized, not general real Workspace operation.
 
 ## Historical work sequence
 
@@ -134,7 +136,8 @@ remains carriage-only.
   real mail content.
 - No reset, clean, amend, rebase, force push, or unrelated revert.
 - Missing authority must not fall back to a snapshot cell, note, or live row.
-- Diagnostics are read-only; real Workspace items remain `NOT_EXECUTED`.
+- Diagnostics are read-only; standalone and unobserved functional Workspace
+  items remain `NOT_EXECUTED`.
 
 ## Required evidence
 

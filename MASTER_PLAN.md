@@ -3,7 +3,7 @@
 Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Current publication gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,7 +12,7 @@ Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
 | Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
@@ -27,6 +27,7 @@ Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 | P8B-WV-4 | Buffered-runtime and document consistency tests | Complete: buffered-write/flush, module-skew, diagnostics-read-only, resume invariants, and canonical-document negative fixtures PASS. |
 | P8B-WV-5 | Source A10 / direct-child Release B10 | Complete: A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`; direct-child B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`; commit boundaries PASS. |
 | P8B-WV-6 | Fixed transfer T10 / evidence E10 | Complete: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is normal-pushed and detached-clone verified; this evidence-only commit records the proof and is not a transfer target. |
+| P8B-WV-7 | Controlled Sandbox Setup/S90 evidence and next acceptance boundary | Complete as evidence/governance only: one observed Sandbox Setup completed S00-S99 with in-Setup S90 alignment and bounded normalization postcondition. The current gate permits only separately approved, synthetic non-sensitive manual acceptance; no functional tranche is executed by this record. |
 
 ## Historical Phase 8B Dashboard number-format remediation
 
@@ -150,7 +151,10 @@ publication and detached fresh-clone verification. T8 and T9 are immutable
 evidence, but `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes T9 as an
 execution transfer target. Fixed T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal publication
-and detached HTTPS fresh-clone verification. The current
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate authorizes controlled carriage of
-that exact non-sensitive Phase 8B transfer only; real Workspace execution
-remains `NOT_EXECUTED`.
+and detached HTTPS fresh-clone verification. A later controlled Sandbox Setup
+observed S00-S99 completion and in-Setup S90 alignment/normalization with the
+closed evidence retained in the 0001 audit. The current
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate keeps T10 fixed and
+permits only separately approved staged synthetic manual acceptance. It does
+not declare Phase 8B overall PASS, Phase 8C GO, production ready, or pilot
+ready.

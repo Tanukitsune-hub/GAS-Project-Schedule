@@ -3,8 +3,10 @@
 Contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer is
-`PENDING_T10` and real Workspace retransfer/retest is still `NOT_EXECUTED`
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10 is
+`927d8567bce64461840cc6f72fbae0c1e636a8e6`. One observed Setup S00-S99 run
+is PASS; Calendar reconciliation remains separately authorized and
+`NOT_EXECUTED`.
 
 ## Purpose and boundary
 
@@ -28,8 +30,10 @@ postcondition failure stops Setup before S90/S99 completion; it grants no
 Calendar I/O, outbox rewrite, trigger activation, or authority recovery path.
 
 The protocol applies only to a deterministic Work OS-owned Event ID. It never
-deletes an Event unless ownership verification succeeds. Real Google
-Workspace, Calendar, lock, trigger, OAuth, and Provider behavior remain
+deletes an Event unless ownership verification succeeds. The 0001 observation
+establishes only Calendar provisioning S60 and owner edit-trigger creation S80
+as Setup stages. Functional Calendar reconciliation, functional trigger
+behavior, lock contention, OAuth, and Provider behavior remain
 `NOT_EXECUTED`.
 
 ## Durable target types

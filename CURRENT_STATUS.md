@@ -2,9 +2,10 @@
 
 Last updated: 2026-07-31
 Candidate version: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Overall status: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 Automation default: `OFF`  
-Corrected-package real Google Workspace retest: `NOT_EXECUTED`
+Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
+functional acceptance: `NOT_EXECUTED`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,7 +14,7 @@ Corrected-package real Google Workspace retest: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
 | Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
@@ -36,10 +37,31 @@ normalization evidence. Quick/Deep Diagnostic remain read-only. Source A10
 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child Release B10
 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal
-publication and detached HTTPS fresh-clone verification. This evidence-only
-commit records that proof. The current carriage-only gate is
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; Automation is `OFF`, and real
-Workspace retest is `NOT_EXECUTED`.
+publication and detached HTTPS fresh-clone verification. E10 records that
+publication proof. The current gate is
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; Automation is `OFF` and
+future manual acceptance remains individually authorized and synthetic only.
+
+## Observed controlled Sandbox Setup evidence
+
+The operator reviewed the source observation and retained only its closed
+non-sensitive results; no image, account detail, Workspace ID, URL, locale,
+actual format string, or business content is stored. One controlled Sandbox
+Setup completed S00 through S99. Its in-Setup S90 result reported an aligned
+module contract and a normalized bounded 51-cell block with write, flush, and
+strict postcondition verified. It reported no schema extension, Task-row
+update, quarantine, or orphaning; the completed layout refresh reported 11
+Sheets. S60 and S80 passed as Setup stages only. The prior safe
+`E_CALENDAR_APP_ACCESS_REQUIRED` stop is historical; no unobserved Calendar
+root cause or resource sequence is asserted.
+
+This is a PASS only for the observed Setup/S90/S99 run. Standalone Quick
+Diagnostic, Deep Diagnostic, Dashboard refresh, functional edit-trigger
+behavior, Gmail processing, Calendar reconciliation, LockService contention,
+authority fault injection, and external Provider/model/credential work remain
+`NOT_EXECUTED`. Automation and a five-minute trigger are `OFF` /
+`NOT_AUTHORIZED`. Phase 8B overall PASS, Phase 8C GO, production readiness,
+and pilot readiness are `NOT_DECLARED`.
 
 ## Historical 2.8.9 Dashboard number-format transfer evidence
 
@@ -266,11 +288,12 @@ diagnostics with P10; preserve the failed workbook as evidence.
 The normal-pushed T6.1, T7, T8, and T9 fixed refs passed their respective
 historical verification and remain immutable evidence. T9 is superseded as an
 execution transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed
-T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is the current
-carriage-only target under `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. This status
-does not authorize OAuth consent, Apps Script import, Setup, diagnostics,
-Dashboard refresh, deployment, `clasp push`, Automation enablement, real data,
-or any real Workspace action.
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains the immutable current
+payload anchor under `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`. This
+status permits only separately approved, staged manual acceptance using
+synthetic non-sensitive data. It does not authorize Automation, a five-minute
+trigger, external AI, real data, deployment, `clasp push`, Phase 8C,
+production, or pilot use.
 
 No GitHub Actions run or combined-status evidence exists for this PR #8 scope.
 The repository retains three active historical temporary workflows, but none

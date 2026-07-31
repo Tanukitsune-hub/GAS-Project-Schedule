@@ -4,8 +4,13 @@ Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/GoogleWorkspace_v2_8_10_Phase8B_Dashboard_Number_Format_Write_Visibility_and_Module_Skew_Remediation_2026-07-31.md`
 Version contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Google Workspace
-retransfer/retest remains `NOT_EXECUTED`.
+Current publication gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; one controlled
+Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`.
+
+The row-level real-Workspace `NOT_EXECUTED` labels below retain their
+historical pre-0001 fixed-transfer traceability meaning. They do not override
+the current, narrowly scoped observed Setup status or the current external-
+environment matrix in the controlled-manual-acceptance plan.
 
 `LOCAL_PASS` means only the local fake-runtime check passed. It never asserts
 real Google Workspace execution. `REMOTE_FRESH_CLONE_PASS_P6` means the R5

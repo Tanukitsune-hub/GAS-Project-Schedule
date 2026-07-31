@@ -232,3 +232,28 @@ publication and detached-clone proof. This evidence-only commit records that
 closure and is not a transfer target. The resulting
 `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate is carriage-only; real Workspace
 retransfer/retest remains `NOT_EXECUTED`.
+
+## D-046 — Observed Setup evidence advances only the controlled manual-acceptance gate
+
+**Decision.** The closed 0001 observation from one controlled non-production
+Sandbox may be recorded as a PASS for Setup S00-S99, the in-Setup S90 module
+alignment/normalization postcondition, and S60/S80 as Setup stages only. It
+sets the current governance gate to
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` while keeping fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` immutable as the payload and
+transfer anchor.
+
+**Rationale.** The operator-reviewed observation is deliberately limited to
+closed stage names, enums, Booleans, and counts. It confirms the former
+51-cell Dashboard blocker did not recur in that Setup run, but does not
+observe standalone diagnostics, functional edit-trigger behavior, Gmail,
+Calendar reconciliation, locking, authority faults, or Provider behavior.
+
+**Consequences.** Only separately approved, staged manual acceptance using
+synthetic non-sensitive data may be proposed or executed. Automation and a
+five-minute trigger remain `OFF` / `NOT_AUTHORIZED`; external AI, real data,
+deployment, `clasp push`, Phase 8C, production, and pilot use remain outside
+authorization. Phase 8B overall PASS is `NOT_DECLARED`. No screenshot,
+identity, Workspace ID/URL, actual data, locale, or format string is retained
+in the repository. The earlier Calendar safe stop is not assigned an
+unobserved root cause or resource sequence.

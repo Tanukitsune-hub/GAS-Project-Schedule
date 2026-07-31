@@ -30,6 +30,8 @@ const expectedKeys = [
 ];
 const noGoGate = 'PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY';
 const readyGate = 'READY_FOR_PHASE8B_SANDBOX_RETRANSFER';
+const controlledManualAcceptanceGate =
+  'READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE';
 const expectedPath =
   'implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/';
 const historicalFixedRefs = [
@@ -80,7 +82,9 @@ function validateContracts(contracts) {
   assert.strictEqual(reference.Migration, '3');
   assert.strictEqual(reference['Transfer path'], expectedPath);
   assert.ok(
-    reference.Gate === noGoGate || reference.Gate === readyGate,
+    reference.Gate === noGoGate ||
+      reference.Gate === readyGate ||
+      reference.Gate === controlledManualAcceptanceGate,
     'current gate is not an allowed v2.8.10 gate'
   );
   assert.ok(

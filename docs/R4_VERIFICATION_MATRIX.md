@@ -2,7 +2,7 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Workspace retransfer/retest remains `NOT_EXECUTED`
+Gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; one controlled Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -111,7 +111,28 @@ remote resolution, package/transfer verification, and detached HTTPS
 fresh-clone proof. That carriage-only status is historical: the repeated
 write-visibility finding supersedes T9 as an execution transfer target.
 Source A10, direct-child Release B10, fixed T10, normal publication, and
-detached T10 verification all passed. This evidence-only commit records the
-closure. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` authorizes controlled carriage
-of exact fixed T10 only. This matrix authorizes no Workspace operation; real
-Google Workspace evidence remains `NOT_EXECUTED`.
+detached T10 verification all passed. E10 records that publication closure.
+The later 0001 closed observation records one controlled Sandbox Setup through
+S99, including in-Setup S90 alignment and the 51-cell normalization/flush/
+postcondition. The historical row-level `NOT_EXECUTED` entries remain their
+original pre-observation traceability states; the current real-environment
+status is defined by the matrix below.
+
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` keeps exact fixed T10
+immutable and permits only separately approved staged synthetic manual
+acceptance. It does not declare Phase 8B overall PASS, Phase 8C GO,
+production ready, or pilot ready.
+
+## External-environment status after 0001
+
+| External item | Status |
+|---|---|
+| Real Google Workspace Setup S00-S99 | PASS for the observed controlled Sandbox Setup only |
+| Real S90 Quick Diagnostic within Setup / module alignment | PASS for that Setup only |
+| Dashboard 51-cell normalization / flush / postcondition | PASS for that Setup only |
+| Real dedicated Calendar provisioning S60 / owner edit-trigger creation S80 | PASS for Setup stage only |
+| Standalone Quick Diagnostic / Deep Diagnostic / Dashboard refresh | NOT_EXECUTED |
+| Functional edit-trigger behavior / Gmail processing / Calendar reconciliation | NOT_EXECUTED |
+| LockService contention / authority fault injection / external provider | NOT_EXECUTED |
+| Automation / five-minute trigger | OFF / NOT_AUTHORIZED |
+| Phase 8B overall PASS / Phase 8C GO / production / pilot | NOT_DECLARED |

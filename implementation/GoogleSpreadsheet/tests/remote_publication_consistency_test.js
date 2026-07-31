@@ -93,7 +93,8 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   const declaredGate = gateMatch[1];
   assert.ok([
     'PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY',
-    'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
+    'READY_FOR_PHASE8B_SANDBOX_RETRANSFER',
+    'READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE'
   ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
     '2.8.10-prepilot',

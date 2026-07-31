@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; fixed transfer `PENDING_T10`; real Workspace retransfer/retest remains `NOT_EXECUTED` |
+| Current gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance remains separately gated |
 
 ## Quick Diagnostic runtime control plane
 
@@ -185,9 +185,10 @@ canonical hashing, validation-before-index, multi-row isolation, move/copy/
 delete/orphan handling, bounded reads, hidden/protection contracts, Calendar
 exclusion, authority loss before and after the final pre-I/O revalidation,
 armed crash recovery, foreign-event refusal, and migration pause/resume. They
-use an in-memory fake Apps Script environment. Real Google Workspace Sheet
-protection, trigger, lock, Gmail, and Calendar behavior remain `NOT_EXECUTED`
-pending independent re-audit. `phase8b_setup_ledger_visibility_test.js` adds
+use an in-memory fake Apps Script environment. Independent functional/fault
+validation of real Google Workspace Sheet protection, trigger, lock, Gmail,
+and Calendar behavior remains `NOT_EXECUTED` beyond the observed Setup-stage
+facts. `phase8b_setup_ledger_visibility_test.js` adds
 fake-runtime coverage for fresh S20 ordering, the observed S00/S10 partial
 resume, visibility/protection failures, S30, completed rerun, and no-fallback.
 

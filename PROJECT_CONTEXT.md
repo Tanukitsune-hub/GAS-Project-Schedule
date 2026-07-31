@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+Publication gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,7 +13,7 @@ Publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
 | Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
@@ -33,9 +33,11 @@ detached HTTPS clone. They remain immutable evidence, but
 target. Source A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`,
 direct-child Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`,
 and fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are
-normally published and independently verified. This evidence-only commit is
-not a transfer target. Real Workspace work remains `NOT_EXECUTED` and
-Automation remains `OFF`.
+normally published and independently verified. E10 is not a transfer target.
+One later controlled Sandbox observation completed Setup S00-S99, including
+in-Setup S90 alignment and the bounded normalization postcondition. That
+evidence does not establish standalone functional behavior; Automation remains
+`OFF` and future functional tests remain separately authorized.
 
 ## Historical v2.8.9/T9 context
 
@@ -187,9 +189,9 @@ The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
 evidence. T6.1, T7, T8, and T9 are also historical and are not current
-execution transfer targets. `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` approves
-controlled carriage only from fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6`. It does not approve real
-data, OAuth, Apps Script import, Setup, diagnostics, Dashboard refresh,
-Provider configuration, deployment, Automation, triggers, or any real
-Workspace operation.
+execution transfer targets. `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
+keeps fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` as the immutable
+payload anchor and permits only separately approved staged manual acceptance
+with synthetic non-sensitive data. It does not approve Automation, a
+five-minute trigger, external AI, real data, deployment, `clasp push`, Phase
+8C, production, or pilot use.

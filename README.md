@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Current gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,7 +21,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` |
+| Gate | `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` |
 | Fixed transfer | `927d8567bce64461840cc6f72fbae0c1e636a8e6` |
 | Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
@@ -45,9 +45,10 @@ Google Workspace Personal Work OS.
   A9.1/B9.1/T9 chain is additive and does not replace any v2.8.5 through
   v2.8.8 package, transfer, or audit byte. T9 is superseded as an execution
   transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed v2.8.10
-  T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is the current
-  carriage-only target after normal publication and detached HTTPS
-  fresh-clone verification; real Workspace retest remains `NOT_EXECUTED`.
+  T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains the current immutable
+  payload and transfer anchor after normal publication and detached HTTPS
+  fresh-clone verification. A separately observed controlled Sandbox Setup
+  completed through S99; functional acceptance remains separately gated.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.
@@ -75,16 +76,35 @@ source correction keeps the strict ownership and surface preconditions, calls
 Range, and requires the canonical postcondition before S90 may continue.
 It also fails closed on mismatched S90-critical Config, Setup, and Dashboard
 module contracts before any format write. Quick/Deep Diagnostic remain
-read-only, Automation remains `OFF`, and real Workspace work is
-`NOT_EXECUTED`.
+read-only and Automation remains `OFF`. The source correction and the
+observed Setup evidence have deliberately separate scopes.
 
 Source A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child
 Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed transfer
 T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are normally
-published and independently verified. This evidence-only commit records the
-closure. The resulting `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` status
-authorizes controlled carriage of that exact non-sensitive Phase 8B transfer
-only.
+published and independently verified. E10 records the publication closure.
+The current `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` status keeps T10
+as the immutable payload anchor and authorizes only separately approved,
+staged, synthetic non-sensitive manual acceptance under the operator plan.
+
+## Observed controlled Sandbox Setup evidence
+
+The operator reviewed one controlled non-production Sandbox observation and
+translated it into the closed evidence retained in
+`audits/2026-07-31/GoogleWorkspace_v2_8_10_Phase8B_Real_Workspace_Setup_S90_Acceptance_Evidence_2026-07-31.md`.
+No image or sensitive Workspace detail is retained. In that one run, Setup
+completed S00 through S99; the in-Setup S90 module contract was aligned; the
+bounded 51-cell normalization recorded a write, flush, and verified strict
+postcondition; no schema extension or Task-row change was reported; and layout
+refresh reported 11 Sheets. This remediates the former 51-cell blocker for the
+observed Setup run only.
+
+Standalone Quick/Deep Diagnostic, Dashboard refresh, functional edit-trigger
+behavior, Gmail processing, Calendar reconciliation, LockService contention,
+authority fault injection, and external Provider work remain `NOT_EXECUTED`.
+Automation and any five-minute trigger remain `OFF` / `NOT_AUTHORIZED`.
+The result is not Phase 8B overall PASS, Phase 8C GO, production ready, or
+pilot ready.
 
 ## Historical Phase 8B Dashboard number-format real-runtime remediation
 
@@ -243,7 +263,9 @@ execution transfer target. The only approved carriage source is fixed T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` at
 `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`.
 
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` is carriage-only. It does not authorize
-Setup, diagnostics, OAuth approval, deployment, `clasp push`, Automation
-enablement, real data, or any real Workspace operation, and it is not Phase 8B
-PASS, Phase 8C GO, production ready, or pilot ready.
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` permits only individually
+approved, staged manual acceptance using synthetic non-sensitive data and the
+fixed-T10 payload. It does not authorize Automation, a five-minute trigger,
+external AI, real data, deployment, `clasp push`, Phase 8C, production, or
+pilot use. The exact next-step boundary is the Japanese controlled-manual-
+acceptance plan; it does not make its planned actions already executed.

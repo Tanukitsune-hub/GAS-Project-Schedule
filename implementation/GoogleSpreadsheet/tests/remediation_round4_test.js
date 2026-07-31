@@ -732,7 +732,8 @@ test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', (
     'PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE',
     'PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT',
     'PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY',
-    'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
+    'READY_FOR_PHASE8B_SANDBOX_RETRANSFER',
+    'READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE'
   ].includes(gateMatch[1]), 'unexpected current gate: ' + gateMatch[1]);
   assert.ok(html.includes(`data-release-status="${gateMatch[1]}"`));
   assert.ok(html.includes('Task Authority Ledger'));

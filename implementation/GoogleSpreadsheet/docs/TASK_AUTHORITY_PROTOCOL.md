@@ -8,6 +8,13 @@ direct-child Release B10, fixed transfer T10, and evidence E10 are
 Workspace retest remains `NOT_EXECUTED`. Historical A8/B8/T8 and
 A9/A9.1/B9.1/T9 evidence is preserved and is not the current execution target.
 
+The preceding source-stage gate and pending A10/B10/T10/E10 labels are
+historical. The current gate is
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. One controlled
+Sandbox Setup S00-S99 observation is PASS, while functional acceptance remains
+separately authorized and `NOT_EXECUTED`.
+
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept
 with the Apps Script modules so release and static checks can trace the

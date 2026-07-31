@@ -4,7 +4,7 @@ Code Version: `2.8.10-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Current publication gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed transfer `927d8567bce64461840cc6f72fbae0c1e636a8e6`; real Workspace retransfer/retest `NOT_EXECUTED`
+Historical E10 carriage gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. The current gate is `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; the controlled-manual-acceptance plan, not this historical pre-observation guide, governs future actions.
 Automation default: `OFF`
 
 Historical note: A9/A9.1/B9.1/T9 and the
@@ -75,10 +75,13 @@ replacement order are approved for controlled carriage.
 
 ## Prohibited status upgrades
 
-This guide never declares execution readiness. The current
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate means controlled carriage of exact
-fixed T10 only, never Sandbox PASS or execution authorization. Real Workspace
-retransfer/retest is `NOT_EXECUTED`.
+This historical pre-observation guide never declares execution readiness. Its
+E10-era `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate meant controlled carriage
+of exact fixed T10 only, never Sandbox PASS or execution authorization. The
+current 0001 gate and all future operator actions are governed by
+`V2_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE_PLAN_ja.md`; only the observed Setup
+stages are PASS, while standalone functional acceptance remains
+`NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7

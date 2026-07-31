@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-code-version="2.8.10-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_PHASE8B_SANDBOX_RETRANSFER">
+<html lang="en" data-code-version="2.8.10-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22,7 +22,7 @@
   <h1>Task Authority and Calendar Reconciliation</h1>
   <div class="meta">
     <span class="badge">Code 2.8.10-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
-    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">READY_FOR_PHASE8B_SANDBOX_RETRANSFER</span>
+    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE</span>
   </div>
   <h2>Setup control-plane bootstrap</h2>
   <section class="flow" aria-label="setup control-plane workflow">
@@ -83,7 +83,7 @@
       <tr><td>Authority is lost after Calendar arm / I/O</td><td><code>DEADLINE_CALENDAR_ARMED</code> then compensation target</td><td>Cancel before I/O, or delete only a verified-owned Event; never patch an excluded Task.</td></tr>
     </tbody>
   </table>
-  <p>Real Google Workspace execution remains NOT EXECUTED. Current carriage-only gate is READY_FOR_PHASE8B_SANDBOX_RETRANSFER. This view does not declare Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.</p>
+  <p>One controlled Sandbox Setup observed S00-S99 completion and the in-Setup S90 normalization/flush/postcondition. Standalone Diagnostics, Dashboard refresh, trigger functionality, Gmail, Calendar reconciliation, locking, authority faults, and Provider work remain NOT_EXECUTED. The current gate is READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE: staged synthetic manual acceptance only, with Automation OFF. This view does not declare Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.</p>
 </main>
 </body>
 </html>
