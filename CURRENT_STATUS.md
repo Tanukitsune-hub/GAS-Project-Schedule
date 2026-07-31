@@ -34,6 +34,8 @@ dedicated personal synthetic target is not configured. Thus no Google
 operation, clasp push, pull-back parity, or runtime dry-run has occurred. The
 current development status is `READY_FOR_LOCAL_CLASP_VALIDATION`; company
 handoff stays `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+Safe closed evidence is recorded in
+`audits/2026-07-31/GoogleWorkspace_0006_Local_Clasp_Validation_Gate_Evidence_2026-07-31.md`.
 
 ## Historical 2.8.11 T1-01 bounded-summary visibility remediation
 
