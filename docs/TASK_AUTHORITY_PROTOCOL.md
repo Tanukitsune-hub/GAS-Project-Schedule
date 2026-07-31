@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical old-byte/hash evidence, while fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is the remote-resolved/detached-clone-verified current transfer; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance requires separate future approval, remains `NOT_EXECUTED`, and is not authorized by the current T11 boundary |
+| Current gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; T10 and T11 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` exists while a personal synthetic local clasp validation gate is incomplete. Observed Setup evidence is historical and functional acceptance remains `NOT_EXECUTED`. |
 
 ## Diagnostic bounded-acceptance summary
 
@@ -228,6 +228,7 @@ GitHub resolution, and detached HTTPS fresh-clone verification. The later
 v2.8.9 A9/A9.1/B9.1/T9 chain is also retained as immutable historical
 evidence. The repeated 51-cell finding supersedes T9 as an execution target.
 The v2.8.10 Source-stage A10/B10/T10/E10 pending state and
-`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate are historical. The
-current transfer boundary is T11 only; any permitted follow-up is limited to
-one separately approved read-only T1-01 Quick Diagnostic re-observation.
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate are historical.
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is suspended and no
+Company-PC carriage or Quick Diagnostic re-observation is authorized. The
+current prerequisite is a personal synthetic local clasp validation gate.

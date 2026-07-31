@@ -13,12 +13,13 @@ duplicate, missing, or over-bound list is fail-closed as `REVIEW_REQUIRED`; no
 finding is suppressed or promoted to PASS.
 
 Source A11.1, direct-child Release B11, fixed Transfer T11, and local
-evidence E11 are normal-published and detached-HTTPS-clone verified. The
-current gate is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: it authorizes
-only the separately controlled T1-01 summary re-observation described in the
-T11 transfer guide. Fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
-remains immutable historical evidence. A completed Sandbox must not rerun
-Setup to apply this visibility-only patch.
+evidence E11 are normal-published and detached-HTTPS-clone verified historical
+evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is
+`T11_SUSPENDED` and does not authorize a Company-PC carriage or T1-01
+re-observation. The current gate is
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` until guarded local
+clasp validation uses a personal synthetic development target. A completed
+Sandbox must not rerun Setup to apply this visibility-only patch.
 
 `2.8.10-prepilot` retains the R4/R5 authority contract and every historical
 Dashboard ownership/format precondition. It closes the write-visibility gap in
@@ -121,9 +122,9 @@ the historic Round 3 report.
 The following v2.8.10/T10 paragraph is historical provenance. Current
 versions are Code `2.8.11-prepilot`, Schema `2.6`, AI Schema `2.0`, and
 Migration `3`; Automation remains OFF by default. The current
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` gate is limited to fixed T11
-`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33`, while T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` remains old-byte/hash evidence.
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` gate treats T11 and T10
+as historical evidence only: T11 is suspended and no Company-PC transfer or
+Workspace action is authorized.
 The verified v2.8.7
 chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `95bc7240d99124b245e188b8e646eccf6c3ead48`, C7

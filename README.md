@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
+| Current gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,18 +21,26 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
-| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
+| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Fixed transfer | `T11_SUSPENDED` |
+| Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Instruction 0006 — local clasp validation gate
+
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its T11 five-file company-PC
+carriage and the company-Sandbox T1-01 re-observation did not occur and are
+not currently authorized. Fixed T11 remains immutable historical provenance,
+not an active company carriage source. Company handoff is stopped until the
+non-Google local gate, GitHub Actions, guarded personal-dev clasp push,
+pull-back parity, and any separately configured safe dev-runtime evidence are
+independently reviewed.
 
 The 2.8.11 candidate preserves every Quick/Deep Diagnostic check and adds a
 bounded, privacy-safe acceptance summary before the redacted detail payload.
-Fixed T11 is remote-resolved and detached-clone verified. It authorizes only
-the separately controlled T1-01 summary re-observation described in its hash
-manifest. T1-01 remains `REVIEW_REQUIRED` until that real observation is
-recorded; no Setup rerun, Dashboard refresh, or later Tranche action is
-authorized.
+T1-01 remains `REVIEW_REQUIRED`; no company-PC reflection, Setup rerun,
+Dashboard refresh, or later Tranche action is authorized.
 
 ## Canonical paths
 
@@ -93,8 +101,8 @@ Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, fixed transfer T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6`, and E10 record historical
 publication closure. Their then-current
 `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is historical and does
-not authorize present operations. The current company-PC boundary is the
-marked T11 contract below.
+not authorize present operations. The current boundary is the marked local
+clasp validation / no-company-handoff contract below.
 
 ## Observed controlled Sandbox Setup evidence
 
@@ -223,19 +231,26 @@ task-specific specification. Older indexed instruction sets remain historical
 evidence unless the current handoff explicitly selects them. GitHub-unsaved
 long conversation text is not an authoritative task specification.
 
-## Local validation
+## Local validation and personal-dev clasp
 
-Use the bundled Node runtime (or any supported local Node executable) if
-`node` is not on `PATH`:
+Install the locked module-local tooling with Node 20 or later, then run the
+non-Google verification gate from Windows PowerShell:
 
 ```powershell
-$node = '<path-to-local-node-executable>'
-& $node implementation/GoogleSpreadsheet/tools/validate_apps_script_v2.js
+Set-Location implementation/GoogleSpreadsheet
+pnpm install --frozen-lockfile
+pnpm run verify:local
 ```
 
-The project contains no deployment command in this workflow. Do not run
-`clasp push` without explicit approval. Local PASS results do not authorize
-Phase 8B GO/PASS, Phase 8C GO, production ready, or pilot ready.
+GitHub Actions runs the same non-Google verification lane with read-only
+permissions. It never receives Google credentials or invokes clasp. The local
+`gas:*` commands stage only the 23 canonical Apps Script payload files into an
+ignored personal-dev workspace. They require an ignored target declaration,
+an ignored `.clasp.json`, and explicit local opt-in before a guarded dev push.
+See [local clasp setup](docs/local-clasp-setup.md),
+[development validation gates](docs/development-validation-gates.md), and
+[company handoff](docs/company-handoff.md). Local PASS does not authorize
+company handoff, Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
 
 ## P5 baseline and R5 corrective publication
 
@@ -268,26 +283,23 @@ target. The resulting status is transfer-only.
 <!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_START -->
 | Field | Value |
 |---|---|
-| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
-| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
-| Carriage scope | `HASH_VERIFIED_FIVE_FILE_REPLACEMENT_ONLY` |
-| Workspace action | `ONE_SEPARATELY_APPROVED_READ_ONLY_T1_01_QUICK_DIAGNOSTIC` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Transfer state | `T11_SUSPENDED` |
+| Current carriage source | `NO_ACTIVE_COMPANY_TRANSFER` |
+| Workspace action | `NONE_AUTHORIZED` |
 | T1-01 status | `REVIEW_REQUIRED` |
 
-Do not copy this repository, the entire `release/` tree, a Phase 8C package,
-or any historical package to a company PC. P10, T6.1, T7, T8, T9, and T10
-remain immutable historical evidence. T10 is permitted only as the old-byte
-and old-hash baseline in the immutable T11 patch manifest; it is not an active
-carriage source.
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no company-PC carriage, file
+replacement, or company-Sandbox observation occurred. Fixed T11, its release
+packages, transfer envelope, checksums, and prior manifests remain immutable
+historical evidence. They must not be copied or reflected on a company PC
+while this boundary is suspended.
 
-Before any carriage, compare the old and new SHA-256 values in the fixed T11
-manifest. Only its five listed files may be replaced; `appsscript.json` and
-all unlisted files must remain unchanged. No Setup, S90, S99, Dashboard
-refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,
-or repair action is authorized. The sole possible next Workspace operation is
-one separately approved, read-only T1-01 Quick Diagnostic re-observation.
-T1-01 remains `REVIEW_REQUIRED`; T1-02 and later Tranche actions are not
-authorized. This boundary does not declare T1-01 PASS, Phase 8B overall PASS,
-Phase 8C GO, production ready, or pilot ready.
+No company Workspace action is authorized. Do not carry a package, change an
+Apps Script file, run Setup or a diagnostic, touch Gmail, Calendar,
+Properties, triggers, Automation, tests, Migration, or perform repair. A
+future company boundary requires a separate governing instruction after the
+local clasp validation lane and independent evidence review. This status does
+not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready,
+or pilot ready.
 <!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_END -->

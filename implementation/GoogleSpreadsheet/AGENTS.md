@@ -355,3 +355,29 @@ Implement the requested changes with mandatory versioning, backup, CHANGELOG upd
 For HTML/CSS/JS work, keep the app fully local, avoid unnecessary external dependencies, and prefer a maintainable multi-file structure when file size or reviewability would benefit.
 After completion, report changes, files, versioning, validation results, local startup instructions, known limitations, execution metrics including elapsed time and exact token usage when available, and guardrail confirmations directly in chat.
 ```
+
+## 14. Local clasp and CI validation gate
+
+- GitHub Actions CI is a repository standard. Keep the single minimal workflow
+  at `.github/workflows/ci.yml` and do not remove or weaken checks without a
+  documented reason and review evidence.
+- CI must remain non-Google-authenticated: it may run locked local Node tools,
+  JSON/YAML validation, static validation, and regression tests, but must not
+  use `clasp push`, `.clasp.json`, `.clasprc.json`, credentials, OAuth, or
+  secret contexts.
+- The project-local `@google/clasp` lane exists only for a dedicated personal,
+  synthetic dev Apps Script project. It requires an ignored local target
+  declaration, an ignored local binding, an explicit `GAS_DEV_CLASP_ALLOWED`
+  opt-in, a clean worktree, source-stage hashing, and pull-back parity.
+- Do not use clasp for a company Workspace, a production project, deployment,
+  or a company-PC handoff. Company PCs use only a separately approved manual
+  reflection, authorization review, and minimal smoke workflow.
+- A skipped or blocked local clasp lane is a company-handoff blocker unless a
+  later canonical decision explicitly changes that governance rule.
+- Do not commit `.clasp.json`, `.clasprc.json`, OAuth material, API keys,
+  credentials, company/personal data, Workspace IDs, URLs, staging payloads,
+  pull-back trees, or local verification reports.
+- Final reports for GAS changes must state CI, non-Google local verification,
+  clasp target guard, dev push, pull-back parity, runtime dry-run, missing
+  prerequisites, and remaining company checks separately; `NOT_EXECUTED` is
+  never a PASS.

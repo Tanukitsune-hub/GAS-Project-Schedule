@@ -1,24 +1,24 @@
 # Google Workspace Personal Work OS v2
 
-> Current 0003 addendum (2026-07-31): the active candidate is Code
+> Historical 0003 addendum (2026-07-31): the candidate was Code
 > `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3` at
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. It adds only a bounded
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. It added only a bounded
 > Diagnostic acceptance summary before capped details. The closed T1-01
 > `77/6/0` observation remains `REVIEW_REQUIRED`; T10 remains immutable and
-> fixed T11 is remote-resolved and detached-HTTPS-clone verified. T11 permits
-> only the separately controlled T1-01 summary re-observation; no Setup,
-> repair, or subsequent acceptance action is authorized.
+> fixed T11 is remote-resolved and detached-HTTPS-clone verified historical
+> evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is suspended.
+> The current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
+> pending local clasp validation on a personal synthetic development target.
 # Phase 1〜7 Remediation Plan
 
 > Historical addendum (2026-07-31): this Phase 1〜7 plan and its v2.8.10
 > source-stage `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate are
 > historical context. A10/B10/T10/E10 are immutable provenance, not pending
-> current artifacts. The active additive remediation is Code `2.8.11-prepilot`
-> / Schema `2.6` / AI Schema `2.0` / Migration `3` at fixed T11 under
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. It permits only the
-> hash-verified five-file replacement and one separately approved read-only
-> T1-01 Quick Diagnostic re-observation; it does not reopen legacy work
-> packages or authorize Phase 8B execution.
+> current artifacts. The v2.8.11/T11 boundary is also historical. Instruction
+> 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is `T11_SUSPENDED`, so it permits no
+> replacement or Company Sandbox Diagnostic. The current active gate is
+> `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` pending local clasp
+> validation on a personal synthetic development target.
 
 - 作成日: 2026-07-25（JST）
 - 根拠: `docs/V2_FINAL_INTEGRATED_AUDIT_REPORT.md`

@@ -7,15 +7,13 @@ verification 後の当時の上限は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
 （非機密 package の搬入のみ）でした。実 Google Workspace 再検証は
 `NOT_EXECUTED` のままであり、このガイドは実行を承認しません。
 
-> **Historical/nonoperative guide notice (0004).** This P10/T6.1 recovery
+> **Historical/nonoperative guide notice (0006).** This P10/T6.1 recovery
 > guidance is retained as failure provenance only. It is not the current
-> Company-PC or Workspace-operation boundary. The sole current boundary is
-> fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` under
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: confirm the T11 manifest
-> hashes, replace only its five listed files, leave `appsscript.json` and all
-> unlisted files unchanged, then STOP. No Setup, S90, S99, Dashboard refresh,
-> Gmail, Calendar, Properties, triggers, Automation, tests, Migration, or
-> repair is authorized.
+> Company-PC or Workspace-operation boundary. Instruction 0005 is
+> `SUPERSEDED_NOT_EXECUTED`; T11 is `T11_SUSPENDED` and there is no authorized
+> replacement, Company Sandbox Diagnostic, or Workspace action. The current
+> prerequisite is local clasp validation on a personal synthetic development
+> target.
 
 ## 今すぐ維持すること
 

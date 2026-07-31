@@ -7,14 +7,12 @@
 `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`、および `PENDING_T10`
 はすべて歴史的な検証時の境界であり、現在の操作を定義しません。
 
-> **Historical/nonoperative guide notice (0004).** This v2.8.10 recovery
+> **Historical/nonoperative guide notice (0006).** This v2.8.10 recovery
 > guide is retained as incident provenance only. It is not an active
-> company-PC or Workspace-operation instruction. The current boundary is
-> fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` under
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; use only its hash-verified
-> five-file replacement guide, then STOP. No Setup, S90, S99, Dashboard
-> refresh, Gmail, Calendar, Properties, triggers, Automation, tests,
-> Migration, or repair is authorized.
+> company-PC or Workspace-operation instruction. Instruction 0005 is
+> `SUPERSEDED_NOT_EXECUTED`; T11 is `T11_SUSPENDED` and no file replacement or
+> Workspace action is authorized. The current prerequisite is local clasp
+> validation on a personal synthetic development target.
 
 `DASHBOARD_LAYOUT_OWNERSHIP` / `E_DASHBOARD_LAYOUT_CONFLICT` /
 `DASHBOARD_NUMBER_FORMAT_CONFLICT` /

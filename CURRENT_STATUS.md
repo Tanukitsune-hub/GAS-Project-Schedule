@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
+Overall status: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -14,12 +14,27 @@ functional acceptance: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
-| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
+| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Fixed transfer | `T11_SUSPENDED` |
+| Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
-## Current 2.8.11 T1-01 bounded-summary visibility remediation
+## Current 0006 local clasp validation gate
+
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its company-PC T11 carriage,
+five-file replacement, and company-Sandbox T1-01 re-observation were not
+performed. T11 remains immutable historical evidence, but its transfer
+envelope is suspended and does not authorize company handoff or any Workspace
+operation.
+
+The required progression is non-Google local static/regression validation,
+GitHub Actions CI, a guarded dedicated personal synthetic-dev clasp push,
+pull-back parity, and a safe dev-runtime dry-run where separately configured.
+Until the applicable evidence is independently reviewed, company handoff stays
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+
+## Historical 2.8.11 T1-01 bounded-summary visibility remediation
 
 The reported controlled-Sandbox T1-01 record is closed evidence only:
 `77 PASS / 6 WARN / 0 FAIL`, `REVIEW_REQUIRED`, and no action authorization.
@@ -30,14 +45,12 @@ read-only side-effect Booleans, Task 50-column/header states, and Ledger
 21-column/hidden/protected/validator states. Any incomplete list remains
 fail-closed as `REVIEW_REQUIRED`.
 
-T10 remains immutable historical evidence. T11 is remote-resolved and
-detached-clone verified. A completed Sandbox must not run Setup to apply this
-visibility-only candidate: T11 permits only the exact T1-01 Quick Diagnostic
-retest specified by its transfer guide, with no Dashboard refresh, Gmail,
-Calendar, properties, trigger, or Automation operation. The retest itself
-remains `NOT_EXECUTED` and T1-01 is not declared PASS.
+T10 and T11 remain immutable historical evidence. The prior T11 retransfer
+guide is suspended by instruction 0006; no company carriage or retest is
+currently authorized. The historical retest remains `NOT_EXECUTED` and T1-01
+is not declared PASS.
 
-## Current 2.8.10 Dashboard write-visibility remediation
+## Historical 2.8.10 Dashboard write-visibility remediation
 
 `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes fixed T9 as an execution
 transfer target after the same bounded 51-cell conflict recurred in the real
@@ -57,9 +70,10 @@ normalization evidence. Quick/Deep Diagnostic remain read-only. Source A10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal
 publication and detached HTTPS fresh-clone verification. E10 records that
 historical publication proof. Its then-current
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is nonoperative. The
-current T11 transfer contract above is authoritative; Automation remains
-`OFF`.
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is nonoperative.
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is suspended and the
+current local-clasp/no-company-handoff contract above is authoritative.
+Automation remains `OFF`.
 
 ## Observed controlled Sandbox Setup evidence
 
@@ -304,17 +318,17 @@ Release B6 / transfer chain was created and independently verified. Automation
 remains OFF. Do not manually hide the Ledger, continue Setup, or run
 diagnostics with P10; preserve the failed workbook as evidence.
 
-The normal-pushed T6.1, T7, T8, and T9 fixed refs passed their respective
-historical verification and remain immutable evidence. T9 is superseded as an
-execution transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed
-T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical
-old-byte/hash evidence only. The current T11 contract permits only the
-hash-verified five-file replacement followed, if separately approved, by one
-read-only T1-01 Quick Diagnostic re-observation. It does not authorize Setup,
-S90, S99, Dashboard refresh, Gmail, Calendar, Properties, triggers,
-Automation, tests, Migration, repair, Phase 8C, production, or pilot use.
+The normal-pushed T6.1, T7, T8, T9, T10, and T11 fixed refs passed their
+respective historical verification and remain immutable evidence. T11 is
+`T11_SUSPENDED`, not an active company carriage source. Instruction 0005 is
+`SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
+occurred. The next governance lane is local static/regression validation,
+GitHub Actions CI, a guarded personal synthetic-dev clasp push, pull-back
+parity, and an optional safe runtime dry-run. No company Workspace action is
+authorized by this status.
 
-No GitHub Actions run or combined-status evidence exists for this PR #8 scope.
-The repository retains three active historical temporary workflows, but none
-targeted this branch/ref; CI evidence for this scope is `NOT EXECUTED`.
-Fresh-clone local/static validation is the required evidence.
+PR #9 records a successful CI implementation against an older `main` baseline.
+It is not proof for this branch until its single workflow is integrated and
+rerun against the current candidate. CI, local verification, clasp push,
+pull-back parity, and runtime dry-run are tracked separately; an unexecuted
+Google lane is never a PASS.

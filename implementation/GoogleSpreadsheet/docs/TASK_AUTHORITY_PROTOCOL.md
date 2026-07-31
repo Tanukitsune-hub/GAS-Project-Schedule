@@ -15,15 +15,15 @@ historical. The then-current
 controlled Sandbox Setup S00-S99 observation is PASS, while functional
 acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
-The current gate is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. T10 remains
-immutable historical old-byte/hash evidence, while fixed T11
-`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and
-detached-HTTPS-clone verified. Quick/Deep now expose a bounded pre-detail
-acceptance summary of closed IDs, counts, read-only Booleans, and Task/Ledger
-aggregates; an incomplete summary is `REVIEW_REQUIRED` and never repairs
-authority, Calendar, Dashboard, Setup state, or version properties. T11
-authorizes only the separately controlled T1-01 summary re-observation. T1-01
-remains `REVIEW_REQUIRED`; T1-02 and later actions are not authorized.
+The current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+T10 and fixed T11 are immutable historical evidence; T11 is `T11_SUSPENDED`.
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a
+Company-PC carriage nor a T1-01 re-observation. Quick/Deep expose a bounded
+pre-detail acceptance summary of closed IDs, counts, read-only Booleans, and
+Task/Ledger aggregates; an incomplete summary is `REVIEW_REQUIRED` and never
+repairs authority, Calendar, Dashboard, Setup state, or version properties.
+The sole active prerequisite is local clasp validation on a personal synthetic
+development target.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

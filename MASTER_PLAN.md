@@ -3,7 +3,7 @@
 Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
+Current publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,10 +12,26 @@ Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
-| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
+| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Fixed transfer | `T11_SUSPENDED` |
+| Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## 0006 local clasp validation gate
+
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its proposed five-file
+company-PC carriage, Company Sandbox Quick Diagnostic, and all related manual
+Workspace activity are not authorized and have not been performed. Fixed T11
+remains immutable historical evidence but is suspended as a carriage source.
+
+Before a future company handoff can be reassessed, a personal, synthetic,
+non-company Apps Script development target must pass the local clasp gate:
+locked non-Google validation, target guard, staged-payload parity, push and
+pull-back parity, and a separately opt-in safe runtime dry-run. GitHub Actions
+must run only non-Google checks and never receives Google credentials or
+invokes clasp. Until those gates are evidenced, there is no active company
+transfer path and no authorized Workspace action.
 
 ## Phase 8B T1-01 bounded Diagnostic-summary visibility remediation
 
@@ -24,7 +40,7 @@ Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 | P8B-DS-1 | Preserve closed T1-01 evidence (`77/6/0`) without inferring the sixth WARN ID | Complete in Source A11 audit; `REVIEW_REQUIRED` remains. |
 | P8B-DS-2 | Bounded Quick/Deep acceptance summary | Complete in Source A11 candidate: sorted IDs, counts, completeness, side-effect Booleans, and Task/Ledger aggregates precede capped details. |
 | P8B-DS-3 | Read-only and overflow regression coverage | Complete locally; overflow or malformed IDs fail closed. |
-| P8B-DS-4 | T11/B11/E11 publication chain | Complete: A11.1, B11, T11, and E11 are normal-published and detached-HTTPS-clone verified; only controlled T1-01 re-observation is authorized. |
+| P8B-DS-4 | T11/B11/E11 publication chain | Complete as immutable historical publication evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; neither a Company-PC retransfer nor a T1-01 re-observation is currently authorized. |
 
 ## Phase 8B Dashboard write-visibility / module-skew remediation
 
@@ -36,7 +52,7 @@ Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 | P8B-WV-4 | Buffered-runtime and document consistency tests | Complete: buffered-write/flush, module-skew, diagnostics-read-only, resume invariants, and canonical-document negative fixtures PASS. |
 | P8B-WV-5 | Source A10 / direct-child Release B10 | Complete: A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`; direct-child B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`; commit boundaries PASS. |
 | P8B-WV-6 | Fixed transfer T10 / evidence E10 | Complete: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is normal-pushed and detached-clone verified; this evidence-only commit records the proof and is not a transfer target. |
-| P8B-WV-7 | Controlled Sandbox Setup/S90 evidence and next acceptance boundary | Complete as evidence/governance only: one observed Sandbox Setup completed S00-S99 with in-Setup S90 alignment and bounded normalization postcondition. The current gate permits only separately approved, synthetic non-sensitive manual acceptance; no functional tranche is executed by this record. |
+| P8B-WV-7 | Controlled Sandbox Setup/S90 evidence and next acceptance boundary | Complete as historical evidence/governance only: one observed Sandbox Setup completed S00-S99 with in-Setup S90 alignment and bounded normalization postcondition. Instruction 0006 supersedes the former manual-acceptance boundary with a local synthetic clasp validation prerequisite; no functional tranche is executed by this record. |
 
 ## Historical Phase 8B Dashboard number-format remediation
 
@@ -150,23 +166,18 @@ report, or transfer envelope.  Its direct-child Release B6 must contain only:
 
 ## Gate discipline
 
-P10 proof and the corrected T6.1 ref remain historical. T6.1 was verified from
-GitHub in a detached target-branch fresh clone, but
-`PHASE8B-QUICK-DIAGNOSTIC-01` superseded it as the then-current transfer target.
-The A7/B7/C7/T7/evidence path is complete historical evidence, but
-`PHASE8B-DASHBOARD-01` superseded T7 as an executable transfer target. The
-additive A8/B8/T8 and A9/A9.1/B9.1/T9 paths completed their historical normal
-publication and detached fresh-clone verification. T8 and T9 are immutable
-evidence, but `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` supersedes T9 as an
-execution transfer target. Fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal publication
-and detached HTTPS fresh-clone verification. A later controlled Sandbox Setup
-observed S00-S99 completion and in-Setup S90 alignment/normalization with the
-closed evidence retained in the 0001 audit. That record's then-current
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is historical. The
-current T11 contract is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: T10 is
-only its immutable old-byte/hash baseline; T11 is the current carriage source.
-Only the hash-verified five-file replacement and one separately approved,
-read-only T1-01 Quick Diagnostic re-observation are within scope. It does not
+P10 proof, corrected T6.1, T7, T8, T9, T10, and T11 remain historical,
+immutable evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: its
+five-file company-PC replacement, its Company Sandbox Quick Diagnostic, and
+its proposed T11 carriage were neither performed nor authorized. T11's prior
+hashes and transfer package remain available solely as historical evidence;
+they are not an active company transfer source.
+
+The current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+The replacement prerequisite is a personal, synthetic, non-company clasp
+validation chain with CI/non-Google checks, strict target guard, staged source
+parity, pull-back parity, and an explicitly enabled read-only runtime dry-run.
+No company-PC carriage, Workspace action, deployment, Automation enablement,
+or Phase 8B functional acceptance is authorized by this plan. This does not
 declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or
 pilot ready.

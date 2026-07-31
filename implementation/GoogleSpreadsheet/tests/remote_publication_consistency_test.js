@@ -92,8 +92,10 @@ test('RPC-02_VERSION_GATE_AND_AUTHORITY_DOCUMENTS_AGREE', () => {
   assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
   const declaredGate = gateMatch[1];
   assert.ok([
-    'PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY',
-    'READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER'
+    'NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION',
+    'READY_FOR_LOCAL_CLASP_VALIDATION',
+    'READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION',
+    'READY_FOR_COMPANY_HANDOFF_REASSESSMENT'
   ].includes(declaredGate), 'unexpected canonical gate: ' + declaredGate);
   [
     '2.8.11-prepilot',

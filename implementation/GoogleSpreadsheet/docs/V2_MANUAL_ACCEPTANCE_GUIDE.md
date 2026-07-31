@@ -7,14 +7,13 @@ Migration Version: `3`
 Historical E10 carriage gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical old-byte/hash evidence. The then-current `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is nonoperative; this historical pre-observation guide does not govern current actions.
 Automation default: `OFF`
 
-Current 0003 gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. Fixed T11
-`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and
-detached-HTTPS-clone verified. The T11 guide, not any historical Setup
-procedure, governs the completed Sandbox. It may authorize only one separately
-controlled T1-01 Quick Diagnostic display/retest after hash-verified
-replacement; Setup, Dashboard refresh, Gmail, Calendar, properties, triggers,
-Automation, T1-02, and repair are prohibited. Any version-property mismatch
-remains an explicit WARN and is not reconciled.
+The 0003 gate is historical. Instruction 0005 is
+`SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable evidence but
+`T11_SUSPENDED`, so it authorizes neither replacement nor a Company Sandbox
+Diagnostic. The current gate is
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; no company Workspace
+action is authorized while a personal synthetic local clasp lane is unproven.
+Any version-property mismatch remains an explicit WARN and is not reconciled.
 
 Historical 0003 source-stage label:
 `PHASE8B_SANDBOX_NO_GO_T1_01_SUMMARY`. It is preserved as provenance for the
@@ -78,28 +77,23 @@ transcribed as real Workspace PASS.
 
 ## Company-PC material
 
-Do not use any v2.8.5 through v2.8.9 transfer as the current execution target.
-They are immutable historical evidence. Do not manually hide the Ledger,
-change Dashboard formats, continue Setup, or run diagnostics as a workaround.
-The v2.8.10 company-PC replacement list and fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` are immutable historical
-provenance only. The current carriage source is fixed T11 at
-`implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`: after exact
-old/new hash confirmation, replace only the five manifest-listed files and
-leave `appsscript.json` plus every unlisted file unchanged. No Setup, S90,
-S99, Dashboard refresh, Gmail, Calendar, Properties, triggers, Automation,
-tests, Migration, or repair is authorized; only one separately approved,
-read-only T1-01 Quick Diagnostic re-observation may follow.
+Do not use any v2.8.5 through v2.8.11 transfer as the current execution
+target. They are immutable historical evidence. Do not manually hide the
+Ledger, change Dashboard formats, continue Setup, or run diagnostics as a
+workaround. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: T11 is suspended,
+there is no active carriage source, and neither a five-file replacement nor a
+Company Sandbox Quick Diagnostic is authorized.
 
 ## Prohibited status upgrades
 
 This historical pre-observation guide never declares execution readiness. Its
 E10-era `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate meant controlled carriage
 of exact fixed T10 only, never Sandbox PASS or execution authorization. The
-current T11 gate and the sole possible next operator action are governed by
-the T11 transfer guide and patch manifest. T1-01 remains `REVIEW_REQUIRED`,
-T1-02 and later actions are not authorized, and standalone functional
-acceptance remains `NOT_EXECUTED`.
+current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; local
+clasp validation on a personal synthetic target is the prerequisite before any
+future reassessment. T1-01 remains `REVIEW_REQUIRED`, T1-02 and later actions
+are not authorized, and standalone functional acceptance remains
+`NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7

@@ -1,29 +1,24 @@
 # Phase 8B Tranche 1 Read-only / Structural Acceptance — Operator Runbook
 
-> Current 0003 remediation notice (2026-07-31): T1-01 reported `77 PASS / 6
+> Historical 0003 remediation notice (2026-07-31): T1-01 reported `77 PASS / 6
 > WARN / 0 FAIL` but its detail display did not safely expose all warning IDs.
-> It is `REVIEW_REQUIRED`, not PASS. The current candidate is Code
+> It is `REVIEW_REQUIRED`, not PASS. The candidate is Code
 > `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`, at
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. Fixed T11 is remote-resolved
-> and detached-HTTPS-clone verified. T1-02 through T1-08 are not authorized.
-> For a completed T10 Sandbox, do not run Setup: use only the T11
-> hash-verified replacement guide and one separately controlled T1-01 Quick
-> Diagnostic observation, then STOP.
+> the former T11 boundary. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED` and
+> T11 is `T11_SUSPENDED`. T1-02 through T1-08 and all Company-PC operations
+> are not authorized.
 
 歴史的指示番号: `0002`
 歴史的対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 歴史的 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
 歴史的 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 
-> **Active-boundary override (0004).** Except for the current 0003 notice
-> above, the T10 instructions and fields below are historical/nonoperative.
-> The active operator boundary is T11 only: confirm the fixed T11 manifest's
-> old/new hashes, replace its five listed files only, leave `appsscript.json`
-> and every unlisted file unchanged, then STOP. No Setup, S90, S99, Dashboard
-> refresh, Gmail, Calendar, Properties, triggers, Automation, tests,
-> Migration, or repair is authorized. Only one separately approved, read-only
-> T1-01 Quick Diagnostic re-observation may follow; T1-01 is
-> `REVIEW_REQUIRED` and T1-02 through T1-08 are not authorized.
+> **Active-boundary override (0006).** All T10/T11 carriage instructions and
+> fields below are historical/nonoperative. The active gate is
+> `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; there is no active
+> company transfer. Do not replace files, run a Company Sandbox Diagnostic, or
+> perform any Workspace action. Only a personal synthetic local clasp
+> validation lane is in scope.
 
 ## 0. この文書の役割と実行境界
 
@@ -338,7 +333,7 @@ edit-trigger configuration を安全に閉じられるか評価する。
 ## 11. Gate and handoff result
 
 この historical runbook によって current gate は変わりません。最高 status は
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` のままです。T1-01〜T1-08、
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` のままです。T1-01〜T1-08、
 Phase 8B overall、Phase 8C、production、pilot、Automation、external Provider の
 PASS / GO / authorization はこの文書だけから宣言しません。
 

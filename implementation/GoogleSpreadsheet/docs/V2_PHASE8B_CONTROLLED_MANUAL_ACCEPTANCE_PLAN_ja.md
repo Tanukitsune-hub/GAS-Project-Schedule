@@ -1,17 +1,14 @@
 # Phase 8B 管理下手動受入計画（指示番号: 0001）
 
-> **Historical/nonoperative operator-plan notice (0004, 2026-07-31).** This
+> **Historical/nonoperative operator-plan notice (0006, 2026-07-31).** This
 > 0001 plan records the former v2.8.10/T10 controlled-manual-acceptance
 > boundary only. It is not an active carriage or Workspace-operation guide.
-> The sole current boundary is fixed T11
-> `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
-> `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`, under
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. After hash confirmation, only
-> the five manifest-listed files may be replaced; `appsscript.json` and all
-> unlisted files remain unchanged. No Setup, S90, S99, Dashboard refresh,
-> Gmail, Calendar, Properties, triggers, Automation, tests, Migration, or
-> repair is authorized. Only one separately approved read-only T1-01 Quick
-> Diagnostic re-observation may follow; it remains `REVIEW_REQUIRED`.
+> Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is immutable historical
+> evidence but `T11_SUSPENDED`, with `NO_ACTIVE_COMPANY_TRANSFER`. The current
+> gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` pending the
+> self-PC personal-synthetic local clasp validation lane. No Company-PC
+> carriage, replacement, Workspace operation, or T1-01 re-observation is
+> authorized.
 
 歴史的対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 歴史的 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
@@ -123,12 +120,12 @@ Phase 8C、external provider／credential、deployment、`clasp push`、producti
 The 0002 Tranche plan remains historical planning context. Current 0003 does
 not authorize any Tranche action: T1-01's closed `77 PASS / 6 WARN / 0 FAIL`
 observation is `REVIEW_REQUIRED` because the complete warning-ID set was not
-safely visible. Code `2.8.11-prepilot` is
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: fixed T11 is remote-resolved and
-detached-HTTPS-clone verified. For the completed T10 Sandbox, Setup must not
-be rerun; the separately controlled T11 procedure may run only T1-01 Quick
-Diagnostic once, record its bounded summary, and STOP. T1-02 through T1-08
-remain `NOT_EXECUTED` / not authorized.
+safely visible. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: T11 is
+`T11_SUSPENDED` and its Company-PC carriage and T1-01 observation are not
+authorized. Code `2.8.11-prepilot` is currently
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; local clasp validation
+on a personal synthetic target is the sole active prerequisite. T1-02 through
+T1-08 remain `NOT_EXECUTED` / not authorized.
 
 ## 7. Operator handoff / rollback rule
 

@@ -129,3 +129,25 @@ GitHubからの再取得: PASS
 Codex貼付文: 出力済み
 秘密情報scan: 問題なし
 ```
+
+## 10. Local clasp validation and company handoff gate
+
+- GitHub Actions is a required non-Google validation lane. It must run locked
+  JSON/YAML checks, Apps Script static validation, current regression suites,
+  and repository verifiers without Google authentication, `clasp`, credential,
+  OAuth, or secret access.
+- `clasp` may be used only from a self PC and only for a personal, synthetic,
+  non-company development Apps Script project. The local binding, target
+  declaration, OAuth state, IDs, and pull-back files are ignored and must not
+  be committed.
+- A guarded local clasp report must separately state non-Google validation,
+  target guard, push, pull-back parity, and safe runtime dry-run. A skipped,
+  blocked, or unconfigured Google lane is `NOT_EXECUTED`/blocked, never PASS.
+- Company PCs must use only a separately authorized manual reflection,
+  authorization review, and minimal smoke procedure. No company-PC clasp,
+  deployment, automatic trigger enablement, or real Workspace action is
+  implied by local validation.
+- Every handoff must state the local/CI status, clasp version when invoked,
+  push/pull/runtime status, remaining company work, review focus, and whether
+  the maximum status permits only reassessment rather than an automatic
+  company handoff.

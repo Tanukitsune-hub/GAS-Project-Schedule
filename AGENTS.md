@@ -1,0 +1,39 @@
+# Repository Working Rules
+
+Follow the latest GitHub instruction and any more-specific `AGENTS.md` in the
+directory being changed. The repository’s canonical implementation is
+`implementation/GoogleSpreadsheet/`.
+
+## GitHub Actions CI
+
+- Keep one proportionate standard workflow at `.github/workflows/ci.yml`.
+- CI must run tracked JSON/YAML validation, the Apps Script static validator,
+  all current Node regression suites, and the committed non-Google local
+  verification gate.
+- Do not remove or weaken an existing CI check without recording the reason in
+  the relevant pull request and canonical documentation.
+- CI uses read-only repository permissions and must never use Google
+  credentials, OAuth tokens, `.clasp.json`, `.clasprc.json`, `clasp push`, or
+  any secret context.
+
+## Local clasp validation and company handoff
+
+- A project-local `@google/clasp` is for a dedicated personal, synthetic dev
+  Apps Script project only. It is never a company or production target.
+- Before any company handoff, an intended GAS change must pass the local
+  static/regression gate and GitHub Actions; where the dedicated dev target is
+  configured, it must also pass guarded local clasp push and pull-back parity.
+- Company PCs do not use clasp. Their future scope is manual reflection,
+  authorization review, and a separately approved minimal smoke test.
+- A skipped clasp lane is a company-handoff blocker unless a later governing
+  instruction explicitly records a different decision.
+
+## Information and reporting boundaries
+
+- Never commit `.clasp.json`, `.clasprc.json`, OAuth material, API keys,
+  credentials, company data, personal data, Workspace IDs, or Workspace URLs.
+- Final reports must state GitHub Actions, non-Google local verification,
+  clasp target guard, dev push, pull-back parity, runtime dry-run status,
+  missing prerequisites, and remaining company-side checks.
+- Preserve historical release, transfer, audit, and instruction artifacts.
+  Do not use reset, clean, rebase, amend, force push, or unrelated revert.

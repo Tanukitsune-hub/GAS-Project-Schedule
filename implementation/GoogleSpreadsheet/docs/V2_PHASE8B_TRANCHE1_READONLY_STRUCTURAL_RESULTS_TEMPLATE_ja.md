@@ -1,25 +1,22 @@
 # Phase 8B Tranche 1 Read-only / Structural Acceptance — Closed Results Template
 
-> Current 0003 remediation notice: fixed T11 is remote-resolved and
-> detached-HTTPS-clone verified. The prior T1-01 `77 PASS / 6 WARN / 0 FAIL`
+> Historical 0003 remediation notice: fixed T11 is remote-resolved and
+> detached-HTTPS-clone verified historical evidence. The prior T1-01 `77 PASS / 6 WARN / 0 FAIL`
 > result remains `REVIEW_REQUIRED`; do not infer the sixth warning ID. A
-> separately controlled T11-authorized
-> T1-01 observation records only the bounded summary contract fields (counts,
+> former T11-boundary observation recorded only the bounded summary contract fields (counts,
 > sorted WARN/FAIL IDs and completeness, all-false side-effect Booleans, Task
 > 50-column/header states, and Ledger 21-column/control states). Do not attach
 > detail JSON or run T1-02.
 
 歴史的指示番号: `0002`
-現在の対象 gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
-現在の固定 payload / transfer anchor: T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33`
+現在の対象 gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
+現在の固定 payload / transfer anchor: `NO_ACTIVE_COMPANY_TRANSFER`（T11 は `T11_SUSPENDED` の歴史証跡）
 
-> **Active-boundary override (0004).** Do not use the historical T10 fields
-> in earlier completed records as an active payload instruction. This template
-> may support only one separately approved read-only T1-01 Quick Diagnostic
-> re-observation after the five-file, hash-verified T11 replacement. T1-01 is
-> `REVIEW_REQUIRED`; T1-02 and later actions are not authorized. No Setup,
-> S90, S99, Dashboard refresh, Gmail, Calendar, Properties, triggers,
-> Automation, tests, Migration, or repair is authorized.
+> **Active-boundary override (0006).** Do not use historical T10 or T11 fields
+> as an active payload instruction. Instruction 0005 is
+> `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
+> is authorized. This template remains historical until local clasp validation
+> on a personal synthetic target is independently reviewed.
 
 ## 0. 使用方法と privacy boundary
 

@@ -18,11 +18,10 @@ but the detail UI did not safely expose all warning IDs. The missing sixth ID
 must not be inferred, suppressed, or promoted.
 
 **Consequence.** Overflow, duplicate, malformed, or unavailable summary data
-is `REVIEW_REQUIRED`; Diagnostic remains read-only. Fixed T11
-`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` was remote-resolved and
-detached-clone verified, so it authorizes only the separately controlled T1-01
-summary re-observation. It does not authorize Setup, version-property repair,
-Dashboard refresh, Calendar/Gmail work, Automation, or the next Tranche.
+is `REVIEW_REQUIRED`; Diagnostic remains read-only. The former T11
+re-observation boundary is historical. Under D-048 and instruction 0006, T11
+is suspended and no Company Sandbox re-observation is authorized until the
+local synthetic clasp validation gate is complete.
 
 ## D-036 — GitHub is the formal ChatGPT–Codex handoff medium
 
@@ -277,25 +276,25 @@ identity, Workspace ID/URL, actual data, locale, or format string is retained
 in the repository. The earlier Calendar safe stop is not assigned an
 unobserved root cause or resource sequence.
 
-## D-047 — T11 is the only current Company-PC transfer boundary
+## D-048 — Local clasp validation precedes any company-handoff reassessment
 
-**Decision.** The current company-PC transfer boundary is fixed T11
-`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
-`implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` under
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. Fixed T10 remains immutable
-historical old-byte/hash evidence only and may appear as the old baseline in
-the immutable T11 patch manifest.
+**Decision.** Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` and its patch manifest remain
+immutable historical evidence, but T11 is `T11_SUSPENDED` and there is
+`NO_ACTIVE_COMPANY_TRANSFER`. Before company handoff may be reassessed, a
+personal, synthetic, non-company Apps Script development target must pass the
+local clasp validation gate: locked non-Google validation, strict target
+guard, staged payload parity, push/pull-back parity, and an explicitly opt-in
+safe runtime dry-run.
 
-**Rationale.** A top-level T11 contract combined with an active lower operator
-instruction naming T10, the v2.8.10 path, or the old gate could cause a
-company-PC operator to select the wrong payload. This is a transfer-safety
-conflict even when all referenced historical artifacts are byte-correct.
+**Rationale.** The old T11 boundary was designed to prevent a wrong-payload
+replacement, but instruction 0006 requires a reproducible, credential-safe
+development validation path first. CI cannot prove Google-authenticated
+behavior and must never receive Google credentials or invoke clasp.
 
-**Consequences.** After exact old/new hash confirmation, only the five files
-listed in the T11 manifest may be replaced; `appsscript.json` and every
-unlisted file remain unchanged. No Setup, S90, S99, Dashboard refresh, Gmail,
-Calendar, Properties, triggers, Automation, tests, Migration, or repair is
-authorized. The only possible next Workspace action is one separately
-approved read-only T1-01 Quick Diagnostic re-observation, which remains
-`REVIEW_REQUIRED`. This decision does not declare T1-01 PASS, Phase 8B overall
-PASS, Phase 8C GO, production ready, or pilot ready.
+**Consequences.** Until the local clasp gate is evidenced,
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` applies. No company-PC
+carriage, five-file replacement, Company Sandbox Quick Diagnostic, Setup,
+Dashboard refresh, Gmail, Calendar, trigger, Automation, deployment, or
+production action is authorized. This decision does not declare T1-01 PASS,
+Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.

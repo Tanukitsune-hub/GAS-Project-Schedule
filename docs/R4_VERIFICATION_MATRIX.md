@@ -2,7 +2,10 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable and T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved/detached-clone verified; one controlled Sandbox Setup S00-S99 observation is PASS, while standalone functional acceptance remains `NOT_EXECUTED`
+Gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; fixed T10 and
+T11 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and no
+company transfer is active. One controlled Sandbox Setup S00-S99 observation
+is historical, while standalone functional acceptance remains `NOT_EXECUTED`.
 
 This matrix is the publication-facing summary. Detailed source traceability is
 under `implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md`.
@@ -121,13 +124,13 @@ postcondition. The historical row-level `NOT_EXECUTED` entries remain their
 original pre-observation traceability states; the current real-environment
 status is defined by the matrix below.
 
-The `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` row is historical. The
-current T11 boundary is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: T10 is
-immutable old-byte/hash evidence only, while fixed T11 is the sole carriage
-source. It permits only the hash-verified five-file replacement and one
-separately approved read-only T1-01 Quick Diagnostic re-observation. It does
-not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready,
-or pilot ready.
+The `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` row is historical.
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: neither its five-file
+replacement nor its Company Sandbox Quick Diagnostic re-observation was
+performed or is authorized. T11 is historical/suspended, not a carriage
+source. The local clasp gate on a personal synthetic target is the sole active
+prerequisite; it does not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C
+GO, production ready, or pilot ready.
 
 ## External-environment status after 0001
 

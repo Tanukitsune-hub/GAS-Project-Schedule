@@ -9,16 +9,12 @@ Migration `3`
 操作、Apps Script import、Setup、診断実行、Dashboard更新、OAuth、
 deployment、`clasp push`、Automation有効化を承認しません。
 
-> **Historical/nonoperative guide notice (0004).** The preceding v2.8.8/T8
-> carriage status is historical provenance only. The sole current Company-PC
-> boundary is fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
-> `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`, under
-> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. After hash confirmation,
-> replace only the five T11 manifest-listed files and leave `appsscript.json`
-> plus all unlisted files unchanged. No Setup, S90, S99, Dashboard refresh,
-> Gmail, Calendar, Properties, triggers, Automation, tests, Migration, or
-> repair is authorized; only one separately approved read-only T1-01 Quick
-> Diagnostic re-observation may follow.
+> **Historical/nonoperative guide notice (0006).** The preceding v2.8.8/T8
+> carriage status is historical provenance only. Instruction 0005 is
+> `SUPERSEDED_NOT_EXECUTED`; T11 is immutable but `T11_SUSPENDED`, and there
+> is `NO_ACTIVE_COMPANY_TRANSFER`. No file replacement, Company Sandbox
+> Diagnostic, or Workspace action is authorized. The current prerequisite is
+> local clasp validation on a personal synthetic development target.
 
 ## 保持するSandbox状態
 

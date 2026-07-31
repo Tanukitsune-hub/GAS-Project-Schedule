@@ -3,13 +3,12 @@
 Contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` is immutable historical
-old-byte/hash evidence, and fixed T11
-`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is the current transfer boundary.
-One observed Setup S00-S99 run is PASS; Calendar reconciliation remains
-subject to separate future approval and `NOT_EXECUTED`; it is not authorized
-by the current T11 boundary.
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; fixed T10 and T11 are
+immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
+`NO_ACTIVE_COMPANY_TRANSFER`. One observed Setup S00-S99 run is historical;
+Calendar reconciliation remains subject to separate future approval and
+`NOT_EXECUTED`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; the current
+prerequisite is local clasp validation using only a personal synthetic target.
 
 The v2.8.11 bounded Diagnostic summary also does not alter this protocol. It
 is a read-only UI/result visibility contract: all Calendar API and repair

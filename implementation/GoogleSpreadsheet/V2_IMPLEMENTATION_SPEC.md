@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Code: `2.8.11-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` (fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical old-byte/hash evidence only; fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is the remote-resolved and detached-HTTPS-clone-verified current transfer boundary; the reported T1-01 result remains `REVIEW_REQUIRED` and functional acceptance is `NOT_EXECUTED`)
+Current publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` (fixed T10 and T11 remain immutable historical evidence; T11 is `T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, and functional acceptance is `NOT_EXECUTED`). Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; the current prerequisite is local clasp validation against a personal synthetic development target.
 
 The 2.8.11 scope is bounded Diagnostic-result visibility only: it adds a
 pre-detail summary of closed check IDs, completeness, counts, side-effect

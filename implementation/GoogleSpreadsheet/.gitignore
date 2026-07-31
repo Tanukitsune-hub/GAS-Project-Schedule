@@ -1,5 +1,12 @@
 # Apps Script local binding and local credentials
 **/.clasp.json
+**/.clasprc.json
+.clasp-dev/
+.clasp-pull-verify/
+.local-validation/
+creds.json
+credentials*.json
+client_secret*.json
 .env
 .env.*
 !.env.example

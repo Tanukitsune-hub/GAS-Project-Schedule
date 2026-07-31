@@ -2,14 +2,15 @@
 
 Last updated: 2026-07-31
 Current remediation candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
+Gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
 
-Current instruction 0003 adds only a bounded Diagnostic acceptance summary.
-The closed T1-01 `77 PASS / 6 WARN / 0 FAIL` observation remains
-`REVIEW_REQUIRED`; no sixth warning ID is inferred. Fixed T11 is
-remote-resolved and detached-HTTPS-clone verified, so it authorizes only one
-separately controlled T1-01 summary re-observation; no Setup or later Tranche
-action is authorized.
+Instruction 0003 added only a bounded Diagnostic acceptance summary. The
+closed T1-01 `77 PASS / 6 WARN / 0 FAIL` observation remains
+`REVIEW_REQUIRED`; no sixth warning ID is inferred. Instruction 0005 is
+`SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable historical evidence but
+`T11_SUSPENDED`, so it authorizes no Company-PC carriage or re-observation.
+The current prerequisite is local clasp validation on a personal synthetic
+development target; no company Workspace action is authorized.
 
 ## Scope
 

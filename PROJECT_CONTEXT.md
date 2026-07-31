@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
+Publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,10 +13,18 @@ Publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
-| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
-| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
+| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Fixed transfer | `T11_SUSPENDED` |
+| Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its proposed T11 carriage,
+five-file Company-PC replacement, and Company Sandbox Quick Diagnostic are
+not authorized and have not occurred. T11 remains immutable historical
+evidence, not a current carriage source. The current work is a local clasp
+validation gate against a personal, synthetic, non-company development Apps
+Script project; no company transfer or Workspace action is active.
 
 v2.8.11 is a visibility-only Diagnostic remediation. T11 is remote-resolved
 and detached-clone verified. It does not interpret,
@@ -47,7 +55,7 @@ One later controlled Sandbox observation completed Setup S00-S99, including
 in-Setup S90 alignment and the bounded normalization postcondition. That
 evidence does not establish standalone functional behavior; Automation remains
 `OFF` and future functional tests require separate future approval; they are
-not authorized by the current T11 boundary.
+not authorized by the current local-clasp/no-company-handoff boundary.
 
 ## Historical v2.8.9/T9 context
 
@@ -177,11 +185,10 @@ transfer target.
 - Corrected 2.8.6/T6.1, v2.8.7/T7, v2.8.8/T8, and v2.8.9/T9 package and
   transfer directories are immutable historical evidence. None is the
   current execution transfer target.
-- Fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is immutable historical
-  old-byte/hash evidence. The current carriage path is fixed T11
-  `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
-  `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`. T11 is the
-  current transfer boundary; T10 is not a current carriage source.
+- Fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` and fixed T11
+  `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` are immutable historical
+  old-byte/hash evidence. T11 is `T11_SUSPENDED`; no historical transfer
+  directory is a current company carriage source.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -199,12 +206,11 @@ silently rewritten.
 The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
-evidence. T6.1, T7, T8, T9, and T10 are also historical and are not current
-execution transfer targets. The current
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` boundary uses fixed T11 only:
-after exact hash confirmation, replace only the five manifest-listed files,
-leaving `appsscript.json` and all unlisted files unchanged. It permits no
-Setup, S90, S99, Dashboard refresh, Gmail, Calendar, Properties, triggers,
-Automation, tests, Migration, repair, Phase 8C, production, or pilot action.
-Only one separately approved read-only T1-01 Quick Diagnostic re-observation
-may follow; T1-01 remains `REVIEW_REQUIRED` and T1-02 is not authorized.
+evidence. T6.1 through T11 are also historical and are not current execution
+transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
+five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
+Diagnostic re-observation is authorized. The only active prerequisite is
+local clasp validation on a personal, synthetic, non-company development
+target. It permits no company Workspace action, Setup, S90, S99, Dashboard
+refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,
+repair, Phase 8C, production, or pilot action.

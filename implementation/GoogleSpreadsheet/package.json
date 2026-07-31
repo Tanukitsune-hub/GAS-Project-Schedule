@@ -1,0 +1,31 @@
+{
+  "name": "gas-project-schedule-local-validation",
+  "version": "2.8.11-local-validation.0",
+  "private": true,
+  "description": "Non-Google validation and guarded personal-dev clasp tooling for GAS Project Schedule.",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "verify": "node tools/local_validation_gate.js --mode local",
+    "verify:local": "node tools/local_validation_gate.js --mode local",
+    "verify:ci": "node tools/local_validation_gate.js --mode ci",
+    "verify:json": "node tools/local_validation_gate.js --section json",
+    "verify:yaml": "node tools/local_validation_gate.js --section yaml",
+    "verify:apps-script": "node tools/local_validation_gate.js --section apps-script",
+    "verify:tests": "node tools/local_validation_gate.js --section tests",
+    "verify:release": "node tools/local_validation_gate.js --section release",
+    "verify:transfer": "node tools/local_validation_gate.js --section transfer",
+    "gas:stage:dev": "node tools/local_clasp_dev.js stage",
+    "gas:status:dev": "node tools/local_clasp_dev.js status",
+    "gas:push:dev": "node tools/local_clasp_dev.js push",
+    "gas:pull-verify:dev": "node tools/local_clasp_dev.js pull-verify",
+    "gas:test:dev": "node tools/local_clasp_dev.js test",
+    "gas:open": "node tools/local_clasp_dev.js open"
+  },
+  "devDependencies": {
+    "@google/clasp": "3.3.0",
+    "yaml": "2.9.0"
+  }
+}
