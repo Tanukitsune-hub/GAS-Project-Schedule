@@ -121,10 +121,13 @@ postcondition. The historical row-level `NOT_EXECUTED` entries remain their
 original pre-observation traceability states; the current real-environment
 status is defined by the matrix below.
 
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` keeps exact fixed T10
-immutable and permits only separately approved staged synthetic manual
-acceptance. It does not declare Phase 8B overall PASS, Phase 8C GO,
-production ready, or pilot ready.
+The `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` row is historical. The
+current T11 boundary is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: T10 is
+immutable old-byte/hash evidence only, while fixed T11 is the sole carriage
+source. It permits only the hash-verified five-file replacement and one
+separately approved read-only T1-01 Quick Diagnostic re-observation. It does
+not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready,
+or pilot ready.
 
 ## External-environment status after 0001
 

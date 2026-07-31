@@ -10,10 +10,20 @@
 > hash-verified replacement guide and one separately controlled T1-01 Quick
 > Diagnostic observation, then STOP.
 
-指示番号: `0002`
-対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-固定 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
-現在かつ最高 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
+歴史的指示番号: `0002`
+歴史的対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+歴史的 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
+歴史的 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
+
+> **Active-boundary override (0004).** Except for the current 0003 notice
+> above, the T10 instructions and fields below are historical/nonoperative.
+> The active operator boundary is T11 only: confirm the fixed T11 manifest's
+> old/new hashes, replace its five listed files only, leave `appsscript.json`
+> and every unlisted file unchanged, then STOP. No Setup, S90, S99, Dashboard
+> refresh, Gmail, Calendar, Properties, triggers, Automation, tests,
+> Migration, or repair is authorized. Only one separately approved, read-only
+> T1-01 Quick Diagnostic re-observation may follow; T1-01 is
+> `REVIEW_REQUIRED` and T1-02 through T1-08 are not authorized.
 
 ## 0. この文書の役割と実行境界
 
@@ -327,8 +337,8 @@ edit-trigger configuration を安全に閉じられるか評価する。
 
 ## 11. Gate and handoff result
 
-この runbook によって変わる gate はありません。最高 status は
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` のままです。T1-01〜T1-08、
+この historical runbook によって current gate は変わりません。最高 status は
+`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` のままです。T1-01〜T1-08、
 Phase 8B overall、Phase 8C、production、pilot、Automation、external Provider の
 PASS / GO / authorization はこの文書だけから宣言しません。
 

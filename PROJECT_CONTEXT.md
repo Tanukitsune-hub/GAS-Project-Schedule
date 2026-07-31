@@ -46,7 +46,8 @@ normally published and independently verified. E10 is not a transfer target.
 One later controlled Sandbox observation completed Setup S00-S99, including
 in-Setup S90 alignment and the bounded normalization postcondition. That
 evidence does not establish standalone functional behavior; Automation remains
-`OFF` and future functional tests remain separately authorized.
+`OFF` and future functional tests require separate future approval; they are
+not authorized by the current T11 boundary.
 
 ## Historical v2.8.9/T9 context
 
@@ -176,10 +177,11 @@ transfer target.
 - Corrected 2.8.6/T6.1, v2.8.7/T7, v2.8.8/T8, and v2.8.9/T9 package and
   transfer directories are immutable historical evidence. None is the
   current execution transfer target.
-- The current v2.8.10 carriage path is
-  `implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`, fixed at T10
-  `927d8567bce64461840cc6f72fbae0c1e636a8e6`. T10 is the direct
-  child of Release B10 and is not part of Source A10.
+- Fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` is immutable historical
+  old-byte/hash evidence. The current carriage path is fixed T11
+  `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
+  `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`. T11 is the
+  current transfer boundary; T10 is not a current carriage source.
 - Instructions and audit inputs: `instructions/` and `audits/`.
 
 No legacy `context-hub` path is a source, publication target, or sync target.
@@ -197,10 +199,12 @@ silently rewritten.
 The historical P10 envelope must not be carried or executed after
 `PHASE8B-SETUP-01`. Automation remains OFF; do not manually hide the Ledger,
 continue P10 Setup, or run P10 diagnostics. Preserve the failed workbook as
-evidence. T6.1, T7, T8, and T9 are also historical and are not current
-execution transfer targets. `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
-keeps fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` as the immutable
-payload anchor and permits only separately approved staged manual acceptance
-with synthetic non-sensitive data. It does not approve Automation, a
-five-minute trigger, external AI, real data, deployment, `clasp push`, Phase
-8C, production, or pilot use.
+evidence. T6.1, T7, T8, T9, and T10 are also historical and are not current
+execution transfer targets. The current
+`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` boundary uses fixed T11 only:
+after exact hash confirmation, replace only the five manifest-listed files,
+leaving `appsscript.json` and all unlisted files unchanged. It permits no
+Setup, S90, S99, Dashboard refresh, Gmail, Calendar, Properties, triggers,
+Automation, tests, Migration, repair, Phase 8C, production, or pilot action.
+Only one separately approved read-only T1-01 Quick Diagnostic re-observation
+may follow; T1-01 remains `REVIEW_REQUIRED` and T1-02 is not authorized.

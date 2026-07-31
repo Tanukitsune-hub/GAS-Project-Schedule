@@ -3,10 +3,13 @@
 Contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 Current corrective-integration gate:
-`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 is
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` and fixed T11 is `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33`. One observed Setup S00-S99 run
-is PASS; Calendar reconciliation remains separately authorized and
-`NOT_EXECUTED`.
+`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` is immutable historical
+old-byte/hash evidence, and fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is the current transfer boundary.
+One observed Setup S00-S99 run is PASS; Calendar reconciliation remains
+subject to separate future approval and `NOT_EXECUTED`; it is not authorized
+by the current T11 boundary.
 
 The v2.8.11 bounded Diagnostic summary also does not alter this protocol. It
 is a read-only UI/result visibility contract: all Calendar API and repair

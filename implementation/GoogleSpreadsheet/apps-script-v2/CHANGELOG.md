@@ -2,6 +2,18 @@
 
 ## 2.8.11-prepilot - 2026-07-31 T1-01 bounded Diagnostic summary visibility remediation
 
+### 0004 documentation, validation, and transfer-boundary evidence
+
+- Corrected active Company-PC operator wording to the fixed T11/v2.8.11
+  boundary. Fixed T10 remains immutable historical old-byte/hash evidence
+  only; it is not a current carriage source.
+- Added a narrow canonical-document regression check for a contradictory
+  active T10 reference, old gate, or v2.8.10 path, while preserving clearly
+  labelled historical T10 evidence and the T11 manifest's old-hash baseline.
+- No Apps Script executable source, `appsscript.json`, release package,
+  transfer envelope, checksum, or fixed artifact changed. No Workspace or
+  company-PC operation occurred.
+
 ### Fixed
 
 - `PHASE8B-T1-01-DIAGNOSTIC-SUMMARY-01`: Quick/Deep Diagnostic detail JSON

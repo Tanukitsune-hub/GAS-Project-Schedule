@@ -1,9 +1,22 @@
 # Phase 8B 管理下手動受入計画（指示番号: 0001）
 
-対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-固定 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
-直前の evidence: E10 `c45479878878957940fad4afe5326c6d26d75d3c`
-現在の最高 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
+> **Historical/nonoperative operator-plan notice (0004, 2026-07-31).** This
+> 0001 plan records the former v2.8.10/T10 controlled-manual-acceptance
+> boundary only. It is not an active carriage or Workspace-operation guide.
+> The sole current boundary is fixed T11
+> `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
+> `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`, under
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. After hash confirmation, only
+> the five manifest-listed files may be replaced; `appsscript.json` and all
+> unlisted files remain unchanged. No Setup, S90, S99, Dashboard refresh,
+> Gmail, Calendar, Properties, triggers, Automation, tests, Migration, or
+> repair is authorized. Only one separately approved read-only T1-01 Quick
+> Diagnostic re-observation may follow; it remains `REVIEW_REQUIRED`.
+
+歴史的対象: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+歴史的 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
+歴史的 evidence: E10 `c45479878878957940fad4afe5326c6d26d75d3c`
+歴史的 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
 
 ## 0. 目的と厳格な境界
 

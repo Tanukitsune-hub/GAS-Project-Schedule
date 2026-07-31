@@ -4,7 +4,7 @@ Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
 Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable, and fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and detached-HTTPS-clone verified. The controlled T1-01 observation is `REVIEW_REQUIRED`; standalone functional acceptance remains `NOT_EXECUTED`.
+Current publication gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical old-byte/hash evidence, and fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is the remote-resolved and detached-HTTPS-clone-verified transfer boundary. The controlled T1-01 observation is `REVIEW_REQUIRED`; standalone functional acceptance remains `NOT_EXECUTED`.
 
 | 0003-01 | Bounded Quick/Deep summary before capped details | `16_Diagnostics.gs`, `Menu.gs`, `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS; no Workspace retest |
 | 0003-02 | Sorted/unique/complete WARN and FAIL identifiers; overflow and malformed input fail closed | same test | LOCAL_PASS |
@@ -123,8 +123,8 @@ remains `NOT_EXECUTED`.
 | WV-04 | Canonical block is idempotent with zero write/flush; Quick/Deep remain zero-write and zero-flush | Dashboard and Diagnostic runtime suites | PASS; read-only resource snapshots and mutation sentinels covered |
 | WV-05 | Config/Setup/Dashboard mismatch fails as `E_MODULE_VERSION_SKEW` before a write; aligned identifiers may proceed | `00_Config.gs`; `02_Setup.gs`; `15_Dashboard.gs`; module-skew suite | PASS, 5/5 suite assertions |
 | WV-06 | S00–S80 resume records safe normalization evidence without changing Gmail-label, Calendar, Property, edit-trigger, Automation-OFF, or no-five-minute-trigger invariants | Setup resume/runtime suites | PASS; real Workspace retest `NOT_EXECUTED` |
-| WV-07 | Four canonical documents agree on current version/gate/fixed-ref/path and synthetic T8/T9 skew fails | canonical-document consistency suite | PASS, 4/4 assertions at exact fixed T10 |
-| WV-08 | T10 patch list is produced only from fixed T9 versus final B10 raw Git blobs | v2.8.10 patch-manifest builder/verifier | PASS; 3 modified / 20 unchanged / 0 added or removed; `appsscript.json` unchanged |
+| WV-07 | Four canonical documents and the marked active Company-PC boundary agree on current version/gate/fixed-ref/path; synthetic T8/T9/T10, old-gate, and old-path skew fail | canonical-document consistency suite | LOCAL PASS; T11 is the active fixed transfer; historical T10 manifest baseline remains allowed |
+| WV-08 | Historical T10 patch-list provenance remains immutable; current T11 patch manifest uses T10 only as its old-byte/hash baseline | v2.8.10 and v2.8.11 patch-manifest verifiers | LOCAL PASS; T11 lists 5 modified / 18 unchanged / 0 added or removed; `appsscript.json` unchanged |
 
 ## Task write-route inventory (13 routes)
 

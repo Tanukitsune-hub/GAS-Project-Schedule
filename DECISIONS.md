@@ -257,10 +257,10 @@ retransfer/retest remains `NOT_EXECUTED`.
 **Decision.** The closed 0001 observation from one controlled non-production
 Sandbox may be recorded as a PASS for Setup S00-S99, the in-Setup S90 module
 alignment/normalization postcondition, and S60/S80 as Setup stages only. It
-sets the current governance gate to
+historically set the then-current governance gate to
 `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` while keeping fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` immutable as the payload and
-transfer anchor.
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` immutable as its payload and
+transfer anchor. It does not define the current transfer boundary.
 
 **Rationale.** The operator-reviewed observation is deliberately limited to
 closed stage names, enums, Booleans, and counts. It confirms the former
@@ -276,3 +276,26 @@ authorization. Phase 8B overall PASS is `NOT_DECLARED`. No screenshot,
 identity, Workspace ID/URL, actual data, locale, or format string is retained
 in the repository. The earlier Calendar safe stop is not assigned an
 unobserved root cause or resource sequence.
+
+## D-047 — T11 is the only current Company-PC transfer boundary
+
+**Decision.** The current company-PC transfer boundary is fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
+`implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` under
+`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. Fixed T10 remains immutable
+historical old-byte/hash evidence only and may appear as the old baseline in
+the immutable T11 patch manifest.
+
+**Rationale.** A top-level T11 contract combined with an active lower operator
+instruction naming T10, the v2.8.10 path, or the old gate could cause a
+company-PC operator to select the wrong payload. This is a transfer-safety
+conflict even when all referenced historical artifacts are byte-correct.
+
+**Consequences.** After exact old/new hash confirmation, only the five files
+listed in the T11 manifest may be replaced; `appsscript.json` and every
+unlisted file remain unchanged. No Setup, S90, S99, Dashboard refresh, Gmail,
+Calendar, Properties, triggers, Automation, tests, Migration, or repair is
+authorized. The only possible next Workspace action is one separately
+approved read-only T1-01 Quick Diagnostic re-observation, which remains
+`REVIEW_REQUIRED`. This decision does not declare T1-01 PASS, Phase 8B overall
+PASS, Phase 8C GO, production ready, or pilot ready.

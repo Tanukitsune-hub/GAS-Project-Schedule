@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable and fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved/detached-clone verified; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance remains separately gated |
+| Current gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical old-byte/hash evidence, while fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is the remote-resolved/detached-clone-verified current transfer; observed Setup S00-S99 PASS is limited to one controlled Sandbox and functional acceptance requires separate future approval, remains `NOT_EXECUTED`, and is not authorized by the current T11 boundary |
 
 ## Diagnostic bounded-acceptance summary
 
@@ -227,6 +227,7 @@ source/release/transfer/fresh-clone verification but is now historical because
 GitHub resolution, and detached HTTPS fresh-clone verification. The later
 v2.8.9 A9/A9.1/B9.1/T9 chain is also retained as immutable historical
 evidence. The repeated 51-cell finding supersedes T9 as an execution target.
-At the v2.8.10 Source stage, A10/B10/T10/E10 remain pending and the current
-gate is `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; real Workspace
-retransfer/retest remains `NOT_EXECUTED`.
+The v2.8.10 Source-stage A10/B10/T10/E10 pending state and
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate are historical. The
+current transfer boundary is T11 only; any permitted follow-up is limited to
+one separately approved read-only T1-01 Quick Diagnostic re-observation.

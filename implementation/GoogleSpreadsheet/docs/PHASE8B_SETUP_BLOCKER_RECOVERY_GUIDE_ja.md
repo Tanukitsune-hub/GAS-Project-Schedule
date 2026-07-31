@@ -3,9 +3,19 @@
 対象: P10 の `2.8.5-prepilot` Phase 8B packageで初回Setupが停止した
 Sandbox。ここでいう `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER` は修正版の
 package-generation 時点の履歴です。固定 transfer ref T6.1 の fresh-clone
-verification 後の現在の上限は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
-（非機密 package の搬入のみ）です。実 Google Workspace 再検証は
+verification 後の当時の上限は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`
+（非機密 package の搬入のみ）でした。実 Google Workspace 再検証は
 `NOT_EXECUTED` のままであり、このガイドは実行を承認しません。
+
+> **Historical/nonoperative guide notice (0004).** This P10/T6.1 recovery
+> guidance is retained as failure provenance only. It is not the current
+> Company-PC or Workspace-operation boundary. The sole current boundary is
+> fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` under
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: confirm the T11 manifest
+> hashes, replace only its five listed files, leave `appsscript.json` and all
+> unlisted files unchanged, then STOP. No Setup, S90, S99, Dashboard refresh,
+> Gmail, Calendar, Properties, triggers, Automation, tests, Migration, or
+> repair is authorized.
 
 ## 今すぐ維持すること
 

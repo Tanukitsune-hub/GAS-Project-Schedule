@@ -3,11 +3,22 @@
 対象: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
 
-現在の状態は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` です。これは固定T8の
-非機密Phase 8B packageを搬入できるcarriage-only statusです。この文書は
+歴史的な状態は `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` です。これは固定T8の
+非機密Phase 8B packageを搬入できた当時のcarriage-only statusです。この文書は
 ローカル実装・搬入資料の作成手順を定義するもので、実Google Workspace
 操作、Apps Script import、Setup、診断実行、Dashboard更新、OAuth、
 deployment、`clasp push`、Automation有効化を承認しません。
+
+> **Historical/nonoperative guide notice (0004).** The preceding v2.8.8/T8
+> carriage status is historical provenance only. The sole current Company-PC
+> boundary is fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` at
+> `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`, under
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. After hash confirmation,
+> replace only the five T11 manifest-listed files and leave `appsscript.json`
+> plus all unlisted files unchanged. No Setup, S90, S99, Dashboard refresh,
+> Gmail, Calendar, Properties, triggers, Automation, tests, Migration, or
+> repair is authorized; only one separately approved read-only T1-01 Quick
+> Diagnostic re-observation may follow.
 
 ## 保持するSandbox状態
 

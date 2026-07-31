@@ -56,9 +56,10 @@ normalization evidence. Quick/Deep Diagnostic remain read-only. Source A10
 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal
 publication and detached HTTPS fresh-clone verification. E10 records that
-publication proof. The current gate is
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; Automation is `OFF` and
-future manual acceptance remains individually authorized and synthetic only.
+historical publication proof. Its then-current
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is nonoperative. The
+current T11 transfer contract above is authoritative; Automation remains
+`OFF`.
 
 ## Observed controlled Sandbox Setup evidence
 
@@ -306,12 +307,12 @@ diagnostics with P10; preserve the failed workbook as evidence.
 The normal-pushed T6.1, T7, T8, and T9 fixed refs passed their respective
 historical verification and remain immutable evidence. T9 is superseded as an
 execution transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed
-T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains the immutable current
-payload anchor under `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`. This
-status permits only separately approved, staged manual acceptance using
-synthetic non-sensitive data. It does not authorize Automation, a five-minute
-trigger, external AI, real data, deployment, `clasp push`, Phase 8C,
-production, or pilot use.
+T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical
+old-byte/hash evidence only. The current T11 contract permits only the
+hash-verified five-file replacement followed, if separately approved, by one
+read-only T1-01 Quick Diagnostic re-observation. It does not authorize Setup,
+S90, S99, Dashboard refresh, Gmail, Calendar, Properties, triggers,
+Automation, tests, Migration, repair, Phase 8C, production, or pilot use.
 
 No GitHub Actions run or combined-status evidence exists for this PR #8 scope.
 The repository retains three active historical temporary workflows, but none

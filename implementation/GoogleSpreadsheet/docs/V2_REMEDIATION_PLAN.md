@@ -10,15 +10,15 @@
 > repair, or subsequent acceptance action is authorized.
 # Phase 1〜7 Remediation Plan
 
-> Current addendum (2026-07-31): this Phase 1〜7 plan remains historical
-> context. The active additive remediation is Code `2.8.10-prepilot` /
-> Schema `2.6` / AI Schema `2.0` / Migration `3`, with source-stage gate
-> `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. A10/B10/T10/E10 are
-> pending and real Workspace retransfer/retest is `NOT_EXECUTED`. The
-> v2.8.10 change is restricted to S90 Dashboard queued-write visibility,
-> fresh-Range postcondition verification, module-skew rejection, bounded safe
-> evidence, tests, and publication artifacts; it does not reopen the legacy
-> work packages or authorize Phase 8B execution.
+> Historical addendum (2026-07-31): this Phase 1〜7 plan and its v2.8.10
+> source-stage `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY` gate are
+> historical context. A10/B10/T10/E10 are immutable provenance, not pending
+> current artifacts. The active additive remediation is Code `2.8.11-prepilot`
+> / Schema `2.6` / AI Schema `2.0` / Migration `3` at fixed T11 under
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. It permits only the
+> hash-verified five-file replacement and one separately approved read-only
+> T1-01 Quick Diagnostic re-observation; it does not reopen legacy work
+> packages or authorize Phase 8B execution.
 
 - 作成日: 2026-07-25（JST）
 - 根拠: `docs/V2_FINAL_INTEGRATED_AUDIT_REPORT.md`

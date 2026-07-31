@@ -9,9 +9,17 @@
 > 50-column/header states, and Ledger 21-column/control states). Do not attach
 > detail JSON or run T1-02.
 
-指示番号: `0002`
-対象 gate: `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`
-固定 payload / transfer anchor: T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6`
+歴史的指示番号: `0002`
+現在の対象 gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`
+現在の固定 payload / transfer anchor: T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33`
+
+> **Active-boundary override (0004).** Do not use the historical T10 fields
+> in earlier completed records as an active payload instruction. This template
+> may support only one separately approved read-only T1-01 Quick Diagnostic
+> re-observation after the five-file, hash-verified T11 replacement. T1-01 is
+> `REVIEW_REQUIRED`; T1-02 and later actions are not authorized. No Setup,
+> S90, S99, Dashboard refresh, Gmail, Calendar, Properties, triggers,
+> Automation, tests, Migration, or repair is authorized.
 
 ## 0. 使用方法と privacy boundary
 
@@ -39,7 +47,7 @@ record を GitHub の PASS evidence として扱いません。
 ```text
 instruction_number: 0002
 action_id: T1-01 | T1-02 | T1-03 | T1-04 | T1-05 | T1-06 | T1-07 | T1-08
-fixed_transfer: 927d8567bce64461840cc6f72fbae0c1e636a8e6
+fixed_transfer: a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33
 authorization: APPROVED | NOT_APPROVED
 execution_status: PASS | STOP | REVIEW_REQUIRED | NOT_EXECUTED
 synthetic_non_sensitive_environment: true | false | UNKNOWN

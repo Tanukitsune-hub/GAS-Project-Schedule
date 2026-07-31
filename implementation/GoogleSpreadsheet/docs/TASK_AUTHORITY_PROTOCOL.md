@@ -1,7 +1,7 @@
 # Task Authority Protocol — Source Copy
 
 Code `2.8.11-prepilot` · Schema `2.6` · AI Schema `2.0` · Migration `3`
-Current corrective-integration gate:
+Historical corrective-integration gate:
 `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`; Source A10,
 direct-child Release B10, fixed transfer T10, and evidence E10 are
 `PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and `PENDING_E10`. Real
@@ -9,20 +9,21 @@ Workspace retest remains `NOT_EXECUTED`. Historical A8/B8/T8 and
 A9/A9.1/B9.1/T9 evidence is preserved and is not the current execution target.
 
 The preceding source-stage gate and pending A10/B10/T10/E10 labels are
-historical. The current gate is
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. One controlled
-Sandbox Setup S00-S99 observation is PASS, while functional acceptance remains
-separately authorized and `NOT_EXECUTED`.
+historical. The then-current
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate and fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` are also historical. One
+controlled Sandbox Setup S00-S99 observation is PASS, while functional
+acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
-The current 0003 gate is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. T10
-remains immutable, while fixed T11
+The current gate is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. T10 remains
+immutable historical old-byte/hash evidence, while fixed T11
 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` is remote-resolved and
 detached-HTTPS-clone verified. Quick/Deep now expose a bounded pre-detail
 acceptance summary of closed IDs, counts, read-only Booleans, and Task/Ledger
 aggregates; an incomplete summary is `REVIEW_REQUIRED` and never repairs
 authority, Calendar, Dashboard, Setup state, or version properties. T11
-authorizes only the separately controlled T1-01 summary re-observation.
+authorizes only the separately controlled T1-01 summary re-observation. T1-01
+remains `REVIEW_REQUIRED`; T1-02 and later actions are not authorized.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

@@ -112,16 +112,19 @@ ledger has 21 columns.
 
 Canonical state-transition documentation is in
 `docs/TASK_AUTHORITY_PROTOCOL.md`; the current offline workflow visualization
-is `visualizations/task_authority_protocol_v2_8_10.html`. The immutable
-v2.8.9 visualization remains historical evidence. The prior Round 3
+is `visualizations/task_authority_protocol_v2_8_11.html`. The v2.8.10 and
+immutable v2.8.9 visualizations remain historical evidence. The prior Round 3
 backup directory was local-only and was not present in GitHub; this historical
 fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
-Current versions are Code `2.8.10-prepilot`, Schema `2.6`, AI Schema `2.0`,
-and Migration `3`. Automation remains OFF by default. The current
-`READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate is limited to fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6`. The verified v2.8.7
+The following v2.8.10/T10 paragraph is historical provenance. Current
+versions are Code `2.8.11-prepilot`, Schema `2.6`, AI Schema `2.0`, and
+Migration `3`; Automation remains OFF by default. The current
+`READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` gate is limited to fixed T11
+`a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33`, while T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` remains old-byte/hash evidence.
+The verified v2.8.7
 chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7
 `95bc7240d99124b245e188b8e646eccf6c3ead48`, C7
 `ba175d3994c86dacc76bad3537df97e3e644dc09` (verifier only), and fixed T7

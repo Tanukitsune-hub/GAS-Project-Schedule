@@ -2,11 +2,19 @@
 
 ## 対象と安全境界
 
-対象は、S00〜S80 が完了し S90/S99 が未完了の非機密 Sandbox で、安全に
-停止した Dashboard number-format finding だけです。本書は実Google Workspace
-の操作手順ではなく、v2.8.10 candidate の検証時に参照する安全境界です。
-現在のgateは `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`、fixed T10は
-`PENDING_T10` です。
+対象は、S00〜S80 が完了し S90/S99 が未完了だった非機密 Sandbox の安全な
+停止記録です。本書の v2.8.10 candidate、
+`PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`、および `PENDING_T10`
+はすべて歴史的な検証時の境界であり、現在の操作を定義しません。
+
+> **Historical/nonoperative guide notice (0004).** This v2.8.10 recovery
+> guide is retained as incident provenance only. It is not an active
+> company-PC or Workspace-operation instruction. The current boundary is
+> fixed T11 `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` under
+> `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`; use only its hash-verified
+> five-file replacement guide, then STOP. No Setup, S90, S99, Dashboard
+> refresh, Gmail, Calendar, Properties, triggers, Automation, tests,
+> Migration, or repair is authorized.
 
 `DASHBOARD_LAYOUT_OWNERSHIP` / `E_DASHBOARD_LAYOUT_CONFLICT` /
 `DASHBOARD_NUMBER_FORMAT_CONFLICT` /

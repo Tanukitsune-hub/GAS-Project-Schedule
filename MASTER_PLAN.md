@@ -162,8 +162,11 @@ execution transfer target. Fixed T10
 `927d8567bce64461840cc6f72fbae0c1e636a8e6` passed normal publication
 and detached HTTPS fresh-clone verification. A later controlled Sandbox Setup
 observed S00-S99 completion and in-Setup S90 alignment/normalization with the
-closed evidence retained in the 0001 audit. The current
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate keeps T10 fixed and
-permits only separately approved staged synthetic manual acceptance. It does
-not declare Phase 8B overall PASS, Phase 8C GO, production ready, or pilot
-ready.
+closed evidence retained in the 0001 audit. That record's then-current
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is historical. The
+current T11 contract is `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`: T10 is
+only its immutable old-byte/hash baseline; T11 is the current carriage source.
+Only the hash-verified five-file replacement and one separately approved,
+read-only T1-01 Quick Diagnostic re-observation are within scope. It does not
+declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or
+pilot ready.

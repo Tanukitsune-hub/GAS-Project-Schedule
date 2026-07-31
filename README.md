@@ -53,10 +53,11 @@ authorized.
   A9.1/B9.1/T9 chain is additive and does not replace any v2.8.5 through
   v2.8.8 package, transfer, or audit byte. T9 is superseded as an execution
   transfer target by `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`. Fixed v2.8.10
-  T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains the current immutable
-  payload and transfer anchor after normal publication and detached HTTPS
-  fresh-clone verification. A separately observed controlled Sandbox Setup
-  completed through S99; functional acceptance remains separately gated.
+  T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical
+  evidence and the old-byte/hash baseline used by the T11 patch manifest.
+  It is not the current payload or transfer anchor. A separately observed
+  controlled Sandbox Setup completed through S99; functional acceptance
+  remains separately gated.
 
 There must be no root-level duplicate `apps-script-v2/`, `tests/`, `tools/`,
 or `release/` subtree in the published canonical tree.
@@ -73,7 +74,7 @@ Worker, Review, and Calendar work.
 See [the authority protocol](docs/TASK_AUTHORITY_PROTOCOL.md) and the local
 [workflow visualization](docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html).
 
-## Phase 8B Dashboard write-visibility and module-skew remediation
+## Historical v2.8.10 Dashboard write-visibility and module-skew remediation
 
 `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01` records the repeated safe 51-cell
 finding after the historical v2.8.9 transfer. The confirmed product defect is
@@ -88,12 +89,12 @@ read-only and Automation remains `OFF`. The source correction and the
 observed Setup evidence have deliberately separate scopes.
 
 Source A10 `33b9ecee5b0957615fcc27fc822bf7d10a74c86f`, direct-child
-Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, and fixed transfer
-T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` are normally
-published and independently verified. E10 records the publication closure.
-The current `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` status keeps T10
-as the immutable payload anchor and authorizes only separately approved,
-staged, synthetic non-sensitive manual acceptance under the operator plan.
+Release B10 `3f4fe6c52be7bf9c66ad221594e6271feebb57ed`, fixed transfer T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6`, and E10 record historical
+publication closure. Their then-current
+`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is historical and does
+not authorize present operations. The current company-PC boundary is the
+marked T11 contract below.
 
 ## Observed controlled Sandbox Setup evidence
 
@@ -264,16 +265,29 @@ target. The resulting status is transfer-only.
 
 ## Company-PC transfer boundary
 
-Do not copy this repository, the entire `release/` tree, the failed P10
-package, or the Phase 8C candidate to a company PC. The P10, T6.1, T7, T8, and
-T9 envelopes remain immutable historical evidence and are not the current
-execution transfer target. The only approved carriage source is fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` at
-`implementation/GoogleSpreadsheet/transfer/v2.8.10-prepilot/`.
+<!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_START -->
+| Field | Value |
+|---|---|
+| Gate | `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER` |
+| Fixed transfer | `a3b5a5d8d851bf2d15a2738c54dc6bb31e231d33` |
+| Transfer path | `implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/` |
+| Carriage scope | `HASH_VERIFIED_FIVE_FILE_REPLACEMENT_ONLY` |
+| Workspace action | `ONE_SEPARATELY_APPROVED_READ_ONLY_T1_01_QUICK_DIAGNOSTIC` |
+| T1-01 status | `REVIEW_REQUIRED` |
 
-`READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` permits only individually
-approved, staged manual acceptance using synthetic non-sensitive data and the
-fixed-T10 payload. It does not authorize Automation, a five-minute trigger,
-external AI, real data, deployment, `clasp push`, Phase 8C, production, or
-pilot use. The exact next-step boundary is the Japanese controlled-manual-
-acceptance plan; it does not make its planned actions already executed.
+Do not copy this repository, the entire `release/` tree, a Phase 8C package,
+or any historical package to a company PC. P10, T6.1, T7, T8, T9, and T10
+remain immutable historical evidence. T10 is permitted only as the old-byte
+and old-hash baseline in the immutable T11 patch manifest; it is not an active
+carriage source.
+
+Before any carriage, compare the old and new SHA-256 values in the fixed T11
+manifest. Only its five listed files may be replaced; `appsscript.json` and
+all unlisted files must remain unchanged. No Setup, S90, S99, Dashboard
+refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,
+or repair action is authorized. The sole possible next Workspace operation is
+one separately approved, read-only T1-01 Quick Diagnostic re-observation.
+T1-01 remains `REVIEW_REQUIRED`; T1-02 and later Tranche actions are not
+authorized. This boundary does not declare T1-01 PASS, Phase 8B overall PASS,
+Phase 8C GO, production ready, or pilot ready.
+<!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_END -->

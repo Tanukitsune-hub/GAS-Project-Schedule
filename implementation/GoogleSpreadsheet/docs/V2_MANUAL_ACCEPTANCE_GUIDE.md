@@ -4,7 +4,7 @@ Code Version: `2.8.11-prepilot`
 Schema Version: `2.6`
 AI Schema Version: `2.0`
 Migration Version: `3`
-Historical E10 carriage gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable. The current gate is `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE`; the controlled-manual-acceptance plan, not this historical pre-observation guide, governs future actions.
+Historical E10 carriage gate: `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`; fixed T10 `927d8567bce64461840cc6f72fbae0c1e636a8e6` remains immutable historical old-byte/hash evidence. The then-current `READY_FOR_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE` gate is nonoperative; this historical pre-observation guide does not govern current actions.
 Automation default: `OFF`
 
 Current 0003 gate: `READY_FOR_PHASE8B_T1_01_SUMMARY_RETRANSFER`. Fixed T11
@@ -81,21 +81,25 @@ transcribed as real Workspace PASS.
 Do not use any v2.8.5 through v2.8.9 transfer as the current execution target.
 They are immutable historical evidence. Do not manually hide the Ledger,
 change Dashboard formats, continue Setup, or run diagnostics as a workaround.
-The v2.8.10 company-PC replacement list was generated from raw Git blob
-comparison between fixed T9 and final B10. Fixed T10
-`927d8567bce64461840cc6f72fbae0c1e636a8e6` and its detached-clone
-evidence are complete. Only the exact transfer envelope and its three-file
-replacement order are approved for controlled carriage.
+The v2.8.10 company-PC replacement list and fixed T10
+`927d8567bce64461840cc6f72fbae0c1e636a8e6` are immutable historical
+provenance only. The current carriage source is fixed T11 at
+`implementation/GoogleSpreadsheet/transfer/v2.8.11-prepilot/`: after exact
+old/new hash confirmation, replace only the five manifest-listed files and
+leave `appsscript.json` plus every unlisted file unchanged. No Setup, S90,
+S99, Dashboard refresh, Gmail, Calendar, Properties, triggers, Automation,
+tests, Migration, or repair is authorized; only one separately approved,
+read-only T1-01 Quick Diagnostic re-observation may follow.
 
 ## Prohibited status upgrades
 
 This historical pre-observation guide never declares execution readiness. Its
 E10-era `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate meant controlled carriage
 of exact fixed T10 only, never Sandbox PASS or execution authorization. The
-current 0001 gate and all future operator actions are governed by
-`V2_PHASE8B_CONTROLLED_MANUAL_ACCEPTANCE_PLAN_ja.md`; only the observed Setup
-stages are PASS, while standalone functional acceptance remains
-`NOT_EXECUTED`.
+current T11 gate and the sole possible next operator action are governed by
+the T11 transfer guide and patch manifest. T1-01 remains `REVIEW_REQUIRED`,
+T1-02 and later actions are not authorized, and standalone functional
+acceptance remains `NOT_EXECUTED`.
 
 Historical source/package-generation material correctly recorded
 `PHASE8B_SANDBOX_NO_GO_QUICK_DIAGNOSTIC` and the later verified A7/B7/C7/T7
