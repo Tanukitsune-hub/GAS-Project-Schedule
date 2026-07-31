@@ -7,8 +7,10 @@
 > `77/6/0` observation remains `REVIEW_REQUIRED`; T10 remains immutable and
 > fixed T11 is remote-resolved and detached-HTTPS-clone verified historical
 > evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is suspended.
-> The current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
-> pending local clasp validation on a personal synthetic development target.
+> The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`:
+> current-branch CI and non-Google local validation passed, but the personal
+> synthetic dev target is unconfigured. Company handoff remains
+> `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
 # Phase 1〜7 Remediation Plan
 
 > Historical addendum (2026-07-31): this Phase 1〜7 plan and its v2.8.10
@@ -17,8 +19,9 @@
 > current artifacts. The v2.8.11/T11 boundary is also historical. Instruction
 > 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is `T11_SUSPENDED`, so it permits no
 > replacement or Company Sandbox Diagnostic. The current active gate is
-> `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` pending local clasp
-> validation on a personal synthetic development target.
+> `READY_FOR_LOCAL_CLASP_VALIDATION`; guarded clasp validation on a personal
+> synthetic development target remains required before reassessment, and company
+> handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
 
 - 作成日: 2026-07-25（JST）
 - 根拠: `docs/V2_FINAL_INTEGRATED_AUDIT_REPORT.md`

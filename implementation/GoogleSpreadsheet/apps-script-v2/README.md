@@ -16,10 +16,11 @@ Source A11.1, direct-child Release B11, fixed Transfer T11, and local
 evidence E11 are normal-published and detached-HTTPS-clone verified historical
 evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is
 `T11_SUSPENDED` and does not authorize a Company-PC carriage or T1-01
-re-observation. The current gate is
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` until guarded local
-clasp validation uses a personal synthetic development target. A completed
-Sandbox must not rerun Setup to apply this visibility-only patch.
+re-observation. The current development gate is
+`READY_FOR_LOCAL_CLASP_VALIDATION`: current-branch CI and non-Google local
+validation passed, but the personal synthetic dev target is not configured.
+Company handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+A completed Sandbox must not rerun Setup to apply this visibility-only patch.
 
 `2.8.10-prepilot` retains the R4/R5 authority contract and every historical
 Dashboard ownership/format precondition. It closes the write-visibility gap in
@@ -121,9 +122,10 @@ the historic Round 3 report.
 
 The following v2.8.10/T10 paragraph is historical provenance. Current
 versions are Code `2.8.11-prepilot`, Schema `2.6`, AI Schema `2.0`, and
-Migration `3`; Automation remains OFF by default. The current
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` gate treats T11 and T10
-as historical evidence only: T11 is suspended and no Company-PC transfer or
+Migration `3`; Automation remains OFF by default. The current development
+gate is `READY_FOR_LOCAL_CLASP_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. T11 and T10 are
+historical evidence only: T11 is suspended and no Company-PC transfer or
 Workspace action is authorized.
 The verified v2.8.7
 chain is A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69`, direct-child B7

@@ -292,8 +292,14 @@ replacement, but instruction 0006 requires a reproducible, credential-safe
 development validation path first. CI cannot prove Google-authenticated
 behavior and must never receive Google credentials or invoke clasp.
 
-**Consequences.** Until the local clasp gate is evidenced,
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` applies. No company-PC
+**Current evidence.** The current-branch non-Google local gate and GitHub
+Actions CI have passed, and the exact 23-file payload has been staged without
+Google access. The untracked dedicated personal synthetic target is absent, so
+the current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`; clasp
+push, pull-back parity, and runtime dry-run are `NOT_EXECUTED`.
+
+**Consequences.** Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. No company-PC
 carriage, five-file replacement, Company Sandbox Quick Diagnostic, Setup,
 Dashboard refresh, Gmail, Calendar, trigger, Automation, deployment, or
 production action is authorized. This decision does not declare T1-01 PASS,

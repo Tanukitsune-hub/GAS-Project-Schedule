@@ -3,7 +3,7 @@
 Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
+Current publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,7 +12,7 @@ Current publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
@@ -173,11 +173,12 @@ its proposed T11 carriage were neither performed nor authorized. T11's prior
 hashes and transfer package remain available solely as historical evidence;
 they are not an active company transfer source.
 
-The current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
-The replacement prerequisite is a personal, synthetic, non-company clasp
-validation chain with CI/non-Google checks, strict target guard, staged source
-parity, pull-back parity, and an explicitly enabled read-only runtime dry-run.
-No company-PC carriage, Workspace action, deployment, Automation enablement,
-or Phase 8B functional acceptance is authorized by this plan. This does not
-declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or
-pilot ready.
+The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`: the
+current-branch CI and non-Google local validation have passed, including the
+strict staged source inventory. The personal synthetic clasp target remains
+unconfigured, so push/pull-back parity and a separately opt-in safe runtime
+dry-run remain unexecuted. Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. No company-PC
+carriage, Workspace action, deployment, Automation enablement, or Phase 8B
+functional acceptance is authorized by this plan. This does not declare T1-01
+PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.

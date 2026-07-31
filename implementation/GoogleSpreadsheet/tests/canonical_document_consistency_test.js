@@ -232,6 +232,25 @@ test('DOC-01_FOUR_CANONICAL_CURRENT_TRANSFER_CONTRACTS_MATCH', () => {
   assert.strictEqual(contract['Transfer path'], expectedPath);
 });
 
+test('DOC-01A_VISIBLE_CURRENT_GATE_LABELS_MATCH_SEALED_CONTRACT', () => {
+  const contract = validateContracts(contractsFromTexts(sourceTexts));
+  const visibleGatePatterns = {
+    'README.md': /^\|\s*Current gate\s*\|\s*\x60([^\x60]+)\x60\s*\|\s*$/m,
+    'CURRENT_STATUS.md': /^Overall status:\s+\x60([^\x60]+)\x60$/m,
+    'MASTER_PLAN.md': /^Current publication gate:\s+\x60([^\x60]+)\x60$/m,
+    'PROJECT_CONTEXT.md': /^Publication gate:\s+\x60([^\x60]+)\x60$/m
+  };
+  sourceTexts.forEach((entry) => {
+    const match = entry.text.match(visibleGatePatterns[entry.name]);
+    assert.ok(match, `${entry.name}: visible current-gate label missing`);
+    assert.strictEqual(
+      match[1],
+      contract.Gate,
+      `${entry.name}: visible current-gate label differs from sealed contract`
+    );
+  });
+});
+
 test('DOC-01B_ACTIVE_COMPANY_PC_BOUNDARY_MATCHES_CURRENT_CONTRACT', () => {
   const contract = validateContracts(contractsFromTexts(sourceTexts));
   const readme = sourceTexts.find((item) => item.name === 'README.md');

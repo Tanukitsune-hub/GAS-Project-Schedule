@@ -15,15 +15,18 @@ historical. The then-current
 controlled Sandbox Setup S00-S99 observation is PASS, while functional
 acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
-The current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
-T10 and fixed T11 are immutable historical evidence; T11 is `T11_SUSPENDED`.
+The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`.
+Current-branch CI and non-Google local validation passed, but the personal
+synthetic dev target is unconfigured; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. T10 and fixed T11
+are immutable historical evidence; T11 is `T11_SUSPENDED`.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a
 Company-PC carriage nor a T1-01 re-observation. Quick/Deep expose a bounded
 pre-detail acceptance summary of closed IDs, counts, read-only Booleans, and
 Task/Ledger aggregates; an incomplete summary is `REVIEW_REQUIRED` and never
 repairs authority, Calendar, Dashboard, Setup state, or version properties.
-The sole active prerequisite is local clasp validation on a personal synthetic
-development target.
+The sole active prerequisite is guarded clasp validation on a personal
+synthetic development target.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

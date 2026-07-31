@@ -10,9 +10,11 @@ Automation default: `OFF`
 The 0003 gate is historical. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable evidence but
 `T11_SUSPENDED`, so it authorizes neither replacement nor a Company Sandbox
-Diagnostic. The current gate is
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; no company Workspace
-action is authorized while a personal synthetic local clasp lane is unproven.
+Diagnostic. The current development gate is
+`READY_FOR_LOCAL_CLASP_VALIDATION`: current-branch CI and non-Google local
+validation passed, but the personal synthetic dev target is unconfigured. No
+company Workspace action is authorized; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
 Any version-property mismatch remains an explicit WARN and is not reconciled.
 
 Historical 0003 source-stage label:
@@ -89,9 +91,11 @@ Company Sandbox Quick Diagnostic is authorized.
 This historical pre-observation guide never declares execution readiness. Its
 E10-era `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate meant controlled carriage
 of exact fixed T10 only, never Sandbox PASS or execution authorization. The
-current gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; local
-clasp validation on a personal synthetic target is the prerequisite before any
-future reassessment. T1-01 remains `REVIEW_REQUIRED`, T1-02 and later actions
+current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`; guarded clasp
+validation on a personal synthetic target is the prerequisite before any future
+reassessment. Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. T1-01 remains
+`REVIEW_REQUIRED`, T1-02 and later actions
 are not authorized, and standalone functional acceptance remains
 `NOT_EXECUTED`.
 

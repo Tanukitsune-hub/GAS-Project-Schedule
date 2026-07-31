@@ -10,6 +10,10 @@ or an authorization to operate a real Workspace.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. T11 is immutable historical
 evidence but `T11_SUSPENDED`; there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
+The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`: the
+non-Google local and current-branch CI gates passed, but no local personal
+synthetic target has been configured. This does not authorize company handoff.
+
 ## Prerequisites
 
 - Node.js 20 or later.

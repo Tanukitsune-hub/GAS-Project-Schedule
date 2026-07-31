@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; T10 and T11 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` exists while a personal synthetic local clasp validation gate is incomplete. Observed Setup evidence is historical and functional acceptance remains `NOT_EXECUTED`. |
+| Current gate | `READY_FOR_LOCAL_CLASP_VALIDATION`; the current-branch CI and non-Google local gate passed, but the personal synthetic dev target remains unconfigured. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff stays `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; functional acceptance remains `NOT_EXECUTED`. |
 
 ## Diagnostic bounded-acceptance summary
 

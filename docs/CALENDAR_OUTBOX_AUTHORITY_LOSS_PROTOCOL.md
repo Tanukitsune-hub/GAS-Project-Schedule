@@ -2,13 +2,14 @@
 
 Contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
-Current corrective-integration gate:
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; fixed T10 and T11 are
+Current corrective-integration gate: `READY_FOR_LOCAL_CLASP_VALIDATION`.
+Current-branch CI and non-Google local validation passed, but the personal
+synthetic dev target is unconfigured; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. Fixed T10 and T11 are
 immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. One observed Setup S00-S99 run is historical;
 Calendar reconciliation remains subject to separate future approval and
-`NOT_EXECUTED`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; the current
-prerequisite is local clasp validation using only a personal synthetic target.
+`NOT_EXECUTED`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`.
 
 The v2.8.11 bounded Diagnostic summary also does not alter this protocol. It
 is a read-only UI/result visibility contract: all Calendar API and repair

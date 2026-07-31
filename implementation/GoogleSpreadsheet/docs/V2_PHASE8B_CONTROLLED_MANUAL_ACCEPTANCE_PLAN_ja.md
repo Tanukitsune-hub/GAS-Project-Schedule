@@ -5,8 +5,10 @@
 > boundary only. It is not an active carriage or Workspace-operation guide.
 > Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is immutable historical
 > evidence but `T11_SUSPENDED`, with `NO_ACTIVE_COMPANY_TRANSFER`. The current
-> gate is `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` pending the
-> self-PC personal-synthetic local clasp validation lane. No Company-PC
+> development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`: current-branch CI
+> and non-Google local validation passed, but the personal-synthetic dev target
+> is unconfigured. Company handoff remains
+> `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. No Company-PC
 > carriage, replacement, Workspace operation, or T1-01 re-observation is
 > authorized.
 
@@ -123,9 +125,10 @@ observation is `REVIEW_REQUIRED` because the complete warning-ID set was not
 safely visible. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: T11 is
 `T11_SUSPENDED` and its Company-PC carriage and T1-01 observation are not
 authorized. Code `2.8.11-prepilot` is currently
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; local clasp validation
-on a personal synthetic target is the sole active prerequisite. T1-02 through
-T1-08 remain `NOT_EXECUTED` / not authorized.
+`READY_FOR_LOCAL_CLASP_VALIDATION`; guarded clasp validation on a personal
+synthetic target is the sole active prerequisite, while company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. T1-02 through T1-08
+remain `NOT_EXECUTED` / not authorized.
 
 ## 7. Operator handoff / rollback rule
 

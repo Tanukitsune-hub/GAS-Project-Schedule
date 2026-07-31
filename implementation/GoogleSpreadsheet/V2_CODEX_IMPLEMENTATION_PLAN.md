@@ -2,15 +2,18 @@
 
 Last updated: 2026-07-31
 Current remediation candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
+Gate: `READY_FOR_LOCAL_CLASP_VALIDATION`
 
 Instruction 0003 added only a bounded Diagnostic acceptance summary. The
 closed T1-01 `77 PASS / 6 WARN / 0 FAIL` observation remains
 `REVIEW_REQUIRED`; no sixth warning ID is inferred. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable historical evidence but
 `T11_SUSPENDED`, so it authorizes no Company-PC carriage or re-observation.
-The current prerequisite is local clasp validation on a personal synthetic
-development target; no company Workspace action is authorized.
+Current-branch CI and non-Google local validation have passed, but the
+personal synthetic dev target is not configured. The current development gate
+is `READY_FOR_LOCAL_CLASP_VALIDATION`; no company Workspace action is
+authorized and company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
 
 ## Scope
 

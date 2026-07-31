@@ -4,7 +4,15 @@ Last updated: 2026-07-31
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
 Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; fixed T10 and T11 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; the controlled T1-01 observation remains `REVIEW_REQUIRED` and standalone functional acceptance remains `NOT_EXECUTED`.
+Current publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`; current-branch
+CI and non-Google local validation passed, but the personal synthetic dev
+target is unconfigured. Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; fixed T10 and T11
+remain immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
+`NO_ACTIVE_COMPANY_TRANSFER`. Instruction 0005 is
+`SUPERSEDED_NOT_EXECUTED`; the controlled T1-01 observation remains
+`REVIEW_REQUIRED` and standalone functional acceptance remains
+`NOT_EXECUTED`.
 
 | 0003-01 | Bounded Quick/Deep summary before capped details | `16_Diagnostics.gs`, `Menu.gs`, `phase8b_t1_01_bounded_acceptance_summary_test.js` | LOCAL_PASS; no Workspace retest |
 | 0003-02 | Sorted/unique/complete WARN and FAIL identifiers; overflow and malformed input fail closed | same test | LOCAL_PASS |

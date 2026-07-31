@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Code: `2.8.11-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` (fixed T10 and T11 remain immutable historical evidence; T11 is `T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, and functional acceptance is `NOT_EXECUTED`). Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; the current prerequisite is local clasp validation against a personal synthetic development target.
+Current publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION` (current-branch CI and non-Google local validation passed, but the personal synthetic dev target is unconfigured). Fixed T10 and T11 remain immutable historical evidence; T11 is `T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, company handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`, and functional acceptance is `NOT_EXECUTED`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`.
 
 The 2.8.11 scope is bounded Diagnostic-result visibility only: it adds a
 pre-detail summary of closed check IDs, completeness, counts, side-effect

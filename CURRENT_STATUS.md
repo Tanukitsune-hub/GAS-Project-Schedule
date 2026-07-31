@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-31
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`
+Overall status: `READY_FOR_LOCAL_CLASP_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -14,7 +14,7 @@ functional acceptance: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
@@ -28,11 +28,12 @@ performed. T11 remains immutable historical evidence, but its transfer
 envelope is suspended and does not authorize company handoff or any Workspace
 operation.
 
-The required progression is non-Google local static/regression validation,
-GitHub Actions CI, a guarded dedicated personal synthetic-dev clasp push,
-pull-back parity, and a safe dev-runtime dry-run where separately configured.
-Until the applicable evidence is independently reviewed, company handoff stays
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+The non-Google local static/regression gate and current-branch GitHub Actions
+CI have passed. The exact 23-file dev payload was staged and hashed, but the
+dedicated personal synthetic target is not configured. Thus no Google
+operation, clasp push, pull-back parity, or runtime dry-run has occurred. The
+current development status is `READY_FOR_LOCAL_CLASP_VALIDATION`; company
+handoff stays `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
 
 ## Historical 2.8.11 T1-01 bounded-summary visibility remediation
 
@@ -322,13 +323,14 @@ The normal-pushed T6.1, T7, T8, T9, T10, and T11 fixed refs passed their
 respective historical verification and remain immutable evidence. T11 is
 `T11_SUSPENDED`, not an active company carriage source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
-occurred. The next governance lane is local static/regression validation,
-GitHub Actions CI, a guarded personal synthetic-dev clasp push, pull-back
-parity, and an optional safe runtime dry-run. No company Workspace action is
-authorized by this status.
+occurred. The current-branch CI and non-Google local validation have passed,
+including the strict 23-file staging inventory. The remaining governance lane
+is a guarded personal synthetic-dev clasp push, pull-back parity, and an
+optional safe runtime dry-run. No company Workspace action is authorized by
+this status.
 
-PR #9 records a successful CI implementation against an older `main` baseline.
-It is not proof for this branch until its single workflow is integrated and
-rerun against the current candidate. CI, local verification, clasp push,
+PR #9 records the earlier CI implementation against an older `main` baseline.
+Its reviewed semantics are integrated as one current-branch workflow and were
+rerun successfully on this branch. CI, local verification, clasp push,
 pull-back parity, and runtime dry-run are tracked separately; an unexecuted
 Google lane is never a PASS.

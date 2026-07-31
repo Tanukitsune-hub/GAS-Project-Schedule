@@ -2,10 +2,12 @@
 
 ## Current policy
 
-Current Code is `2.8.11-prepilot`. The initial current gate is
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. The sole active
-development lane is the self-PC, personal-synthetic local clasp gate described
-in [local-clasp-setup.md](local-clasp-setup.md).
+Current Code is `2.8.11-prepilot`. The current development gate is
+`READY_FOR_LOCAL_CLASP_VALIDATION`: current-branch CI and the non-Google
+local gate passed, while the untracked personal-synthetic dev target is not
+configured. The sole active development lane is the self-PC, personal-synthetic
+local clasp gate described in [local-clasp-setup.md](local-clasp-setup.md).
+Company handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier
 release/transfer artifacts remain immutable historical evidence; T11 is

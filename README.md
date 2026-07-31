@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Current gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,7 +21,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
@@ -32,10 +32,13 @@ Google Workspace Personal Work OS.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its T11 five-file company-PC
 carriage and the company-Sandbox T1-01 re-observation did not occur and are
 not currently authorized. Fixed T11 remains immutable historical provenance,
-not an active company carriage source. Company handoff is stopped until the
-non-Google local gate, GitHub Actions, guarded personal-dev clasp push,
-pull-back parity, and any separately configured safe dev-runtime evidence are
-independently reviewed.
+not an active company carriage source. The non-Google local gate and the
+current-branch GitHub Actions run have passed. The dedicated personal synthetic
+dev target is not configured, so clasp push, pull-back parity, and runtime
+dry-run remain unexecuted. The development gate is therefore
+`READY_FOR_LOCAL_CLASP_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` until the remaining
+gates are independently reviewed.
 
 The 2.8.11 candidate preserves every Quick/Deep Diagnostic check and adds a
 bounded, privacy-safe acceptance summary before the redacted detail payload.
