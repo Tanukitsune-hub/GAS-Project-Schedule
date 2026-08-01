@@ -54,6 +54,20 @@ const closedClaspFailureCategories = Object.freeze([
   'UNKNOWN_CLASP_PUSH_FAILURE',
   'UNKNOWN_CLASP_REMOTE_FAILURE'
 ]);
+const closedPostRemoteFailureCategories = Object.freeze([
+  'APPS_SCRIPT_API_DISABLED',
+  'BLOCKED_BY_AUTH',
+  'DEV_TARGET_NOT_FOUND_OR_NO_ACCESS',
+  'DEV_TARGET_PROJECT_TYPE_OR_BINDING_INVALID',
+  'REMOTE_MANIFEST_REJECTED',
+  'REMOTE_PAYLOAD_REJECTED',
+  'NETWORK_OR_TLS_FAILURE',
+  'CLASP_REMOTE_CONFLICT',
+  'UNKNOWN_CLASP_REMOTE_FAILURE',
+  'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH',
+  'REMOTE_PULLBACK_PARITY_FAILED',
+  'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED'
+]);
 const canonicalPayloadFileNames = Object.freeze([
   '00_Config.gs',
   '01_TypesAndSchemas.gs',
@@ -132,6 +146,65 @@ function assertExactPayloadDirectory(root, failureCode) {
   const entries = fs.readdirSync(root, { withFileTypes: true });
   if (entries.some((entry) => !entry.isFile())) fail(failureCode, failureCode);
   return assertExactPayloadNames(entries.map((entry) => entry.name), failureCode);
+}
+
+function postPullPayloadObservation(root) {
+  const expectedNames = canonicalPayloadFileNames.slice().sort();
+  const observation = {
+    post_pull_validation: 'FAILED',
+    observed_file_count: 0,
+    expected_file_count: expectedNames.length,
+    observed_nonfile_count: 0
+  };
+  if (!fs.existsSync(root)) return observation;
+  const entries = fs.readdirSync(root, { withFileTypes: true });
+  const files = entries.filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .sort();
+  observation.observed_file_count = files.length;
+  observation.observed_nonfile_count = entries.length - files.length;
+  const exact = observation.observed_nonfile_count === 0 &&
+    files.length === expectedNames.length &&
+    files.every((name, index) => name === expectedNames[index]);
+  observation.post_pull_validation = exact ? 'PASS' : 'FAILED';
+  return observation;
+}
+
+function safePostPullObservation(observation) {
+  const value = observation || {};
+  const names = [
+    'observed_file_count',
+    'expected_file_count',
+    'observed_nonfile_count'
+  ];
+  if (!['PASS', 'FAILED'].includes(value.post_pull_validation) ||
+      names.some((name) => !Number.isInteger(value[name]) ||
+        value[name] < 0 || value[name] > 1000)) {
+    return null;
+  }
+  return {
+    post_pull_validation: value.post_pull_validation,
+    observed_file_count: value.observed_file_count,
+    expected_file_count: value.expected_file_count,
+    observed_nonfile_count: value.observed_nonfile_count
+  };
+}
+
+function failWithSafePostPullObservation(code, observation) {
+  const error = new GateError(code, code);
+  error.safe_post_pull_observation = safePostPullObservation(observation);
+  throw error;
+}
+
+function assertExactPulledPayload(root) {
+  const observation = postPullPayloadObservation(root);
+  if (observation.post_pull_validation !== 'PASS') {
+    failWithSafePostPullObservation(
+      'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH',
+      observation
+    );
+  }
+  return observation;
 }
 
 function inventoryFor(root, names) {
@@ -432,7 +505,21 @@ function assertTargetGuard(requireEnvironment) {
   return { config, target };
 }
 
-function assertCanonicalRetryPrerequisitesForAccess() {
+function targetBindingFingerprint(config) {
+  const scriptId = String(config && config.scriptId || '');
+  if (!/^[A-Za-z0-9_-]{20,}$/.test(scriptId)) {
+    fail('DEV_TARGET_ID_INVALID', 'DEV_TARGET_ID_INVALID');
+  }
+  return sha256(scriptId);
+}
+
+function accessEvidenceMatchesTarget(prerequisites, target) {
+  const stored = String(prerequisites && prerequisites.target_binding_sha256 || '');
+  return /^[a-f0-9]{64}$/.test(stored) &&
+    stored === targetBindingFingerprint(target && target.config);
+}
+
+function assertCanonicalRetryPrerequisitesForAccess(target) {
   const prerequisites = readJson(
     prerequisitesPath,
     'CANONICAL_PUSH_PREREQUISITES_MISSING'
@@ -445,19 +532,37 @@ function assertCanonicalRetryPrerequisitesForAccess() {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
       'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE');
   }
+  if (!accessEvidenceMatchesTarget(prerequisites, target)) {
+    fail('CANONICAL_PUSH_PREREQUISITES_STALE_TARGET_BINDING',
+      'CANONICAL_PUSH_PREREQUISITES_STALE_TARGET_BINDING');
+  }
   return prerequisites;
 }
 
-function assertCanonicalRetryPrerequisites() {
-  const prerequisites = assertCanonicalRetryPrerequisitesForAccess();
+function assertCanonicalRetryPrerequisites(target) {
+  const prerequisites = assertCanonicalRetryPrerequisitesForAccess(target);
   if (prerequisites.read_only_target_access !== 'PASS') {
+    fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
+      'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE');
+  }
+  const accessRecord = readJson(
+    path.join(operationRecordRoot, 'last-access-check.json'),
+    'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE'
+  );
+  if (accessRecord.operation !== 'access-check' ||
+      accessRecord.status !== 'PASS' || accessRecord.exit_code !== 0 ||
+      accessRecord.post_pull_validation !== 'PASS' ||
+      accessRecord.observed_file_count !== canonicalPayloadFileNames.length ||
+      accessRecord.expected_file_count !== canonicalPayloadFileNames.length ||
+      accessRecord.observed_nonfile_count !== 0 ||
+      !accessEvidenceMatchesTarget(accessRecord, target)) {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
       'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE');
   }
   return prerequisites;
 }
 
-function recordCanonicalRetryPrerequisites(environment) {
+function recordCanonicalRetryPrerequisites(environment, target) {
   if (environment.GAS_USER_APPS_SCRIPT_API_ENABLED !== 'true' ||
       environment.GAS_OAUTH_STATE !== 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT' ||
       environment.GAS_TARGET_ATTESTATION !==
@@ -465,17 +570,14 @@ function recordCanonicalRetryPrerequisites(environment) {
     fail('CANONICAL_PUSH_PREREQUISITE_ATTESTATION_REJECTED',
       'CANONICAL_PUSH_PREREQUISITE_ATTESTATION_REJECTED');
   }
-  const previous = fs.existsSync(prerequisitesPath)
-    ? readJson(prerequisitesPath, 'CANONICAL_PUSH_PREREQUISITES_MISSING')
-    : {};
+  const guardedTarget = target || assertTargetGuard(false);
   const record = {
     schema: 'WORK_OS_CANONICAL_PUSH_PREREQUISITES_V1',
     user_level_apps_script_api: 'ENABLED',
     oauth_state: 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT',
     target_attestation: 'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX',
-    read_only_target_access: previous.read_only_target_access === 'PASS'
-      ? 'PASS'
-      : 'NOT_EXECUTED',
+    target_binding_sha256: targetBindingFingerprint(guardedTarget.config),
+    read_only_target_access: 'NOT_EXECUTED',
     canonical_push_retry_authorized: true
   };
   assertSafeGeneratedPayloadDirectory();
@@ -484,15 +586,32 @@ function recordCanonicalRetryPrerequisites(environment) {
   return record;
 }
 
-function markReadOnlyTargetAccessPassed() {
+function markReadOnlyTargetAccessState(target, state) {
   const record = readJson(
     prerequisitesPath,
     'CANONICAL_PUSH_PREREQUISITES_MISSING'
   );
-  record.read_only_target_access = 'PASS';
+  if (!['PASS', 'FAILED', 'NOT_EXECUTED'].includes(state) ||
+      !accessEvidenceMatchesTarget(record, target)) {
+    fail('CANONICAL_PUSH_PREREQUISITES_STALE_TARGET_BINDING',
+      'CANONICAL_PUSH_PREREQUISITES_STALE_TARGET_BINDING');
+  }
+  record.read_only_target_access = state;
   fs.writeFileSync(prerequisitesPath, `${JSON.stringify(record, null, 2)}\n`,
     'utf8');
   return record;
+}
+
+function markReadOnlyTargetAccessPassed(target) {
+  return markReadOnlyTargetAccessState(target, 'PASS');
+}
+
+function markReadOnlyTargetAccessFailed(target) {
+  return markReadOnlyTargetAccessState(target, 'FAILED');
+}
+
+function clearReadOnlyTargetAccess(target) {
+  return markReadOnlyTargetAccessState(target, 'NOT_EXECUTED');
 }
 
 function markCanonicalRetryUsed(inventory) {
@@ -784,8 +903,42 @@ function assertSafeOperationName(operation) {
   }
 }
 
-function persistOperationRecord(operation, result, classification) {
+function safeOperationRecord(
+  operation,
+  result,
+  classification,
+  observation,
+  targetBindingSha256
+) {
   assertSafeOperationName(operation);
+  const safe = {
+    operation,
+    status: classification || 'PASS',
+    exit_code: result.exit_code,
+    output_sha256: result.output_sha256
+  };
+  const safeObservation = safePostPullObservation(observation);
+  if (safeObservation) Object.assign(safe, safeObservation);
+  if (/^[a-f0-9]{64}$/.test(String(targetBindingSha256 || ''))) {
+    safe.target_binding_sha256 = targetBindingSha256;
+  }
+  return safe;
+}
+
+function persistOperationRecord(
+  operation,
+  result,
+  classification,
+  observation,
+  targetBindingSha256
+) {
+  const safe = safeOperationRecord(
+    operation,
+    result,
+    classification,
+    observation,
+    targetBindingSha256
+  );
   assertSafeGeneratedPayloadDirectory();
   fs.mkdirSync(operationRecordRoot, { recursive: true });
   fs.writeFileSync(
@@ -793,12 +946,6 @@ function persistOperationRecord(operation, result, classification) {
     String(result.raw || ''),
     'utf8'
   );
-  const safe = {
-    operation,
-    status: classification || 'PASS',
-    exit_code: result.exit_code,
-    output_sha256: result.output_sha256
-  };
   fs.writeFileSync(
     path.join(operationRecordRoot, `last-${operation}.json`),
     `${JSON.stringify(safe, null, 2)}\n`,
@@ -808,10 +955,44 @@ function persistOperationRecord(operation, result, classification) {
   return safe;
 }
 
-function failClassifiedClaspOperation(operation, result) {
+function failClassifiedClaspOperation(operation, result, target) {
   const classification = classifyClaspFailure(result.raw, operation);
-  persistOperationRecord(operation, result, classification);
+  persistOperationRecord(
+    operation,
+    result,
+    classification,
+    undefined,
+    target ? targetBindingFingerprint(target.config) : undefined
+  );
   fail(classification, classification);
+}
+
+function postRemoteFailureClassification(error, fallbackCode) {
+  const candidate = String(
+    error && error.code || fallbackCode || 'UNKNOWN_CLASP_REMOTE_FAILURE'
+  );
+  return closedPostRemoteFailureCategories.includes(candidate)
+    ? candidate
+    : 'UNKNOWN_CLASP_REMOTE_FAILURE';
+}
+
+function persistPostRemoteFailure(
+  operation,
+  result,
+  error,
+  fallbackCode,
+  observation,
+  target
+) {
+  const classification = postRemoteFailureClassification(error, fallbackCode);
+  persistOperationRecord(
+    operation,
+    result,
+    classification,
+    error && error.safe_post_pull_observation || observation,
+    target ? targetBindingFingerprint(target.config) : undefined
+  );
+  return classification;
 }
 
 function claspVersion() {
@@ -1026,6 +1207,49 @@ function prepareEmptyPullWorkspace(root, expectedBaseName, failureCode) {
   fs.mkdirSync(resolvedPullRoot, { recursive: true });
 }
 
+function assertRecoverableAccessCheckObservation(observation) {
+  const safe = safePostPullObservation(observation);
+  if (!safe || safe.post_pull_validation !== 'FAILED' ||
+      safe.observed_file_count < 1) {
+    fail('ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_REQUIRED',
+      'ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_REQUIRED');
+  }
+  return safe;
+}
+
+function recoverAccessCheckWorkspace(environment, target) {
+  if (environment.GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED !== 'true' ||
+      environment.GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON !==
+        'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH' ||
+      environment.GAS_TARGET_ATTESTATION !==
+        'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX') {
+    fail('ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_APPROVED',
+      'ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_APPROVED');
+  }
+  const observation = assertRecoverableAccessCheckObservation(
+    postPullPayloadObservation(path.join(accessCheckRoot, 'payload'))
+  );
+  const expectedEntries = new Set(['.clasp.json', '.claspignore', 'payload']);
+  if (!fs.existsSync(accessCheckRoot) || fs.readdirSync(
+    accessCheckRoot,
+    { withFileTypes: true }
+  ).some((entry) => !expectedEntries.has(entry.name))) {
+    fail('ACCESS_CHECK_WORKSPACE_UNEXPECTED_CONTENT',
+      'ACCESS_CHECK_WORKSPACE_UNEXPECTED_CONTENT');
+  }
+  const resolvedAccessRoot = path.resolve(accessCheckRoot);
+  const resolvedDevRoot = `${path.resolve(devRoot)}${path.sep}`;
+  if (!resolvedAccessRoot.startsWith(resolvedDevRoot) ||
+      path.basename(resolvedAccessRoot) !== 'access-check') {
+    fail('ACCESS_CHECK_WORKSPACE_PATH_REJECTED',
+      'ACCESS_CHECK_WORKSPACE_PATH_REJECTED');
+  }
+  fs.rmSync(resolvedAccessRoot, { recursive: true, force: true });
+  fs.mkdirSync(resolvedAccessRoot, { recursive: true });
+  clearReadOnlyTargetAccess(target);
+  return observation;
+}
+
 function writePullConfig(root, config) {
   fs.writeFileSync(path.join(root, '.clasp.json'),
     `${JSON.stringify({ scriptId: config.scriptId, rootDir: 'payload' }, null, 2)}\n`,
@@ -1037,7 +1261,8 @@ function writePullConfig(root, config) {
 function parseRuntimeCommand(command) {
   if (!command) return 'status';
   if (![
-    'stage', 'record-prerequisites', 'access-check', 'status', 'push', 'pull-verify',
+    'stage', 'record-prerequisites', 'access-check', 'recover-access-check',
+    'status', 'push', 'pull-verify',
     'runtime-auth-check', 'record-runtime-prerequisites',
     'record-runtime-config',
     'stage-runtime', 'push-runtime', 'pull-verify-runtime',
@@ -1223,8 +1448,8 @@ function main() {
     }
 
     if (command === 'record-prerequisites') {
-      assertTargetGuard(false);
-      const prerequisite = recordCanonicalRetryPrerequisites(process.env);
+      const target = assertTargetGuard(false);
+      const prerequisite = recordCanonicalRetryPrerequisites(process.env, target);
       writeSafeResult({
         lane: 'local_clasp_dev', command, status: 'PASS',
         user_level_apps_script_api: prerequisite.user_level_apps_script_api,
@@ -1300,10 +1525,24 @@ function main() {
       return;
     }
 
+    if (command === 'recover-access-check') {
+      const target = assertTargetGuard(true);
+      assertCanonicalRetryPrerequisitesForAccess(target);
+      const observation = recoverAccessCheckWorkspace(process.env, target);
+      writeSafeResult({
+        lane: 'local_clasp_dev', command, status: 'PASS',
+        target_access: 'NOT_EXECUTED',
+        access_check_workspace_recovery: 'APPROVED_AND_COMPLETED',
+        ...observation
+      });
+      return;
+    }
+
     const inventory = assertCanonicalPayloadContract(assertStagedPayload());
     if (command === 'access-check') {
       const target = assertTargetGuard(false);
-      assertCanonicalRetryPrerequisitesForAccess();
+      assertCanonicalRetryPrerequisitesForAccess(target);
+      clearReadOnlyTargetAccess(target);
       prepareEmptyPullWorkspace(
         accessCheckRoot,
         'access-check',
@@ -1313,18 +1552,39 @@ function main() {
       googleOperation = 'ATTEMPTED';
       const result = runClasp(['pull'], accessCheckRoot);
       if (result.exit_code !== 0) {
-        failClassifiedClaspOperation('access-check', result);
+        markReadOnlyTargetAccessFailed(target);
+        failClassifiedClaspOperation('access-check', result, target);
       }
-      assertExactPayloadDirectory(
-        path.join(accessCheckRoot, 'payload'),
-        'DEV_TARGET_PROJECT_TYPE_OR_BINDING_INVALID'
-      );
-      const remote = inventoryFor(
-        path.join(accessCheckRoot, 'payload'),
-        canonicalPayloadNames()
-      );
-      markReadOnlyTargetAccessPassed();
-      persistOperationRecord('access-check', result, 'PASS');
+      let remote;
+      let observation;
+      try {
+        observation = assertExactPulledPayload(
+          path.join(accessCheckRoot, 'payload')
+        );
+        remote = inventoryFor(
+          path.join(accessCheckRoot, 'payload'),
+          canonicalPayloadNames()
+        );
+        persistOperationRecord(
+          'access-check',
+          result,
+          'PASS',
+          observation,
+          targetBindingFingerprint(target.config)
+        );
+        markReadOnlyTargetAccessPassed(target);
+      } catch (error) {
+        markReadOnlyTargetAccessFailed(target);
+        persistPostRemoteFailure(
+          'access-check',
+          result,
+          error,
+          'UNKNOWN_CLASP_REMOTE_FAILURE',
+          observation,
+          target
+        );
+        throw error;
+      }
       writeSafeResult({
         lane: 'local_clasp_dev', command, status: 'PASS',
         target_access: 'PASS', remote_file_count: remote.file_count,
@@ -1351,12 +1611,14 @@ function main() {
     if (command === 'push') {
       assertCleanWorktree();
       runLocalVerifyBeforePush();
-      assertTargetGuard(true);
-      assertCanonicalRetryPrerequisites();
+      const target = assertTargetGuard(true);
+      assertCanonicalRetryPrerequisites(target);
       markCanonicalRetryUsed(inventory);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(['push'], devRoot);
-      if (result.exit_code !== 0) failClassifiedClaspOperation('push', result);
+      if (result.exit_code !== 0) {
+        failClassifiedClaspOperation('push', result, target);
+      }
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS',
         file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
@@ -1369,7 +1631,7 @@ function main() {
 
     if (command === 'pull-verify') {
       const target = assertTargetGuard(true);
-      assertCanonicalRetryPrerequisites();
+      assertCanonicalRetryPrerequisites(target);
       if (!fs.existsSync(canonicalRetryMarkerPath)) {
         fail('CANONICAL_PUSH_RETRY_NOT_RECORDED',
           'CANONICAL_PUSH_RETRY_NOT_RECORDED');
@@ -1382,15 +1644,31 @@ function main() {
       writePullConfig(pullRoot, target.config);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(['pull'], pullRoot);
-      if (result.exit_code !== 0) failClassifiedClaspOperation('pull-verify', result);
-      const names = canonicalPayloadNames();
-      assertExactPayloadDirectory(
-        path.join(pullRoot, 'payload'),
-        'REMOTE_PULLBACK_UNEXPECTED_CONTENT'
-      );
-      const pulled = inventoryFor(path.join(pullRoot, 'payload'), names);
-      if (pulled.payload_sha256 !== inventory.payload_sha256) {
-        fail('REMOTE_PULLBACK_PARITY_FAILED', 'REMOTE_PULLBACK_PARITY_FAILED');
+      if (result.exit_code !== 0) {
+        failClassifiedClaspOperation('pull-verify', result, target);
+      }
+      let pulled;
+      let observation;
+      try {
+        const names = canonicalPayloadNames();
+        observation = assertExactPulledPayload(path.join(pullRoot, 'payload'));
+        pulled = inventoryFor(path.join(pullRoot, 'payload'), names);
+        if (pulled.payload_sha256 !== inventory.payload_sha256) {
+          failWithSafePostPullObservation(
+            'REMOTE_PULLBACK_PARITY_FAILED',
+            observation
+          );
+        }
+      } catch (error) {
+        persistPostRemoteFailure(
+          'pull-verify',
+          result,
+          error,
+          'UNKNOWN_CLASP_REMOTE_FAILURE',
+          observation,
+          target
+        );
+        throw error;
       }
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS', parity: 'PASS',
@@ -1456,19 +1734,34 @@ function main() {
       googleOperation = 'ATTEMPTED';
       const result = runClasp(args, runtimePullRoot);
       if (result.exit_code !== 0) {
-        failClassifiedClaspOperation('pull-verify-runtime', result);
+        failClassifiedClaspOperation('pull-verify-runtime', result, target);
       }
-      assertExactPayloadDirectory(
-        path.join(runtimePullRoot, 'payload'),
-        'RUNTIME_REMOTE_PULLBACK_UNEXPECTED_CONTENT'
-      );
-      const pulled = inventoryFor(
-        path.join(runtimePullRoot, 'payload'),
-        canonicalPayloadNames()
-      );
-      if (pulled.payload_sha256 !== runtime.runtime_payload_sha256) {
-        fail('RUNTIME_REMOTE_PULLBACK_PARITY_FAILED',
-          'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED');
+      let pulled;
+      let observation;
+      try {
+        observation = assertExactPulledPayload(
+          path.join(runtimePullRoot, 'payload')
+        );
+        pulled = inventoryFor(
+          path.join(runtimePullRoot, 'payload'),
+          canonicalPayloadFileNames
+        );
+        if (pulled.payload_sha256 !== runtime.runtime_payload_sha256) {
+          failWithSafePostPullObservation(
+            'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED',
+            observation
+          );
+        }
+      } catch (error) {
+        persistPostRemoteFailure(
+          'pull-verify-runtime',
+          result,
+          error,
+          'UNKNOWN_CLASP_REMOTE_FAILURE',
+          observation,
+          target
+        );
+        throw error;
       }
       persistOperationRecord('pull-verify-runtime', result, 'PASS');
       writeSafeResult({
@@ -1549,13 +1842,22 @@ module.exports = {
   canonicalPayloadFileNames,
   assertExactPayloadNames,
   assertExactPayloadDirectory,
+  postPullPayloadObservation,
+  safePostPullObservation,
+  assertRecoverableAccessCheckObservation,
+  targetBindingFingerprint,
+  accessEvidenceMatchesTarget,
+  safeOperationRecord,
   claspEntrypoint,
   inventoryFor,
   assertTargetObjects,
   classifyClaspFailure,
   closedClaspFailureCategories,
+  closedPostRemoteFailureCategories,
   buildRuntimeManifestOverlay,
   assertRuntimeManifestOverlay,
   assertSafeRuntimeResult,
+  postRemoteFailureClassification,
+  persistPostRemoteFailure,
   GateError
 };

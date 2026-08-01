@@ -4,9 +4,13 @@ Last updated: 2026-08-01
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
 Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; current
-non-Google local validation passes, but GitHub CLI publication and all
-authenticated remote gates remain `NOT_EXECUTED`. Company handoff is
+Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`; current non-Google
+local validation, Instruction 0009 branch publication, and current GitHub
+Actions validation pass, but an isolated read-only target pull observed 2
+files where the canonical payload requires 23
+(`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This does not infer target identity;
+canonical retry/push, pull-back parity, and all later authenticated remote
+gates remain `NOT_EXECUTED`. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; fixed T10 and T11
 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. Instruction 0005 is

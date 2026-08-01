@@ -3,11 +3,12 @@
 ## Current boundary
 
 Instruction 0008 supersedes Instruction 0007 after its guarded
-personal-synthetic push failed closed. Remote-development bootstrap is now
-required: safe classification, one controlled canonical retry/pull-back,
-personal standard-Cloud/OAuth setup, MYSELF-only runtime overlay/deployment,
-one read-only runtime validation, CI, and fresh-clone proof. Until all of that
-is independently reviewed, company handoff is
+personal-synthetic push failed closed. Instruction 0009 published the current
+branch and CI proof, then stopped the remote lane at a strict isolated
+read-only payload-shape mismatch. Canonical retry/pull-back, personal standard
+Cloud/OAuth setup, MYSELF-only runtime overlay/deployment, one read-only
+runtime validation, and final fresh-clone proof remain incomplete. Until all
+of that is independently reviewed, company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` and there is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company

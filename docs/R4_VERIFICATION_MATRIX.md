@@ -2,9 +2,12 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 non-Google local
-validation passes, but GitHub CLI publication and all authenticated remote
-bootstrap gates remain `NOT_EXECUTED`.
+Gate: `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0009 publication and current
+GitHub Actions validation pass, but an isolated read-only target pull observed
+2 files where the canonical payload requires 23
+(`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). Canonical retry/push, pull-back
+parity, and all later authenticated remote bootstrap gates remain
+`NOT_EXECUTED`.
 Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`;
 fixed T10 and T11 remain immutable historical evidence, T11 is
 `T11_SUSPENDED`, and no company transfer is active. One controlled Sandbox

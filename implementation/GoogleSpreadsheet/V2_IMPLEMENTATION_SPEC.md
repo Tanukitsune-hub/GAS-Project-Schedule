@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-01
 Code: `2.8.11-prepilot` · Schema: `2.6` · AI Schema: `2.0` · Migration: `3`
-Current publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` (Instruction 0008 non-Google local validation passes, but GitHub CLI publication, canonical/runtime parity, Cloud/OAuth, deployment, and runtime validation are `NOT_EXECUTED`). Fixed T10 and T11 remain immutable historical evidence; T11 is `T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`, and functional acceptance is `NOT_EXECUTED`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`.
+Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION` (Instruction 0009 branch publication and current GitHub Actions validation pass, but an isolated read-only target pull observed 2 files where the canonical payload requires 23: `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This does not infer target identity; canonical retry/push, pull-back parity, Cloud/OAuth, deployment, and runtime validation are `NOT_EXECUTED`. Fixed T10 and T11 remain immutable historical evidence; T11 is `T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`, and functional acceptance is `NOT_EXECUTED`. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`.
 
 The 2.8.11 scope is bounded Diagnostic-result visibility only: it adds a
 pre-detail summary of closed check IDs, completeness, counts, side-effect

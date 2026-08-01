@@ -3,7 +3,7 @@
 Last updated: 2026-08-01
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
+Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,7 +12,7 @@ Current publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
@@ -42,11 +42,15 @@ synthetic target's standard Cloud/OAuth lane, push and pull a MYSELF-only
 runtime overlay, create a MYSELF-only API executable, and invoke only the
 bounded read-only Quick Diagnostic once.
 
-Tooling and local tests are complete (`11/11` local checks and `52` suites),
-but GitHub CLI connectivity is `BLOCKED_BY_CODEX_NETWORK_POLICY`. Publication,
-Google remote mutation, Cloud/OAuth setup, deployment, and runtime invocation
-remain `NOT_EXECUTED`; the current gate is
-`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
+Tooling and local tests are complete (`11/11` local checks and `52` suites).
+Instruction 0009 normally published the branch and obtained current-head CI
+success. The user-level API confirmation and ignored target guard passed, but
+the required isolated read-only pull observed `2` files rather than the exact
+`23`-file payload. The closed result is
+`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`; canonical mutation is not permitted.
+Canonical push/pull parity, Cloud/OAuth setup, deployment, and runtime
+invocation remain `NOT_EXECUTED`; the current gate is
+`NO_GO_LOCAL_CLASP_VALIDATION`.
 
 ## 0006 local clasp validation gate
 
@@ -203,11 +207,12 @@ its proposed T11 carriage were neither performed nor authorized. T11's prior
 hashes and transfer package remain available solely as historical evidence;
 they are not an active company transfer source.
 
-The current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`: local
-non-Google validation and the strict staged source inventory pass, but GitHub
-CLI publication, current-branch CI, canonical push/pull parity, Cloud/OAuth,
-runtime-overlay parity, deployment, runtime validation, and final fresh clone
-remain unexecuted. Company handoff is
+The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: local
+non-Google validation, GitHub publication, current-branch CI, and the strict
+staged source inventory pass, but the isolated read-only target pull fails the
+exact 23-file shape. Canonical push/pull parity, Cloud/OAuth, runtime-overlay
+parity, deployment, runtime validation, and final fresh clone remain
+unexecuted. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company-PC
 carriage, Workspace action, deployment, Automation enablement, or Phase 8B
 functional acceptance is authorized by this plan. This does not declare T1-01

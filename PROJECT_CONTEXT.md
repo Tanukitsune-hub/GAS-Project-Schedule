@@ -4,7 +4,7 @@ Last updated: 2026-08-01
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
+Publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,7 +13,7 @@ Publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
@@ -41,10 +41,16 @@ MYSELF-only overlay, local named OAuth/Cloud/deployment guards, and bounded
 read-only runtime validation. The non-Google gate passes `11/11` with `52`
 Node suites and the canonical 23-file SHA-256 remains
 `ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
-GitHub CLI access from this execution environment is
-`BLOCKED_BY_CODEX_NETWORK_POLICY`; publication and every Google remote step
-remain `NOT_EXECUTED`. The active gate is
-`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
+Instruction 0009 normally merged and published the local history, then the
+new stacked Draft PR obtained current-head CI success. User-level API
+confirmation and the ignored target guard passed. The required isolated
+read-only pull returned `2` files instead of the exact `23`-file payload, with
+no non-file entries. Its closed result is
+`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`; no inference about target identity is
+made and no canonical overwrite is allowed. Canonical push/pull parity,
+Cloud/OAuth, runtime overlay, deployment, runtime validation, and final fresh
+clone remain `NOT_EXECUTED`. The active gate is
+`NO_GO_LOCAL_CLASP_VALIDATION`.
 
 v2.8.11 is a visibility-only Diagnostic remediation. T11 is remote-resolved
 and detached-clone verified. It does not interpret,
@@ -230,9 +236,10 @@ evidence. T6.1 through T11 are also historical and are not current execution
 transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
 five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
 Diagnostic re-observation is authorized. Current-branch CI and non-Google
-local validation passed. Instruction 0008 supplies the controlled recovery
-lane, but GitHub CLI publication is blocked and all Google remote steps remain
-unexecuted. The development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
+local validation and Instruction 0009 publication/CI passed. The controlled
+recovery lane stopped at a noncanonical isolated read-only payload shape; all
+canonical mutation and later Google remote steps remain unexecuted. The
+development gate is `NO_GO_LOCAL_CLASP_VALIDATION`.
 This permits no company
 Workspace action, Setup, S90, S99, Dashboard
 refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,

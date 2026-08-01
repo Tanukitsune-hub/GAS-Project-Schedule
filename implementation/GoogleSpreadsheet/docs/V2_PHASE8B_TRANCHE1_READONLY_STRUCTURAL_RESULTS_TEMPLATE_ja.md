@@ -8,6 +8,15 @@
 > 50-column/header states, and Ledger 21-column/control states). Do not attach
 > detail JSON or run T1-02.
 
+> **Instruction 0009 current-boundary override.** Any legacy gate text below
+> that names `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` is historical/nonoperative.
+> The current development status is `NO_GO_LOCAL_CLASP_VALIDATION`: publication
+> and current GitHub Actions validation pass, but a read-only target pull
+> observed 2 files where the canonical payload requires 23
+> (`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). It does not establish target
+> identity; canonical retry/push, pull-back parity, Cloud/OAuth/deployment,
+> and runtime validation remain `NOT_EXECUTED`.
+
 歴史的指示番号: `0002`
 現在の対象 development gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 現在の固定 payload / transfer anchor: `NO_ACTIVE_COMPANY_TRANSFER`（T11 は `T11_SUSPENDED` の歴史証跡）

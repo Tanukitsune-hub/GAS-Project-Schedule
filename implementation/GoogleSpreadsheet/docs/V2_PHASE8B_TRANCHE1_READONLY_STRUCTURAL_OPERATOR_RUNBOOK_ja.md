@@ -15,8 +15,11 @@
 
 > **Active-boundary override (0006).** All T10/T11 carriage instructions and
 > fields below are historical/nonoperative. The active development gate is
-> `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 remote gates remain
-> closed, company handoff is
+> `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0009 publication and current
+> GitHub Actions validation pass, but a read-only target pull observed 2 files
+> where the canonical payload requires 23
+> (`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). Canonical retry/push and all later
+> remote gates remain closed; company handoff is
 > `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`, and there is no
 > active company transfer. Do not replace files, run a Company Sandbox
 > Diagnostic, or perform any Workspace action. Only a guarded personal
@@ -333,6 +336,15 @@ edit-trigger configuration を安全に閉じられるか評価する。
 - **Rollback:** `STOP_NO_REPAIR_NO_RETRY`。
 
 ## 11. Gate and handoff result
+
+> **Instruction 0009 current-boundary override.** Any legacy wording below
+> that names `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` is historical/nonoperative.
+> The current development status is `NO_GO_LOCAL_CLASP_VALIDATION`: publication
+> and current GitHub Actions validation pass, but the bounded read-only target
+> shape is 2 observed files versus 23 required
+> (`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). It establishes no target identity;
+> canonical retry/push, pull-back parity, Cloud/OAuth/deployment, and runtime
+> validation remain `NOT_EXECUTED`.
 
 この historical runbook によって current gate は変わりません。最高 development
 status は `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` であり、company handoff は

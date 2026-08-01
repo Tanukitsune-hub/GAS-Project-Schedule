@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 non-Google local validation passes, but GitHub CLI publication, canonical/runtime parity, Cloud/OAuth, deployment, and runtime validation are `NOT_EXECUTED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; functional acceptance remains `NOT_EXECUTED`. |
+| Current gate | `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0009 branch publication and current GitHub Actions validation passed. An isolated read-only target pull then observed 2 files where the canonical payload requires 23, producing `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` without inferring target identity. Canonical retry/push, pull-back parity, Cloud/OAuth/deployment setup, and runtime validation are `NOT_EXECUTED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; functional acceptance remains `NOT_EXECUTED`. |
 
 ## Diagnostic bounded-acceptance summary
 

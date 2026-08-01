@@ -11,12 +11,14 @@ Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. T11 is immutable historical
 evidence but `T11_SUSPENDED`; there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
 Instruction 0008 supersedes Instruction 0007 after its safe push failure. The
-0007 attempt remains closed evidence; it is not a parity result. Before the one
-new controlled canonical retry, the current tool must classify failures into a
-closed category, the operator must confirm the user-level Apps Script API is
-enabled, OAuth and the existing personal-synthetic target must be rechecked,
-and an isolated read-only pull must prove target access. Company handoff
-remains NO-GO throughout this bootstrap.
+0007 attempt remains closed evidence; it is not a parity result. Instruction
+0009 then published the preserved history and obtained current GitHub Actions
+success. Before the one new controlled canonical retry, the current tool must
+classify failures into a closed category, the operator must confirm the
+user-level Apps Script API is enabled, OAuth and the existing
+personal-synthetic target must be rechecked, and an isolated read-only pull
+must prove target access. Company handoff remains NO-GO throughout this
+bootstrap.
 
 ## Prerequisites
 
@@ -90,6 +92,19 @@ The canonical retry command writes an ignored durable `ATTEMPT_STARTED`
 marker before invoking clasp. If that marker already exists, the tool refuses
 a second push. Do not delete or edit the marker to create another attempt.
 
+If a read-only pull itself completes but its directory does not exactly match
+the 23-file allow-list, the tool records the closed
+`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` category plus only the output hash, exit
+state, and bounded file/non-file counts. It does not retain names, contents,
+payload hashes, IDs, or raw output for that partial remote payload, and it
+does not consume the canonical retry marker.
+
+The target binding is fingerprint-bound in ignored local prerequisite and
+access records. Recording prerequisites or beginning an access check revokes
+any earlier access PASS until a newly successful, matching read-only check has
+been persisted. A later binding change or a failed check therefore cannot
+reuse stale evidence to permit a canonical push.
+
 ## Guarded canonical clasp sequence
 
 After the operator has confirmed the user-level Apps Script API is enabled,
@@ -115,6 +130,32 @@ pnpm run gas:access-check:dev
 The access check pulls into an ignored isolated directory, accepts only the
 23-file payload shape, and performs no remote write. A failed access check
 stops the canonical retry.
+
+If it stops specifically at `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`, do not rerun
+the access check or push. First, in the Apps Script UI, independently confirm
+that the already intended personal synthetic Sandbox—not a company or new
+project—is open; update its identifier only through the ignored local binding
+workflow and rerun the closed prerequisite command above. Then, with an
+explicit local terminal opt-in, the following command may remove only the
+tool-generated ignored access-check workspace after it confirms a failed,
+non-empty payload shape. It does not contact Google, does not remove a retry
+marker, and does not print remote file names or contents.
+
+```powershell
+$env:GAS_DEV_CLASP_ALLOWED = 'true'
+$env:GAS_TARGET_ATTESTATION = 'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX'
+$env:GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED = 'true'
+$env:GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON = 'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH'
+pnpm run gas:access-recover:dev
+Remove-Item Env:GAS_DEV_CLASP_ALLOWED
+Remove-Item Env:GAS_TARGET_ATTESTATION
+Remove-Item Env:GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED
+Remove-Item Env:GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON
+```
+
+After a successful local-only recovery, run exactly one new read-only
+`gas:access-check:dev`; only a persisted matching 23-file PASS can satisfy the
+canonical-push prerequisite.
 
 After `verify:local` passes and only on the self PC, use the explicit opt-in:
 
@@ -276,7 +317,8 @@ data.
 
 | Evidence | Maximum status |
 |---|---|
-| Any GitHub/local/OAuth/target/canonical/runtime bootstrap requirement fails | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
+| GitHub publication or required CI is incomplete | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
+| Published CI/local pass, but canonical push/pull is incomplete or fails | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Push and pull-back parity pass; runtime not run | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
 | CI, local, canonical parity, Cloud/OAuth, runtime-overlay parity, MYSELF-only deployment, safe runtime, and fresh clone pass | `READY_FOR_REMOTE_GAS_DEVELOPMENT_REVIEW` |
 

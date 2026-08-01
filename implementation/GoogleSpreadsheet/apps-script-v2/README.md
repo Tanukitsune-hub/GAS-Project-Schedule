@@ -17,9 +17,12 @@ evidence E11 are normal-published and detached-HTTPS-clone verified historical
 evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is
 `T11_SUSPENDED` and does not authorize a Company-PC carriage or T1-01
 re-observation. The current development gate is
-`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`: Instruction 0008 non-Google local
-validation passes, but GitHub CLI publication, canonical/runtime parity,
-Cloud/OAuth, deployment, and runtime validation are not executed. Company handoff is
+`NO_GO_LOCAL_CLASP_VALIDATION`: Instruction 0009 branch publication and
+current GitHub Actions validation pass, but the isolated read-only target pull
+observed 2 files where the canonical payload requires 23
+(`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This does not infer target identity;
+canonical retry/push, pull-back parity, Cloud/OAuth, deployment, and runtime
+validation are not executed. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 A completed Sandbox must not rerun Setup to apply this visibility-only patch.
 
@@ -124,7 +127,7 @@ the historic Round 3 report.
 The following v2.8.10/T10 paragraph is historical provenance. Current
 versions are Code `2.8.11-prepilot`, Schema `2.6`, AI Schema `2.0`, and
 Migration `3`; Automation remains OFF by default. The current development
-gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; company handoff is
+gate is `NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T11 and T10 are
 historical evidence only: T11 is suspended and no Company-PC transfer or
 Workspace action is authorized.

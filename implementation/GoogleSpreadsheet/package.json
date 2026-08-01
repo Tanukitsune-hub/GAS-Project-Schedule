@@ -20,6 +20,7 @@
     "gas:stage:dev": "node tools/local_clasp_dev.js stage",
     "gas:prerequisites:dev": "node tools/local_clasp_dev.js record-prerequisites",
     "gas:access-check:dev": "node tools/local_clasp_dev.js access-check",
+    "gas:access-recover:dev": "node tools/local_clasp_dev.js recover-access-check",
     "gas:status:dev": "node tools/local_clasp_dev.js status",
     "gas:push:dev": "node tools/local_clasp_dev.js push",
     "gas:pull-verify:dev": "node tools/local_clasp_dev.js pull-verify",

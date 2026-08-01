@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
+| Current gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,7 +21,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
@@ -44,7 +44,7 @@ remote repair is permitted. The current development status is therefore
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. The privacy-safe closed
 record is in the Instruction 0007 audit evidence.
 
-## Instruction 0008 - remote development bootstrap
+## Instruction 0008 / 0009 - current remote development bootstrap
 
 Instruction 0008 supersedes 0007's retry prohibition and authorizes one new
 controlled canonical retry only after closed failure classification, clean
@@ -55,14 +55,21 @@ local OAuth verification, runtime parity, and bounded read-only runtime result
 validation. The canonical Apps Script payload and historical release/transfer
 artifacts remain byte-unchanged.
 
-Local non-Google validation is `11/11 PASS` with `52` Node suites, but the
-Codex execution environment cannot currently reach GitHub over HTTPS. The
-classification is `BLOCKED_BY_CODEX_NETWORK_POLICY`; the fixed instruction
-commit cannot yet be merged locally, the branch cannot be normal-pushed, and
-no current-branch Actions/fresh-clone proof exists. Therefore Google remote
-write, the authorized retry marker, canonical/runtime push, deployment, and
-runtime invocation are all `NOT_EXECUTED`. The current development gate is
-`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
+Instruction 0009 normally published the preserved local history, created the
+stacked Draft PR, and obtained current-head push and pull-request CI success.
+The locked non-Google gate remains `11/11 PASS` with `52` Node suites; the
+canonical payload remains the approved 23-file byte hash. A user-level API
+confirmation and the ignored target guard passed. The required isolated
+read-only pull completed, but its remote file shape was not the exact 23-file
+allow-list: the bounded observation was `2` files observed, `23` expected,
+and `0` non-files. This is the closed
+`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` result; it does not infer target identity
+or accept a partial payload.
+
+Canonical push, its retry marker, canonical pull-back parity, Cloud/OAuth
+runtime setup, runtime overlay, API executable, runtime invocation, and final
+fresh clone are `NOT_EXECUTED`. The current development gate is therefore
+`NO_GO_LOCAL_CLASP_VALIDATION`. No company action is authorized.
 
 ## Instruction 0006 — local clasp validation gate
 
@@ -333,10 +340,11 @@ packages, transfer envelope, checksums, and prior manifests remain immutable
 historical evidence. They must not be copied or reflected on a company PC
 while this boundary is suspended.
 
-Instruction 0008's local fail-closed tooling passes, but GitHub CLI
-connectivity, publication, canonical push/pull parity, Cloud/OAuth runtime
-setup, deployment, and runtime validation remain incomplete. No company
-Workspace action is authorized. Do not carry a package, change an
+Instruction 0009 publication and current-head CI passed, but the isolated
+personal-synthetic read-only pull failed the strict 23-file allow-list. No
+canonical push, parity, Cloud/OAuth runtime setup, deployment, or runtime
+validation is authorized. No company Workspace action is authorized. Do not
+carry a package, change an
 Apps Script file, run Setup or a diagnostic, touch Gmail, Calendar,
 Properties, triggers, Automation, tests, Migration, or perform repair. A
 future company boundary requires a separate governing instruction after the

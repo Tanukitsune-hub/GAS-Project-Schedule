@@ -343,11 +343,35 @@ bounded read-only `runQuickDiagnostic` call. Named OAuth, Cloud/deployment
 identifiers, credentials, raw output, and account information remain ignored
 local state only.
 
-**Current evidence and consequence.** Local non-Google validation passes
-`11/11` with `52` Node suites and the canonical 23-file payload hash remains
-unchanged. The execution environment cannot reach GitHub over HTTPS, classified
-as `BLOCKED_BY_CODEX_NETWORK_POLICY`. The fixed instruction merge, normal
-push, stacked Draft PR, Actions, fresh clone, target access, canonical retry,
-Cloud/OAuth configuration, deployment, and runtime call are `NOT_EXECUTED`.
-Development status is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; company status
-remains `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
+**Historical 0008 evidence.** Local non-Google validation passed `11/11` with
+`52` Node suites and the canonical 23-file payload hash remained unchanged.
+The pre-publication execution environment reported
+`BLOCKED_BY_CODEX_NETWORK_POLICY`; that historical state did not consume a
+canonical retry marker or establish any remote parity.
+
+## D-051 - Instruction 0009 preserves publication proof but rejects noncanonical target shape
+
+**Decision.** After Instruction 0009 normally published the preserved local
+history and current-head CI passed, the isolated personal-synthetic read-only
+pull must satisfy the exact 23-file allow-list before the single canonical
+retry becomes eligible. A completed pull with a noncanonical file shape is a
+closed `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`, not proof of an invalid target,
+and it must not be converted into a canonical push opportunity.
+
+**Rationale.** A remote file count or name-set mismatch can arise from an old
+or incomplete synthetic project without proving its identity. Proceeding would
+replace remote code before the declared target contract is proven. The
+tracked/publication evidence and the ignored operation summary must retain only
+a closed category, output hash, exit state, and bounded file/non-file counts;
+they must not retain names, contents, IDs, URLs, or credentials. Raw clasp
+output remains only in the separately ignored local raw-operation file and is
+never committed, reported, or copied into an audit.
+
+**Consequences.** The current development gate is
+`NO_GO_LOCAL_CLASP_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. Canonical retry/push,
+pull-back parity, Cloud/OAuth setup, runtime overlay, API executable, runtime
+call, and fresh clone are `NOT_EXECUTED`. Automation remains OFF;
+`T11_SUSPENDED` and `NO_ACTIVE_COMPANY_TRANSFER` remain unchanged. A future
+rebind or target-remediation action requires the existing personal-synthetic
+Sandbox to be independently reconfirmed without exposing its identifier.

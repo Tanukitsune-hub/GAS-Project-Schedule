@@ -2,13 +2,22 @@
 
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const {
   classifyClaspFailure,
   closedClaspFailureCategories,
+  closedPostRemoteFailureCategories,
   buildRuntimeManifestOverlay,
   assertRuntimeManifestOverlay,
-  assertSafeRuntimeResult
+  assertSafeRuntimeResult,
+  postPullPayloadObservation,
+  safePostPullObservation,
+  assertRecoverableAccessCheckObservation,
+  targetBindingFingerprint,
+  accessEvidenceMatchesTarget,
+  safeOperationRecord,
+  postRemoteFailureClassification
 } = require('../tools/local_clasp_dev');
 
 const moduleRoot = path.resolve(__dirname, '..');
@@ -130,6 +139,7 @@ test('BOOT-08_PACKAGE_SCRIPTS_EXPOSE_CANONICAL_AND_RUNTIME_LANES', () => {
   [
     'gas:prerequisites:dev',
     'gas:access-check:dev',
+    'gas:access-recover:dev',
     'gas:stage:dev',
     'gas:push:dev',
     'gas:pull-verify:dev',
@@ -170,6 +180,106 @@ test('BOOT-13_RUNTIME_GUARD_REQUIRES_TEST_AND_AUTOMATION_CONTRACTS', () => {
   assert.ok(claspToolSource.includes('AUTOMATION_ENABLED' + ':\\s*false'));
   assert.match(claspToolSource, /\btest_mode\b/);
   assert.match(claspToolSource, /\bautomation_disabled\b/);
+});
+
+test('BOOT-14_POST_PULL_FAILURE_PERSISTS_A_CLOSED_SAFE_CATEGORY', () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(),
+    'work-os-post-pull-shape-'));
+  try {
+    fs.writeFileSync(path.join(temporaryRoot, 'first.gs'), '', 'utf8');
+    fs.writeFileSync(path.join(temporaryRoot, 'second.json'), '{}', 'utf8');
+    const observation = postPullPayloadObservation(temporaryRoot);
+    assert.deepStrictEqual(observation, {
+      post_pull_validation: 'FAILED',
+      observed_file_count: 2,
+      expected_file_count: 23,
+      observed_nonfile_count: 0
+    });
+    const safe = safePostPullObservation(observation);
+    assert.deepStrictEqual(safe, observation);
+    assert.strictEqual(JSON.stringify(safe).includes('first.gs'), false);
+    assert.strictEqual(JSON.stringify(safe).includes('second.json'), false);
+    assert.strictEqual(Object.prototype.hasOwnProperty.call(safe, 'files'), false);
+    assert.strictEqual(Object.prototype.hasOwnProperty.call(safe, 'payload_sha256'), false);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+  assert.strictEqual(
+    postRemoteFailureClassification(
+      { code: 'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH' },
+      'UNKNOWN_CLASP_REMOTE_FAILURE'
+    ),
+    'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH'
+  );
+  assert.strictEqual(
+    postRemoteFailureClassification(
+      { code: 'unsafe punctuation!' },
+      'UNKNOWN_CLASP_REMOTE_FAILURE'
+    ),
+    'UNKNOWN_CLASP_REMOTE_FAILURE'
+  );
+  assert.ok(closedPostRemoteFailureCategories.includes(
+    'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH'
+  ));
+  const accessCheck = claspToolSource.indexOf("persistPostRemoteFailure(\n          'access-check'");
+  const accessCheckSuccess = claspToolSource.indexOf("persistOperationRecord('access-check', result, 'PASS')");
+  const canonicalPull = claspToolSource.indexOf("persistPostRemoteFailure(\n          'pull-verify'");
+  const runtimePull = claspToolSource.indexOf("persistPostRemoteFailure(\n          'pull-verify-runtime'");
+  assert.ok(accessCheck > accessCheckSuccess);
+  assert.ok(canonicalPull > accessCheck);
+  assert.ok(runtimePull > canonicalPull);
+});
+
+test('BOOT-15_ACCESS_EVIDENCE_IS_TARGET_BOUND_AND_SAFE', () => {
+  const scriptId = 'A'.repeat(24);
+  const target = { config: { scriptId } };
+  const matchingFingerprint = targetBindingFingerprint(target.config);
+  const prerequisite = { target_binding_sha256: matchingFingerprint };
+  assert.strictEqual(accessEvidenceMatchesTarget(prerequisite, target), true);
+  assert.strictEqual(accessEvidenceMatchesTarget(prerequisite, {
+    config: { scriptId: 'B'.repeat(24) }
+  }), false);
+
+  const observation = {
+    post_pull_validation: 'FAILED',
+    observed_file_count: 2,
+    expected_file_count: 23,
+    observed_nonfile_count: 0
+  };
+  assert.deepStrictEqual(assertRecoverableAccessCheckObservation(observation),
+    observation);
+  assert.throws(
+    () => assertRecoverableAccessCheckObservation({
+      ...observation,
+      observed_file_count: 0
+    }),
+    /ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_REQUIRED/
+  );
+
+  const raw = `sensitive-script-id:${scriptId}`;
+  const record = safeOperationRecord(
+    'access-check',
+    { exit_code: 0, output_sha256: 'f'.repeat(64), raw },
+    'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH',
+    observation,
+    matchingFingerprint
+  );
+  const serialized = JSON.stringify(record);
+  assert.strictEqual(serialized.includes(scriptId), false);
+  assert.strictEqual(serialized.includes(raw), false);
+  assert.deepStrictEqual(Object.keys(record).sort(), [
+    'exit_code',
+    'expected_file_count',
+    'observed_file_count',
+    'observed_nonfile_count',
+    'operation',
+    'output_sha256',
+    'post_pull_validation',
+    'status',
+    'target_binding_sha256'
+  ]);
+  assert.doesNotMatch(claspToolSource,
+    /closedPostRemoteFailureCategories\s*=\s*Object\.freeze\(\s*closedClaspFailureCategories/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

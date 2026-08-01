@@ -4,13 +4,13 @@
 
 Current Code is `2.8.11-prepilot`. Instruction 0008 supersedes Instruction
 0007 after its safe push failure and establishes a full remote-development
-bootstrap. The current gate remains fail-closed until GitHub publication,
-closed failure classification, user-level API/OAuth/target access, canonical
-push/pull parity, personal standard-Cloud setup, dev-runtime overlay parity,
-MYSELF-only API executable, one read-only remote runtime, current-branch CI,
-and a fresh HTTPS clone all pass. Company handoff remains NO-GO.
-The active development status is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` because
-GitHub CLI connectivity and every authenticated remote gate are incomplete.
+bootstrap. Instruction 0009 then normally published the preserved history and
+obtained current-head CI success. The user-level API confirmation and target
+guard passed, but the required isolated read-only pull observed `2` files
+instead of the exact `23`-file allow-list. This closed
+`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` blocks canonical mutation. Company
+handoff remains NO-GO and the active development status is
+`NO_GO_LOCAL_CLASP_VALIDATION`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier
 release/transfer artifacts remain immutable historical evidence; T11 is
@@ -24,6 +24,7 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `verify:local` | Self PC | No | Same non-Google checks using the lockfile. |
 | `gas:stage:dev` | Self PC | No | Exact 23-file staging inventory and byte-level payload hash. |
 | `gas:access-check:dev` | Self PC | Local only | Isolated read-only target pull before the one controlled canonical retry. |
+| `gas:access-recover:dev` | Self PC | No remote call | Explicitly attested cleanup of only a failed, non-empty ignored access-check workspace after binding correction; it cannot consume or remove a retry marker. |
 | `gas:push:dev` | Self PC | Local only | Explicit opt-in, clean worktree, target guard, and non-Google verification before push. |
 | `gas:pull-verify:dev` | Self PC | Local only | Separate ignored pull-back, exact file set, and byte-level parity. |
 | `gas:stage:runtime-dev` | Self PC | No | Canonical manifest byte preservation plus a separate MYSELF-only runtime overlay/hash. |
@@ -42,7 +43,8 @@ therefore necessary evidence, but cannot prove the authenticated local lane.
 
 | Condition | Status | Company action |
 |---|---|---|
-| Any GitHub/local/OAuth/target/canonical parity/runtime-bootstrap check fails | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` | None authorized. |
+| GitHub publication or required CI is incomplete | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` | None authorized. |
+| Published CI/local pass, but canonical push/pull is incomplete or fails | `NO_GO_LOCAL_CLASP_VALIDATION` | None authorized. |
 | Push and pull-back parity pass; safe runtime is unrun | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` | None authorized. |
 | All local/CI/canonical/Cloud/OAuth/runtime/fresh-clone checks pass | `READY_FOR_REMOTE_GAS_DEVELOPMENT_REVIEW` | Remote-development review only; company handoff remains blocked. |
 
@@ -54,7 +56,18 @@ For Instruction 0007, `CLASP_PUSH_FAILED` remains a blocking historical
 result and never proves remote byte visibility. Instruction 0008 authorizes
 one new controlled canonical retry only after the failure classifier and all
 closed prerequisites pass. The tool writes the ignored attempt marker before
-calling clasp and rejects a second attempt.
+calling clasp and rejects a second attempt. A successful read-only pull with a
+noncanonical payload shape is `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`; it records
+only a closed category, output hash, exit state, and bounded counts, then stops
+without consuming the canonical retry. Access evidence is bound to an ignored
+local hash of the current binding. Recording prerequisites, a binding change,
+or a failed access check revokes an earlier access PASS. A canonical push
+requires a matching persisted successful access record with the exact 23-file
+shape, not just a remembered PASS state. The only recovery from a noncanonical
+access-check workspace is the separately attested local-only
+`gas:access-recover:dev` step after the operator confirms the intended
+personal synthetic target; it never contacts Google or removes a canonical
+retry marker.
 
 ## Evidence requirements
 

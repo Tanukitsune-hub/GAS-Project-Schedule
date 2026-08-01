@@ -35,10 +35,11 @@ const expectedKeys = [
   'Company handoff'
 ];
 const noCompanyHandoff = 'NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE';
-const currentDevelopmentGate = 'NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP';
+const currentDevelopmentGate = 'NO_GO_LOCAL_CLASP_VALIDATION';
 const allowedGates = [
   noCompanyHandoff,
   currentDevelopmentGate,
+  'NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP',
   'READY_FOR_LOCAL_CLASP_VALIDATION',
   'READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION',
   'READY_FOR_COMPANY_HANDOFF_REASSESSMENT',
@@ -196,12 +197,25 @@ function validateContracts(contracts) {
   assert.ok(allowedGates.includes(reference.Gate),
     'current gate is not an allowed local-clasp governance gate');
   assert.strictEqual(reference.Gate, currentDevelopmentGate,
-    'current gate must preserve the Instruction 0008 fail-closed result');
+    'current gate must preserve the Instruction 0009 published-but-unparitied result');
   assert.strictEqual(reference['Fixed transfer'], 'T11_SUSPENDED');
   assert.strictEqual(reference['Company handoff'], noCompanyHandoff);
   assert.ok(!historicalFixedRefs.includes(reference['Fixed transfer']),
     'historical fixed refs must not be an active transfer source');
   return reference;
+}
+
+function validateInstruction0009CurrentFailure(text, label) {
+  assert.match(
+    text,
+    /REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH/,
+    `${label}: current Instruction 0009 shape-failure category missing`
+  );
+  assert.match(
+    text,
+    /canonical(?:\s+push|\s+mutation)[\s\S]{0,220}NOT_EXECUTED/i,
+    `${label}: current canonical mutation stop boundary missing`
+  );
 }
 
 function contractsFromTexts(texts) {
@@ -262,17 +276,36 @@ test('DOC-01B_ACTIVE_COMPANY_PC_BOUNDARY_MATCHES_CURRENT_CONTRACT', () => {
   validateActiveCompanyPcBoundary(contract, readme.text);
 });
 
-test('DOC-01C_STALE_PRE_PUSH_READY_GATE_IS_REJECTED', () => {
+test('DOC-01C_STALE_PRE_ACCESS_NETWORK_GATE_IS_REJECTED', () => {
   const fixture = sourceTexts.map((item) => ({
     name: item.name,
     text: item.text.replace(
       /^\|\s*Gate\s*\|\s*`[^`]+`\s*\|$/m,
-      '| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |'
+      '| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |'
     )
   }));
   assert.throws(
     () => validateContracts(contractsFromTexts(fixture)),
-    /Instruction 0008 fail-closed result/
+    /Instruction 0009 published-but-unparitied result/
+  );
+});
+
+test('DOC-01C1_CURRENT_DOCUMENTS_RECORD_THE_0009_SHAPE_STOP', () => {
+  sourceTexts.forEach((entry) => {
+    validateInstruction0009CurrentFailure(entry.text, entry.name);
+  });
+  const fixture = sourceTexts.map((entry) => ({
+    name: entry.name,
+    text: entry.text.replace(
+      /REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH/g,
+      'UNKNOWN_CLASP_REMOTE_FAILURE'
+    )
+  }));
+  assert.throws(
+    () => fixture.forEach((entry) =>
+      validateInstruction0009CurrentFailure(entry.text, entry.name)
+    ),
+    /shape-failure category missing/
   );
 });
 

@@ -10,10 +10,13 @@ Automation default: `OFF`
 The 0003 gate is historical. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable evidence but
 `T11_SUSPENDED`, so it authorizes neither replacement nor a Company Sandbox
-Diagnostic. The current development gate is
-`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`: current non-Google local validation
-passes, but GitHub CLI publication and all authenticated remote gates remain
-`NOT_EXECUTED`. No company Workspace action is authorized;
+Diagnostic. The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`:
+current non-Google local validation, Instruction 0009 branch publication, and
+current GitHub Actions validation pass, but an isolated read-only target pull
+observed 2 files where the canonical payload requires 23
+(`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This does not infer target identity;
+canonical retry/push, pull-back parity, and all later authenticated remote
+gates remain `NOT_EXECUTED`. No company Workspace action is authorized;
 company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 Any version-property mismatch remains an explicit WARN and is not reconciled.
 
@@ -91,9 +94,9 @@ Company Sandbox Quick Diagnostic is authorized.
 This historical pre-observation guide never declares execution readiness. Its
 E10-era `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate meant controlled carriage
 of exact fixed T10 only, never Sandbox PASS or execution authorization. The
-current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008
-must resolve and independently revalidate the failed clasp lane before any
-future reassessment. Company handoff is
+current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`; the guarded
+personal synthetic target shape must be safely resolved before a canonical
+retry or future reassessment. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T1-01 remains
 `REVIEW_REQUIRED`, T1-02 and later actions
 are not authorized, and standalone functional acceptance remains

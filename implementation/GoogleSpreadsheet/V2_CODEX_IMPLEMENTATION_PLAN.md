@@ -2,18 +2,20 @@
 
 Last updated: 2026-08-01
 Current remediation candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
+Gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 
 Instruction 0003 added only a bounded Diagnostic acceptance summary. The
 closed T1-01 `77 PASS / 6 WARN / 0 FAIL` observation remains
 `REVIEW_REQUIRED`; no sixth warning ID is inferred. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable historical evidence but
 `T11_SUSPENDED`, so it authorizes no Company-PC carriage or re-observation.
-Instruction 0008 non-Google local validation passes, but GitHub CLI
-publication, canonical/runtime parity, Cloud/OAuth, deployment, and runtime
-validation are not executed. The current development gate is
-`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; no company
-Workspace action is authorized and company handoff is
+Instruction 0009 branch publication and current GitHub Actions validation
+pass, but the isolated read-only target pull observed 2 files where the
+canonical payload requires 23 (`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This
+does not infer target identity; canonical retry/push, pull-back parity,
+Cloud/OAuth, deployment, and runtime validation are not executed. The current
+development gate is `NO_GO_LOCAL_CLASP_VALIDATION`; no company Workspace
+action is authorized and company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 
 ## Scope

@@ -15,10 +15,12 @@ historical. The then-current
 controlled Sandbox Setup S00-S99 observation is PASS, while functional
 acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
-The current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
-Instruction 0008 non-Google local validation passes, but GitHub CLI
-publication and all authenticated remote gates remain `NOT_EXECUTED`;
-company handoff is
+The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`. Instruction
+0009 branch publication and current GitHub Actions validation pass, but the
+isolated read-only target pull observed 2 files where the canonical payload
+requires 23 (`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This does not infer target
+identity; canonical retry/push, pull-back parity, and all later authenticated
+remote gates remain `NOT_EXECUTED`; company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T10 and fixed T11
 are immutable historical evidence; T11 is `T11_SUSPENDED`.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a
@@ -26,8 +28,9 @@ Company-PC carriage nor a T1-01 re-observation. Quick/Deep expose a bounded
 pre-detail acceptance summary of closed IDs, counts, read-only Booleans, and
 Task/Ledger aggregates; an incomplete summary is `REVIEW_REQUIRED` and never
 repairs authority, Calendar, Dashboard, Setup state, or version properties.
-The sole active prerequisite is guarded clasp validation on a personal
-synthetic development target.
+The sole active prerequisite is safe resolution of the guarded clasp target
+shape before any canonical retry can be considered on a personal synthetic
+development target.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept
