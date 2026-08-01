@@ -53,10 +53,11 @@ validator, JSON/YAML, release/transfer verification, fixed-ref lineage, and
 secret/local-path scanning all pass. Canonical staging is 23 files at SHA-256
 `ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
 GitHub HTTPS from the Codex execution environment is
-`BLOCKED_BY_CODEX_NETWORK_POLICY`. Consequently the fixed instruction merge,
-normal push, Draft PR, current-branch Actions, detached HTTPS fresh clone,
-Google access check, canonical retry, parity, Cloud/OAuth setup, deployment,
-and runtime call remain `NOT_EXECUTED`. The development status is
+`BLOCKED_BY_CODEX_NETWORK_POLICY`. The normal push failed closed without a
+remote update. Consequently the fixed instruction merge, Draft PR,
+current-branch Actions, detached HTTPS fresh clone, Google access check,
+canonical retry, parity, Cloud/OAuth setup, deployment, and runtime call remain
+`NOT_EXECUTED`. The development status is
 `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
 
 ## Current 0006 local clasp validation gate

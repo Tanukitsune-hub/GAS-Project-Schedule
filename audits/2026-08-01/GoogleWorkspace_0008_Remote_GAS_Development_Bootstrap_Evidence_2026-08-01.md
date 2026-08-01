@@ -48,7 +48,8 @@ company transfer target.
 | Probe exit | `128` |
 | Safe probe output SHA-256 | `2bbb0eae18c79e2bf8a6240158cf67179acaead9d83d4088bba2804bd46e9e25` |
 | Fixed instruction merge | `NOT_EXECUTED` |
-| Normal branch push | `NOT_EXECUTED` |
+| Normal branch push | `FAILED_CLOSED` - no remote update |
+| Safe normal-push output SHA-256 | `45919e4100f703c05c4a83babc6e3b4677674a8ee5a909cd81ceebc47c8cbb1e` |
 | Stacked Draft PR | `NOT_EXECUTED` |
 | Current-branch Actions | `NOT_EXECUTED` |
 | Detached HTTPS fresh clone | `NOT_EXECUTED` |
