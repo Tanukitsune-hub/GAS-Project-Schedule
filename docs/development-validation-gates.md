@@ -26,6 +26,8 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `gas:bind:dev` | Self PC | No remote call | Non-echoing local-only Script ID entry after UI attestation; rewrites only ignored binding files with the exact `.gs`-first clasp extension contract. |
 | `gas:access-check:dev` | Self PC | Local only | Isolated read-only pull: exact 23-file parity for an established target, or the separate exact two-file non-executable blank-project preflight when a new bound synthetic target is explicitly approved. |
 | `gas:access-recover:dev` | Self PC | No remote call | Explicitly attested cleanup of only a failed, non-empty ignored access-check workspace after binding correction; it cannot consume or remove a retry marker. |
+| `gas:authorize-interactive-blank-push:dev` | Self PC | No remote call | Reclassifies an exact `Skipping push.` no-op and authorizes one normal interactive manifest-confirmation push only after the remote is independently re-proven blank. |
+| `gas:record-interactive-blank-push:dev` | Self PC | No remote call | Records only the operator's closed 23-file success confirmation; independent pull-back parity remains mandatory. |
 | `gas:push:dev` | Self PC | Local only | Explicit opt-in, clean worktree, target guard, and non-Google verification before push. |
 | `gas:pull-verify:dev` | Self PC | Local only | Separate ignored pull-back, exact file set, and byte-level parity. |
 | `gas:stage:runtime-dev` | Self PC | No | Canonical manifest byte preservation plus a separate MYSELF-only runtime overlay/hash. |
@@ -58,6 +60,11 @@ target uses `NEW_BLANK_BOUND_SCRIPT_V1`: exactly one empty/default server script
 and one non-executable manifest. The blank preflight is accepted only before
 the single guarded initial canonical push; pull-back parity after that push is
 still the unchanged 23-file canonical contract.
+
+An exit-code-zero `Skipping push.` is not remote mutation evidence. The blank
+target lane preserves that no-op and its original retry marker, requires a
+separate one-use interactive approval marker, forbids `--force`, and accepts
+the result only after a separate pull proves exact 23-file byte parity.
 
 ## Status discipline
 

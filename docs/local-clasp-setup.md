@@ -124,6 +124,15 @@ failed, non-empty, ignored access-check workspace under the closed reason
 `SUPERSEDED_BY_NEW_BLANK_BOUND_SHEET_SANDBOX`. It does not contact Google,
 remove a retry marker, or reuse the prior target fingerprint.
 
+For a new blank project, clasp 3.3.0 may require an interactive confirmation
+when the canonical manifest differs. A non-interactive `Skipping push.` result
+is `REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED`, never PASS.
+After an independent pull proves the remote is still the exact blank shape, a
+separate durable marker may authorize one normal interactive `clasp push`.
+The operator confirms the manifest update locally; `--force` remains forbidden.
+The tool then requires an independent clean-directory 23-file byte-parity pull.
+The original retry marker and no-op evidence remain preserved.
+
 This declaration is an operator attestation, not independent proof that a
 target is non-company. That limitation is `REVIEW_REQUIRED` and must be
 recorded in any handoff evidence.

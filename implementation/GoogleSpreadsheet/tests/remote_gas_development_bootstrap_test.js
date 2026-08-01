@@ -18,6 +18,7 @@ const {
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
   isApprovedAccessCheckRecovery,
+  isManifestConfirmationNoop,
   expectedCanonicalPayloadSha256,
   canonicalPayloadFileNames,
   canonicalScriptExtensions,
@@ -167,6 +168,8 @@ test('BOOT-08_PACKAGE_SCRIPTS_EXPOSE_CANONICAL_AND_RUNTIME_LANES', () => {
     'gas:prerequisites:dev',
     'gas:access-check:dev',
     'gas:access-recover:dev',
+    'gas:authorize-interactive-blank-push:dev',
+    'gas:record-interactive-blank-push:dev',
     'gas:stage:dev',
     'gas:push:dev',
     'gas:pull-verify:dev',
@@ -474,6 +477,29 @@ test('BOOT-23_PARENT_NON_ECHOING_PROMPT_HANDOFF_IS_EPHEMERAL', () => {
     /environment\.GAS_DEV_LOCAL_SCRIPT_ID\s*=\s*''/);
   assert.doesNotMatch(claspToolSource,
     /writeSafeResult\([^)]*GAS_DEV_LOCAL_SCRIPT_ID/);
+});
+
+test('BOOT-24_MANIFEST_CONFIRMATION_NOOP_IS_NOT_A_SUCCESSFUL_PUSH', () => {
+  assert.strictEqual(isManifestConfirmationNoop('Skipping push.\n'), true);
+  assert.strictEqual(isManifestConfirmationNoop('Pushed 23 files.'), false);
+  const detection = claspToolSource.indexOf(
+    'if (isManifestConfirmationNoop(result.raw))'
+  );
+  const success = claspToolSource.indexOf(
+    "persistOperationRecord('push', result, 'PASS')"
+  );
+  assert.ok(detection >= 0 && success > detection);
+  assert.match(claspToolSource,
+    /REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED/);
+});
+
+test('BOOT-25_BLANK_MANIFEST_RECOVERY_NEVER_USES_FORCE_FLAG', () => {
+  assert.doesNotMatch(claspToolSource,
+    /runClasp\(\[[^\]]*['"]--force['"]/);
+  assert.match(claspToolSource, /force_flag_allowed:\s*false/);
+  assert.match(claspToolSource, /force_flag_used:\s*false/);
+  assert.match(claspToolSource,
+    /OPERATOR_CONFIRMED_23_FILES_PUSHED/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

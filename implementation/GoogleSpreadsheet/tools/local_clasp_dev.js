@@ -34,6 +34,10 @@ const canonicalRetryMarkerPath = path.join(
   operationRecordRoot,
   'canonical-push-retry-used.json'
 );
+const blankManifestInteractivePushMarkerPath = path.join(
+  operationRecordRoot,
+  'blank-manifest-interactive-push.json'
+);
 const configPath = path.join(devRoot, '.clasp.json');
 const targetPath = path.join(devRoot, 'target.json');
 const inventoryPath = path.join(devRoot, 'payload-inventory.json');
@@ -64,6 +68,7 @@ const closedClaspFailureCategories = Object.freeze([
   'REMOTE_PAYLOAD_REJECTED',
   'NETWORK_OR_TLS_FAILURE',
   'CLASP_REMOTE_CONFLICT',
+  'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED',
   'UNKNOWN_CLASP_PUSH_FAILURE',
   'UNKNOWN_CLASP_REMOTE_FAILURE'
 ]);
@@ -803,6 +808,161 @@ function markCanonicalRetryUsed(inventory) {
   return marker;
 }
 
+function isManifestConfirmationNoop(raw) {
+  return String(raw || '')
+    .replace(/\x1b\[[0-9;]*m/g, '')
+    .trim() === 'Skipping push.';
+}
+
+function assertCanonicalRemoteMutationEvidence(inventory) {
+  const pushRecord = readJson(
+    path.join(operationRecordRoot, 'last-push.json'),
+    'CANONICAL_PUSH_EVIDENCE_MISSING'
+  );
+  if (pushRecord.status === 'PASS' && pushRecord.exit_code === 0) {
+    const rawPath = path.join(operationRecordRoot, 'last-push.raw.txt');
+    if (!fs.existsSync(rawPath) ||
+        isManifestConfirmationNoop(fs.readFileSync(rawPath, 'utf8'))) {
+      fail('CANONICAL_PUSH_EVIDENCE_INVALID',
+        'CANONICAL_PUSH_EVIDENCE_INVALID');
+    }
+    return { mode: 'STANDARD_GUARDED_PUSH' };
+  }
+  if (pushRecord.status !==
+      'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED') {
+    fail('CANONICAL_PUSH_EVIDENCE_INVALID', 'CANONICAL_PUSH_EVIDENCE_INVALID');
+  }
+  const marker = readJson(
+    blankManifestInteractivePushMarkerPath,
+    'BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_MISSING'
+  );
+  const interactive = readJson(
+    path.join(operationRecordRoot, 'last-interactive-blank-push.json'),
+    'BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_MISSING'
+  );
+  if (marker.state !== 'OPERATOR_CONFIRMED_EXECUTED' ||
+      marker.payload_sha256 !== inventory.payload_sha256 ||
+      marker.file_count !== inventory.file_count ||
+      interactive.status !== 'PASS' ||
+      interactive.operator_confirmation !==
+        'OPERATOR_CONFIRMED_23_FILES_PUSHED' ||
+      interactive.payload_sha256 !== inventory.payload_sha256 ||
+      interactive.file_count !== inventory.file_count) {
+    fail('BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_INVALID',
+      'BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_INVALID');
+  }
+  return { mode: 'INTERACTIVE_MANIFEST_APPROVAL_PUSH' };
+}
+
+function authorizeInteractiveBlankManifestPush(environment, target, inventory) {
+  if (environment.GAS_INTERACTIVE_BLANK_MANIFEST_PUSH_ALLOWED !== 'true' ||
+      target.target.target_attestation !== newBlankTargetAttestation ||
+      fs.existsSync(blankManifestInteractivePushMarkerPath)) {
+    fail('BLANK_MANIFEST_INTERACTIVE_PUSH_NOT_AUTHORIZED',
+      'BLANK_MANIFEST_INTERACTIVE_PUSH_NOT_AUTHORIZED');
+  }
+  const canonicalMarker = readJson(
+    canonicalRetryMarkerPath,
+    'CANONICAL_PUSH_RETRY_NOT_RECORDED'
+  );
+  const pushRecord = readJson(
+    path.join(operationRecordRoot, 'last-push.json'),
+    'CANONICAL_PUSH_EVIDENCE_MISSING'
+  );
+  const pushRawPath = path.join(operationRecordRoot, 'last-push.raw.txt');
+  const pullRecord = readJson(
+    path.join(operationRecordRoot, 'last-pull-verify.json'),
+    'REMOTE_PULLBACK_EVIDENCE_MISSING'
+  );
+  if (!fs.existsSync(pushRawPath) ||
+      canonicalMarker.payload_sha256 !== inventory.payload_sha256 ||
+      canonicalMarker.file_count !== inventory.file_count ||
+      pushRecord.exit_code !== 0 ||
+      !isManifestConfirmationNoop(fs.readFileSync(pushRawPath, 'utf8')) ||
+      pullRecord.status !== 'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH' ||
+      pullRecord.observed_file_count !== 2 ||
+      pullRecord.expected_file_count !== canonicalPayloadFileNames.length ||
+      pullRecord.observed_nonfile_count !== 0 ||
+      !accessEvidenceMatchesTarget(pullRecord, target)) {
+    fail('BLANK_MANIFEST_INTERACTIVE_PUSH_PRECONDITION_FAILED',
+      'BLANK_MANIFEST_INTERACTIVE_PUSH_PRECONDITION_FAILED');
+  }
+  assertNewBlankPulledPayload(path.join(pullRoot, 'payload'));
+  const resolvedPullRoot = path.resolve(pullRoot);
+  const resolvedModuleRoot = `${path.resolve(moduleRoot)}${path.sep}`;
+  if (!resolvedPullRoot.startsWith(resolvedModuleRoot) ||
+      path.basename(resolvedPullRoot) !== '.clasp-pull-verify') {
+    fail('PULL_VERIFY_WORKSPACE_PATH_REJECTED',
+      'PULL_VERIFY_WORKSPACE_PATH_REJECTED');
+  }
+  const noopResult = {
+    exit_code: pushRecord.exit_code,
+    output_sha256: pushRecord.output_sha256,
+    raw: fs.readFileSync(pushRawPath, 'utf8')
+  };
+  persistOperationRecord(
+    'push',
+    noopResult,
+    'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED',
+    undefined,
+    targetBindingFingerprint(target.config)
+  );
+  fs.rmSync(resolvedPullRoot, { recursive: true, force: true });
+  const marker = {
+    schema: 'WORK_OS_BLANK_MANIFEST_INTERACTIVE_PUSH_V1',
+    state: 'AUTHORIZED_NOT_EXECUTED',
+    payload_sha256: inventory.payload_sha256,
+    file_count: inventory.file_count,
+    force_flag_allowed: false
+  };
+  fs.writeFileSync(
+    blankManifestInteractivePushMarkerPath,
+    `${JSON.stringify(marker, null, 2)}\n`,
+    'utf8'
+  );
+  return marker;
+}
+
+function recordInteractiveBlankManifestPush(environment, inventory) {
+  if (environment.GAS_INTERACTIVE_BLANK_MANIFEST_PUSH_RESULT !==
+      'OPERATOR_CONFIRMED_23_FILES_PUSHED') {
+    fail('BLANK_MANIFEST_INTERACTIVE_PUSH_RESULT_REJECTED',
+      'BLANK_MANIFEST_INTERACTIVE_PUSH_RESULT_REJECTED');
+  }
+  const marker = readJson(
+    blankManifestInteractivePushMarkerPath,
+    'BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_MISSING'
+  );
+  const evidencePath = path.join(
+    operationRecordRoot,
+    'last-interactive-blank-push.json'
+  );
+  if (marker.state !== 'AUTHORIZED_NOT_EXECUTED' ||
+      marker.payload_sha256 !== inventory.payload_sha256 ||
+      marker.file_count !== inventory.file_count ||
+      fs.existsSync(evidencePath)) {
+    fail('BLANK_MANIFEST_INTERACTIVE_PUSH_RESULT_REJECTED',
+      'BLANK_MANIFEST_INTERACTIVE_PUSH_RESULT_REJECTED');
+  }
+  marker.state = 'OPERATOR_CONFIRMED_EXECUTED';
+  fs.writeFileSync(
+    blankManifestInteractivePushMarkerPath,
+    `${JSON.stringify(marker, null, 2)}\n`,
+    'utf8'
+  );
+  const evidence = {
+    schema: 'WORK_OS_INTERACTIVE_BLANK_PUSH_EVIDENCE_V1',
+    operation: 'interactive-blank-push',
+    status: 'PASS',
+    operator_confirmation: 'OPERATOR_CONFIRMED_23_FILES_PUSHED',
+    payload_sha256: inventory.payload_sha256,
+    file_count: inventory.file_count,
+    force_flag_used: false
+  };
+  fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
+  return evidence;
+}
+
 function assertRuntimeBootstrapConfiguration() {
   const runtime = readJson(runtimeConfigPath, 'DEV_RUNTIME_NOT_CONFIGURED');
   const requiredTrue = [
@@ -873,7 +1033,7 @@ function assertCanonicalParityEvidence() {
     fail('CANONICAL_PARITY_EVIDENCE_INVALID',
       'CANONICAL_PARITY_EVIDENCE_INVALID');
   }
-  assertPassedOperation('push');
+  assertCanonicalRemoteMutationEvidence(inventory);
   assertPassedOperation('pull-verify');
   return inventory;
 }
@@ -1520,6 +1680,7 @@ function parseRuntimeCommand(command) {
   if (!command) return 'status';
   if (![
     'stage', 'bind-target', 'record-prerequisites', 'access-check', 'recover-access-check',
+    'authorize-interactive-blank-push', 'record-interactive-blank-push',
     'status', 'push', 'pull-verify',
     'runtime-auth-check', 'record-runtime-prerequisites',
     'record-runtime-config',
@@ -1857,6 +2018,38 @@ function main() {
     }
 
     const inventory = assertCanonicalPayloadContract(assertStagedPayload());
+    if (command === 'authorize-interactive-blank-push') {
+      const target = assertTargetGuard(true);
+      assertCanonicalRetryPrerequisites(target);
+      const marker = authorizeInteractiveBlankManifestPush(
+        process.env,
+        target,
+        inventory
+      );
+      writeSafeResult({
+        lane: 'local_clasp_dev', command, status: 'PASS',
+        interactive_manifest_push: marker.state,
+        file_count: marker.file_count,
+        payload_sha256: marker.payload_sha256,
+        force_flag_allowed: marker.force_flag_allowed,
+        google_operation: 'NOT_EXECUTED'
+      });
+      return;
+    }
+
+    if (command === 'record-interactive-blank-push') {
+      assertTargetGuard(false);
+      const evidence = recordInteractiveBlankManifestPush(process.env, inventory);
+      writeSafeResult({
+        lane: 'local_clasp_dev', command, status: 'PASS',
+        operator_confirmation: evidence.operator_confirmation,
+        file_count: evidence.file_count,
+        payload_sha256: evidence.payload_sha256,
+        force_flag_used: evidence.force_flag_used
+      });
+      return;
+    }
+
     if (command === 'access-check') {
       const target = assertTargetGuard(false);
       const prerequisite = assertCanonicalRetryPrerequisitesForAccess(target);
@@ -1945,6 +2138,17 @@ function main() {
       if (result.exit_code !== 0) {
         failClassifiedClaspOperation('push', result, target);
       }
+      if (isManifestConfirmationNoop(result.raw)) {
+        persistOperationRecord(
+          'push',
+          result,
+          'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED',
+          undefined,
+          targetBindingFingerprint(target.config)
+        );
+        fail('REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED',
+          'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED');
+      }
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS',
         file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
@@ -1958,6 +2162,7 @@ function main() {
     if (command === 'pull-verify') {
       const target = assertTargetGuard(true);
       assertCanonicalRetryPrerequisites(target);
+      assertCanonicalRemoteMutationEvidence(inventory);
       if (!fs.existsSync(canonicalRetryMarkerPath)) {
         fail('CANONICAL_PUSH_RETRY_NOT_RECORDED',
           'CANONICAL_PUSH_RETRY_NOT_RECORDED');
@@ -2192,6 +2397,8 @@ module.exports = {
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
   isApprovedAccessCheckRecovery,
+  isManifestConfirmationNoop,
+  assertCanonicalRemoteMutationEvidence,
   targetBindingFingerprint,
   accessEvidenceMatchesTarget,
   safeOperationRecord,
