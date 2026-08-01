@@ -27,6 +27,18 @@ directory being changed. The repository’s canonical implementation is
   authorization review, and a separately approved minimal smoke test.
 - A skipped clasp lane is a company-handoff blocker unless a later governing
   instruction explicitly records a different decision.
+- A failed clasp operation must be classified locally into a closed category.
+  Raw remote output may remain only in ignored local operation records; GitHub
+  evidence may contain only the category and output SHA-256.
+- A canonical retry must be explicitly authorized, durably marked before the
+  remote call, and followed by separate-directory pull-back parity. Never
+  delete a retry marker to manufacture an additional attempt.
+- Remote runtime development requires a personal standard Cloud project,
+  local-only named OAuth state, a dev-staged `executionApi.access = MYSELF`
+  overlay, exact runtime pull-back parity, and a MYSELF-only API executable.
+  The canonical `appsscript.json` must not be changed for this lane.
+- A remote diagnostic validation may call only the specifically authorized
+  read-only function once and must retain only its bounded closed summary.
 
 ## Information and reporting boundaries
 

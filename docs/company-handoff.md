@@ -2,19 +2,21 @@
 
 ## Current boundary
 
-The development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: current-branch CI and
-non-Google local validation passed, but Instruction 0007's guarded
-personal-synthetic push returned `CLASP_PUSH_FAILED`. Pull-back parity and
-runtime validation were not executed. Company handoff is
-`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. There is no active
+Instruction 0008 supersedes Instruction 0007 after its guarded
+personal-synthetic push failed closed. Remote-development bootstrap is now
+required: safe classification, one controlled canonical retry/pull-back,
+personal standard-Cloud/OAuth setup, MYSELF-only runtime overlay/deployment,
+one read-only runtime validation, CI, and fresh-clone proof. Until all of that
+is independently reviewed, company handoff is NO-GO and there is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company
 Sandbox Quick Diagnostic, or perform any T11-based manual operation.
 
-The local clasp gate is conducted only on a self PC against a personal,
-synthetic, non-company development target. Its completion can reach at most
-`READY_FOR_COMPANY_HANDOFF_REASSESSMENT`; it never automatically permits a
-company-PC action.
+The clasp/runtime lane is conducted only on a self PC against the existing
+personal, synthetic, non-company development target. Its maximum status is
+`READY_FOR_REMOTE_GAS_DEVELOPMENT_REVIEW`; even then company status remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and no company-PC
+action is automatically permitted.
 
 ## Future reassessment checklist
 

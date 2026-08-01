@@ -10,12 +10,13 @@ or an authorization to operate a real Workspace.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. T11 is immutable historical
 evidence but `T11_SUSPENDED`; there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
-The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`. Instruction
-0007 completed local OAuth, target attestation/binding, the target guard, exact
-23-file staging, and the pre-push status check, but the guarded push returned
-`CLASP_PUSH_FAILED`. The API-disabled retry exception was not established, so
-no retry, pull-back, or runtime call is permitted under that instruction.
-Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
+Instruction 0008 supersedes Instruction 0007 after its safe push failure. The
+0007 attempt remains closed evidence; it is not a parity result. Before the one
+new controlled canonical retry, the current tool must classify failures into a
+closed category, the operator must confirm the user-level Apps Script API is
+enabled, OAuth and the existing personal-synthetic target must be rechecked,
+and an isolated read-only pull must prove target access. Company handoff
+remains NO-GO throughout this bootstrap.
 
 ## Prerequisites
 
@@ -68,7 +69,52 @@ This declaration is an operator attestation, not independent proof that a
 target is non-company. That limitation is `REVIEW_REQUIRED` and must be
 recorded in any handoff evidence.
 
-## Guarded clasp sequence
+## Closed failure classification and one-retry boundary
+
+Raw clasp output is retained only in ignored local operation records. Tracked
+evidence may contain only its SHA-256 and one of these closed categories:
+
+```text
+APPS_SCRIPT_API_DISABLED
+BLOCKED_BY_AUTH
+DEV_TARGET_NOT_FOUND_OR_NO_ACCESS
+DEV_TARGET_PROJECT_TYPE_OR_BINDING_INVALID
+REMOTE_MANIFEST_REJECTED
+REMOTE_PAYLOAD_REJECTED
+NETWORK_OR_TLS_FAILURE
+CLASP_REMOTE_CONFLICT
+UNKNOWN_CLASP_PUSH_FAILURE
+```
+
+The canonical retry command writes an ignored durable `ATTEMPT_STARTED`
+marker before invoking clasp. If that marker already exists, the tool refuses
+a second push. Do not delete or edit the marker to create another attempt.
+
+## Guarded canonical clasp sequence
+
+After the operator has confirmed the user-level Apps Script API is enabled,
+OAuth is valid, and the target attestation still holds, record only those
+closed prerequisites in the current terminal:
+
+```powershell
+$env:GAS_USER_APPS_SCRIPT_API_ENABLED = 'true'
+$env:GAS_OAUTH_STATE = 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT'
+$env:GAS_TARGET_ATTESTATION = 'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX'
+pnpm run gas:prerequisites:dev
+Remove-Item Env:GAS_USER_APPS_SCRIPT_API_ENABLED
+Remove-Item Env:GAS_OAUTH_STATE
+Remove-Item Env:GAS_TARGET_ATTESTATION
+```
+
+Then prove read-only access before push:
+
+```powershell
+pnpm run gas:access-check:dev
+```
+
+The access check pulls into an ignored isolated directory, accepts only the
+23-file payload shape, and performs no remote write. A failed access check
+stops the canonical retry.
 
 After `verify:local` passes and only on the self PC, use the explicit opt-in:
 
@@ -77,6 +123,7 @@ $env:GAS_DEV_CLASP_ALLOWED = 'true'
 pnpm run gas:status:dev
 pnpm run gas:push:dev
 pnpm run gas:pull-verify:dev
+pnpm run gas:status:dev
 ```
 
 The target guard runs before the remote calls. `gas:push:dev` requires a clean
@@ -89,9 +136,116 @@ If local config is absent, record `DEV_TARGET_NOT_CONFIGURED`. If clasp login
 or remote access is unavailable, record `BLOCKED_BY_AUTH` or the safe
 operation-specific failure code. None of those outcomes is PASS.
 
-The Instruction 0007 attempt is closed. Do not reuse the sequence below to
-retry its failed push. A later governing instruction must first define the
-failure investigation and a new safe attempt boundary.
+Instruction 0008 is that later governing instruction and authorizes exactly
+one new canonical retry after the prerequisites above pass. `--force`, remote
+manual deletion, and remote file repair remain prohibited.
+
+## Dev-runtime manifest overlay
+
+The canonical `apps-script-v2/appsscript.json` stays byte-unchanged. Generate
+the separate ignored runtime payload with:
+
+```powershell
+pnpm run gas:stage:runtime-dev
+```
+
+The generator copies the same 23 files and adds only this dev-runtime field to
+the staged manifest:
+
+```json
+{
+  "executionApi": {
+    "access": "MYSELF"
+  }
+}
+```
+
+The tool rejects `DOMAIN`, `ANYONE`, and `ANYONE_ANONYMOUS`; verifies all
+canonical manifest fields remain identical; and records distinct canonical
+manifest, runtime manifest, canonical payload, and runtime payload hashes.
+
+Only after canonical push/pull parity may the operator configure the personal
+standard-Cloud project, project API, Testing-mode OAuth consent, and one local
+Desktop OAuth client. Project, deployment, OAuth, and account identifiers stay
+exclusively in ignored local configuration.
+
+Create the named profile only with the project-local clasp 3.3.0. The client
+JSON must already be under the ignored `.clasp-dev/credentials/` directory:
+
+```powershell
+pnpm exec clasp --auth .clasp-dev/oauth --user personal-synthetic-runtime login --creds .clasp-dev/credentials/client.json --use-project-scopes --include-clasp-scopes
+pnpm run gas:runtime-auth-check:dev
+```
+
+The first command may open the personal-account OAuth page. The second command
+records only a closed profile/scopes state and an output hash; its raw result
+remains ignored locally.
+
+Record the closed Cloud/OAuth prerequisites, then stage, push, and independently
+pull back the runtime overlay. These commands require prior canonical
+push/pull parity and the verified named profile:
+
+```powershell
+$env:GAS_STANDARD_CLOUD_PROJECT_LINKED = 'true'
+$env:GAS_CLOUD_APPS_SCRIPT_API_ENABLED = 'true'
+$env:GAS_OAUTH_CONSENT_TESTING_CONFIGURED = 'true'
+$env:GAS_DESKTOP_OAUTH_CLIENT_LOCAL_ONLY = 'true'
+$env:GAS_PROJECT_SCOPES_AUTHORIZED = 'true'
+pnpm run gas:runtime-prerequisites:dev
+@(
+  'GAS_STANDARD_CLOUD_PROJECT_LINKED',
+  'GAS_CLOUD_APPS_SCRIPT_API_ENABLED',
+  'GAS_OAUTH_CONSENT_TESTING_CONFIGURED',
+  'GAS_DESKTOP_OAUTH_CLIENT_LOCAL_ONLY',
+  'GAS_PROJECT_SCOPES_AUTHORIZED'
+) | ForEach-Object { Remove-Item "Env:$_" -ErrorAction SilentlyContinue }
+
+$env:GAS_DEV_CLASP_ALLOWED = 'true'
+pnpm run gas:stage:runtime-dev
+pnpm run gas:push:runtime-dev
+pnpm run gas:pull-verify:runtime-dev
+```
+
+Only after runtime-overlay parity passes, create the MYSELF-only API-executable
+deployment. Use a masked local prompt for its identifier and attest the final
+runtime guard. The identifier is written only to ignored runtime configuration
+and is never printed:
+
+```powershell
+$secret = Read-Host 'Deployment ID (local only)' -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
+try {
+  $env:GAS_RUNTIME_DEPLOYMENT_ID = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+  $env:GAS_API_EXECUTABLE_MYSELF_ONLY = 'true'
+  $env:GAS_TEST_MODE_CONFIRMED = 'true'
+  $env:GAS_AUTOMATION_DISABLED_CONFIRMED = 'true'
+  pnpm run gas:runtime-config:dev
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+  Remove-Variable secret, ptr -ErrorAction SilentlyContinue
+  @(
+    'GAS_RUNTIME_DEPLOYMENT_ID',
+    'GAS_API_EXECUTABLE_MYSELF_ONLY',
+    'GAS_TEST_MODE_CONFIRMED',
+    'GAS_AUTOMATION_DISABLED_CONFIRMED'
+  ) | ForEach-Object { Remove-Item "Env:$_" -ErrorAction SilentlyContinue }
+}
+```
+
+Do not paste the identifier, credential path, account identity, Cloud project
+identifier, or OAuth browser URL into chat, GitHub, logs, or evidence.
+
+```powershell
+$env:GAS_DEV_CLASP_ALLOWED = 'true'
+$env:GAS_DEV_RUNTIME_ALLOWED = 'true'
+pnpm run gas:test:runtime-dev
+```
+
+The runtime call is exactly one `runQuickDiagnostic`. It accepts only the
+bounded summary with complete WARN/FAIL IDs, false side-effect Booleans,
+50 Task columns, and a hidden/protected/21-column validated Ledger. Lower
+detail JSON and Workspace content are neither printed nor retained in tracked
+evidence.
 
 ## Optional safe runtime dry-run
 
@@ -104,25 +258,28 @@ contract. It remains `NOT_EXECUTED` unless all of the following are true:
   configured for the personal synthetic project; and
 - the returned bounded summary proves every listed side-effect Boolean false.
 
-Run only after push/pull parity:
+Run only after canonical and runtime-overlay push/pull parity and the manual
+Cloud/OAuth/API-executable prerequisites:
 
 ```powershell
 $env:GAS_DEV_RUNTIME_ALLOWED = 'true'
-pnpm run gas:test:dev
+pnpm run gas:test:runtime-dev
 ```
 
-Do not create a deployment, alter the production manifest, configure a
-provider, enable Automation or triggers, or use real Gmail, Calendar, Sheet,
-or business data.
+Instruction 0008 permits only one personal-synthetic API-executable deployment
+with access limited to the deploying user. Do not create a web app, public or
+company deployment, alter the canonical manifest, configure a provider,
+enable Automation or triggers, or use real Gmail, Calendar, Sheet, or business
+data.
 
 ## Result classification
 
 | Evidence | Maximum status |
 |---|---|
-| Local/CI non-Google check fails | `NO_GO_LOCAL_CLASP_VALIDATION` |
-| Local and CI pass; clasp lane not run | `READY_FOR_LOCAL_CLASP_VALIDATION` |
+| Any GitHub/local/OAuth/target/canonical/runtime bootstrap requirement fails | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
 | Push and pull-back parity pass; runtime not run | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
-| CI, local, push, pull-back, and safe runtime all pass | `READY_FOR_COMPANY_HANDOFF_REASSESSMENT` |
+| CI, local, canonical parity, Cloud/OAuth, runtime-overlay parity, MYSELF-only deployment, safe runtime, and fresh clone pass | `READY_FOR_REMOTE_GAS_DEVELOPMENT_REVIEW` |
 
-Every row still requires a separate company-handoff decision. It does not
-declare Phase 8B PASS, Phase 8C GO, production readiness, or pilot readiness.
+Every row keeps company handoff blocked. The maximum company status is
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. No row declares
+Phase 8B PASS, Phase 8C GO, production readiness, or pilot readiness.
