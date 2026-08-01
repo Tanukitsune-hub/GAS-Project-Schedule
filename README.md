@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
+| Current gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,24 +21,39 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Instruction 0007 - guarded personal-synthetic clasp result
+
+The operator attested the existing target as
+`PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX`. Local OAuth, target
+binding, the target guard, and the pre-push status check completed without
+recording an account identity, Script ID, URL, token, or remote content.
+The exact 23-file payload matched the canonical byte hash
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+
+The guarded push then returned `CLASP_PUSH_FAILED`. A read-only follow-up did
+not establish the one permitted `APPS_SCRIPT_API_DISABLED` exception, so the
+instruction's stop rule applies: no push retry, pull-back, runtime call, or
+remote repair is permitted. The current development status is therefore
+`NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. The privacy-safe closed
+record is in the Instruction 0007 audit evidence.
 
 ## Instruction 0006 — local clasp validation gate
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its T11 five-file company-PC
 carriage and the company-Sandbox T1-01 re-observation did not occur and are
 not currently authorized. Fixed T11 remains immutable historical provenance,
-not an active company carriage source. The non-Google local gate and the
-current-branch GitHub Actions run have passed. The dedicated personal synthetic
-dev target is not configured, so clasp push, pull-back parity, and runtime
-dry-run remain unexecuted. The development gate is therefore
-`READY_FOR_LOCAL_CLASP_VALIDATION`; company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` until the remaining
-gates are independently reviewed.
+not an active company carriage source. At the close of Instruction 0006, the
+non-Google local gate and current-branch GitHub Actions had passed while the
+dedicated personal synthetic dev target was not configured. Its historical
+gate was `READY_FOR_LOCAL_CLASP_VALIDATION`; Instruction 0007 supersedes that
+active status with the fail-closed result above.
 
 The 2.8.11 candidate preserves every Quick/Deep Diagnostic check and adds a
 bounded, privacy-safe acceptance summary before the redacted detail payload.
@@ -286,7 +301,7 @@ target. The resulting status is transfer-only.
 <!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_START -->
 | Field | Value |
 |---|---|
-| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
 | Transfer state | `T11_SUSPENDED` |
 | Current carriage source | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Workspace action | `NONE_AUTHORIZED` |
@@ -298,11 +313,13 @@ packages, transfer envelope, checksums, and prior manifests remain immutable
 historical evidence. They must not be copied or reflected on a company PC
 while this boundary is suspended.
 
-No company Workspace action is authorized. Do not carry a package, change an
+Instruction 0007's guarded personal-synthetic push failed closed; pull-back
+parity and runtime validation were not executed. No company Workspace action
+is authorized. Do not carry a package, change an
 Apps Script file, run Setup or a diagnostic, touch Gmail, Calendar,
 Properties, triggers, Automation, tests, Migration, or perform repair. A
 future company boundary requires a separate governing instruction after the
-local clasp validation lane and independent evidence review. This status does
+local clasp failure is resolved and independently revalidated. This status does
 not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready,
 or pilot ready.
 <!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_END -->

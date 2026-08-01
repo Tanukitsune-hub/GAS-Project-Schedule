@@ -292,15 +292,37 @@ replacement, but instruction 0006 requires a reproducible, credential-safe
 development validation path first. CI cannot prove Google-authenticated
 behavior and must never receive Google credentials or invoke clasp.
 
-**Current evidence.** The current-branch non-Google local gate and GitHub
-Actions CI have passed, and the exact 23-file payload has been staged without
-Google access. The untracked dedicated personal synthetic target is absent, so
-the current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`; clasp
-push, pull-back parity, and runtime dry-run are `NOT_EXECUTED`.
+**Historical 0006 evidence.** The current-branch non-Google local gate and
+GitHub Actions CI passed, and the exact 23-file payload was staged without
+Google access. At the close of Instruction 0006, the untracked dedicated
+personal synthetic target was absent, so its development gate was
+`READY_FOR_LOCAL_CLASP_VALIDATION`; D-049 records the later 0007 outcome.
 
-**Consequences.** Company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. No company-PC
+**Historical consequences.** At the close of Instruction 0006, company
+handoff was `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. No company-PC
 carriage, five-file replacement, Company Sandbox Quick Diagnostic, Setup,
 Dashboard refresh, Gmail, Calendar, trigger, Automation, deployment, or
 production action is authorized. This decision does not declare T1-01 PASS,
 Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.
+
+## D-049 - A failed guarded clasp push closes the current validation lane
+
+**Decision.** Instruction 0007 attested and bound only the existing personal,
+synthetic, non-company Sandbox. Local OAuth, the target guard, exact 23-file
+staging, and the pre-push status check completed, but the guarded push returned
+`CLASP_PUSH_FAILED`. Because a read-only classification did not establish
+`APPS_SCRIPT_API_DISABLED`, the instruction's only retry exception does not
+apply. The push is not retried, and pull-back parity and runtime validation are
+`NOT_EXECUTED`.
+
+**Rationale.** A failed clasp exit does not prove which code bytes, if any,
+became visible remotely and cannot be converted into parity evidence. Reusing
+the same instruction for a retry or proceeding to a pull would weaken the
+explicit fail-closed boundary.
+
+**Consequences.** Development status is `NO_GO_LOCAL_CLASP_VALIDATION` and
+company status is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. A later
+instruction must determine the cause and define a new guarded validation
+attempt. No Script ID, identity, URL, token, raw remote output, or Workspace
+content is stored. Company carriage and all Workspace runtime operations
+remain unauthorized.

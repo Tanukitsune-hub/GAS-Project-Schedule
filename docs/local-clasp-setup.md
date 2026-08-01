@@ -10,9 +10,12 @@ or an authorization to operate a real Workspace.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. T11 is immutable historical
 evidence but `T11_SUSPENDED`; there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
-The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`: the
-non-Google local and current-branch CI gates passed, but no local personal
-synthetic target has been configured. This does not authorize company handoff.
+The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`. Instruction
+0007 completed local OAuth, target attestation/binding, the target guard, exact
+23-file staging, and the pre-push status check, but the guarded push returned
+`CLASP_PUSH_FAILED`. The API-disabled retry exception was not established, so
+no retry, pull-back, or runtime call is permitted under that instruction.
+Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 
 ## Prerequisites
 
@@ -85,6 +88,10 @@ previously validated, ignored pull-back layout; unexpected files fail closed.
 If local config is absent, record `DEV_TARGET_NOT_CONFIGURED`. If clasp login
 or remote access is unavailable, record `BLOCKED_BY_AUTH` or the safe
 operation-specific failure code. None of those outcomes is PASS.
+
+The Instruction 0007 attempt is closed. Do not reuse the sequence below to
+retry its failed push. A later governing instruction must first define the
+failure investigation and a new safe attempt boundary.
 
 ## Optional safe runtime dry-run
 

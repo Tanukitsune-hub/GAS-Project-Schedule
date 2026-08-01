@@ -1,13 +1,14 @@
 # Requirements Traceability — 2.8.11 T1-01 Diagnostic Summary Visibility Remediation
 
-Last updated: 2026-07-31
+Last updated: 2026-08-01
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
 Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`; current-branch
-CI and non-Google local validation passed, but the personal synthetic dev
-target is unconfigured. Company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; fixed T10 and T11
+Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`; current-branch CI,
+non-Google local validation, target guard, and pre-push status passed, but
+Instruction 0007's guarded push returned `CLASP_PUSH_FAILED`. Pull-back and
+runtime validation are `NOT_EXECUTED`. Company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; fixed T10 and T11
 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`; the controlled T1-01 observation remains

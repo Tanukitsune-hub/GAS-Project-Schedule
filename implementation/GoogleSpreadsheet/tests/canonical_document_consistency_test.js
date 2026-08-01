@@ -34,9 +34,11 @@ const expectedKeys = [
   'Transfer path',
   'Company handoff'
 ];
-const noCompanyHandoff = 'NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION';
+const noCompanyHandoff = 'NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE';
+const currentDevelopmentGate = 'NO_GO_LOCAL_CLASP_VALIDATION';
 const allowedGates = [
   noCompanyHandoff,
+  currentDevelopmentGate,
   'READY_FOR_LOCAL_CLASP_VALIDATION',
   'READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION',
   'READY_FOR_COMPANY_HANDOFF_REASSESSMENT'
@@ -192,6 +194,8 @@ function validateContracts(contracts) {
   assert.strictEqual(reference['Transfer path'], expectedPath);
   assert.ok(allowedGates.includes(reference.Gate),
     'current gate is not an allowed local-clasp governance gate');
+  assert.strictEqual(reference.Gate, currentDevelopmentGate,
+    'current gate must preserve the Instruction 0007 fail-closed result');
   assert.strictEqual(reference['Fixed transfer'], 'T11_SUSPENDED');
   assert.strictEqual(reference['Company handoff'], noCompanyHandoff);
   assert.ok(!historicalFixedRefs.includes(reference['Fixed transfer']),
@@ -255,6 +259,34 @@ test('DOC-01B_ACTIVE_COMPANY_PC_BOUNDARY_MATCHES_CURRENT_CONTRACT', () => {
   const contract = validateContracts(contractsFromTexts(sourceTexts));
   const readme = sourceTexts.find((item) => item.name === 'README.md');
   validateActiveCompanyPcBoundary(contract, readme.text);
+});
+
+test('DOC-01C_STALE_PRE_PUSH_READY_GATE_IS_REJECTED', () => {
+  const fixture = sourceTexts.map((item) => ({
+    name: item.name,
+    text: item.text.replace(
+      /^\|\s*Gate\s*\|\s*`[^`]+`\s*\|$/m,
+      '| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |'
+    )
+  }));
+  assert.throws(
+    () => validateContracts(contractsFromTexts(fixture)),
+    /Instruction 0007 fail-closed result/
+  );
+});
+
+test('DOC-01D_STALE_PENDING_COMPANY_HANDOFF_IS_REJECTED', () => {
+  const fixture = sourceTexts.map((item) => ({
+    name: item.name,
+    text: item.text.replace(
+      /^\|\s*Company handoff\s*\|\s*`[^`]+`\s*\|$/m,
+      '| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |'
+    )
+  }));
+  assert.throws(
+    () => validateContracts(contractsFromTexts(fixture)),
+    /NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE/
+  );
 });
 
 test('DOC-02_SYNTHETIC_STALE_T8_CURRENT_REF_IS_REJECTED', () => {

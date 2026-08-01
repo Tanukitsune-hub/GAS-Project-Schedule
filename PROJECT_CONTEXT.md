@@ -1,10 +1,10 @@
 # Project Context
 
-Last updated: 2026-07-31
+Last updated: 2026-08-01
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`
+Publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,10 +13,10 @@ Publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its proposed T11 carriage,
@@ -25,10 +25,13 @@ not authorized and have not occurred. T11 remains immutable historical
 evidence, not a current carriage source. The current work is a local clasp
 validation gate against a personal, synthetic, non-company development Apps
 Script project; no company transfer or Workspace action is active. The
-current-branch CI and non-Google local gate have passed, but the dev target is
-not configured, so the development gate is
-`READY_FOR_LOCAL_CLASP_VALIDATION` while company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+current-branch CI and non-Google local gate passed. Instruction 0007 then
+completed local OAuth, attestation, target guard, exact 23-file staging, and a
+pre-push status check, but its guarded push failed closed as
+`CLASP_PUSH_FAILED`. The permitted API-disabled exception was not established,
+so no retry or pull-back is allowed. The development gate is
+`NO_GO_LOCAL_CLASP_VALIDATION`, and company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 
 v2.8.11 is a visibility-only Diagnostic remediation. T11 is remote-resolved
 and detached-clone verified. It does not interpret,
@@ -214,9 +217,9 @@ evidence. T6.1 through T11 are also historical and are not current execution
 transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
 five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
 Diagnostic re-observation is authorized. Current-branch CI and non-Google
-local validation have passed, so the development gate is
-`READY_FOR_LOCAL_CLASP_VALIDATION`. The remaining active prerequisite is
-guarded clasp validation on a personal, synthetic, non-company development
-target. It permits no company Workspace action, Setup, S90, S99, Dashboard
+local validation passed, but Instruction 0007's guarded push failed closed.
+The development gate is `NO_GO_LOCAL_CLASP_VALIDATION`; resolution and
+independent revalidation require a later instruction. This permits no company
+Workspace action, Setup, S90, S99, Dashboard
 refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,
 repair, Phase 8C, production, or pilot action.

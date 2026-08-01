@@ -1,9 +1,9 @@
 # Master Plan
 
-Last updated: 2026-07-31
+Last updated: 2026-08-01
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`
+Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,11 +12,25 @@ Current publication gate: `READY_FOR_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## 0007 guarded personal-synthetic clasp outcome
+
+The locally attested existing personal-synthetic target passed ignored binding,
+target guard, exact 23-file staging, and pre-push status checks. The guarded
+push then returned `CLASP_PUSH_FAILED`. A read-only classification did not
+establish the permitted `APPS_SCRIPT_API_DISABLED` exception. Under the
+instruction's stop rule, no retry, pull-back, runtime call, or remote repair is
+planned in this instruction.
+
+The current development status is `NO_GO_LOCAL_CLASP_VALIDATION`, and company
+handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. A later
+instruction must independently resolve the push failure before restaging and
+must not reuse this failed attempt as parity evidence.
 
 ## 0006 local clasp validation gate
 
@@ -173,12 +187,11 @@ its proposed T11 carriage were neither performed nor authorized. T11's prior
 hashes and transfer package remain available solely as historical evidence;
 they are not an active company transfer source.
 
-The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`: the
-current-branch CI and non-Google local validation have passed, including the
-strict staged source inventory. The personal synthetic clasp target remains
-unconfigured, so push/pull-back parity and a separately opt-in safe runtime
-dry-run remain unexecuted. Company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. No company-PC
+The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: the
+current-branch CI and non-Google local validation passed, including the strict
+staged source inventory, but Instruction 0007's guarded push failed closed.
+Pull-back parity and runtime validation remain unexecuted. Company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company-PC
 carriage, Workspace action, deployment, Automation enablement, or Phase 8B
 functional acceptance is authorized by this plan. This does not declare T1-01
 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.

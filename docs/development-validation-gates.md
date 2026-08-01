@@ -3,11 +3,12 @@
 ## Current policy
 
 Current Code is `2.8.11-prepilot`. The current development gate is
-`READY_FOR_LOCAL_CLASP_VALIDATION`: current-branch CI and the non-Google
-local gate passed, while the untracked personal-synthetic dev target is not
-configured. The sole active development lane is the self-PC, personal-synthetic
-local clasp gate described in [local-clasp-setup.md](local-clasp-setup.md).
-Company handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+`NO_GO_LOCAL_CLASP_VALIDATION`: current-branch CI and the non-Google local
+gate passed, and the target guard/pre-push status check passed, but Instruction
+0007's guarded push returned `CLASP_PUSH_FAILED`. The API-disabled retry
+exception was not established, so pull-back and runtime validation were not
+executed. Company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier
 release/transfer artifacts remain immutable historical evidence; T11 is
@@ -40,6 +41,10 @@ therefore necessary evidence, but cannot prove the authenticated local lane.
 `DEV_TARGET_NOT_CONFIGURED`, `BLOCKED_BY_AUTH`, and `NOT_EXECUTED` are
 evidence states, not PASS states. Record their code without recording IDs,
 URLs, accounts, tokens, or raw remote output.
+
+For Instruction 0007, `CLASP_PUSH_FAILED` is a blocking result. It must not be
+treated as an authenticated PASS or as evidence of remote byte visibility. A
+later governing instruction is required before any new push attempt.
 
 ## Evidence requirements
 

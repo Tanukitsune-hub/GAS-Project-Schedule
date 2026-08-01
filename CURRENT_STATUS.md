@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-07-31
+Last updated: 2026-08-01
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `READY_FOR_LOCAL_CLASP_VALIDATION`
+Overall status: `NO_GO_LOCAL_CLASP_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -14,11 +14,29 @@ functional acceptance: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `READY_FOR_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Current 0007 guarded clasp result
+
+The existing target was locally attested as
+`PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX`. OAuth, ignored target
+binding, the target guard, the pre-push status check, and the exact 23-file
+staging contract completed. The staged byte-level payload SHA-256 is
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+No identity, Script ID, URL, token, raw remote output, or Workspace content is
+retained.
+
+The guarded push returned `CLASP_PUSH_FAILED`. Read-only classification did
+not establish `APPS_SCRIPT_API_DISABLED`, so no exception applies and no push
+retry is permitted. Pull-back parity and runtime validation are
+`NOT_EXECUTED`. The current development status is
+`NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company transfer or
+Workspace action is authorized.
 
 ## Current 0006 local clasp validation gate
 
@@ -28,12 +46,10 @@ performed. T11 remains immutable historical evidence, but its transfer
 envelope is suspended and does not authorize company handoff or any Workspace
 operation.
 
-The non-Google local static/regression gate and current-branch GitHub Actions
-CI have passed. The exact 23-file dev payload was staged and hashed, but the
-dedicated personal synthetic target is not configured. Thus no Google
-operation, clasp push, pull-back parity, or runtime dry-run has occurred. The
-current development status is `READY_FOR_LOCAL_CLASP_VALIDATION`; company
-handoff stays `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`.
+Historically, the non-Google local static/regression gate and current-branch
+GitHub Actions CI passed, and the exact 23-file dev payload was staged and
+hashed. Instruction 0007 supersedes that earlier pending-target state with the
+current fail-closed result above.
 Safe closed evidence is recorded in
 `audits/2026-07-31/GoogleWorkspace_0006_Local_Clasp_Validation_Gate_Evidence_2026-07-31.md`.
 
@@ -325,11 +341,11 @@ The normal-pushed T6.1, T7, T8, T9, T10, and T11 fixed refs passed their
 respective historical verification and remain immutable evidence. T11 is
 `T11_SUSPENDED`, not an active company carriage source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
-occurred. The current-branch CI and non-Google local validation have passed,
-including the strict 23-file staging inventory. The remaining governance lane
-is a guarded personal synthetic-dev clasp push, pull-back parity, and an
-optional safe runtime dry-run. No company Workspace action is authorized by
-this status.
+occurred. The current-branch CI and non-Google local validation passed,
+including the strict 23-file staging inventory. Instruction 0007 then reached
+a fail-closed `CLASP_PUSH_FAILED` result. Pull-back parity and runtime
+validation were not executed, and the failed push may not be retried under the
+current instruction. No company Workspace action is authorized by this status.
 
 PR #9 records the earlier CI implementation against an older `main` baseline.
 Its reviewed semantics are integrated as one current-branch workflow and were

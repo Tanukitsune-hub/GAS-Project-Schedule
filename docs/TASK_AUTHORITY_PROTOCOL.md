@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_LOCAL_CLASP_VALIDATION`; the current-branch CI and non-Google local gate passed, but the personal synthetic dev target remains unconfigured. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff stays `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`; functional acceptance remains `NOT_EXECUTED`. |
+| Current gate | `NO_GO_LOCAL_CLASP_VALIDATION`; the current-branch CI, non-Google local gate, target guard, and pre-push status passed, but Instruction 0007's guarded push returned `CLASP_PUSH_FAILED`. Pull-back parity and runtime validation are `NOT_EXECUTED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; functional acceptance remains `NOT_EXECUTED`. |
 
 ## Diagnostic bounded-acceptance summary
 

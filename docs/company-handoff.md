@@ -2,10 +2,11 @@
 
 ## Current boundary
 
-The development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`: current-branch
-CI and non-Google local validation passed, but the dedicated personal synthetic
-dev target is not configured. Company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. There is no active
+The development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: current-branch CI and
+non-Google local validation passed, but Instruction 0007's guarded
+personal-synthetic push returned `CLASP_PUSH_FAILED`. Pull-back parity and
+runtime validation were not executed. Company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. There is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company
 Sandbox Quick Diagnostic, or perform any T11-based manual operation.

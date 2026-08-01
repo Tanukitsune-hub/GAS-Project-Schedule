@@ -15,8 +15,9 @@
 
 > **Active-boundary override (0006).** All T10/T11 carriage instructions and
 > fields below are historical/nonoperative. The active development gate is
-> `READY_FOR_LOCAL_CLASP_VALIDATION`; company handoff remains
-> `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` and there is no
+> `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0007's guarded push failed
+> closed, company handoff is
+> `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`, and there is no
 > active company transfer. Do not replace files, run a Company Sandbox
 > Diagnostic, or perform any Workspace action. Only a guarded personal
 > synthetic local clasp validation lane is in scope.
@@ -334,8 +335,8 @@ edit-trigger configuration を安全に閉じられるか評価する。
 ## 11. Gate and handoff result
 
 この historical runbook によって current gate は変わりません。最高 development
-status は `READY_FOR_LOCAL_CLASP_VALIDATION` であり、company handoff は
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` のままです。T1-01〜T1-08、
+status は `NO_GO_LOCAL_CLASP_VALIDATION` であり、company handoff は
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` です。T1-01〜T1-08、
 Phase 8B overall、Phase 8C、production、pilot、Automation、external Provider の
 PASS / GO / authorization はこの文書だけから宣言しません。
 

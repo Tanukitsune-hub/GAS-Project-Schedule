@@ -2,10 +2,11 @@
 
 Contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
-Current corrective-integration gate: `READY_FOR_LOCAL_CLASP_VALIDATION`.
-Current-branch CI and non-Google local validation passed, but the personal
-synthetic dev target is unconfigured; company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. Fixed T10 and T11 are
+Current corrective-integration gate: `NO_GO_LOCAL_CLASP_VALIDATION`.
+Current-branch CI, non-Google local validation, target guard, and pre-push
+status passed, but Instruction 0007's guarded push returned
+`CLASP_PUSH_FAILED`; pull-back and runtime validation are `NOT_EXECUTED`.
+Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. Fixed T10 and T11 are
 immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. One observed Setup S00-S99 run is historical;
 Calendar reconciliation remains subject to separate future approval and

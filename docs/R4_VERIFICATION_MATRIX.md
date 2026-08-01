@@ -2,9 +2,9 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `READY_FOR_LOCAL_CLASP_VALIDATION`; current-branch CI and non-Google
-local validation passed, but the personal synthetic dev target is unconfigured.
-Company handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`;
+Gate: `NO_GO_LOCAL_CLASP_VALIDATION`; current-branch CI and non-Google local
+validation passed, but Instruction 0007's guarded push failed closed.
+Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`;
 fixed T10 and T11 remain immutable historical evidence, T11 is
 `T11_SUSPENDED`, and no company transfer is active. One controlled Sandbox
 Setup S00-S99 observation is historical, while standalone functional acceptance

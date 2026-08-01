@@ -15,10 +15,11 @@ historical. The then-current
 controlled Sandbox Setup S00-S99 observation is PASS, while functional
 acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
-The current development gate is `READY_FOR_LOCAL_CLASP_VALIDATION`.
-Current-branch CI and non-Google local validation passed, but the personal
-synthetic dev target is unconfigured; company handoff remains
-`NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION`. T10 and fixed T11
+The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`.
+Current-branch CI, non-Google local validation, target guard, and pre-push
+status passed, but Instruction 0007's guarded push returned
+`CLASP_PUSH_FAILED`; company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T10 and fixed T11
 are immutable historical evidence; T11 is `T11_SUSPENDED`.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a
 Company-PC carriage nor a T1-01 re-observation. Quick/Deep expose a bounded
