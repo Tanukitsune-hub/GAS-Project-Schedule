@@ -1386,12 +1386,22 @@ function assertRecoverableAccessCheckObservation(observation) {
   return safe;
 }
 
+function isApprovedAccessCheckRecovery(environment, target) {
+  if (environment.GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED !== 'true') {
+    return false;
+  }
+  const attestation = target && target.target && target.target.target_attestation;
+  const reason = environment.GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON;
+  return (attestation === existingTargetAttestation &&
+      reason === 'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH') ||
+    (attestation === newBlankTargetAttestation &&
+      reason === 'SUPERSEDED_BY_NEW_BLANK_BOUND_SHEET_SANDBOX');
+}
+
 function recoverAccessCheckWorkspace(environment, target) {
-  if (environment.GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED !== 'true' ||
-      environment.GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON !==
-        'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH' ||
+  if (!isApprovedAccessCheckRecovery(environment, target) ||
       environment.GAS_TARGET_ATTESTATION !==
-        'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX') {
+        target.target.target_attestation) {
     fail('ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_APPROVED',
       'ACCESS_CHECK_WORKSPACE_RECOVERY_NOT_APPROVED');
   }
@@ -2172,6 +2182,7 @@ module.exports = {
   targetPreflightContractForAttestation,
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
+  isApprovedAccessCheckRecovery,
   targetBindingFingerprint,
   accessEvidenceMatchesTarget,
   safeOperationRecord,

@@ -17,6 +17,7 @@ const {
   targetPreflightContractForAttestation,
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
+  isApprovedAccessCheckRecovery,
   expectedCanonicalPayloadSha256,
   canonicalPayloadFileNames,
   canonicalScriptExtensions,
@@ -446,6 +447,24 @@ test('BOOT-21_TARGET_ATTESTATION_SELECTS_ONE_CLOSED_PREFLIGHT_CONTRACT', () => {
     ...target,
     remote_preflight_contract: existingCanonicalPreflightContract
   }, null), /DEV_TARGET_ATTESTATION_REJECTED/);
+});
+
+test('BOOT-22_SUPERSEDED_ACCESS_WORKSPACE_RECOVERY_REQUIRES_NEW_TARGET_ATTESTATION', () => {
+  const newTarget = { target: { target_attestation: newBlankTargetAttestation } };
+  assert.strictEqual(isApprovedAccessCheckRecovery({
+    GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED: 'true',
+    GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON:
+      'SUPERSEDED_BY_NEW_BLANK_BOUND_SHEET_SANDBOX'
+  }, newTarget), true);
+  assert.strictEqual(isApprovedAccessCheckRecovery({
+    GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED: 'true',
+    GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON: 'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH'
+  }, newTarget), false);
+  assert.strictEqual(isApprovedAccessCheckRecovery({
+    GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_ALLOWED: 'false',
+    GAS_ACCESS_CHECK_WORKSPACE_RECOVERY_REASON:
+      'SUPERSEDED_BY_NEW_BLANK_BOUND_SHEET_SANDBOX'
+  }, newTarget), false);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

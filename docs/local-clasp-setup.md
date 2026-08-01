@@ -111,6 +111,12 @@ surfaces, and never broadens the established-target 23-file allow-list. After
 the one guarded canonical push, the independent pull-back still requires all
 23 canonical files and the fixed payload SHA-256.
 
+When the operator explicitly replaces a prior target with this new blank
+target, the existing `gas:access-recover:dev` command may remove only the known
+failed, non-empty, ignored access-check workspace under the closed reason
+`SUPERSEDED_BY_NEW_BLANK_BOUND_SHEET_SANDBOX`. It does not contact Google,
+remove a retry marker, or reuse the prior target fingerprint.
+
 This declaration is an operator attestation, not independent proof that a
 target is non-company. That limitation is `REVIEW_REQUIRED` and must be
 recorded in any handoff evidence.
