@@ -166,8 +166,8 @@ test('BOOT-12_FORCE_PUSH_IS_NEVER_INVOKED', () => {
 });
 
 test('BOOT-13_RUNTIME_GUARD_REQUIRES_TEST_AND_AUTOMATION_CONTRACTS', () => {
-  assert.match(claspToolSource, /TEST_MODE:\\s\*true/);
-  assert.match(claspToolSource, /AUTOMATION_ENABLED:\\s\*false/);
+  assert.ok(claspToolSource.includes('TEST_MODE' + ':\\s*true'));
+  assert.ok(claspToolSource.includes('AUTOMATION_ENABLED' + ':\\s*false'));
   assert.match(claspToolSource, /\btest_mode\b/);
   assert.match(claspToolSource, /\bautomation_disabled\b/);
 });
