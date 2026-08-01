@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-01
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `NO_GO_LOCAL_CLASP_VALIDATION`
+Overall status: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -14,7 +14,7 @@ functional acceptance: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
@@ -37,6 +37,27 @@ retry is permitted. Pull-back parity and runtime validation are
 `NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company transfer or
 Workspace action is authorized.
+
+## Current 0008 bootstrap result
+
+The reported 0007 commits are preserved locally and their ancestry from the
+0007 instruction is verified. The 0008 branch adds closed clasp failure
+classification, a durable pre-call one-retry marker, isolated target access,
+canonical/runtime parity gates, a MYSELF-only runtime manifest overlay, named
+local OAuth/Cloud/deployment guards, and a bounded side-effect-free
+`runQuickDiagnostic` result contract. Apps Script source, canonical manifest,
+release, transfer, checksums, and fixed refs are unchanged.
+
+The local non-Google gate is `11/11 PASS`: `52` Node suites, Apps Script
+validator, JSON/YAML, release/transfer verification, fixed-ref lineage, and
+secret/local-path scanning all pass. Canonical staging is 23 files at SHA-256
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+GitHub HTTPS from the Codex execution environment is
+`BLOCKED_BY_CODEX_NETWORK_POLICY`. Consequently the fixed instruction merge,
+normal push, Draft PR, current-branch Actions, detached HTTPS fresh clone,
+Google access check, canonical retry, parity, Cloud/OAuth setup, deployment,
+and runtime call remain `NOT_EXECUTED`. The development status is
+`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
 
 ## Current 0006 local clasp validation gate
 
@@ -341,11 +362,11 @@ The normal-pushed T6.1, T7, T8, T9, T10, and T11 fixed refs passed their
 respective historical verification and remain immutable evidence. T11 is
 `T11_SUSPENDED`, not an active company carriage source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
-occurred. The current-branch CI and non-Google local validation passed,
-including the strict 23-file staging inventory. Instruction 0007 then reached
-a fail-closed `CLASP_PUSH_FAILED` result. Pull-back parity and runtime
-validation were not executed, and the failed push may not be retried under the
-current instruction. No company Workspace action is authorized by this status.
+occurred. The current non-Google local validation passes, including the strict
+23-file staging inventory. Instruction 0008 permits a single controlled retry,
+but the prerequisite GitHub publication path is blocked by the current Codex
+network policy, so the retry and all later remote gates are unexecuted. No
+company Workspace action is authorized by this status.
 
 PR #9 records the earlier CI implementation against an older `main` baseline.
 Its reviewed semantics are integrated as one current-branch workflow and were

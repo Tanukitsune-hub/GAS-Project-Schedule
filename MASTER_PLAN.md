@@ -3,7 +3,7 @@
 Last updated: 2026-08-01
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
+Current publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,7 +12,7 @@ Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
@@ -31,6 +31,22 @@ The current development status is `NO_GO_LOCAL_CLASP_VALIDATION`, and company
 handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. A later
 instruction must independently resolve the push failure before restaging and
 must not reuse this failed attempt as parity evidence.
+
+## 0008 remote GAS development bootstrap
+
+The safe implementation lane is additive: preserve the 0007 commits, normally
+merge the fixed 0008 instruction, publish one dedicated stacked Draft PR, then
+pass local/CI verification before the single controlled canonical retry.
+After canonical pull-back parity, configure only the existing personal
+synthetic target's standard Cloud/OAuth lane, push and pull a MYSELF-only
+runtime overlay, create a MYSELF-only API executable, and invoke only the
+bounded read-only Quick Diagnostic once.
+
+Tooling and local tests are complete (`11/11` local checks and `52` suites),
+but GitHub CLI connectivity is `BLOCKED_BY_CODEX_NETWORK_POLICY`. Publication,
+Google remote mutation, Cloud/OAuth setup, deployment, and runtime invocation
+remain `NOT_EXECUTED`; the current gate is
+`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
 
 ## 0006 local clasp validation gate
 
@@ -187,10 +203,11 @@ its proposed T11 carriage were neither performed nor authorized. T11's prior
 hashes and transfer package remain available solely as historical evidence;
 they are not an active company transfer source.
 
-The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: the
-current-branch CI and non-Google local validation passed, including the strict
-staged source inventory, but Instruction 0007's guarded push failed closed.
-Pull-back parity and runtime validation remain unexecuted. Company handoff is
+The current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`: local
+non-Google validation and the strict staged source inventory pass, but GitHub
+CLI publication, current-branch CI, canonical push/pull parity, Cloud/OAuth,
+runtime-overlay parity, deployment, runtime validation, and final fresh clone
+remain unexecuted. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company-PC
 carriage, Workspace action, deployment, Automation enablement, or Phase 8B
 functional acceptance is authorized by this plan. This does not declare T1-01

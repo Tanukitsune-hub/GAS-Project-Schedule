@@ -15,10 +15,10 @@ historical. The then-current
 controlled Sandbox Setup S00-S99 observation is PASS, while functional
 acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
-The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`.
-Current-branch CI, non-Google local validation, target guard, and pre-push
-status passed, but Instruction 0007's guarded push returned
-`CLASP_PUSH_FAILED`; company handoff is
+The current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
+Instruction 0008 non-Google local validation passes, but GitHub CLI
+publication and all authenticated remote gates remain `NOT_EXECUTED`;
+company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T10 and fixed T11
 are immutable historical evidence; T11 is `T11_SUSPENDED`.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a

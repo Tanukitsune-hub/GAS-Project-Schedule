@@ -4,7 +4,7 @@ Last updated: 2026-08-01
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
+Publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,7 +13,7 @@ Publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
@@ -32,6 +32,19 @@ pre-push status check, but its guarded push failed closed as
 so no retry or pull-back is allowed. The development gate is
 `NO_GO_LOCAL_CLASP_VALIDATION`, and company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
+
+Instruction 0008 supersedes the old no-retry boundary with exactly one
+controlled canonical retry after closed prerequisites pass. The current local
+branch preserves both reported 0007 commits and adds safe classification,
+isolated access, durable attempt marking, 23-file canonical/runtime parity,
+MYSELF-only overlay, local named OAuth/Cloud/deployment guards, and bounded
+read-only runtime validation. The non-Google gate passes `11/11` with `52`
+Node suites and the canonical 23-file SHA-256 remains
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+GitHub CLI access from this execution environment is
+`BLOCKED_BY_CODEX_NETWORK_POLICY`; publication and every Google remote step
+remain `NOT_EXECUTED`. The active gate is
+`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
 
 v2.8.11 is a visibility-only Diagnostic remediation. T11 is remote-resolved
 and detached-clone verified. It does not interpret,
@@ -217,9 +230,10 @@ evidence. T6.1 through T11 are also historical and are not current execution
 transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
 five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
 Diagnostic re-observation is authorized. Current-branch CI and non-Google
-local validation passed, but Instruction 0007's guarded push failed closed.
-The development gate is `NO_GO_LOCAL_CLASP_VALIDATION`; resolution and
-independent revalidation require a later instruction. This permits no company
+local validation passed. Instruction 0008 supplies the controlled recovery
+lane, but GitHub CLI publication is blocked and all Google remote steps remain
+unexecuted. The development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`.
+This permits no company
 Workspace action, Setup, S90, S99, Dashboard
 refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,
 repair, Phase 8C, production, or pilot action.

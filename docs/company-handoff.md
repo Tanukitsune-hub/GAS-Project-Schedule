@@ -7,7 +7,8 @@ personal-synthetic push failed closed. Remote-development bootstrap is now
 required: safe classification, one controlled canonical retry/pull-back,
 personal standard-Cloud/OAuth setup, MYSELF-only runtime overlay/deployment,
 one read-only runtime validation, CI, and fresh-clone proof. Until all of that
-is independently reviewed, company handoff is NO-GO and there is no active
+is independently reviewed, company handoff is
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` and there is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company
 Sandbox Quick Diagnostic, or perform any T11-based manual operation.

@@ -9,14 +9,14 @@
 > detail JSON or run T1-02.
 
 歴史的指示番号: `0002`
-現在の対象 development gate: `NO_GO_LOCAL_CLASP_VALIDATION`
+現在の対象 development gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`
 現在の固定 payload / transfer anchor: `NO_ACTIVE_COMPANY_TRANSFER`（T11 は `T11_SUSPENDED` の歴史証跡）
 
 > **Active-boundary override (0006).** Do not use historical T10 or T11 fields
 > as an active payload instruction. The preceding historical gate row is
 > nonoperative. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; no five-file
 > replacement or T1-01 re-observation is authorized. The current development
-> gate is `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0007's guarded push
+> gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 remote gates
 > failed closed, and company handoff is
 > `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. This template remains
 > nonoperative until a later instruction resolves and revalidates that lane.

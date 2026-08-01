@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-code-version="2.8.11-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="NO_GO_LOCAL_CLASP_VALIDATION">
+<html lang="en" data-code-version="2.8.11-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22,7 +22,7 @@
   <h1>Task Authority and Calendar Reconciliation</h1>
   <div class="meta">
     <span class="badge">Code 2.8.11-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
-    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">NO_GO_LOCAL_CLASP_VALIDATION</span>
+    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP</span>
   </div>
   <h2>Setup control-plane bootstrap</h2>
   <section class="flow" aria-label="setup control-plane workflow">
@@ -91,7 +91,7 @@
       <tr><td>Authority is lost after Calendar arm / I/O</td><td><code>DEADLINE_CALENDAR_ARMED</code> then compensation target</td><td>Cancel before I/O, or delete only a verified-owned Event; never patch an excluded Task.</td></tr>
     </tbody>
   </table>
-  <p>One controlled Sandbox Setup observed S00-S99 completion and the in-Setup S90 normalization/flush/postcondition as historical evidence. Instruction 0005 is SUPERSEDED_NOT_EXECUTED; fixed T11 is suspended and there is no active company transfer. The current development gate is NO_GO_LOCAL_CLASP_VALIDATION: current-branch CI, non-Google local validation, target guard, and pre-push status passed, but Instruction 0007's guarded push returned CLASP_PUSH_FAILED. Pull-back and runtime validation are NOT_EXECUTED. Company handoff is NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE, with Automation OFF. Dashboard refresh, trigger functionality, Gmail, Calendar reconciliation, locking, authority faults, and Provider work remain NOT_EXECUTED. This view does not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.</p>
+  <p>One controlled Sandbox Setup observed S00-S99 completion and the in-Setup S90 normalization/flush/postcondition as historical evidence. Instruction 0005 is SUPERSEDED_NOT_EXECUTED; fixed T11 is suspended and there is no active company transfer. The current development gate is NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP: Instruction 0008 tooling and non-Google local validation pass, but GitHub CLI publication, current-branch CI, canonical and runtime push/pull parity, Cloud/OAuth setup, deployment, and runtime validation remain NOT_EXECUTED. Company handoff is NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE, with Automation OFF. Dashboard refresh, trigger functionality, Gmail, Calendar reconciliation, locking, authority faults, and Provider work remain NOT_EXECUTED. This view does not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.</p>
 </main>
 </body>
 </html>

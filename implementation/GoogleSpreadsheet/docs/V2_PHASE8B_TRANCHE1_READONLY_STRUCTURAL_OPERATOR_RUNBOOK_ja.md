@@ -15,7 +15,7 @@
 
 > **Active-boundary override (0006).** All T10/T11 carriage instructions and
 > fields below are historical/nonoperative. The active development gate is
-> `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0007's guarded push failed
+> `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 remote gates remain
 > closed, company handoff is
 > `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`, and there is no
 > active company transfer. Do not replace files, run a Company Sandbox
@@ -335,7 +335,7 @@ edit-trigger configuration を安全に閉じられるか評価する。
 ## 11. Gate and handoff result
 
 この historical runbook によって current gate は変わりません。最高 development
-status は `NO_GO_LOCAL_CLASP_VALIDATION` であり、company handoff は
+status は `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` であり、company handoff は
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` です。T1-01〜T1-08、
 Phase 8B overall、Phase 8C、production、pilot、Automation、external Provider の
 PASS / GO / authorization はこの文書だけから宣言しません。

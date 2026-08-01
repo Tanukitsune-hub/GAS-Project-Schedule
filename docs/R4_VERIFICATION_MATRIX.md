@@ -2,8 +2,9 @@
 
 Date: 2026-07-31
 Candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Gate: `NO_GO_LOCAL_CLASP_VALIDATION`; current-branch CI and non-Google local
-validation passed, but Instruction 0007's guarded push failed closed.
+Gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 non-Google local
+validation passes, but GitHub CLI publication and all authenticated remote
+bootstrap gates remain `NOT_EXECUTED`.
 Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`;
 fixed T10 and T11 remain immutable historical evidence, T11 is
 `T11_SUSPENDED`, and no company transfer is active. One controlled Sandbox

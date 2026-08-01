@@ -35,13 +35,14 @@ const expectedKeys = [
   'Company handoff'
 ];
 const noCompanyHandoff = 'NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE';
-const currentDevelopmentGate = 'NO_GO_LOCAL_CLASP_VALIDATION';
+const currentDevelopmentGate = 'NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP';
 const allowedGates = [
   noCompanyHandoff,
   currentDevelopmentGate,
   'READY_FOR_LOCAL_CLASP_VALIDATION',
   'READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION',
-  'READY_FOR_COMPANY_HANDOFF_REASSESSMENT'
+  'READY_FOR_COMPANY_HANDOFF_REASSESSMENT',
+  'READY_FOR_REMOTE_GAS_DEVELOPMENT_REVIEW'
 ];
 const expectedPath = 'NO_ACTIVE_COMPANY_TRANSFER';
 const expectedActiveCompanyPcFields = {
@@ -195,7 +196,7 @@ function validateContracts(contracts) {
   assert.ok(allowedGates.includes(reference.Gate),
     'current gate is not an allowed local-clasp governance gate');
   assert.strictEqual(reference.Gate, currentDevelopmentGate,
-    'current gate must preserve the Instruction 0007 fail-closed result');
+    'current gate must preserve the Instruction 0008 fail-closed result');
   assert.strictEqual(reference['Fixed transfer'], 'T11_SUSPENDED');
   assert.strictEqual(reference['Company handoff'], noCompanyHandoff);
   assert.ok(!historicalFixedRefs.includes(reference['Fixed transfer']),
@@ -271,7 +272,7 @@ test('DOC-01C_STALE_PRE_PUSH_READY_GATE_IS_REJECTED', () => {
   }));
   assert.throws(
     () => validateContracts(contractsFromTexts(fixture)),
-    /Instruction 0007 fail-closed result/
+    /Instruction 0008 fail-closed result/
   );
 });
 

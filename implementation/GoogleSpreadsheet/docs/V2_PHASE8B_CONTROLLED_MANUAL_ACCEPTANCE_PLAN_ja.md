@@ -5,9 +5,9 @@
 > boundary only. It is not an active carriage or Workspace-operation guide.
 > Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is immutable historical
 > evidence but `T11_SUSPENDED`, with `NO_ACTIVE_COMPANY_TRANSFER`. The current
-> development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: current-branch CI,
-> non-Google local validation, target guard, and pre-push status passed, but
-> Instruction 0007's guarded push returned `CLASP_PUSH_FAILED`. Company handoff
+> development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`: current non-Google
+> local validation passes, but GitHub CLI publication and all authenticated
+> remote gates remain `NOT_EXECUTED`. Company handoff
 > is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No Company-PC
 > carriage, replacement, Workspace operation, or T1-01 re-observation is
 > authorized.
@@ -125,7 +125,7 @@ observation is `REVIEW_REQUIRED` because the complete warning-ID set was not
 safely visible. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: T11 is
 `T11_SUSPENDED` and its Company-PC carriage and T1-01 observation are not
 authorized. Code `2.8.11-prepilot` is currently
-`NO_GO_LOCAL_CLASP_VALIDATION`; a later instruction must resolve and
+`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 must complete and
 independently revalidate the failed clasp lane, while company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T1-02 through T1-08
 remain `NOT_EXECUTED` / not authorized.

@@ -326,3 +326,28 @@ instruction must determine the cause and define a new guarded validation
 attempt. No Script ID, identity, URL, token, raw remote output, or Workspace
 content is stored. Company carriage and all Workspace runtime operations
 remain unauthorized.
+
+## D-050 - Instruction 0008 uses a closed, single-attempt remote bootstrap
+
+**Decision.** Instruction 0008 supersedes D-049's no-retry boundary only for
+one newly guarded canonical attempt against the already-attested personal
+synthetic target. Before that attempt, tooling must classify the historical
+failure into a closed safe category, pass all non-Google validation, prove
+read-only target access, and write an ignored durable marker before the remote
+call. The marker is never removed to manufacture another attempt.
+
+**Runtime boundary.** The canonical manifest remains byte-unchanged. A
+separate ignored overlay may add only `executionApi.access = MYSELF`; it must
+pass independent pull-back parity before a MYSELF-only API executable and one
+bounded read-only `runQuickDiagnostic` call. Named OAuth, Cloud/deployment
+identifiers, credentials, raw output, and account information remain ignored
+local state only.
+
+**Current evidence and consequence.** Local non-Google validation passes
+`11/11` with `52` Node suites and the canonical 23-file payload hash remains
+unchanged. The execution environment cannot reach GitHub over HTTPS, classified
+as `BLOCKED_BY_CODEX_NETWORK_POLICY`. The fixed instruction merge, normal
+push, stacked Draft PR, Actions, fresh clone, target access, canonical retry,
+Cloud/OAuth configuration, deployment, and runtime call are `NOT_EXECUTED`.
+Development status is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; company status
+remains `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.

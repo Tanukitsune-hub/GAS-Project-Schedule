@@ -9,6 +9,8 @@ closed failure classification, user-level API/OAuth/target access, canonical
 push/pull parity, personal standard-Cloud setup, dev-runtime overlay parity,
 MYSELF-only API executable, one read-only remote runtime, current-branch CI,
 and a fresh HTTPS clone all pass. Company handoff remains NO-GO.
+The active development status is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP` because
+GitHub CLI connectivity and every authenticated remote gate are incomplete.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier
 release/transfer artifacts remain immutable historical evidence; T11 is

@@ -11,9 +11,9 @@ The 0003 gate is historical. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: fixed T11 is immutable evidence but
 `T11_SUSPENDED`, so it authorizes neither replacement nor a Company Sandbox
 Diagnostic. The current development gate is
-`NO_GO_LOCAL_CLASP_VALIDATION`: current-branch CI, non-Google local validation,
-target guard, and pre-push status passed, but Instruction 0007's guarded push
-returned `CLASP_PUSH_FAILED`. No company Workspace action is authorized;
+`NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`: current non-Google local validation
+passes, but GitHub CLI publication and all authenticated remote gates remain
+`NOT_EXECUTED`. No company Workspace action is authorized;
 company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 Any version-property mismatch remains an explicit WARN and is not reconciled.
 
@@ -91,7 +91,7 @@ Company Sandbox Quick Diagnostic is authorized.
 This historical pre-observation guide never declares execution readiness. Its
 E10-era `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` gate meant controlled carriage
 of exact fixed T10 only, never Sandbox PASS or execution authorization. The
-current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`; a later instruction
+current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008
 must resolve and independently revalidate the failed clasp lane before any
 future reassessment. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T1-01 remains

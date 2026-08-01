@@ -4,10 +4,9 @@ Last updated: 2026-08-01
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`  
 Specification: `instructions/0003_GoogleWorkspace_Phase8B_T1_01_Warn6_Diagnostic_Summary_Visibility_Remediation_2026-07-31.md`
 Version contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`; current-branch CI,
-non-Google local validation, target guard, and pre-push status passed, but
-Instruction 0007's guarded push returned `CLASP_PUSH_FAILED`. Pull-back and
-runtime validation are `NOT_EXECUTED`. Company handoff is
+Current publication gate: `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; current
+non-Google local validation passes, but GitHub CLI publication and all
+authenticated remote gates remain `NOT_EXECUTED`. Company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; fixed T10 and T11
 remain immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. Instruction 0005 is

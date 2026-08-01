@@ -7,10 +7,9 @@
 > `77/6/0` observation remains `REVIEW_REQUIRED`; T10 remains immutable and
 > fixed T11 is remote-resolved and detached-HTTPS-clone verified historical
 > evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is suspended.
-> The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`:
-> current-branch CI, non-Google local validation, target guard, and pre-push
-> status passed, but Instruction 0007's guarded push returned
-> `CLASP_PUSH_FAILED`. Company handoff is
+> The current development gate is `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`:
+> current non-Google local validation passes, but GitHub CLI publication and
+> all authenticated remote gates remain `NOT_EXECUTED`. Company handoff is
 > `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 # Phase 1〜7 Remediation Plan
 
@@ -20,8 +19,8 @@
 > current artifacts. The v2.8.11/T11 boundary is also historical. Instruction
 > 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is `T11_SUSPENDED`, so it permits no
 > replacement or Company Sandbox Diagnostic. The current active gate is
-> `NO_GO_LOCAL_CLASP_VALIDATION`; a later instruction must resolve and
-> independently revalidate the failed clasp lane before reassessment, and
+> `NO_GO_REMOTE_DEVELOPMENT_BOOTSTRAP`; Instruction 0008 must complete and
+> independently validate the remote GAS lane before reassessment, and
 > company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 
 - 作成日: 2026-07-25（JST）
