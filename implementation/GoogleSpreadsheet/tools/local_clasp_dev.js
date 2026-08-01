@@ -38,6 +38,16 @@ const configPath = path.join(devRoot, '.clasp.json');
 const targetPath = path.join(devRoot, 'target.json');
 const inventoryPath = path.join(devRoot, 'payload-inventory.json');
 const allowedTargetKind = 'PERSONAL_SYNTHETIC_DEV';
+const existingTargetAttestation =
+  'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX';
+const newBlankTargetAttestation =
+  'PERSONAL_SYNTHETIC_NON_COMPANY_NEW_BLANK_BOUND_SHEET_SANDBOX';
+const existingCanonicalPreflightContract = 'EXISTING_CANONICAL_PAYLOAD_V1';
+const newBlankPreflightContract = 'NEW_BLANK_BOUND_SCRIPT_V1';
+const allowedTargetAttestations = Object.freeze([
+  existingTargetAttestation,
+  newBlankTargetAttestation
+]);
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const runtimeProfileName = 'personal-synthetic-runtime';
 const expectedCanonicalPayloadSha256 =
@@ -68,6 +78,7 @@ const closedPostRemoteFailureCategories = Object.freeze([
   'CLASP_REMOTE_CONFLICT',
   'UNKNOWN_CLASP_REMOTE_FAILURE',
   'REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH',
+  'REMOTE_NEW_BLANK_TARGET_PREFLIGHT_FAILED',
   'REMOTE_PULLBACK_PARITY_FAILED',
   'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED'
 ]);
@@ -173,6 +184,74 @@ function postPullPayloadObservation(root) {
   return observation;
 }
 
+function targetPreflightContractForAttestation(attestation) {
+  if (attestation === existingTargetAttestation) {
+    return existingCanonicalPreflightContract;
+  }
+  if (attestation === newBlankTargetAttestation) {
+    return newBlankPreflightContract;
+  }
+  fail('DEV_TARGET_ATTESTATION_REJECTED', 'DEV_TARGET_ATTESTATION_REJECTED');
+}
+
+function newBlankPullPayloadObservation(root) {
+  const observation = {
+    post_pull_validation: 'FAILED',
+    observed_file_count: 0,
+    expected_file_count: 2,
+    observed_nonfile_count: 0,
+    remote_preflight_contract: newBlankPreflightContract
+  };
+  if (!fs.existsSync(root)) return observation;
+  const entries = fs.readdirSync(root, { withFileTypes: true });
+  const files = entries.filter((entry) => entry.isFile());
+  observation.observed_file_count = files.length;
+  observation.observed_nonfile_count = entries.length - files.length;
+  if (observation.observed_nonfile_count !== 0 || files.length !== 2) {
+    return observation;
+  }
+  const names = files.map((entry) => entry.name);
+  const manifestName = names.find((name) => name === 'appsscript.json');
+  const scriptNames = names.filter((name) => /\.(?:gs|js)$/.test(name));
+  if (!manifestName || scriptNames.length !== 1) return observation;
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(path.join(root, manifestName), 'utf8'));
+  } catch (_) {
+    return observation;
+  }
+  const allowedManifestKeys = new Set([
+    'timeZone', 'dependencies', 'exceptionLogging', 'runtimeVersion'
+  ]);
+  if (!manifest || Array.isArray(manifest) ||
+      Object.keys(manifest).some((key) => !allowedManifestKeys.has(key)) ||
+      (manifest.dependencies &&
+        (Array.isArray(manifest.dependencies) ||
+          typeof manifest.dependencies !== 'object' ||
+          Object.keys(manifest.dependencies).length !== 0))) {
+    return observation;
+  }
+  const source = fs.readFileSync(path.join(root, scriptNames[0]), 'utf8')
+    .replace(/^\uFEFF/, '')
+    .trim();
+  const defaultBlankFunction =
+    /^function\s+myFunction\s*\(\s*\)\s*\{\s*\}\s*;?$/;
+  if (source !== '' && !defaultBlankFunction.test(source)) return observation;
+  observation.post_pull_validation = 'PASS';
+  return observation;
+}
+
+function assertNewBlankPulledPayload(root) {
+  const observation = newBlankPullPayloadObservation(root);
+  if (observation.post_pull_validation !== 'PASS') {
+    failWithSafePostPullObservation(
+      'REMOTE_NEW_BLANK_TARGET_PREFLIGHT_FAILED',
+      observation
+    );
+  }
+  return observation;
+}
+
 function safePostPullObservation(observation) {
   const value = observation || {};
   const names = [
@@ -185,12 +264,17 @@ function safePostPullObservation(observation) {
         value[name] < 0 || value[name] > 1000)) {
     return null;
   }
-  return {
+  const safe = {
     post_pull_validation: value.post_pull_validation,
     observed_file_count: value.observed_file_count,
     expected_file_count: value.expected_file_count,
     observed_nonfile_count: value.observed_nonfile_count
   };
+  if ([existingCanonicalPreflightContract, newBlankPreflightContract]
+    .includes(value.remote_preflight_contract)) {
+    safe.remote_preflight_contract = value.remote_preflight_contract;
+  }
+  return safe;
 }
 
 function failWithSafePostPullObservation(code, observation) {
@@ -527,6 +611,11 @@ function assertTargetObjects(config, target, environment) {
   if (target.target_kind !== allowedTargetKind) {
     fail('DEV_TARGET_KIND_REJECTED', 'DEV_TARGET_KIND_REJECTED');
   }
+  if (!allowedTargetAttestations.includes(target.target_attestation) ||
+      target.remote_preflight_contract !==
+        targetPreflightContractForAttestation(target.target_attestation)) {
+    fail('DEV_TARGET_ATTESTATION_REJECTED', 'DEV_TARGET_ATTESTATION_REJECTED');
+  }
   if (target.rootDir !== 'payload') {
     fail('DEV_TARGET_DECLARATION_ROOTDIR_REJECTED',
       'DEV_TARGET_DECLARATION_ROOTDIR_REJECTED');
@@ -590,10 +679,13 @@ function assertCanonicalRetryPrerequisitesForAccess(target) {
     prerequisitesPath,
     'CANONICAL_PUSH_PREREQUISITES_MISSING'
   );
+  const expectedPreflight = targetPreflightContractForAttestation(
+    target && target.target && target.target.target_attestation
+  );
   if (prerequisites.user_level_apps_script_api !== 'ENABLED' ||
       prerequisites.oauth_state !== 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT' ||
-       prerequisites.target_attestation !==
-         'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX' ||
+       prerequisites.target_attestation !== target.target.target_attestation ||
+       prerequisites.remote_preflight_contract !== expectedPreflight ||
        prerequisites.script_extension_contract !== scriptExtensionContract ||
        prerequisites.canonical_push_retry_authorized !== true) {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
@@ -608,6 +700,8 @@ function assertCanonicalRetryPrerequisitesForAccess(target) {
 
 function assertCanonicalRetryPrerequisites(target) {
   const prerequisites = assertCanonicalRetryPrerequisitesForAccess(target);
+  const expectedRemoteFileCount = prerequisites.remote_preflight_contract ===
+    newBlankPreflightContract ? 2 : canonicalPayloadFileNames.length;
   if (prerequisites.read_only_target_access !== 'PASS') {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
       'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE');
@@ -619,9 +713,11 @@ function assertCanonicalRetryPrerequisites(target) {
   if (accessRecord.operation !== 'access-check' ||
       accessRecord.status !== 'PASS' || accessRecord.exit_code !== 0 ||
       accessRecord.post_pull_validation !== 'PASS' ||
-      accessRecord.observed_file_count !== canonicalPayloadFileNames.length ||
-       accessRecord.expected_file_count !== canonicalPayloadFileNames.length ||
+      accessRecord.observed_file_count !== expectedRemoteFileCount ||
+       accessRecord.expected_file_count !== expectedRemoteFileCount ||
        accessRecord.observed_nonfile_count !== 0 ||
+       accessRecord.remote_preflight_contract !==
+         prerequisites.remote_preflight_contract ||
        accessRecord.script_extension_contract !== scriptExtensionContract ||
        !accessEvidenceMatchesTarget(accessRecord, target)) {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
@@ -631,19 +727,22 @@ function assertCanonicalRetryPrerequisites(target) {
 }
 
 function recordCanonicalRetryPrerequisites(environment, target) {
+  const guardedTarget = target || assertTargetGuard(false);
+  const attestation = String(environment.GAS_TARGET_ATTESTATION || '');
   if (environment.GAS_USER_APPS_SCRIPT_API_ENABLED !== 'true' ||
       environment.GAS_OAUTH_STATE !== 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT' ||
-      environment.GAS_TARGET_ATTESTATION !==
-        'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX') {
+      !allowedTargetAttestations.includes(attestation) ||
+      attestation !== guardedTarget.target.target_attestation) {
     fail('CANONICAL_PUSH_PREREQUISITE_ATTESTATION_REJECTED',
       'CANONICAL_PUSH_PREREQUISITE_ATTESTATION_REJECTED');
   }
-  const guardedTarget = target || assertTargetGuard(false);
   const record = {
-    schema: 'WORK_OS_CANONICAL_PUSH_PREREQUISITES_V1',
+    schema: 'WORK_OS_CANONICAL_PUSH_PREREQUISITES_V2',
     user_level_apps_script_api: 'ENABLED',
     oauth_state: 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT',
-    target_attestation: 'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX',
+    target_attestation: attestation,
+    remote_preflight_contract:
+      targetPreflightContractForAttestation(attestation),
     target_binding_sha256: targetBindingFingerprint(guardedTarget.config),
     script_extension_contract: scriptExtensionContract,
     read_only_target_access: 'NOT_EXECUTED',
@@ -1357,8 +1456,11 @@ function readLocalScriptIdFromNonEchoingPrompt() {
   return localValue;
 }
 
-function bindTargetFromLocalPrompt() {
+function bindTargetFromLocalPrompt(environment) {
   assertIgnoredLocalBindingPaths();
+  const attestation = String(environment && environment.GAS_TARGET_ATTESTATION || '');
+  const remotePreflightContract =
+    targetPreflightContractForAttestation(attestation);
   let scriptId = '';
   try {
     scriptId = readLocalScriptIdFromNonEchoingPrompt();
@@ -1369,6 +1471,8 @@ function bindTargetFromLocalPrompt() {
     const config = buildCanonicalClaspProjectConfig(scriptId);
     const target = {
       target_kind: allowedTargetKind,
+      target_attestation: attestation,
+      remote_preflight_contract: remotePreflightContract,
       expected_script_id: scriptId,
       rootDir: 'payload',
       runtime_dry_run_allowed: false,
@@ -1381,6 +1485,8 @@ function bindTargetFromLocalPrompt() {
     return {
       target_configuration_present: true,
       target_kind: allowedTargetKind,
+      target_attestation: attestation,
+      remote_preflight_contract: remotePreflightContract,
       script_id_match: true,
       script_id_tracked: false,
       script_extensions_contract: scriptExtensionContract,
@@ -1455,6 +1561,8 @@ function selfTest() {
       ),
       {
         target_kind: allowedTargetKind,
+        target_attestation: existingTargetAttestation,
+        remote_preflight_contract: existingCanonicalPreflightContract,
         expected_script_id: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID',
         rootDir: 'payload'
       }
@@ -1465,6 +1573,8 @@ function selfTest() {
       buildCanonicalClaspProjectConfig('a'.repeat(24)),
       {
         target_kind: allowedTargetKind,
+        target_attestation: existingTargetAttestation,
+        remote_preflight_contract: existingCanonicalPreflightContract,
         expected_script_id: 'b'.repeat(24),
         rootDir: 'payload'
       }
@@ -1475,6 +1585,8 @@ function selfTest() {
       buildCanonicalClaspProjectConfig('a'.repeat(24)),
       {
         target_kind: allowedTargetKind,
+        target_attestation: existingTargetAttestation,
+        remote_preflight_contract: existingCanonicalPreflightContract,
         expected_script_id: 'a'.repeat(24),
         rootDir: 'payload'
       },
@@ -1633,6 +1745,7 @@ function main() {
         user_level_apps_script_api: prerequisite.user_level_apps_script_api,
         oauth_state: prerequisite.oauth_state,
         target_attestation: prerequisite.target_attestation,
+        remote_preflight_contract: prerequisite.remote_preflight_contract,
         script_extension_contract: prerequisite.script_extension_contract,
         read_only_target_access: prerequisite.read_only_target_access,
         canonical_push_retry_authorized:
@@ -1719,7 +1832,7 @@ function main() {
     }
 
     if (command === 'bind-target') {
-      const binding = bindTargetFromLocalPrompt();
+      const binding = bindTargetFromLocalPrompt(process.env);
       writeSafeResult({ lane: 'local_clasp_dev', command, status: 'PASS', ...binding });
       return;
     }
@@ -1727,7 +1840,7 @@ function main() {
     const inventory = assertCanonicalPayloadContract(assertStagedPayload());
     if (command === 'access-check') {
       const target = assertTargetGuard(false);
-      assertCanonicalRetryPrerequisitesForAccess(target);
+      const prerequisite = assertCanonicalRetryPrerequisitesForAccess(target);
       clearReadOnlyTargetAccess(target);
       prepareEmptyPullWorkspace(
         accessCheckRoot,
@@ -1744,13 +1857,17 @@ function main() {
       let remote;
       let observation;
       try {
-        observation = assertExactPulledPayload(
-          path.join(accessCheckRoot, 'payload')
-        );
-        remote = inventoryFor(
-          path.join(accessCheckRoot, 'payload'),
-          canonicalPayloadNames()
-        );
+        const remotePayloadRoot = path.join(accessCheckRoot, 'payload');
+        if (prerequisite.remote_preflight_contract ===
+            newBlankPreflightContract) {
+          observation = assertNewBlankPulledPayload(remotePayloadRoot);
+          remote = { file_count: 2 };
+        } else {
+          observation = assertExactPulledPayload(remotePayloadRoot);
+          observation.remote_preflight_contract =
+            existingCanonicalPreflightContract;
+          remote = inventoryFor(remotePayloadRoot, canonicalPayloadNames());
+        }
         persistOperationRecord(
           'access-check',
           result,
@@ -1774,7 +1891,10 @@ function main() {
       writeSafeResult({
         lane: 'local_clasp_dev', command, status: 'PASS',
         target_access: 'PASS', remote_file_count: remote.file_count,
-        remote_payload_sha256: remote.payload_sha256,
+        ...(remote.payload_sha256
+          ? { remote_payload_sha256: remote.payload_sha256 }
+          : {}),
+        remote_preflight_contract: prerequisite.remote_preflight_contract,
         script_extension_contract: scriptExtensionContract,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256
       });
@@ -2035,6 +2155,11 @@ module.exports = {
   canonicalScriptExtensions,
   canonicalHtmlExtensions,
   scriptExtensionContract,
+  existingTargetAttestation,
+  newBlankTargetAttestation,
+  existingCanonicalPreflightContract,
+  newBlankPreflightContract,
+  allowedTargetAttestations,
   assertExactPayloadNames,
   assertExactPayloadDirectory,
   assertCanonicalClaspExtensionContract,
@@ -2042,6 +2167,9 @@ module.exports = {
   writeCanonicalClaspProjectConfig,
   mapSyntheticServerScriptsToCanonicalPayloadNames,
   postPullPayloadObservation,
+  newBlankPullPayloadObservation,
+  assertNewBlankPulledPayload,
+  targetPreflightContractForAttestation,
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
   targetBindingFingerprint,

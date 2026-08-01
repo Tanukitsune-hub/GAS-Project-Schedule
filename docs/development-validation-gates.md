@@ -24,7 +24,7 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `verify:local` | Self PC | No | Same non-Google checks using the lockfile. |
 | `gas:stage:dev` | Self PC | No | Exact 23-file staging inventory and byte-level payload hash. |
 | `gas:bind:dev` | Self PC | No remote call | Non-echoing local-only Script ID entry after UI attestation; rewrites only ignored binding files with the exact `.gs`-first clasp extension contract. |
-| `gas:access-check:dev` | Self PC | Local only | Isolated read-only target pull before the one controlled canonical retry. |
+| `gas:access-check:dev` | Self PC | Local only | Isolated read-only pull: exact 23-file parity for an established target, or the separate exact two-file non-executable blank-project preflight when a new bound synthetic target is explicitly approved. |
 | `gas:access-recover:dev` | Self PC | No remote call | Explicitly attested cleanup of only a failed, non-empty ignored access-check workspace after binding correction; it cannot consume or remove a retry marker. |
 | `gas:push:dev` | Self PC | Local only | Explicit opt-in, clean worktree, target guard, and non-Google verification before push. |
 | `gas:pull-verify:dev` | Self PC | Local only | Separate ignored pull-back, exact file set, and byte-level parity. |
@@ -50,6 +50,14 @@ target guard enforce this before access-check, canonical pull-back, runtime
 staging, and runtime pull-back. A missing, `.js`-first, additional, malformed,
 or legacy conflicting extension setting is a fail-closed local validation
 error; the 23-file exact allow-list and canonical payload hash are unchanged.
+
+Target attestation selects exactly one remote preflight contract. Existing
+targets remain subject to `EXISTING_CANONICAL_PAYLOAD_V1` and exact 23-file
+shape. An explicitly approved new blank Spreadsheet-bound personal synthetic
+target uses `NEW_BLANK_BOUND_SCRIPT_V1`: exactly one empty/default server script
+and one non-executable manifest. The blank preflight is accepted only before
+the single guarded initial canonical push; pull-back parity after that push is
+still the unchanged 23-file canonical contract.
 
 ## Status discipline
 

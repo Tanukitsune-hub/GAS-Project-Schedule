@@ -85,10 +85,11 @@ rejected before an authenticated clasp command. This applies equally to the
 ignored binding, isolated access-check pull, canonical pull-back, runtime
 staging, and runtime pull-back; it does not broaden the 23-file allow-list.
 
-After the operator has opened and locally confirmed the established personal
-synthetic Work OS project, use the non-echoing local binding command instead
-of placing an identifier in a terminal command, chat, or file under version
-control:
+After the operator has opened and locally confirmed either the established
+personal synthetic Work OS project or an explicitly approved new blank
+Spreadsheet-bound personal synthetic project, use the non-echoing local
+binding command instead of placing an identifier in a terminal command, chat,
+or file under version control:
 
 ```powershell
 pnpm run gas:bind:dev
@@ -99,6 +100,16 @@ output, sets `target_kind` to `PERSONAL_SYNTHETIC_DEV`, keeps the extension
 contract above, and sets `runtime_dry_run_allowed` to `false`. Re-record the
 closed prerequisites after binding; this invalidates any stale target-bound
 access evidence.
+
+The existing-target lane requires
+`PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX` and exact canonical 23-file
+read-only parity. A separately and explicitly approved new blank target uses
+`PERSONAL_SYNTHETIC_NON_COMPANY_NEW_BLANK_BOUND_SHEET_SANDBOX` and
+`NEW_BLANK_BOUND_SCRIPT_V1`. That preflight accepts exactly one empty/default
+server script plus `appsscript.json`, rejects executable or deployment manifest
+surfaces, and never broadens the established-target 23-file allow-list. After
+the one guarded canonical push, the independent pull-back still requires all
+23 canonical files and the fixed payload SHA-256.
 
 This declaration is an operator attestation, not independent proof that a
 target is non-company. That limitation is `REVIEW_REQUIRED` and must be

@@ -14,8 +14,11 @@ company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company
 Sandbox Quick Diagnostic, or perform any T11-based manual operation.
 
-The clasp/runtime lane is conducted only on a self PC against the existing
-personal, synthetic, non-company development target. Its maximum status is
+The clasp/runtime lane is conducted only on a self PC against an explicitly
+attested personal, synthetic, non-company development target. A newly approved
+blank target must be Spreadsheet-bound and pass its separate non-executable
+blank-project preflight before the one guarded initial push. Its maximum status
+is
 `READY_FOR_REMOTE_GAS_DEVELOPMENT_REVIEW`; even then company status remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and no company-PC
 action is automatically permitted.

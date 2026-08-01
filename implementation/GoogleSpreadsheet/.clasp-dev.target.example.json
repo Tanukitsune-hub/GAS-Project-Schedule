@@ -1,5 +1,7 @@
 {
   "target_kind": "PERSONAL_SYNTHETIC_DEV",
+  "target_attestation": "PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX",
+  "remote_preflight_contract": "EXISTING_CANONICAL_PAYLOAD_V1",
   "expected_script_id": "REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID",
   "rootDir": "payload",
   "runtime_dry_run_allowed": false,

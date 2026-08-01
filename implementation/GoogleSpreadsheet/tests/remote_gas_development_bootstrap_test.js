@@ -12,6 +12,9 @@ const {
   assertRuntimeManifestOverlay,
   assertSafeRuntimeResult,
   postPullPayloadObservation,
+  newBlankPullPayloadObservation,
+  assertNewBlankPulledPayload,
+  targetPreflightContractForAttestation,
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
   expectedCanonicalPayloadSha256,
@@ -19,6 +22,10 @@ const {
   canonicalScriptExtensions,
   canonicalHtmlExtensions,
   scriptExtensionContract,
+  existingTargetAttestation,
+  newBlankTargetAttestation,
+  existingCanonicalPreflightContract,
+  newBlankPreflightContract,
   assertCanonicalClaspExtensionContract,
   buildCanonicalClaspProjectConfig,
   writeCanonicalClaspProjectConfig,
@@ -319,6 +326,8 @@ test('BOOT-17_EXTENSION_CONTRACT_FAILS_CLOSED_BEFORE_REMOTE_CALLS', () => {
   const id = 'A'.repeat(24);
   const target = {
     target_kind: 'PERSONAL_SYNTHETIC_DEV',
+    target_attestation: existingTargetAttestation,
+    remote_preflight_contract: existingCanonicalPreflightContract,
     expected_script_id: id,
     rootDir: 'payload'
   };
@@ -372,6 +381,71 @@ test('BOOT-19_SYNTHETIC_SERVER_SCRIPT_INVENTORY_AND_CANONICAL_HASH_REMAIN_FIXED'
   const inventory = inventoryFor(sourceRoot, canonicalPayloadFileNames.slice().sort());
   assert.strictEqual(inventory.file_count, 23);
   assert.strictEqual(inventory.payload_sha256, expectedCanonicalPayloadSha256);
+});
+
+test('BOOT-20_NEW_BLANK_BOUND_TARGET_PREFLIGHT_IS_EXACT_AND_FAILS_CLOSED', () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(),
+    'work-os-new-blank-target-'));
+  try {
+    fs.writeFileSync(path.join(temporaryRoot, 'Code.gs'),
+      'function myFunction() {\n}\n', 'utf8');
+    fs.writeFileSync(path.join(temporaryRoot, 'appsscript.json'), JSON.stringify({
+      timeZone: 'Etc/UTC',
+      dependencies: {},
+      exceptionLogging: 'STACKDRIVER',
+      runtimeVersion: 'V8'
+    }), 'utf8');
+    assert.deepStrictEqual(newBlankPullPayloadObservation(temporaryRoot), {
+      post_pull_validation: 'PASS',
+      observed_file_count: 2,
+      expected_file_count: 2,
+      observed_nonfile_count: 0,
+      remote_preflight_contract: newBlankPreflightContract
+    });
+    assert.strictEqual(
+      assertNewBlankPulledPayload(temporaryRoot).post_pull_validation,
+      'PASS'
+    );
+    fs.writeFileSync(path.join(temporaryRoot, 'Code.gs'),
+      'function unknownExistingWorkload() {}\n', 'utf8');
+    assert.throws(() => assertNewBlankPulledPayload(temporaryRoot),
+      /REMOTE_NEW_BLANK_TARGET_PREFLIGHT_FAILED/);
+    fs.writeFileSync(path.join(temporaryRoot, 'Code.gs'), '', 'utf8');
+    fs.writeFileSync(path.join(temporaryRoot, 'appsscript.json'), JSON.stringify({
+      dependencies: { enabledAdvancedServices: [{ userSymbol: 'Unsafe' }] }
+    }), 'utf8');
+    assert.throws(() => assertNewBlankPulledPayload(temporaryRoot),
+      /REMOTE_NEW_BLANK_TARGET_PREFLIGHT_FAILED/);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test('BOOT-21_TARGET_ATTESTATION_SELECTS_ONE_CLOSED_PREFLIGHT_CONTRACT', () => {
+  assert.strictEqual(
+    targetPreflightContractForAttestation(existingTargetAttestation),
+    existingCanonicalPreflightContract
+  );
+  assert.strictEqual(
+    targetPreflightContractForAttestation(newBlankTargetAttestation),
+    newBlankPreflightContract
+  );
+  assert.throws(() => targetPreflightContractForAttestation('UNKNOWN_TARGET'),
+    /DEV_TARGET_ATTESTATION_REJECTED/);
+  const id = 'A'.repeat(24);
+  const config = buildCanonicalClaspProjectConfig(id);
+  const target = {
+    target_kind: 'PERSONAL_SYNTHETIC_DEV',
+    target_attestation: newBlankTargetAttestation,
+    remote_preflight_contract: newBlankPreflightContract,
+    expected_script_id: id,
+    rootDir: 'payload'
+  };
+  assert.strictEqual(assertTargetObjects(config, target, null), id);
+  assert.throws(() => assertTargetObjects(config, {
+    ...target,
+    remote_preflight_contract: existingCanonicalPreflightContract
+  }, null), /DEV_TARGET_ATTESTATION_REJECTED/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');
