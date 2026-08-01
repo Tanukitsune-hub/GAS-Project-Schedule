@@ -467,6 +467,15 @@ test('BOOT-22_SUPERSEDED_ACCESS_WORKSPACE_RECOVERY_REQUIRES_NEW_TARGET_ATTESTATI
   }, newTarget), false);
 });
 
+test('BOOT-23_PARENT_NON_ECHOING_PROMPT_HANDOFF_IS_EPHEMERAL', () => {
+  assert.match(claspToolSource,
+    /GAS_DEV_LOCAL_SCRIPT_ID_SOURCE\s*===\s*\n\s*'NON_ECHOING_PARENT_PROMPT'/);
+  assert.match(claspToolSource,
+    /environment\.GAS_DEV_LOCAL_SCRIPT_ID\s*=\s*''/);
+  assert.doesNotMatch(claspToolSource,
+    /writeSafeResult\([^)]*GAS_DEV_LOCAL_SCRIPT_ID/);
+});
+
 const failed = tests.filter((item) => item.status === 'FAIL');
 process.stdout.write(`${JSON.stringify({
   suite: 'remote_gas_development_bootstrap',

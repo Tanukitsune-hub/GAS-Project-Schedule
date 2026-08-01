@@ -95,6 +95,13 @@ or file under version control:
 pnpm run gas:bind:dev
 ```
 
+When the command is launched from a separate interactive window, the parent
+PowerShell may collect the value with `Read-Host -AsSecureString`, pass it only
+through the child process environment with source
+`NON_ECHOING_PARENT_PROMPT`, and clear both the environment value and native
+buffer immediately afterward. The value must never appear in command-line
+arguments, tracked files, safe output, or terminal logs.
+
 It updates only ignored local binding files, records no identifier in safe
 output, sets `target_kind` to `PERSONAL_SYNTHETIC_DEV`, keeps the extension
 contract above, and sets `runtime_dry_run_allowed` to `false`. Re-record the

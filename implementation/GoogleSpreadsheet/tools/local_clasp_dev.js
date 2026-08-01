@@ -1441,7 +1441,16 @@ function assertIgnoredLocalBindingPaths() {
   });
 }
 
-function readLocalScriptIdFromNonEchoingPrompt() {
+function readLocalScriptIdFromNonEchoingPrompt(environment) {
+  if (environment &&
+      environment.GAS_DEV_LOCAL_SCRIPT_ID_SOURCE ===
+        'NON_ECHOING_PARENT_PROMPT' &&
+      typeof environment.GAS_DEV_LOCAL_SCRIPT_ID === 'string' &&
+      environment.GAS_DEV_LOCAL_SCRIPT_ID) {
+    const value = environment.GAS_DEV_LOCAL_SCRIPT_ID;
+    environment.GAS_DEV_LOCAL_SCRIPT_ID = '';
+    return value;
+  }
   const command = [
     "$ErrorActionPreference = 'Stop'",
     '$secret = Read-Host -AsSecureString',
@@ -1473,7 +1482,7 @@ function bindTargetFromLocalPrompt(environment) {
     targetPreflightContractForAttestation(attestation);
   let scriptId = '';
   try {
-    scriptId = readLocalScriptIdFromNonEchoingPrompt();
+    scriptId = readLocalScriptIdFromNonEchoingPrompt(environment);
     if (!/^[A-Za-z0-9_-]{20,}$/.test(scriptId)) {
       fail('DEV_TARGET_ID_INVALID', 'DEV_TARGET_ID_INVALID');
     }
