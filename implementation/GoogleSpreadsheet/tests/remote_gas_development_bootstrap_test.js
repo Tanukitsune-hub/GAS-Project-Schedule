@@ -170,6 +170,7 @@ test('BOOT-08_PACKAGE_SCRIPTS_EXPOSE_CANONICAL_AND_RUNTIME_LANES', () => {
     'gas:access-recover:dev',
     'gas:authorize-interactive-blank-push:dev',
     'gas:record-interactive-blank-push:dev',
+    'gas:prove-interactive-blank-push:dev',
     'gas:stage:dev',
     'gas:push:dev',
     'gas:pull-verify:dev',
@@ -253,7 +254,10 @@ test('BOOT-14_POST_PULL_FAILURE_PERSISTS_A_CLOSED_SAFE_CATEGORY', () => {
   ));
   const accessCheck = claspToolSource.indexOf("persistPostRemoteFailure(\n          'access-check'");
   const accessCheckSuccess = claspToolSource.indexOf("persistOperationRecord('access-check', result, 'PASS')");
-  const canonicalPull = claspToolSource.indexOf("persistPostRemoteFailure(\n          'pull-verify'");
+  const canonicalPull = claspToolSource.indexOf(
+    "persistPostRemoteFailure(\n          'pull-verify'",
+    accessCheck + 1
+  );
   const runtimePull = claspToolSource.indexOf("persistPostRemoteFailure(\n          'pull-verify-runtime'");
   assert.ok(accessCheck > accessCheckSuccess);
   assert.ok(canonicalPull > accessCheck);
@@ -369,7 +373,7 @@ test('BOOT-18_ALL_GENERATED_CLASP_PROJECT_CONFIGS_USE_THE_SHARED_GS_FIRST_HELPER
   assert.doesNotMatch(claspToolSource, /function writePullConfig/);
   assert.strictEqual(
     (claspToolSource.match(/writeCanonicalClaspProjectConfig\(/g) || []).length,
-    5
+    6
   );
 });
 
@@ -500,6 +504,28 @@ test('BOOT-25_BLANK_MANIFEST_RECOVERY_NEVER_USES_FORCE_FLAG', () => {
   assert.match(claspToolSource, /force_flag_used:\s*false/);
   assert.match(claspToolSource,
     /OPERATOR_CONFIRMED_23_FILES_PUSHED/);
+});
+
+test('BOOT-26_MISSED_OPERATOR_CONFIRMATION_REQUIRES_INDEPENDENT_BYTE_PARITY', () => {
+  const proofCommand = claspToolSource.indexOf(
+    "if (command === 'prove-interactive-blank-push')"
+  );
+  const exactShape = claspToolSource.indexOf(
+    'observation = assertExactPulledPayload',
+    proofCommand
+  );
+  const hashParity = claspToolSource.indexOf(
+    'pulled.payload_sha256 !== inventory.payload_sha256',
+    proofCommand
+  );
+  const proofRecord = claspToolSource.indexOf(
+    'recordIndependentInteractiveBlankPushProof',
+    proofCommand
+  );
+  assert.ok(proofCommand >= 0 && exactShape > proofCommand);
+  assert.ok(hashParity > exactShape && proofRecord > hashParity);
+  assert.match(claspToolSource, /INDEPENDENT_PULLBACK_PROVED_EXECUTED/);
+  assert.match(claspToolSource, /operator_confirmation:\s*'NOT_RECORDED'/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

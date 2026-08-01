@@ -28,6 +28,7 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `gas:access-recover:dev` | Self PC | No remote call | Explicitly attested cleanup of only a failed, non-empty ignored access-check workspace after binding correction; it cannot consume or remove a retry marker. |
 | `gas:authorize-interactive-blank-push:dev` | Self PC | No remote call | Reclassifies an exact `Skipping push.` no-op and authorizes one normal interactive manifest-confirmation push only after the remote is independently re-proven blank. |
 | `gas:record-interactive-blank-push:dev` | Self PC | No remote call | Records only the operator's closed 23-file success confirmation; independent pull-back parity remains mandatory. |
+| `gas:prove-interactive-blank-push:dev` | Self PC | Read-only target pull | If operator confirmation was missed, accepts no inference and proves the result only through an exact 23-file canonical byte-parity pull. |
 | `gas:push:dev` | Self PC | Local only | Explicit opt-in, clean worktree, target guard, and non-Google verification before push. |
 | `gas:pull-verify:dev` | Self PC | Local only | Separate ignored pull-back, exact file set, and byte-level parity. |
 | `gas:stage:runtime-dev` | Self PC | No | Canonical manifest byte preservation plus a separate MYSELF-only runtime overlay/hash. |

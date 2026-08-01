@@ -840,12 +840,18 @@ function assertCanonicalRemoteMutationEvidence(inventory) {
     path.join(operationRecordRoot, 'last-interactive-blank-push.json'),
     'BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_MISSING'
   );
-  if (marker.state !== 'OPERATOR_CONFIRMED_EXECUTED' ||
+  const operatorConfirmed =
+    marker.state === 'OPERATOR_CONFIRMED_EXECUTED' &&
+    interactive.operator_confirmation ===
+      'OPERATOR_CONFIRMED_23_FILES_PUSHED';
+  const independentlyProved =
+    marker.state === 'INDEPENDENT_PULLBACK_PROVED_EXECUTED' &&
+    interactive.operator_confirmation === 'NOT_RECORDED' &&
+    interactive.independent_pullback_proof === true;
+  if ((!operatorConfirmed && !independentlyProved) ||
       marker.payload_sha256 !== inventory.payload_sha256 ||
       marker.file_count !== inventory.file_count ||
       interactive.status !== 'PASS' ||
-      interactive.operator_confirmation !==
-        'OPERATOR_CONFIRMED_23_FILES_PUSHED' ||
       interactive.payload_sha256 !== inventory.payload_sha256 ||
       interactive.file_count !== inventory.file_count) {
     fail('BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_INVALID',
@@ -960,6 +966,56 @@ function recordInteractiveBlankManifestPush(environment, inventory) {
     force_flag_used: false
   };
   fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
+  return evidence;
+}
+
+function assertInteractiveBlankPullProofPrerequisites(target, inventory) {
+  const pushRecord = readJson(
+    path.join(operationRecordRoot, 'last-push.json'),
+    'CANONICAL_PUSH_EVIDENCE_MISSING'
+  );
+  const marker = readJson(
+    blankManifestInteractivePushMarkerPath,
+    'BLANK_MANIFEST_INTERACTIVE_PUSH_EVIDENCE_MISSING'
+  );
+  if (target.target.target_attestation !== newBlankTargetAttestation ||
+      pushRecord.status !==
+        'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED' ||
+      marker.state !== 'AUTHORIZED_NOT_EXECUTED' ||
+      marker.payload_sha256 !== inventory.payload_sha256 ||
+      marker.file_count !== inventory.file_count ||
+      fs.existsSync(path.join(
+        operationRecordRoot,
+        'last-interactive-blank-push.json'
+      ))) {
+    fail('BLANK_MANIFEST_INDEPENDENT_PROOF_PRECONDITION_FAILED',
+      'BLANK_MANIFEST_INDEPENDENT_PROOF_PRECONDITION_FAILED');
+  }
+  return marker;
+}
+
+function recordIndependentInteractiveBlankPushProof(inventory, marker) {
+  marker.state = 'INDEPENDENT_PULLBACK_PROVED_EXECUTED';
+  fs.writeFileSync(
+    blankManifestInteractivePushMarkerPath,
+    `${JSON.stringify(marker, null, 2)}\n`,
+    'utf8'
+  );
+  const evidence = {
+    schema: 'WORK_OS_INTERACTIVE_BLANK_PUSH_EVIDENCE_V1',
+    operation: 'interactive-blank-push',
+    status: 'PASS',
+    operator_confirmation: 'NOT_RECORDED',
+    independent_pullback_proof: true,
+    payload_sha256: inventory.payload_sha256,
+    file_count: inventory.file_count,
+    force_flag_used: false
+  };
+  fs.writeFileSync(
+    path.join(operationRecordRoot, 'last-interactive-blank-push.json'),
+    `${JSON.stringify(evidence, null, 2)}\n`,
+    'utf8'
+  );
   return evidence;
 }
 
@@ -1681,6 +1737,7 @@ function parseRuntimeCommand(command) {
   if (![
     'stage', 'bind-target', 'record-prerequisites', 'access-check', 'recover-access-check',
     'authorize-interactive-blank-push', 'record-interactive-blank-push',
+    'prove-interactive-blank-push',
     'status', 'push', 'pull-verify',
     'runtime-auth-check', 'record-runtime-prerequisites',
     'record-runtime-config',
@@ -2046,6 +2103,68 @@ function main() {
         file_count: evidence.file_count,
         payload_sha256: evidence.payload_sha256,
         force_flag_used: evidence.force_flag_used
+      });
+      return;
+    }
+
+    if (command === 'prove-interactive-blank-push') {
+      const target = assertTargetGuard(true);
+      assertCanonicalRetryPrerequisites(target);
+      const marker = assertInteractiveBlankPullProofPrerequisites(
+        target,
+        inventory
+      );
+      prepareEmptyPullWorkspace(
+        pullRoot,
+        '.clasp-pull-verify',
+        'PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
+      );
+      writeCanonicalClaspProjectConfig(pullRoot, target.config);
+      googleOperation = 'ATTEMPTED';
+      const result = runClasp(['pull'], pullRoot);
+      if (result.exit_code !== 0) {
+        failClassifiedClaspOperation('pull-verify', result, target);
+      }
+      let pulled;
+      let observation;
+      try {
+        const names = canonicalPayloadNames();
+        observation = assertExactPulledPayload(path.join(pullRoot, 'payload'));
+        pulled = inventoryFor(path.join(pullRoot, 'payload'), names);
+        if (pulled.payload_sha256 !== inventory.payload_sha256) {
+          failWithSafePostPullObservation(
+            'REMOTE_PULLBACK_PARITY_FAILED',
+            observation
+          );
+        }
+      } catch (error) {
+        persistPostRemoteFailure(
+          'pull-verify',
+          result,
+          error,
+          'UNKNOWN_CLASP_REMOTE_FAILURE',
+          observation,
+          target
+        );
+        throw error;
+      }
+      recordIndependentInteractiveBlankPushProof(inventory, marker);
+      persistOperationRecord(
+        'pull-verify',
+        result,
+        'PASS',
+        observation,
+        targetBindingFingerprint(target.config)
+      );
+      writeSafeResult({
+        lane: 'local_clasp_dev', command, status: 'PASS', parity: 'PASS',
+        proof: 'INDEPENDENT_PULLBACK_PROVED_EXECUTED',
+        file_count: inventory.file_count,
+        payload_sha256: inventory.payload_sha256,
+        script_extension_contract: scriptExtensionContract,
+        clasp_version: claspVersion(),
+        command_output_sha256: result.output_sha256,
+        force_flag_used: false
       });
       return;
     }

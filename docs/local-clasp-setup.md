@@ -133,6 +133,13 @@ The operator confirms the manifest update locally; `--force` remains forbidden.
 The tool then requires an independent clean-directory 23-file byte-parity pull.
 The original retry marker and no-op evidence remain preserved.
 
+If the interactive console later reports `already up to date` but the operator
+did not record the prior success confirmation, do not infer success. The
+one-use `gas:prove-interactive-blank-push:dev` read-only lane may establish the
+result only by independently pulling the target into a clean ignored directory
+and proving the exact 23-file inventory and canonical payload SHA-256. It stores
+`operator_confirmation = NOT_RECORDED`; no human confirmation is fabricated.
+
 This declaration is an operator attestation, not independent proof that a
 target is non-company. That limitation is `REVIEW_REQUIRED` and must be
 recorded in any handoff evidence.
