@@ -14,6 +14,17 @@ const {
   postPullPayloadObservation,
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,
+  expectedCanonicalPayloadSha256,
+  canonicalPayloadFileNames,
+  canonicalScriptExtensions,
+  canonicalHtmlExtensions,
+  scriptExtensionContract,
+  assertCanonicalClaspExtensionContract,
+  buildCanonicalClaspProjectConfig,
+  writeCanonicalClaspProjectConfig,
+  mapSyntheticServerScriptsToCanonicalPayloadNames,
+  assertTargetObjects,
+  inventoryFor,
   targetBindingFingerprint,
   accessEvidenceMatchesTarget,
   safeOperationRecord,
@@ -33,6 +44,14 @@ const claspToolSource = fs.readFileSync(
   path.join(moduleRoot, 'tools', 'local_clasp_dev.js'),
   'utf8'
 );
+const localClaspExample = JSON.parse(fs.readFileSync(
+  path.join(moduleRoot, '.clasp.example.json'),
+  'utf8'
+));
+const sourceClaspExample = JSON.parse(fs.readFileSync(
+  path.join(moduleRoot, 'apps-script-v2', '.clasp.json.example'),
+  'utf8'
+));
 
 const tests = [];
 function test(id, body) {
@@ -275,11 +294,84 @@ test('BOOT-15_ACCESS_EVIDENCE_IS_TARGET_BOUND_AND_SAFE', () => {
     'operation',
     'output_sha256',
     'post_pull_validation',
+    'script_extension_contract',
     'status',
     'target_binding_sha256'
   ]);
   assert.doesNotMatch(claspToolSource,
     /closedPostRemoteFailureCategories\s*=\s*Object\.freeze\(\s*closedClaspFailureCategories/);
+});
+
+test('BOOT-16_CLASP_EXTENSION_CONTRACT_IS_EXACT_IN_BOTH_TRACKED_EXAMPLES', () => {
+  [localClaspExample, sourceClaspExample].forEach((config) => {
+    assert.strictEqual(
+      assertCanonicalClaspExtensionContract(config),
+      scriptExtensionContract
+    );
+    assert.deepStrictEqual(config.scriptExtensions, ['.gs', '.js']);
+    assert.deepStrictEqual(config.htmlExtensions, ['.html']);
+  });
+  assert.deepStrictEqual(canonicalScriptExtensions, ['.gs', '.js']);
+  assert.deepStrictEqual(canonicalHtmlExtensions, ['.html']);
+});
+
+test('BOOT-17_EXTENSION_CONTRACT_FAILS_CLOSED_BEFORE_REMOTE_CALLS', () => {
+  const id = 'A'.repeat(24);
+  const target = {
+    target_kind: 'PERSONAL_SYNTHETIC_DEV',
+    expected_script_id: id,
+    rootDir: 'payload'
+  };
+  const valid = buildCanonicalClaspProjectConfig(id);
+  assert.strictEqual(assertTargetObjects(valid, target, null), id);
+  [
+    { ...valid, scriptExtensions: undefined },
+    { ...valid, scriptExtensions: ['.js', '.gs'] },
+    { ...valid, scriptExtensions: ['.gs', '.js', '.ts'] },
+    { ...valid, htmlExtensions: ['.html', '.htm'] },
+    { ...valid, htmlExtensions: '.html' },
+    { ...valid, fileExtension: '.gs' }
+  ].forEach((config) => {
+    assert.throws(() => assertTargetObjects(config, target, null));
+  });
+});
+
+test('BOOT-18_ALL_GENERATED_CLASP_PROJECT_CONFIGS_USE_THE_SHARED_GS_FIRST_HELPER', () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(),
+    'work-os-clasp-contract-'));
+  try {
+    const id = 'A'.repeat(24);
+    const config = buildCanonicalClaspProjectConfig(id);
+    writeCanonicalClaspProjectConfig(temporaryRoot, config);
+    const generated = JSON.parse(fs.readFileSync(
+      path.join(temporaryRoot, '.clasp.json'), 'utf8'
+    ));
+    assert.deepStrictEqual(generated, config);
+    assert.strictEqual(fs.readFileSync(
+      path.join(temporaryRoot, '.claspignore'), 'utf8'
+    ), '**/**\n!*.gs\n!appsscript.json\n');
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+  assert.doesNotMatch(claspToolSource, /function writePullConfig/);
+  assert.strictEqual(
+    (claspToolSource.match(/writeCanonicalClaspProjectConfig\(/g) || []).length,
+    5
+  );
+});
+
+test('BOOT-19_SYNTHETIC_SERVER_SCRIPT_INVENTORY_AND_CANONICAL_HASH_REMAIN_FIXED', () => {
+  const remoteScriptNames = canonicalPayloadFileNames
+    .filter((name) => name.endsWith('.gs'))
+    .map((name) => name.slice(0, -3));
+  assert.deepStrictEqual(
+    mapSyntheticServerScriptsToCanonicalPayloadNames(remoteScriptNames),
+    canonicalPayloadFileNames.slice().sort()
+  );
+  const sourceRoot = path.join(moduleRoot, 'apps-script-v2');
+  const inventory = inventoryFor(sourceRoot, canonicalPayloadFileNames.slice().sort());
+  assert.strictEqual(inventory.file_count, 23);
+  assert.strictEqual(inventory.payload_sha256, expectedCanonicalPayloadSha256);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

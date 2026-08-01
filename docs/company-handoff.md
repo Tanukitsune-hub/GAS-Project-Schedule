@@ -20,6 +20,12 @@ personal, synthetic, non-company development target. Its maximum status is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and no company-PC
 action is automatically permitted.
 
+Before any further personal-synthetic read-only pull, the self-PC lane must
+also prove the tracked clasp 3.3.0 `.gs`-first extension contract for every
+ignored/generated local project configuration. This is a local parity guard,
+not an authorization to use clasp on a company PC or to change any company
+Workspace resource.
+
 ## Future reassessment checklist
 
 Only after an explicit future approval and the required local evidence may an

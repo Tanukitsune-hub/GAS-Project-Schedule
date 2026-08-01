@@ -227,6 +227,13 @@ function contentHasSensitivePattern(content) {
   return secretPattern.test(text) || hasWindowsDrivePath;
 }
 
+function hasTrackedScriptId(content) {
+  return Array.from(String(content).matchAll(
+    /"scriptId"\s*:\s*"([A-Za-z0-9_-]{20,})"/ig
+  )).some((match) => !/^(?:REPLACE_WITH|YOUR_SCRIPT_ID|LOCAL_ONLY|EXAMPLE)/i
+    .test(match[1]));
+}
+
 function changedTrackedFilesSinceInstruction() {
   const output = git([
     'diff', '--name-only', '--diff-filter=ACMR',
@@ -262,7 +269,6 @@ function isForbiddenCredentialPath(file) {
 
 function checkTrackedSecretsAndLocalArtifacts() {
   const files = trackedFiles(['.']);
-  const actualScriptIdPattern = /"scriptId"\s*:\s*"(?!REPLACE_WITH)[^"]+"/i;
   const changedFiles = changedTrackedFilesSinceInstruction();
   const addedText = addedTextSinceInstruction();
   const hits = [];
@@ -270,7 +276,7 @@ function checkTrackedSecretsAndLocalArtifacts() {
     if (isForbiddenCredentialPath(file)) hits.push({ file, kind: 'forbidden_path' });
     const full = path.join(repositoryRoot, file);
     const content = fs.readFileSync(full);
-    if (actualScriptIdPattern.test(content)) hits.push({ file, kind: 'tracked_script_id' });
+    if (hasTrackedScriptId(content)) hits.push({ file, kind: 'tracked_script_id' });
   }
   if (contentHasSensitivePattern(addedText)) {
     hits.push({ kind: 'secret_or_local_path_in_added_content' });
@@ -360,5 +366,6 @@ if (require.main === module) {
 
 module.exports = {
   contentHasSensitivePattern,
+  hasTrackedScriptId,
   isForbiddenCredentialPath
 };

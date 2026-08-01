@@ -42,6 +42,9 @@ const allowedRuntimeFunction = 'runQuickDiagnostic';
 const runtimeProfileName = 'personal-synthetic-runtime';
 const expectedCanonicalPayloadSha256 =
   'ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1';
+const canonicalScriptExtensions = Object.freeze(['.gs', '.js']);
+const canonicalHtmlExtensions = Object.freeze(['.html']);
+const scriptExtensionContract = 'GS_FIRST_CANONICAL';
 const closedClaspFailureCategories = Object.freeze([
   'APPS_SCRIPT_API_DISABLED',
   'BLOCKED_BY_AUTH',
@@ -273,6 +276,69 @@ function stagePayload() {
   return inventory;
 }
 
+function isExactStringArray(value, expected) {
+  return Array.isArray(value) && value.length === expected.length &&
+    value.every((item, index) => typeof item === 'string' &&
+      item === expected[index]);
+}
+
+function assertCanonicalClaspExtensionContract(config) {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    fail('DEV_TARGET_EXTENSION_CONTRACT_REJECTED',
+      'DEV_TARGET_EXTENSION_CONTRACT_REJECTED');
+  }
+  if (Object.prototype.hasOwnProperty.call(config, 'fileExtension')) {
+    fail('DEV_TARGET_EXTENSION_CONFLICT_REJECTED',
+      'DEV_TARGET_EXTENSION_CONFLICT_REJECTED');
+  }
+  if (!isExactStringArray(config.scriptExtensions, canonicalScriptExtensions)) {
+    fail('DEV_TARGET_SCRIPT_EXTENSIONS_REJECTED',
+      'DEV_TARGET_SCRIPT_EXTENSIONS_REJECTED');
+  }
+  if (!isExactStringArray(config.htmlExtensions, canonicalHtmlExtensions)) {
+    fail('DEV_TARGET_HTML_EXTENSIONS_REJECTED',
+      'DEV_TARGET_HTML_EXTENSIONS_REJECTED');
+  }
+  return scriptExtensionContract;
+}
+
+function buildCanonicalClaspProjectConfig(scriptId, rootDir = 'payload') {
+  return {
+    scriptId,
+    rootDir,
+    scriptExtensions: canonicalScriptExtensions.slice(),
+    htmlExtensions: canonicalHtmlExtensions.slice()
+  };
+}
+
+function writeCanonicalClaspProjectConfig(root, config) {
+  assertCanonicalClaspExtensionContract(config);
+  if (config.rootDir !== 'payload') {
+    fail('DEV_TARGET_ROOTDIR_REJECTED', 'DEV_TARGET_ROOTDIR_REJECTED');
+  }
+  const generated = buildCanonicalClaspProjectConfig(config.scriptId, config.rootDir);
+  fs.writeFileSync(path.join(root, '.clasp.json'),
+    `${JSON.stringify(generated, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(path.join(root, '.claspignore'),
+    '**/**\n!*.gs\n!appsscript.json\n', 'utf8');
+  return generated;
+}
+
+function mapSyntheticServerScriptsToCanonicalPayloadNames(serverScriptNames) {
+  if (!Array.isArray(serverScriptNames) ||
+      serverScriptNames.some((name) => typeof name !== 'string' ||
+        !/^[A-Za-z0-9_]+$/.test(name))) {
+    fail('SYNTHETIC_SERVER_SCRIPT_INVENTORY_INVALID',
+      'SYNTHETIC_SERVER_SCRIPT_INVENTORY_INVALID');
+  }
+  const localNames = serverScriptNames.map((name) => `${name}.gs`)
+    .concat('appsscript.json');
+  return assertExactPayloadNames(
+    localNames,
+    'SYNTHETIC_SERVER_SCRIPT_INVENTORY_INVALID'
+  );
+}
+
 function assertStagedPayload() {
   if (!fs.existsSync(inventoryPath) || !fs.existsSync(payloadRoot)) {
     fail('STAGED_PAYLOAD_MISSING', 'STAGED_PAYLOAD_MISSING');
@@ -362,12 +428,7 @@ function prepareRuntimeRoot(config) {
     fs.rmSync(runtimeRoot, { recursive: true, force: true });
   }
   fs.mkdirSync(runtimePayloadRoot, { recursive: true });
-  fs.writeFileSync(path.join(runtimeRoot, '.clasp.json'), `${JSON.stringify({
-    scriptId: config.scriptId,
-    rootDir: 'payload'
-  }, null, 2)}\n`, 'utf8');
-  fs.writeFileSync(path.join(runtimeRoot, '.claspignore'),
-    '**/**\n!*.gs\n!appsscript.json\n', 'utf8');
+  writeCanonicalClaspProjectConfig(runtimeRoot, config);
 }
 
 function stageRuntimePayload() {
@@ -466,9 +527,14 @@ function assertTargetObjects(config, target, environment) {
   if (target.target_kind !== allowedTargetKind) {
     fail('DEV_TARGET_KIND_REJECTED', 'DEV_TARGET_KIND_REJECTED');
   }
+  if (target.rootDir !== 'payload') {
+    fail('DEV_TARGET_DECLARATION_ROOTDIR_REJECTED',
+      'DEV_TARGET_DECLARATION_ROOTDIR_REJECTED');
+  }
   if (config.rootDir !== 'payload') {
     fail('DEV_TARGET_ROOTDIR_REJECTED', 'DEV_TARGET_ROOTDIR_REJECTED');
   }
+  assertCanonicalClaspExtensionContract(config);
   if (scriptId !== expectedId) {
     fail('DEV_TARGET_ID_MISMATCH', 'DEV_TARGET_ID_MISMATCH');
   }
@@ -526,9 +592,10 @@ function assertCanonicalRetryPrerequisitesForAccess(target) {
   );
   if (prerequisites.user_level_apps_script_api !== 'ENABLED' ||
       prerequisites.oauth_state !== 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT' ||
-      prerequisites.target_attestation !==
-        'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX' ||
-      prerequisites.canonical_push_retry_authorized !== true) {
+       prerequisites.target_attestation !==
+         'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX' ||
+       prerequisites.script_extension_contract !== scriptExtensionContract ||
+       prerequisites.canonical_push_retry_authorized !== true) {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
       'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE');
   }
@@ -553,9 +620,10 @@ function assertCanonicalRetryPrerequisites(target) {
       accessRecord.status !== 'PASS' || accessRecord.exit_code !== 0 ||
       accessRecord.post_pull_validation !== 'PASS' ||
       accessRecord.observed_file_count !== canonicalPayloadFileNames.length ||
-      accessRecord.expected_file_count !== canonicalPayloadFileNames.length ||
-      accessRecord.observed_nonfile_count !== 0 ||
-      !accessEvidenceMatchesTarget(accessRecord, target)) {
+       accessRecord.expected_file_count !== canonicalPayloadFileNames.length ||
+       accessRecord.observed_nonfile_count !== 0 ||
+       accessRecord.script_extension_contract !== scriptExtensionContract ||
+       !accessEvidenceMatchesTarget(accessRecord, target)) {
     fail('CANONICAL_PUSH_PREREQUISITES_INCOMPLETE',
       'CANONICAL_PUSH_PREREQUISITES_INCOMPLETE');
   }
@@ -577,6 +645,7 @@ function recordCanonicalRetryPrerequisites(environment, target) {
     oauth_state: 'AUTHENTICATED_CURRENT_OPERATOR_ACCOUNT',
     target_attestation: 'PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX',
     target_binding_sha256: targetBindingFingerprint(guardedTarget.config),
+    script_extension_contract: scriptExtensionContract,
     read_only_target_access: 'NOT_EXECUTED',
     canonical_push_retry_authorized: true
   };
@@ -915,7 +984,8 @@ function safeOperationRecord(
     operation,
     status: classification || 'PASS',
     exit_code: result.exit_code,
-    output_sha256: result.output_sha256
+    output_sha256: result.output_sha256,
+    script_extension_contract: scriptExtensionContract
   };
   const safeObservation = safePostPullObservation(observation);
   if (safeObservation) Object.assign(safe, safeObservation);
@@ -1250,18 +1320,81 @@ function recoverAccessCheckWorkspace(environment, target) {
   return observation;
 }
 
-function writePullConfig(root, config) {
-  fs.writeFileSync(path.join(root, '.clasp.json'),
-    `${JSON.stringify({ scriptId: config.scriptId, rootDir: 'payload' }, null, 2)}\n`,
-    'utf8');
-  fs.writeFileSync(path.join(root, '.claspignore'),
-    '**/**\n!*.gs\n!appsscript.json\n', 'utf8');
+function assertIgnoredLocalBindingPaths() {
+  [configPath, targetPath].forEach((bindingPath) => {
+    const probe = childProcess.spawnSync('git', [
+      '-C', repositoryRoot, 'check-ignore', '--quiet', '--', bindingPath
+    ], { encoding: 'utf8', windowsHide: true });
+    if (probe.status !== 0) {
+      fail('DEV_TARGET_LOCAL_BINDING_NOT_IGNORED',
+        'DEV_TARGET_LOCAL_BINDING_NOT_IGNORED');
+    }
+  });
+}
+
+function readLocalScriptIdFromNonEchoingPrompt() {
+  const command = [
+    "$ErrorActionPreference = 'Stop'",
+    '$secret = Read-Host -AsSecureString',
+    '$pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)',
+    'try { [Console]::Out.Write([Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)) }',
+    'finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }'
+  ].join('; ');
+  process.stdout.write('Local secure Script ID prompt is ready. Enter it locally; it is not echoed or logged.\n');
+  const result = childProcess.spawnSync('powershell', [
+    '-NoLogo', '-NoProfile', '-Command', command
+  ], {
+    cwd: moduleRoot,
+    encoding: 'utf8',
+    stdio: ['inherit', 'pipe', 'pipe'],
+    windowsHide: true
+  });
+  let localValue = String(result.stdout || '').trim();
+  if (result.status !== 0 || !localValue) {
+    localValue = '';
+    fail('DEV_TARGET_LOCAL_INPUT_FAILED', 'DEV_TARGET_LOCAL_INPUT_FAILED');
+  }
+  return localValue;
+}
+
+function bindTargetFromLocalPrompt() {
+  assertIgnoredLocalBindingPaths();
+  let scriptId = '';
+  try {
+    scriptId = readLocalScriptIdFromNonEchoingPrompt();
+    if (!/^[A-Za-z0-9_-]{20,}$/.test(scriptId)) {
+      fail('DEV_TARGET_ID_INVALID', 'DEV_TARGET_ID_INVALID');
+    }
+    assertScriptIdIsNotTracked(scriptId);
+    const config = buildCanonicalClaspProjectConfig(scriptId);
+    const target = {
+      target_kind: allowedTargetKind,
+      expected_script_id: scriptId,
+      rootDir: 'payload',
+      runtime_dry_run_allowed: false,
+      runtime_function: allowedRuntimeFunction
+    };
+    assertTargetObjects(config, target, null);
+    fs.mkdirSync(devRoot, { recursive: true });
+    fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(targetPath, `${JSON.stringify(target, null, 2)}\n`, 'utf8');
+    return {
+      target_configuration_present: true,
+      target_kind: allowedTargetKind,
+      script_id_match: true,
+      script_id_tracked: false,
+      script_extensions_contract: scriptExtensionContract,
+      runtime_dry_run_allowed: false
+    };
+  } finally {
+    scriptId = '';
+  }
 }
 
 function parseRuntimeCommand(command) {
   if (!command) return 'status';
   if (![
-    'stage', 'record-prerequisites', 'access-check', 'recover-access-check',
+    'stage', 'bind-target', 'record-prerequisites', 'access-check', 'recover-access-check',
     'status', 'push', 'pull-verify',
     'runtime-auth-check', 'record-runtime-prerequisites',
     'record-runtime-config',
@@ -1317,21 +1450,66 @@ function selfTest() {
   });
   test('TARGET_GUARD_REJECTS_PLACEHOLDER', () => {
     assert.throws(() => assertTargetObjects(
-      { scriptId: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID', rootDir: 'payload' },
-      { target_kind: allowedTargetKind, expected_script_id: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID' }
+      buildCanonicalClaspProjectConfig(
+        'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID'
+      ),
+      {
+        target_kind: allowedTargetKind,
+        expected_script_id: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID',
+        rootDir: 'payload'
+      }
     ), (error) => error && error.code === 'DEV_TARGET_NOT_CONFIGURED');
   });
   test('TARGET_GUARD_REJECTS_MISMATCH', () => {
     assert.throws(() => assertTargetObjects(
-      { scriptId: 'a'.repeat(24), rootDir: 'payload' },
-      { target_kind: allowedTargetKind, expected_script_id: 'b'.repeat(24) }
+      buildCanonicalClaspProjectConfig('a'.repeat(24)),
+      {
+        target_kind: allowedTargetKind,
+        expected_script_id: 'b'.repeat(24),
+        rootDir: 'payload'
+      }
     ), (error) => error && error.code === 'DEV_TARGET_ID_MISMATCH');
   });
   test('TARGET_GUARD_REQUIRES_EXPLICIT_PUSH_OPT_IN', () => {
     assert.throws(() => assertTargetObjects(
-      { scriptId: 'a'.repeat(24), rootDir: 'payload' },
-      { target_kind: allowedTargetKind, expected_script_id: 'a'.repeat(24) }, {}
+      buildCanonicalClaspProjectConfig('a'.repeat(24)),
+      {
+        target_kind: allowedTargetKind,
+        expected_script_id: 'a'.repeat(24),
+        rootDir: 'payload'
+      },
+      {}
     ), (error) => error && error.code === 'GAS_DEV_CLASP_ALLOWED_REQUIRED');
+  });
+  test('CLASP_EXTENSION_CONTRACT_IS_GS_FIRST_AND_EXACT', () => {
+    const config = buildCanonicalClaspProjectConfig('a'.repeat(24));
+    assert.strictEqual(
+      assertCanonicalClaspExtensionContract(config),
+      scriptExtensionContract
+    );
+    assert.deepStrictEqual(config.scriptExtensions, ['.gs', '.js']);
+    assert.deepStrictEqual(config.htmlExtensions, ['.html']);
+  });
+  test('CLASP_EXTENSION_CONTRACT_REJECTS_MISSING_REORDERED_AND_ADDITIONAL_VALUES', () => {
+    const base = buildCanonicalClaspProjectConfig('a'.repeat(24));
+    [
+      { ...base, scriptExtensions: undefined },
+      { ...base, scriptExtensions: ['.js', '.gs'] },
+      { ...base, scriptExtensions: ['.gs', '.js', '.ts'] },
+      { ...base, htmlExtensions: ['.htm'] },
+      { ...base, htmlExtensions: ['.html', '.htm'] },
+      { ...base, fileExtension: '.gs' }
+    ].forEach((candidate) => {
+      assert.throws(() => assertCanonicalClaspExtensionContract(candidate));
+    });
+  });
+  test('SYNTHETIC_SERVER_INVENTORY_MAPS_TO_THE_23_CANONICAL_LOCAL_NAMES', () => {
+    const remoteScriptNames = canonicalPayloadFileNames
+      .filter((name) => name.endsWith('.gs'))
+      .map((name) => name.slice(0, -3));
+    const mapped = mapSyntheticServerScriptsToCanonicalPayloadNames(remoteScriptNames);
+    assert.strictEqual(mapped.length, 23);
+    assert.deepStrictEqual(mapped, canonicalPayloadFileNames.slice().sort());
   });
   test('SAFE_RESULT_NEVER_EMITS_A_TARGET_ID', () => {
     const targetId = 'a'.repeat(24);
@@ -1455,6 +1633,7 @@ function main() {
         user_level_apps_script_api: prerequisite.user_level_apps_script_api,
         oauth_state: prerequisite.oauth_state,
         target_attestation: prerequisite.target_attestation,
+        script_extension_contract: prerequisite.script_extension_contract,
         read_only_target_access: prerequisite.read_only_target_access,
         canonical_push_retry_authorized:
           prerequisite.canonical_push_retry_authorized
@@ -1533,8 +1712,15 @@ function main() {
         lane: 'local_clasp_dev', command, status: 'PASS',
         target_access: 'NOT_EXECUTED',
         access_check_workspace_recovery: 'APPROVED_AND_COMPLETED',
+        script_extension_contract: scriptExtensionContract,
         ...observation
       });
+      return;
+    }
+
+    if (command === 'bind-target') {
+      const binding = bindTargetFromLocalPrompt();
+      writeSafeResult({ lane: 'local_clasp_dev', command, status: 'PASS', ...binding });
       return;
     }
 
@@ -1548,7 +1734,7 @@ function main() {
         'access-check',
         'ACCESS_CHECK_WORKSPACE_UNEXPECTED_CONTENT'
       );
-      writePullConfig(accessCheckRoot, target.config);
+      writeCanonicalClaspProjectConfig(accessCheckRoot, target.config);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(['pull'], accessCheckRoot);
       if (result.exit_code !== 0) {
@@ -1589,6 +1775,7 @@ function main() {
         lane: 'local_clasp_dev', command, status: 'PASS',
         target_access: 'PASS', remote_file_count: remote.file_count,
         remote_payload_sha256: remote.payload_sha256,
+        script_extension_contract: scriptExtensionContract,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256
       });
       return;
@@ -1641,7 +1828,7 @@ function main() {
         '.clasp-pull-verify',
         'PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
       );
-      writePullConfig(pullRoot, target.config);
+      writeCanonicalClaspProjectConfig(pullRoot, target.config);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(['pull'], pullRoot);
       if (result.exit_code !== 0) {
@@ -1673,6 +1860,7 @@ function main() {
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS', parity: 'PASS',
         file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
+        script_extension_contract: scriptExtensionContract,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256
       };
       persistOperationRecord('pull-verify', result, 'PASS');
@@ -1689,6 +1877,7 @@ function main() {
         canonical_manifest_sha256: runtime.canonical_manifest_sha256,
         runtime_manifest_sha256: runtime.runtime_manifest_sha256,
         runtime_payload_sha256: runtime.runtime_payload_sha256,
+        script_extension_contract: scriptExtensionContract,
         execution_api_access: 'MYSELF', clasp_version: claspVersion()
       });
       return;
@@ -1714,6 +1903,7 @@ function main() {
         canonical_manifest_sha256: runtime.canonical_manifest_sha256,
         runtime_manifest_sha256: runtime.runtime_manifest_sha256,
         runtime_payload_sha256: runtime.runtime_payload_sha256,
+        script_extension_contract: scriptExtensionContract,
         execution_api_access: 'MYSELF',
         command_output_sha256: result.output_sha256
       });
@@ -1729,7 +1919,7 @@ function main() {
         'runtime-pull-verify',
         'RUNTIME_PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
       );
-      writePullConfig(runtimePullRoot, target.config);
+      writeCanonicalClaspProjectConfig(runtimePullRoot, target.config);
       const args = runtimeClaspArgs(['pull']);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(args, runtimePullRoot);
@@ -1771,6 +1961,7 @@ function main() {
         runtime_manifest_sha256: runtime.runtime_manifest_sha256,
         runtime_payload_sha256: runtime.runtime_payload_sha256,
         pulled_payload_sha256: pulled.payload_sha256,
+        script_extension_contract: scriptExtensionContract,
         command_output_sha256: result.output_sha256
       });
       return;
@@ -1840,8 +2031,16 @@ if (require.main === module) main();
 module.exports = {
   canonicalPayloadNames,
   canonicalPayloadFileNames,
+  expectedCanonicalPayloadSha256,
+  canonicalScriptExtensions,
+  canonicalHtmlExtensions,
+  scriptExtensionContract,
   assertExactPayloadNames,
   assertExactPayloadDirectory,
+  assertCanonicalClaspExtensionContract,
+  buildCanonicalClaspProjectConfig,
+  writeCanonicalClaspProjectConfig,
+  mapSyntheticServerScriptsToCanonicalPayloadNames,
   postPullPayloadObservation,
   safePostPullObservation,
   assertRecoverableAccessCheckObservation,

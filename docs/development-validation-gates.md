@@ -23,6 +23,7 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `verify:ci` | GitHub Actions | No | Locked local tooling, static validation, all Node suites, existing package/transfer verifiers, provenance, and secret/local-path scan. |
 | `verify:local` | Self PC | No | Same non-Google checks using the lockfile. |
 | `gas:stage:dev` | Self PC | No | Exact 23-file staging inventory and byte-level payload hash. |
+| `gas:bind:dev` | Self PC | No remote call | Non-echoing local-only Script ID entry after UI attestation; rewrites only ignored binding files with the exact `.gs`-first clasp extension contract. |
 | `gas:access-check:dev` | Self PC | Local only | Isolated read-only target pull before the one controlled canonical retry. |
 | `gas:access-recover:dev` | Self PC | No remote call | Explicitly attested cleanup of only a failed, non-empty ignored access-check workspace after binding correction; it cannot consume or remove a retry marker. |
 | `gas:push:dev` | Self PC | Local only | Explicit opt-in, clean worktree, target guard, and non-Google verification before push. |
@@ -38,6 +39,17 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 GitHub Actions uses read-only repository permission and must not use clasp,
 Google authentication, credentials, secrets, or a script identifier. CI is
 therefore necessary evidence, but cannot prove the authenticated local lane.
+
+## clasp pull-extension contract
+
+The project-local `@google/clasp` `3.3.0` configuration contract is exact:
+`scriptExtensions` is `['.gs', '.js']` and `htmlExtensions` is `['.html']`.
+Because clasp uses the first configured extension when materializing a pull,
+this makes `.gs` the canonical local representation. The shared generator and
+target guard enforce this before access-check, canonical pull-back, runtime
+staging, and runtime pull-back. A missing, `.js`-first, additional, malformed,
+or legacy conflicting extension setting is a fail-closed local validation
+error; the 23-file exact allow-list and canonical payload hash are unchanged.
 
 ## Status discipline
 

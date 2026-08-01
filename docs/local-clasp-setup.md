@@ -67,6 +67,39 @@ prerequisites below are independently approved. The target guard rejects
 placeholders, mismatches, non-synthetic target declarations, invalid IDs, and
 an ID found in tracked content.
 
+Every local clasp project configuration in this lane has one exact pull
+extension contract:
+
+```json
+{
+  "scriptExtensions": [".gs", ".js"],
+  "htmlExtensions": [".html"]
+}
+```
+
+`@google/clasp` 3.3.0 writes pulled server-side script files using the first
+listed script extension. `.gs` must therefore remain first so the exact
+23-file canonical allow-list can validate the 22 Apps Script files. Missing,
+reordered, extra, malformed, or legacy conflicting extension settings are
+rejected before an authenticated clasp command. This applies equally to the
+ignored binding, isolated access-check pull, canonical pull-back, runtime
+staging, and runtime pull-back; it does not broaden the 23-file allow-list.
+
+After the operator has opened and locally confirmed the established personal
+synthetic Work OS project, use the non-echoing local binding command instead
+of placing an identifier in a terminal command, chat, or file under version
+control:
+
+```powershell
+pnpm run gas:bind:dev
+```
+
+It updates only ignored local binding files, records no identifier in safe
+output, sets `target_kind` to `PERSONAL_SYNTHETIC_DEV`, keeps the extension
+contract above, and sets `runtime_dry_run_allowed` to `false`. Re-record the
+closed prerequisites after binding; this invalidates any stale target-bound
+access evidence.
+
 This declaration is an operator attestation, not independent proof that a
 target is non-company. That limitation is `REVIEW_REQUIRED` and must be
 recorded in any handoff evidence.

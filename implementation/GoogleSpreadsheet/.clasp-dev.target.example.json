@@ -1,6 +1,7 @@
 {
   "target_kind": "PERSONAL_SYNTHETIC_DEV",
   "expected_script_id": "REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID",
+  "rootDir": "payload",
   "runtime_dry_run_allowed": false,
   "runtime_function": "runQuickDiagnostic"
 }

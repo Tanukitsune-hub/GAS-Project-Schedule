@@ -1,4 +1,6 @@
 {
   "scriptId": "REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID",
-  "rootDir": "payload"
+  "rootDir": "payload",
+  "scriptExtensions": [".gs", ".js"],
+  "htmlExtensions": [".html"]
 }
