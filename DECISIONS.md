@@ -478,3 +478,29 @@ Phase 8B overall PASS, Phase 8C GO, production, pilot, company handoff, company
 transfer, and all operational lanes remain unauthorized. Automation remains
 OFF, T11 remains `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`.
+
+## D-056 - Instruction 0015 proves refreshed-profile readiness but closes the sole diagnostic by authorization
+
+**Decision.** Refresh the existing ignored local-only named OAuth profile
+instead of creating a second profile or invoking a browser consent flow. The
+closed authorization matrix proved local Desktop-client and token-audience
+continuity, all seven runtime-manifest scopes and required runtime API scopes
+within nineteen grants, same-profile principal continuity, and API-executable,
+MYSELF-only versioned-deployment metadata. The target/container ownership
+relationship remains
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`; it must not be inferred.
+
+**Rationale.** The 0015 marker preserved all prior one-use records. Staged,
+HEAD-pulled, and fresh immutable-version-pulled runtime payloads all proved the
+top-level wrapper before one fresh MYSELF-only versioned deployment was bound
+for execution. This removed the prior execution-binding uncertainty while
+keeping all credential, identifier, raw-output, and account data local only.
+
+**Consequences.** The sole authorized Instruction 0015
+`runQuickDiagnostic` call returned no bounded diagnostic body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`; Phase 8B
+overall PASS, Phase 8C GO, production, pilot, company handoff, company
+transfer, and operational lanes remain unauthorized. Automation remains OFF,
+T11 remains `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains.

@@ -5,7 +5,7 @@
  *
  * Historical T8/T9/T10/T11 references remain valid evidence. The current
  * contract must record Instruction 0010 canonical parity and the closed
- * Instruction 0014 closure while keeping company carriage suspended.
+ * Instruction 0015 closure while keeping company carriage suspended.
  */
 const assert = require('assert');
 const fs = require('fs');
@@ -296,6 +296,39 @@ function validateInstruction0014RuntimeBoundary(text, label) {
     `${label}: functional acceptance closed state missing`);
 }
 
+function validateInstruction0015RuntimeBoundary(text, label) {
+  assert.match(text, /Instruction 0015/i,
+    `${label}: current Instruction 0015 evidence label missing`);
+  assert.match(text, /force-refreshed/i,
+    `${label}: forced OAuth refresh proof missing`);
+  assert.match(text, /(?:existing|named)[\s\S]{0,180}(?:OAuth|profile)/i,
+    `${label}: existing named OAuth profile proof missing`);
+  assert.match(text,
+    /(?:all\s+)?(?:`?7`?|seven)[\s\S]{0,180}(?:runtime-manifest|runtime manifest)[\s\S]{0,240}(?:`?19`?|nineteen)\s+(?:granted\s+)?(?:scopes|grants)/i,
+    `${label}: closed scope-coverage counts missing`);
+  assert.match(text, /INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA/,
+    `${label}: ownership uncertainty boundary missing`);
+  assert.match(text,
+    /(?:staged|staging)[\s\S]{0,300}HEAD[\s\S]{0,300}(?:immutable|versioned)[\s\S]{0,260}(?:pulled|pull-back)[\s\S]{0,220}(?:wrapper|runQuickDiagnostic)/i,
+    `${label}: staged, HEAD, and immutable-version wrapper proof missing`);
+  assert.match(text,
+    /(?:exactly one|sole|one authorized)[\s\S]{0,180}Instruction 0015[\s\S]{0,180}runQuickDiagnostic/i,
+    `${label}: exactly-one Instruction 0015 runtime evidence missing`);
+  assert.match(text, /no bounded (?:diagnostic )?(?:body|result)/i,
+    `${label}: absent bounded Instruction 0015 result missing`);
+  assert.match(text, /RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED/i,
+    `${label}: Instruction 0015 closed status missing`);
+  assert.match(text, /BLOCKED_BY_AUTH/i,
+    `${label}: Instruction 0015 closed category missing`);
+  assert.match(text, /RUNTIME_AUTHORIZATION_REJECTED/i,
+    `${label}: Instruction 0015 safe subtype missing`);
+  assert.match(text,
+    /(?:no retry|retry is (?:not )?permitted|permits no retry)/i,
+    `${label}: Instruction 0015 no-retry boundary missing`);
+  assert.match(text, /ATTEMPTED_FAILED_CLOSED/i,
+    `${label}: functional acceptance closed state missing`);
+}
+
 function contractsFromTexts(texts) {
   return texts.map((item) => ({
     name: item.name,
@@ -402,6 +435,12 @@ test('DOC-01C3_CURRENT_DOCUMENTS_RECORD_THE_0013_RUNTIME_STOP', () => {
 test('DOC-01C4_CURRENT_DOCUMENTS_RECORD_THE_0014_RUNTIME_STOP', () => {
   sourceTexts.forEach((entry) => {
     validateInstruction0014RuntimeBoundary(entry.text, entry.name);
+  });
+});
+
+test('DOC-01C5_CURRENT_DOCUMENTS_RECORD_THE_0015_RUNTIME_STOP', () => {
+  sourceTexts.forEach((entry) => {
+    validateInstruction0015RuntimeBoundary(entry.text, entry.name);
   });
 });
 

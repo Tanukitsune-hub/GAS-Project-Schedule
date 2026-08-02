@@ -27,6 +27,29 @@ Google Workspace Personal Work OS.
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0015 - authorization retry closed after refreshed-profile proof
+
+The existing ignored local-only named OAuth profile was force-refreshed without
+creating a second profile or exposing credential material. The closed
+authorization matrix passed: the local Desktop client and token audience
+matched, all `7` runtime-manifest scopes and required runtime API scopes were
+covered by `19` granted scopes, and no scope was missing. Read-only deployment
+metadata proved an API-executable, MYSELF-only, versioned deployment. The
+bound-container ownership field remains
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`; no owner, account, or
+identifier is inferred from that limitation.
+
+The separate 0015 marker preserved the 0011/0013/0014 attempt evidence. Its
+preflight proved the top-level `runQuickDiagnostic` wrapper in staged, HEAD
+pull-back, and fresh immutable-version pull-back payloads, then created and
+bound one fresh MYSELF-only versioned deployment. Exactly one Instruction 0015
+deployment-bound `runQuickDiagnostic` invocation was made. It returned no
+bounded diagnostic body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`; the gate is
+still only a readiness boundary, and company handoff remains blocked.
+
 ## Instruction 0014 - runtime execution binding remediated, retry closed
 
 The root-cause review verified that clasp 3.3.0 `run-function` passed the

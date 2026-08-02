@@ -472,6 +472,20 @@ Script source or canonical `appsscript.json`, enables Automation, or authorizes
 company, production, real-data, migration, Gmail, Calendar, Dashboard, Task,
 or test-harness work.
 
+Instruction 0015 is closed. The existing ignored local-only named OAuth profile
+was force-refreshed, and its closed authorization matrix passed local
+Desktop-client/audience continuity, all runtime-manifest and required API
+scopes, and read-only API-executable MYSELF-only versioned-deployment metadata.
+The bound-container ownership field remains
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`. Staged, HEAD pull-back,
+and fresh immutable-version pull-back payloads proved the top-level
+`runQuickDiagnostic` wrapper before one fresh MYSELF-only deployment was bound.
+Exactly one deployment-bound diagnostic call returned no bounded body and
+closed as `RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`,
+safe subtype `RUNTIME_AUTHORIZATION_REJECTED`. Do not rerun the 0015 diagnostic
+or prepare a new 0015 attempt; functional acceptance remains
+`ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED`.
+
 ```powershell
 $secret = Read-Host 'Deployment ID (local only)' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)

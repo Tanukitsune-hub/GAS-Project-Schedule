@@ -18,6 +18,25 @@ Current publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0015 closes after authorization-matrix remediation
+
+Instruction 0015 force-refreshed the existing ignored local-only named OAuth
+profile without creating a second profile. Its closed authorization matrix
+passed local Desktop client/audience continuity, all `7` runtime-manifest and
+required API scopes within `19` grants, and read-only API-executable,
+MYSELF-only versioned-deployment metadata. Bound-container ownership remains
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`; it is not inferred.
+
+The 0015 marker preserved all prior attempts. Staged, HEAD pull-back, and fresh
+immutable-version pull-back payloads proved the wrapper before one fresh
+MYSELF-only versioned deployment was bound. Exactly one Instruction 0015
+deployment-bound `runQuickDiagnostic` invocation returned no bounded diagnostic
+body and closed as `RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category
+`BLOCKED_BY_AUTH`, safe subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is
+permitted. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` /
+`REVIEW_REQUIRED`; Phase 8B overall PASS, Phase 8C GO, production, pilot,
+company handoff, transfer, and all operational lanes remain unauthorized.
+
 ## Instruction 0014 closes after execution-context remediation
 
 The root cause of Instruction 0013's function-not-found result was the runtime

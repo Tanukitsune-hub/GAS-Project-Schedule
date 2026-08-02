@@ -22,6 +22,30 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Current Instruction 0015 authorization-root-cause closure
+
+The existing ignored local-only named OAuth profile was force-refreshed without
+creating a second profile or exposing credential material. The closed
+authorization matrix passed: local Desktop client/audience continuity,
+`7` runtime-manifest scopes, `19` granted scopes, zero missing scopes, and the
+required runtime API scopes. Read-only metadata also passed for an
+API-executable, MYSELF-only, versioned deployment. The bound-container
+ownership check remains `INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`, so
+no script or container ownership inference is made.
+
+The 0015 marker preserved the 0011/0013/0014 attempts. Staged, independent
+HEAD pull-back, and fresh immutable-version pull-back payloads all proved the
+top-level `runQuickDiagnostic` wrapper before a fresh MYSELF-only versioned
+deployment was bound for execution. Exactly one Instruction 0015
+deployment-bound `runQuickDiagnostic` invocation returned no bounded diagnostic
+body. It is closed as `RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category
+`BLOCKED_BY_AUTH`, safe subtype `RUNTIME_AUTHORIZATION_REJECTED`; no retry is
+permitted. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and
+`REVIEW_REQUIRED`. Phase 8B overall PASS, Phase 8C GO, production/pilot
+readiness, company handoff, and company transfer are not established.
+Automation remains OFF, T11 remains `T11_SUSPENDED`, and there is
+`NO_ACTIVE_COMPANY_TRANSFER`.
+
 ## Current Instruction 0014 runtime execution-binding closure
 
 Package-source and primary-API review identified the Instruction 0013 guard

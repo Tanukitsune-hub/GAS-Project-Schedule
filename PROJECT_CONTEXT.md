@@ -19,6 +19,28 @@ Publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+Instruction 0015 force-refreshed the existing ignored local-only named OAuth
+profile without creating a second profile. The closed authorization matrix
+passed local Desktop client/audience continuity, `7` runtime-manifest scopes,
+`19` granted scopes, zero missing scopes, required runtime API scopes, and
+read-only API-executable MYSELF-only versioned-deployment metadata. The
+bound-container ownership field remains
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`; no owner or identifier is
+inferred.
+
+The separate 0015 marker preserved 0011/0013/0014 attempt evidence. Staged,
+HEAD-pulled, and fresh immutable-version-pulled payloads all proved the
+top-level `runQuickDiagnostic` wrapper before a fresh MYSELF-only versioned
+deployment was bound. Exactly one Instruction 0015 deployment-bound
+`runQuickDiagnostic` call returned no bounded diagnostic body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`; the gate
+remains only `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Phase 8B overall PASS,
+Phase 8C GO, company handoff, production/pilot readiness, and company transfer
+are not established. Automation remains OFF, T11 remains `T11_SUSPENDED`, and
+there is `NO_ACTIVE_COMPANY_TRANSFER`.
+
 Instruction 0014 identified and remediated the runtime execution-context guard
 gap. Project-local clasp 3.3.0 used the active project configuration value as
 the `scripts.run` path binding; `--nondev` set `devMode=false` but did not use
