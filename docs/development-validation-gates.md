@@ -37,7 +37,7 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `gas:runtime-auth-check:dev` | Self PC | Named local OAuth only | Closed verification of the named personal runtime profile; raw output stays ignored. |
 | `gas:runtime-prerequisites:dev` | Self PC | Local only | Closed standard-Cloud/API/OAuth attestations after canonical parity and before runtime-overlay push. |
 | `gas:runtime-config:dev` | Self PC | Local secret input only | Closed Cloud/OAuth/deployment attestations and a masked deployment binding under ignored local state. |
-| `gas:push:runtime-dev` | Self PC | Named local OAuth only | Guarded same-target runtime-overlay push after Cloud/OAuth prerequisites. |
+| `gas:push:runtime-dev` | Self PC | Named local OAuth only | Guarded same-target runtime-overlay push after Cloud/OAuth prerequisites; clasp `--force` is confined to the ignored MYSELF-only manifest overlay. |
 | `gas:pull-verify:runtime-dev` | Self PC | Named local OAuth only | Separate runtime pull-back and exact dev-runtime payload parity. |
 | `gas:test:runtime-dev` | Self PC | Named local OAuth only | Exactly one `runQuickDiagnostic`; bounded complete IDs and false side effects. |
 
@@ -68,6 +68,10 @@ An exit-code-zero `Skipping push.` is not remote mutation evidence. The blank
 target lane preserves that no-op and its original retry marker, requires a
 separate one-use interactive approval marker, forbids `--force`, and accepts
 the result only after a separate pull proves exact 23-file byte parity.
+The runtime lane is distinct: its ignored staged manifest intentionally adds
+only `executionApi.access = MYSELF`, so clasp 3.3.0 receives `--force` only for
+that guarded overlay push. A runtime `Skipping push.` result still fails closed,
+and a separate exact runtime pull-back remains mandatory.
 
 ## Status discipline
 

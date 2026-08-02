@@ -202,7 +202,7 @@ test('BOOT-11_CANONICAL_ATTEMPT_MARKER_PRECEDES_REMOTE_PUSH', () => {
   assert.ok(marker >= 0 && push > marker);
 });
 
-test('BOOT-12_FORCE_PUSH_IS_NEVER_INVOKED', () => {
+test('BOOT-12_CANONICAL_FORCE_PUSH_IS_NEVER_INVOKED', () => {
   assert.doesNotMatch(claspToolSource, /runClasp\(\[[^\]]*['"]--force['"]/);
 });
 
@@ -526,6 +526,31 @@ test('BOOT-26_MISSED_OPERATOR_CONFIRMATION_REQUIRES_INDEPENDENT_BYTE_PARITY', ()
   assert.ok(hashParity > exactShape && proofRecord > hashParity);
   assert.match(claspToolSource, /INDEPENDENT_PULLBACK_PROVED_EXECUTED/);
   assert.match(claspToolSource, /operator_confirmation:\s*'NOT_RECORDED'/);
+});
+
+test('BOOT-27_RUNTIME_MANIFEST_FORCE_IS_SCOPED_AND_NOOP_FAILS_CLOSED', () => {
+  const runtimePush = claspToolSource.indexOf("if (command === 'push-runtime')");
+  const force = claspToolSource.indexOf(
+    "runtimeClaspArgs(['push', '--force'])",
+    runtimePush
+  );
+  const noop = claspToolSource.indexOf(
+    'if (isManifestConfirmationNoop(result.raw))',
+    force
+  );
+  const failure = claspToolSource.indexOf(
+    'RUNTIME_MANIFEST_OVERWRITE_NOT_PERFORMED',
+    noop
+  );
+  const success = claspToolSource.indexOf(
+    "persistOperationRecord('push-runtime', result, 'PASS')",
+    failure
+  );
+  assert.ok(runtimePush >= 0 && force > runtimePush);
+  assert.ok(noop > force && failure > noop && success > failure);
+  assert.match(claspToolSource, /runClasp\(\['push'\], devRoot\)/);
+  assert.doesNotMatch(claspToolSource,
+    /runClasp\(\['push',\s*['"]--force['"]\],\s*devRoot\)/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

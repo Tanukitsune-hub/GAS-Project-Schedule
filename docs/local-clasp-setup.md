@@ -287,7 +287,7 @@ Create the named profile only with the project-local clasp 3.3.0. The client
 JSON must already be under the ignored `.clasp-dev/credentials/` directory:
 
 ```powershell
-pnpm exec clasp --auth .clasp-dev/oauth --user personal-synthetic-runtime login --creds .clasp-dev/credentials/client.json --use-project-scopes --include-clasp-scopes
+pnpm exec clasp --auth .clasp-dev/oauth --user personal-synthetic-runtime --project .clasp-dev login --creds .clasp-dev/credentials/client.json --use-project-scopes --include-clasp-scopes
 pnpm run gas:runtime-auth-check:dev
 ```
 
@@ -319,6 +319,11 @@ pnpm run gas:stage:runtime-dev
 pnpm run gas:push:runtime-dev
 pnpm run gas:pull-verify:runtime-dev
 ```
+
+The guarded runtime push supplies clasp's `--force` option only for this
+ignored MYSELF-only manifest overlay. clasp 3.3.0 otherwise returns success
+while skipping a non-interactive manifest update. Canonical and blank-target
+pushes remain non-force, and any runtime `Skipping push.` result fails closed.
 
 Only after runtime-overlay parity passes, create the MYSELF-only API-executable
 deployment. Use a masked local prompt for its identifier and attest the final

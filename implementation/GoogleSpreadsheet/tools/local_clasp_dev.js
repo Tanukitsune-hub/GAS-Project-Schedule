@@ -2353,11 +2353,25 @@ function main() {
       assertRuntimeBootstrapConfiguration();
       assertRuntimeSourceContract();
       const runtime = assertRuntimeStagedPayload();
-      const args = runtimeClaspArgs(['push']);
+      // The runtime payload intentionally changes only the ignored staged
+      // manifest by adding executionApi.access = MYSELF. clasp 3.3.0 skips a
+      // non-interactive manifest update unless --force is explicit. This
+      // force flag is confined to the guarded runtime overlay lane; the
+      // canonical push and blank-target recovery lanes remain non-force.
+      const args = runtimeClaspArgs(['push', '--force']);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(args, runtimeRoot);
       if (result.exit_code !== 0) {
         failClassifiedClaspOperation('push-runtime', result);
+      }
+      if (isManifestConfirmationNoop(result.raw)) {
+        persistOperationRecord(
+          'push-runtime',
+          result,
+          'RUNTIME_MANIFEST_OVERWRITE_NOT_PERFORMED'
+        );
+        fail('RUNTIME_MANIFEST_OVERWRITE_NOT_PERFORMED',
+          'RUNTIME_MANIFEST_OVERWRITE_NOT_PERFORMED');
       }
       persistOperationRecord('push-runtime', result, 'PASS');
       writeSafeResult({
