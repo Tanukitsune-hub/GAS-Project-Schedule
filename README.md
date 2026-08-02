@@ -9,7 +9,7 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Current gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Current gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
 | Automation default | `OFF` |
 | Task schema | 50 columns |
 | Workbook schema | 11 Sheets, 5 hidden |
@@ -21,13 +21,36 @@ Google Workspace Personal Work OS.
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
-## Instruction 0007 - guarded personal-synthetic clasp result
+## Instruction 0010 - canonical parity and current runtime boundary
+
+Instruction 0010 used the explicitly approved new blank, spreadsheet-bound,
+personal, non-company synthetic target. Its separate two-file blank preflight
+passed without weakening the canonical contract. An independent pull-back then
+proved all `23` canonical files at the approved byte-level payload SHA-256
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+This parity proof does not convert the missing interactive-push confirmation
+into a claim about that command.
+
+The operator also reported one first-time `setupSystem` result as `COMPLETE`.
+That bounded report includes Setup's internal S90 gate, but it is not a
+standalone API-executable `runQuickDiagnostic` invocation and does not establish
+Phase 8B overall PASS. The highest supported development status is
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; company status remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` with
+`NO_ACTIVE_COMPANY_TRANSFER`.
+
+Personal standard Cloud linkage, Cloud-project Apps Script API enablement,
+OAuth Testing/Desktop-client runtime configuration, the MYSELF-only runtime
+overlay push/pull parity, API executable deployment, and the one guarded
+standalone read-only runtime invocation remain `NOT_EXECUTED`.
+
+## Historical Instruction 0007 guarded personal-synthetic clasp result
 
 The operator attested the existing target as
 `PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX`. Local OAuth, target
@@ -38,13 +61,14 @@ The exact 23-file payload matched the canonical byte hash
 
 The guarded push then returned `CLASP_PUSH_FAILED`. A read-only follow-up did
 not establish the one permitted `APPS_SCRIPT_API_DISABLED` exception, so the
-instruction's stop rule applies: no push retry, pull-back, runtime call, or
-remote repair is permitted. The current development status is therefore
+instruction's stop rule applied: no push retry, pull-back, runtime call, or
+remote repair was permitted under Instruction 0007. Its historical development
+status was
 `NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. The privacy-safe closed
 record is in the Instruction 0007 audit evidence.
 
-## Instruction 0008 / 0009 - current remote development bootstrap
+## Historical Instruction 0008 / 0009 remote development bootstrap
 
 Instruction 0008 supersedes 0007's retry prohibition and authorizes one new
 controlled canonical retry only after closed failure classification, clean
@@ -66,12 +90,13 @@ and `0` non-files. This is the closed
 `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` result; it does not infer target identity
 or accept a partial payload.
 
-Canonical push, its retry marker, canonical pull-back parity, Cloud/OAuth
+At the close of Instruction 0009, canonical push, its retry marker, canonical
+pull-back parity, Cloud/OAuth
 runtime setup, runtime overlay, API executable, runtime invocation, and final
-fresh clone are `NOT_EXECUTED`. The current development gate is therefore
+fresh clone were `NOT_EXECUTED`. The historical development gate was
 `NO_GO_LOCAL_CLASP_VALIDATION`. No company action is authorized.
 
-## Instruction 0006 — local clasp validation gate
+## Historical Instruction 0006 local clasp validation gate
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its T11 five-file company-PC
 carriage and the company-Sandbox T1-01 re-observation did not occur and are
@@ -328,7 +353,7 @@ target. The resulting status is transfer-only.
 <!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_START -->
 | Field | Value |
 |---|---|
-| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 | Transfer state | `T11_SUSPENDED` |
 | Current carriage source | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Workspace action | `NONE_AUTHORIZED` |
@@ -340,15 +365,15 @@ packages, transfer envelope, checksums, and prior manifests remain immutable
 historical evidence. They must not be copied or reflected on a company PC
 while this boundary is suspended.
 
-Instruction 0009 publication and current-head CI passed, but the isolated
-personal-synthetic read-only pull failed the strict 23-file allow-list. No
-canonical push, parity, Cloud/OAuth runtime setup, deployment, or runtime
-validation is authorized. No company Workspace action is authorized. Do not
+Instruction 0010 independently proved exact 23-file canonical pull-back parity
+on the approved personal-synthetic target. The remaining personal Cloud/OAuth,
+MYSELF-only runtime overlay, API executable, and standalone runtime validation
+lane is not company authorization. No company Workspace action is authorized. Do not
 carry a package, change an
 Apps Script file, run Setup or a diagnostic, touch Gmail, Calendar,
 Properties, triggers, Automation, tests, Migration, or perform repair. A
-future company boundary requires a separate governing instruction after the
-local clasp failure is resolved and independently revalidated. This status does
+future company boundary requires a separate governing instruction after remote
+development review. This status does
 not declare T1-01 PASS, Phase 8B overall PASS, Phase 8C GO, production ready,
 or pilot ready.
 <!-- ACTIVE_COMPANY_PC_TRANSFER_BOUNDARY_END -->

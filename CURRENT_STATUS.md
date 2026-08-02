@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-08-01
+Last updated: 2026-08-02
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Overall status: `NO_GO_LOCAL_CLASP_VALIDATION`
+Overall status: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `NOT_EXECUTED`
@@ -14,13 +14,35 @@ functional acceptance: `NOT_EXECUTED`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
-## Current 0007 guarded clasp result
+## Current 0010 canonical parity and runtime boundary
+
+The explicitly approved new blank, spreadsheet-bound, personal, non-company
+synthetic target passed its separate two-file blank preflight. An independent
+pull-back then proved the exact `23` canonical files at byte-level payload
+SHA-256 `ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+The interactive push confirmation was not recorded and is not inferred; the
+independent pull-back is the parity evidence.
+
+The operator reported one first-time `setupSystem` result as `COMPLETE`. This
+is bounded real-Workspace evidence for the Setup completion boundary, including
+its internal S90 gate. It is not a standalone API-executable diagnostic and
+does not establish Phase 8B overall PASS. The highest supported development
+status is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`, T11 remains
+`T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`.
+
+Personal standard Cloud linkage, Cloud-project Apps Script API enablement,
+OAuth Testing/Desktop-client runtime configuration, MYSELF-only overlay
+push/pull parity, API executable deployment, and the guarded standalone
+read-only `runQuickDiagnostic` invocation remain `NOT_EXECUTED`.
+
+## Historical 0007 guarded clasp result
 
 The existing target was locally attested as
 `PERSONAL_SYNTHETIC_NON_COMPANY_EXISTING_SANDBOX`. OAuth, ignored target
@@ -31,14 +53,14 @@ No identity, Script ID, URL, token, raw remote output, or Workspace content is
 retained.
 
 The guarded push returned `CLASP_PUSH_FAILED`. Read-only classification did
-not establish `APPS_SCRIPT_API_DISABLED`, so no exception applies and no push
-retry is permitted. Pull-back parity and runtime validation are
-`NOT_EXECUTED`. The current development status is
+not establish `APPS_SCRIPT_API_DISABLED`, so no exception applied and no push
+retry was permitted under Instruction 0007. Pull-back parity and runtime
+validation were `NOT_EXECUTED`. Its historical development status was
 `NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company transfer or
 Workspace action is authorized.
 
-## Current 0008 / 0009 bootstrap result
+## Historical 0008 / 0009 bootstrap result
 
 The reported 0007 commits are preserved locally and their ancestry from the
 0007 instruction is verified. The 0008 branch adds closed clasp failure
@@ -64,9 +86,10 @@ required, with `0` non-files. The closed result is
 and it is not eligible for canonical overwrite. Canonical push, retry-marker
 consumption, canonical parity, Cloud/OAuth setup, runtime-overlay parity,
 deployment, runtime call, and final fresh clone remain `NOT_EXECUTED`.
-The development status is `NO_GO_LOCAL_CLASP_VALIDATION`.
+The development status at the close of Instruction 0009 was
+`NO_GO_LOCAL_CLASP_VALIDATION`.
 
-## Current 0006 local clasp validation gate
+## Historical 0006 local clasp validation gate
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its company-PC T11 carriage,
 five-file replacement, and company-Sandbox T1-01 re-observation were not
@@ -370,10 +393,10 @@ respective historical verification and remain immutable evidence. T11 is
 `T11_SUSPENDED`, not an active company carriage source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
 occurred. The current non-Google local validation, GitHub publication, and
-current-head CI pass, including the strict 23-file staging inventory. The
-isolated read-only target pull does not meet the strict remote payload shape,
-so the controlled canonical retry and every later remote gate remain
-unexecuted. No company Workspace action is authorized by this status.
+current-head CI pass. Instruction 0010 then independently proved the strict
+23-file canonical pull-back parity. The personal Cloud/OAuth/runtime lane
+remains unexecuted, and no company Workspace action is authorized by this
+status.
 
 PR #9 records the earlier CI implementation against an older `main` baseline.
 Its reviewed semantics are integrated as one current-branch workflow and were

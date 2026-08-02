@@ -2,13 +2,15 @@
 
 Contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` /
 Migration `3`
-Current corrective-integration gate: `NO_GO_LOCAL_CLASP_VALIDATION`.
-Instruction 0009 branch publication and current GitHub Actions validation
-pass, but the isolated read-only target pull observed 2 files where the
-canonical payload requires 23 (`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). It does
-not establish target identity; canonical retry/push, pull-back parity,
-Cloud/OAuth, deployment, and runtime validation are `NOT_EXECUTED`.
-Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. Fixed T10 and T11 are
+Current corrective-integration gate:
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Instruction 0010 independently
+proved exact 23-file canonical pull-back parity on the approved new blank
+personal-synthetic target. One operator-reported first-time Setup result is
+`COMPLETE`, but it is not a standalone API-executable diagnostic and does not
+establish Phase 8B overall PASS. Personal Cloud/OAuth, MYSELF-only runtime
+overlay parity/deployment, and standalone runtime validation are
+`NOT_EXECUTED`. Company handoff is
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. Fixed T10 and T11 are
 immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. One observed Setup S00-S99 run is historical;
 Calendar reconciliation remains subject to separate future approval and

@@ -2,14 +2,14 @@
 
 ## Current boundary
 
-Instruction 0008 supersedes Instruction 0007 after its guarded
-personal-synthetic push failed closed. Instruction 0009 published the current
-branch and CI proof, then stopped the remote lane at a strict isolated
-read-only payload-shape mismatch. Canonical retry/pull-back, personal standard
-Cloud/OAuth setup, MYSELF-only runtime overlay/deployment, one read-only
-runtime validation, and final fresh-clone proof remain incomplete. Until all
-of that is independently reviewed, company handoff is
-`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` and there is no active
+Instruction 0010 independently proved exact 23-file canonical pull-back parity
+on the explicitly approved new blank, spreadsheet-bound, personal synthetic
+target. One operator-reported first-time Setup result is `COMPLETE`, but it is
+not a standalone API-executable runtime diagnostic and does not establish
+Phase 8B overall PASS. Personal standard Cloud/OAuth setup, MYSELF-only runtime
+overlay parity/deployment, one guarded read-only runtime validation, and remote
+development review remain incomplete. Company handoff is therefore
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and there is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company
 Sandbox Quick Diagnostic, or perform any T11-based manual operation.

@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `NO_GO_LOCAL_CLASP_VALIDATION`; Instruction 0009 branch publication and current GitHub Actions validation passed. An isolated read-only target pull then observed 2 files where the canonical payload requires 23, producing `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` without inferring target identity. Canonical retry/push, pull-back parity, Cloud/OAuth/deployment setup, and runtime validation are `NOT_EXECUTED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`; functional acceptance remains `NOT_EXECUTED`. |
+| Current gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; Instruction 0010 independently proved exact 23-file canonical pull-back parity on the approved new blank personal-synthetic target. One operator-reported first-time Setup result is `COMPLETE`, including its internal S90 gate, but it is not a standalone API-executable diagnostic and does not establish Phase 8B overall PASS. Personal Cloud/OAuth, MYSELF-only runtime overlay parity/deployment, and the guarded standalone read-only runtime invocation are `NOT_EXECUTED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`; functional acceptance remains `NOT_EXECUTED`. |
 
 ## Diagnostic bounded-acceptance summary
 

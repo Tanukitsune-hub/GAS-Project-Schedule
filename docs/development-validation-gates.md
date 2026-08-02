@@ -2,15 +2,17 @@
 
 ## Current policy
 
-Current Code is `2.8.11-prepilot`. Instruction 0008 supersedes Instruction
-0007 after its safe push failure and establishes a full remote-development
-bootstrap. Instruction 0009 then normally published the preserved history and
-obtained current-head CI success. The user-level API confirmation and target
-guard passed, but the required isolated read-only pull observed `2` files
-instead of the exact `23`-file allow-list. This closed
-`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH` blocks canonical mutation. Company
-handoff remains NO-GO and the active development status is
-`NO_GO_LOCAL_CLASP_VALIDATION`.
+Current Code is `2.8.11-prepilot`. Instruction 0010 used the explicitly
+approved new blank, spreadsheet-bound, personal synthetic target. Its separate
+two-file blank preflight passed, and an independent pull-back then proved exact
+`23`-file canonical byte parity at the approved payload hash. The operator also
+reported one first-time Setup result as `COMPLETE`; that report is not a
+standalone API-executable diagnostic and does not establish Phase 8B overall
+PASS. The active development status is
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Personal Cloud/OAuth, MYSELF-only
+runtime overlay parity/deployment, and the one guarded standalone read-only
+runtime invocation remain `NOT_EXECUTED`. Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier
 release/transfer artifacts remain immutable historical evidence; T11 is

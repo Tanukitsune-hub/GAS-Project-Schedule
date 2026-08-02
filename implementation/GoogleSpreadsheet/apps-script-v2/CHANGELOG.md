@@ -2,6 +2,23 @@
 
 ## 2.8.11-prepilot - 2026-07-31 T1-01 bounded Diagnostic summary visibility remediation
 
+### Instruction 0011 status-only reconciliation - 2026-08-02
+
+- Reconciled current canonical status documents and the v2.8.11 workflow
+  visualization with Instruction 0010's independently proven exact 23-file
+  canonical pull-back parity.
+- Current development status is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`;
+  company handoff remains
+  `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` with
+  `NO_ACTIVE_COMPANY_TRANSFER`.
+- Preserved the operator-reported first-time Setup result as bounded
+  `COMPLETE` evidence only. Standalone API-executable runtime validation,
+  Phase 8B overall PASS, company work, production, and pilot readiness are not
+  claimed.
+- No Apps Script executable source, canonical manifest, release package,
+  transfer envelope, checksum, fixed ref, or product version changed. The
+  prior visualization is archived before this status-only update.
+
 ### 0004 documentation, validation, and transfer-boundary evidence
 
 - Corrected active Company-PC operator wording to the fixed T11/v2.8.11

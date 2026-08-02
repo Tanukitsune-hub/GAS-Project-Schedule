@@ -4,8 +4,8 @@
  * Canonical current company-handoff contract consistency check.
  *
  * Historical T8/T9/T10/T11 references remain valid evidence. The current
- * contract must keep company carriage suspended until the local clasp gate is
- * independently evidenced.
+ * contract must record Instruction 0010 canonical parity while keeping company
+ * carriage suspended through the remaining personal runtime-readiness lane.
  */
 const assert = require('assert');
 const fs = require('fs');
@@ -34,8 +34,9 @@ const expectedKeys = [
   'Transfer path',
   'Company handoff'
 ];
-const noCompanyHandoff = 'NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE';
-const currentDevelopmentGate = 'NO_GO_LOCAL_CLASP_VALIDATION';
+const noCompanyHandoff =
+  'NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW';
+const currentDevelopmentGate = 'READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION';
 const allowedGates = [
   noCompanyHandoff,
   currentDevelopmentGate,
@@ -197,7 +198,7 @@ function validateContracts(contracts) {
   assert.ok(allowedGates.includes(reference.Gate),
     'current gate is not an allowed local-clasp governance gate');
   assert.strictEqual(reference.Gate, currentDevelopmentGate,
-    'current gate must preserve the Instruction 0009 published-but-unparitied result');
+    'current gate must preserve the Instruction 0010 canonical-parity result');
   assert.strictEqual(reference['Fixed transfer'], 'T11_SUSPENDED');
   assert.strictEqual(reference['Company handoff'], noCompanyHandoff);
   assert.ok(!historicalFixedRefs.includes(reference['Fixed transfer']),
@@ -205,16 +206,26 @@ function validateContracts(contracts) {
   return reference;
 }
 
-function validateInstruction0009CurrentFailure(text, label) {
+function validateInstruction0010CurrentParity(text, label) {
   assert.match(
     text,
-    /REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH/,
-    `${label}: current Instruction 0009 shape-failure category missing`
+    /Instruction 0010/i,
+    `${label}: current Instruction 0010 evidence label missing`
   );
   assert.match(
     text,
-    /canonical(?:\s+push|\s+mutation)[\s\S]{0,220}NOT_EXECUTED/i,
-    `${label}: current canonical mutation stop boundary missing`
+    /independent(?:ly)?[\s\S]{0,160}pull-back/i,
+    `${label}: current Instruction 0010 canonical parity evidence missing`
+  );
+  assert.match(
+    text,
+    /(?:exact|all)[\s\S]{0,80}`?23`?(?:-file| canonical files| files)/i,
+    `${label}: current Instruction 0010 canonical file-count evidence missing`
+  );
+  assert.match(
+    text,
+    /Cloud[\s\S]{0,260}(?:runtime|OAuth)[\s\S]{0,260}NOT_EXECUTED/i,
+    `${label}: remaining runtime-readiness boundary missing`
   );
 }
 
@@ -286,40 +297,40 @@ test('DOC-01C_STALE_PRE_ACCESS_NETWORK_GATE_IS_REJECTED', () => {
   }));
   assert.throws(
     () => validateContracts(contractsFromTexts(fixture)),
-    /Instruction 0009 published-but-unparitied result/
+    /Instruction 0010 canonical-parity result/
   );
 });
 
-test('DOC-01C1_CURRENT_DOCUMENTS_RECORD_THE_0009_SHAPE_STOP', () => {
+test('DOC-01C1_CURRENT_DOCUMENTS_RECORD_THE_0010_PARITY_BOUNDARY', () => {
   sourceTexts.forEach((entry) => {
-    validateInstruction0009CurrentFailure(entry.text, entry.name);
+    validateInstruction0010CurrentParity(entry.text, entry.name);
   });
   const fixture = sourceTexts.map((entry) => ({
     name: entry.name,
     text: entry.text.replace(
-      /REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH/g,
-      'UNKNOWN_CLASP_REMOTE_FAILURE'
+      /Instruction 0010/g,
+      'Instruction UNKNOWN'
     )
   }));
   assert.throws(
     () => fixture.forEach((entry) =>
-      validateInstruction0009CurrentFailure(entry.text, entry.name)
+      validateInstruction0010CurrentParity(entry.text, entry.name)
     ),
-    /shape-failure category missing/
+    /Instruction 0010 evidence label missing/
   );
 });
 
-test('DOC-01D_STALE_PENDING_COMPANY_HANDOFF_IS_REJECTED', () => {
+test('DOC-01D_STALE_LOCAL_FAILURE_COMPANY_HANDOFF_IS_REJECTED', () => {
   const fixture = sourceTexts.map((item) => ({
     name: item.name,
     text: item.text.replace(
       /^\|\s*Company handoff\s*\|\s*`[^`]+`\s*\|$/m,
-      '| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_LOCAL_CLASP_VALIDATION` |'
+      '| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |'
     )
   }));
   assert.throws(
     () => validateContracts(contractsFromTexts(fixture)),
-    /NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE/
+    /NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW/
   );
 });
 

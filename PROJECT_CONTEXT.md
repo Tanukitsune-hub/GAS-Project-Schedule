@@ -1,10 +1,10 @@
 # Project Context
 
-Last updated: 2026-08-01
+Last updated: 2026-08-02
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
+Publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -13,11 +13,25 @@ Publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+Instruction 0010 used the explicitly approved new blank, spreadsheet-bound,
+personal, non-company synthetic target. The separate two-file blank preflight
+passed, and an independent pull-back then proved the exact `23` canonical
+files at approved byte-level payload SHA-256
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+The operator-reported first-time `setupSystem` result is `COMPLETE`, including
+the internal S90 gate, but it is not standalone API-executable runtime evidence
+and does not establish Phase 8B overall PASS. The highest supported development
+status is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` with
+`NO_ACTIVE_COMPANY_TRANSFER`. Personal Cloud/OAuth configuration, MYSELF-only
+runtime overlay parity, API executable deployment, and one guarded standalone
+read-only runtime invocation remain `NOT_EXECUTED`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its proposed T11 carriage,
 five-file Company-PC replacement, and Company Sandbox Quick Diagnostic are
@@ -29,8 +43,8 @@ current-branch CI and non-Google local gate passed. Instruction 0007 then
 completed local OAuth, attestation, target guard, exact 23-file staging, and a
 pre-push status check, but its guarded push failed closed as
 `CLASP_PUSH_FAILED`. The permitted API-disabled exception was not established,
-so no retry or pull-back is allowed. The development gate is
-`NO_GO_LOCAL_CLASP_VALIDATION`, and company handoff is
+so no retry or pull-back was allowed under Instruction 0007. Its historical
+development gate was `NO_GO_LOCAL_CLASP_VALIDATION`, and company handoff was
 `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
 
 Instruction 0008 supersedes the old no-retry boundary with exactly one
@@ -49,7 +63,7 @@ no non-file entries. Its closed result is
 `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`; no inference about target identity is
 made and no canonical overwrite is allowed. Canonical push/pull parity,
 Cloud/OAuth, runtime overlay, deployment, runtime validation, and final fresh
-clone remain `NOT_EXECUTED`. The active gate is
+clone remained `NOT_EXECUTED` at the close of Instruction 0009. Its gate was
 `NO_GO_LOCAL_CLASP_VALIDATION`.
 
 v2.8.11 is a visibility-only Diagnostic remediation. T11 is remote-resolved
@@ -236,10 +250,11 @@ evidence. T6.1 through T11 are also historical and are not current execution
 transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
 five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
 Diagnostic re-observation is authorized. Current-branch CI and non-Google
-local validation and Instruction 0009 publication/CI passed. The controlled
-recovery lane stopped at a noncanonical isolated read-only payload shape; all
-canonical mutation and later Google remote steps remain unexecuted. The
-development gate is `NO_GO_LOCAL_CLASP_VALIDATION`.
+local validation pass, and Instruction 0010 independently proved exact
+23-file canonical pull-back parity. Personal Cloud/OAuth/runtime work remains
+unexecuted. The development gate is
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` and company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 This permits no company
 Workspace action, Setup, S90, S99, Dashboard
 refresh, Gmail, Calendar, Properties, triggers, Automation, tests, Migration,

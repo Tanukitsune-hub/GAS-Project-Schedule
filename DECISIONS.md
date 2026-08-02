@@ -375,3 +375,29 @@ call, and fresh clone are `NOT_EXECUTED`. Automation remains OFF;
 `T11_SUSPENDED` and `NO_ACTIVE_COMPANY_TRANSFER` remain unchanged. A future
 rebind or target-remediation action requires the existing personal-synthetic
 Sandbox to be independently reconfirmed without exposing its identifier.
+
+## D-052 - Instruction 0010 parity advances only the runtime-readiness gate
+
+**Decision.** Instruction 0010 supersedes D-051 only for the active development
+status. The explicitly approved new blank, spreadsheet-bound, personal
+synthetic target passed its separate two-file blank preflight, after which an
+independent pull-back proved the exact 23-file canonical payload and approved
+byte hash. The highest supported development status is
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
+
+**Rationale.** The interactive push confirmation was not recorded and must not
+be inferred. Exact independent pull-back parity is sufficient evidence of the
+remote canonical bytes without rewriting that missing confirmation. The
+operator-reported first-time Setup result `COMPLETE` establishes only the
+bounded Setup completion boundary, including its internal S90 gate; it is not
+a standalone API-executable diagnostic and does not establish Phase 8B overall
+PASS.
+
+**Consequences.** Personal standard Cloud linkage, Cloud-project Apps Script
+API enablement, OAuth Testing/Desktop-client runtime configuration, MYSELF-only
+runtime overlay push/pull parity, MYSELF-only API executable deployment, and
+one guarded standalone read-only `runQuickDiagnostic` remain `NOT_EXECUTED`.
+Automation remains OFF; `T11_SUSPENDED` and `NO_ACTIVE_COMPANY_TRANSFER`
+remain unchanged. No company, production, Phase 8C, or pilot action is
+authorized.

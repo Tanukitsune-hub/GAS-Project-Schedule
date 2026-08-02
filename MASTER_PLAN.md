@@ -1,9 +1,9 @@
 # Master Plan
 
-Last updated: 2026-08-01
+Last updated: 2026-08-02
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
-Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
+Current publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -12,13 +12,34 @@ Current publication gate: `NO_GO_LOCAL_CLASP_VALIDATION`
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Gate | `NO_GO_LOCAL_CLASP_VALIDATION` |
+| Gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` |
 | Fixed transfer | `T11_SUSPENDED` |
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
-| Company handoff | `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` |
+| Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
-## 0007 guarded personal-synthetic clasp outcome
+## Instruction 0010 canonical parity and next runtime lane
+
+The approved new blank, spreadsheet-bound, personal synthetic target passed
+its two-file blank preflight. A separate independent pull-back proved the exact
+`23` canonical files and approved byte-level payload SHA-256
+`ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1`.
+The missing interactive-push confirmation is not inferred from that proof.
+
+One operator-reported first-time `setupSystem` result is `COMPLETE`, including
+the internal S90 gate. It is not a standalone API-executable diagnostic and
+does not declare Phase 8B overall PASS. The current development gate is
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and there is
+`NO_ACTIVE_COMPANY_TRANSFER`.
+
+The next permitted lane is limited to personal standard Cloud linkage,
+Cloud-project Apps Script API enablement, OAuth Testing/Desktop-client setup,
+MYSELF-only runtime overlay parity and API executable deployment, and exactly
+one guarded standalone read-only `runQuickDiagnostic`. Those steps remain
+`NOT_EXECUTED` until their separate prerequisites pass.
+
+## Historical 0007 guarded personal-synthetic clasp outcome
 
 The locally attested existing personal-synthetic target passed ignored binding,
 target guard, exact 23-file staging, and pre-push status checks. The guarded
@@ -27,12 +48,12 @@ establish the permitted `APPS_SCRIPT_API_DISABLED` exception. Under the
 instruction's stop rule, no retry, pull-back, runtime call, or remote repair is
 planned in this instruction.
 
-The current development status is `NO_GO_LOCAL_CLASP_VALIDATION`, and company
-handoff is `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. A later
+The historical development status was `NO_GO_LOCAL_CLASP_VALIDATION`, and
+company handoff was `NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. A later
 instruction must independently resolve the push failure before restaging and
 must not reuse this failed attempt as parity evidence.
 
-## 0008 remote GAS development bootstrap
+## Historical 0008 remote GAS development bootstrap
 
 The safe implementation lane is additive: preserve the 0007 commits, normally
 merge the fixed 0008 instruction, publish one dedicated stacked Draft PR, then
@@ -48,11 +69,11 @@ success. The user-level API confirmation and ignored target guard passed, but
 the required isolated read-only pull observed `2` files rather than the exact
 `23`-file payload. The closed result is
 `REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`; canonical mutation is not permitted.
-Canonical push/pull parity, Cloud/OAuth setup, deployment, and runtime
-invocation remain `NOT_EXECUTED`; the current gate is
+At the close of Instruction 0009, canonical push/pull parity, Cloud/OAuth
+setup, deployment, and runtime invocation remained `NOT_EXECUTED`; its gate was
 `NO_GO_LOCAL_CLASP_VALIDATION`.
 
-## 0006 local clasp validation gate
+## Historical 0006 local clasp validation gate
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Its proposed five-file
 company-PC carriage, Company Sandbox Quick Diagnostic, and all related manual
@@ -207,13 +228,12 @@ its proposed T11 carriage were neither performed nor authorized. T11's prior
 hashes and transfer package remain available solely as historical evidence;
 they are not an active company transfer source.
 
-The current development gate is `NO_GO_LOCAL_CLASP_VALIDATION`: local
-non-Google validation, GitHub publication, current-branch CI, and the strict
-staged source inventory pass, but the isolated read-only target pull fails the
-exact 23-file shape. Canonical push/pull parity, Cloud/OAuth, runtime-overlay
-parity, deployment, runtime validation, and final fresh clone remain
-unexecuted. Company handoff is
-`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. No company-PC
+The current development gate is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`:
+local non-Google validation, GitHub publication/current-branch CI, and exact
+23-file canonical pull-back parity pass. Personal Cloud/OAuth, runtime-overlay
+parity, API executable deployment, standalone runtime validation, and final
+remote-development review remain unexecuted. Company handoff is
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. No company-PC
 carriage, Workspace action, deployment, Automation enablement, or Phase 8B
 functional acceptance is authorized by this plan. This does not declare T1-01
 PASS, Phase 8B overall PASS, Phase 8C GO, production ready, or pilot ready.
