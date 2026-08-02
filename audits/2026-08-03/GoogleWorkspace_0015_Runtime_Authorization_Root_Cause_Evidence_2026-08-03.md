@@ -1,7 +1,7 @@
 # Google Workspace 0015 Runtime Authorization Root-Cause Evidence
 
-Date: 2026-08-03  
-Instruction: 0015  
+Date: 2026-08-03<br>
+Instruction: 0015<br>
 Boundary: personal synthetic development target only; no company, production,
 or real-data operation.
 
