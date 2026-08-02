@@ -818,12 +818,14 @@ test('BOOT-38_INSTRUCTION_0015_REAUTHORIZATION_MATRIX_AND_ONE_USE_CALL_ARE_GUARD
     packageJson.scripts['gas:test:runtime-dev:0015'],
     'node tools/local_clasp_dev.js test-runtime-0015'
   );
-  assert.match(claspToolSource, /personal-synthetic-runtime-0015/);
+  assert.match(claspToolSource, /instruction0015RuntimeProfileName = runtimeProfileName/);
+  assert.match(claspToolSource, /refreshAccessToken\(\)/);
+  assert.match(claspToolSource, /persistRefreshedRuntimeOAuthProfile/);
   assert.match(claspToolSource, /getTokenInfo\(accessToken\)/);
   assert.match(claspToolSource, /manifest_scope_coverage/);
   assert.match(claspToolSource, /runtime_api_scope_coverage/);
-  assert.match(claspToolSource, /PASS_FRESH_REAUTHORIZATION/);
-  assert.match(claspToolSource, /FRESH_REAUTHORIZED_DEPLOYMENT_REQUIRED/);
+  assert.match(claspToolSource, /PASS_REFRESHED_NAMED_PROFILE/);
+  assert.match(claspToolSource, /FRESH_REFRESHED_PROFILE_DEPLOYMENT_REQUIRED/);
   assert.match(claspToolSource, /INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA/);
   assert.match(claspToolSource, /instruction-0015-runtime-attempt\.json/);
   const reauthorize = claspToolSource.indexOf(
@@ -849,11 +851,14 @@ test('BOOT-38_INSTRUCTION_0015_REAUTHORIZATION_MATRIX_AND_ONE_USE_CALL_ARE_GUARD
   assert.ok(reauthorize >= 0 && matrix > reauthorize && prepare > matrix);
   assert.ok(preflight > prepare && runtime > preflight);
   assert.ok(marker > runtime && call > marker);
+  const reauthorizeSegment = claspToolSource.slice(reauthorize, matrix);
+  assert.match(reauthorizeSegment, /forceRefresh: true/);
+  assert.doesNotMatch(reauthorizeSegment, /runClasp\(/);
   const runtimeSegment = claspToolSource.slice(runtime, call + 160);
   assert.match(claspToolSource,
     /function instruction0015RuntimeClaspArgs\(\)[\s\S]{0,420}'--json', 'run-function', '--nondev', 'runQuickDiagnostic'/);
   assert.match(runtimeSegment, /INSTRUCTION_0015_RUNTIME_ALREADY_ATTEMPTED/);
-  assert.match(claspToolSource.slice(runtime), /reauthorized_named_profile: true/);
+  assert.match(claspToolSource.slice(runtime), /refreshed_named_profile: true/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

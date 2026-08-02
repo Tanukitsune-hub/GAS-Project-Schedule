@@ -99,7 +99,7 @@ const allowedTargetAttestations = Object.freeze([
 ]);
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const runtimeProfileName = 'personal-synthetic-runtime';
-const instruction0015RuntimeProfileName = 'personal-synthetic-runtime-0015';
+const instruction0015RuntimeProfileName = runtimeProfileName;
 const requiredRuntimeApiScopes = Object.freeze([
   'https://www.googleapis.com/auth/script.deployments',
   'https://www.googleapis.com/auth/script.projects',
@@ -108,7 +108,7 @@ const requiredRuntimeApiScopes = Object.freeze([
 const instruction0014DeploymentDescription =
   'instruction-0014-pull-verified-runtime';
 const instruction0015DeploymentDescription =
-  'instruction-0015-reauthorized-runtime';
+  'instruction-0015-refreshed-runtime';
 const expectedCanonicalPayloadSha256 =
   'ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1';
 const canonicalScriptExtensions = Object.freeze(['.gs', '.js']);
@@ -880,7 +880,7 @@ function principalsMatch(left, right) {
     left.email === right.email && left.id === right.id);
 }
 
-async function inspectOAuthProfile(profileName, manifestScopes) {
+async function inspectOAuthProfile(profileName, manifestScopes, options = {}) {
   const profile = readNamedRuntimeOAuthProfile(profileName);
   const desktop = localDesktopOAuthClient();
   const safe = {
@@ -895,18 +895,34 @@ async function inspectOAuthProfile(profileName, manifestScopes) {
     manifest_scope_coverage: false,
     runtime_api_scope_coverage: false,
     missing_runtime_api_scope_count: requiredRuntimeApiScopes.length,
-    oauth_principal_readable: false
+    oauth_principal_readable: false,
+    oauth_principal_fingerprint: null,
+    profile_refresh_mode: options.forceRefresh === true
+      ? 'FORCED_REFRESH' : 'CACHE_OR_REFRESH'
   };
   const client = buildOAuthClientForProfile(profile);
   let accessToken;
   try {
-    const access = await client.getAccessToken();
-    accessToken = typeof access === 'string' ? access : access && access.token;
+    if (options.forceRefresh === true) {
+      const refreshed = await client.refreshAccessToken();
+      const credentials = refreshed && refreshed.credentials;
+      accessToken = credentials && credentials.access_token;
+      if (accessToken) {
+        client.setCredentials({
+          ...profile,
+          ...credentials,
+          refresh_token: profile.refresh_token
+        });
+      }
+    } else {
+      const access = await client.getAccessToken();
+      accessToken = typeof access === 'string' ? access : access && access.token;
+    }
     safe.profile_refresh = accessToken ? 'PASS' : 'FAIL';
-    if (!accessToken) return { safe, client, principal: null };
+    if (!accessToken) return { safe, client, principal: null, profile };
   } catch (error) {
     safe.profile_refresh = safeGoogleErrorCategory(error);
-    return { safe, client, principal: null };
+    return { safe, client, principal: null, profile };
   }
   try {
     const tokenInfo = await client.getTokenInfo(accessToken);
@@ -942,11 +958,35 @@ async function inspectOAuthProfile(profileName, manifestScopes) {
       id: response.data.id
     };
     safe.oauth_principal_readable = Boolean(principal && principal.email && principal.id);
-    return { safe, client, principal };
+    safe.oauth_principal_fingerprint = safe.oauth_principal_readable
+      ? sha256(`${principal.email}\n${principal.id}`) : null;
+    return { safe, client, principal, profile };
   } catch (error) {
     safe.oauth_principal_readable = safeGoogleErrorCategory(error);
-    return { safe, client, principal: null };
+    return { safe, client, principal: null, profile };
   }
+}
+
+function persistRefreshedRuntimeOAuthProfile(profileName, inspection) {
+  const store = readJson(runtimeAuthRoot, 'NAMED_RUNTIME_OAUTH_PROFILE_MISSING');
+  const stored = store && store.tokens && store.tokens[profileName];
+  const refreshed = inspection && inspection.client && inspection.client.credentials;
+  if (!stored || !inspection || !inspection.profile ||
+      stored.client_id !== inspection.profile.client_id ||
+      typeof refreshed.access_token !== 'string' ||
+      !Number.isFinite(Number(refreshed.expiry_date))) {
+    fail('NAMED_RUNTIME_OAUTH_PROFILE_REFRESH_NOT_PROVEN',
+      'NAMED_RUNTIME_OAUTH_PROFILE_REFRESH_NOT_PROVEN');
+  }
+  store.tokens[profileName] = {
+    ...stored,
+    access_token: refreshed.access_token,
+    expiry_date: Number(refreshed.expiry_date),
+    ...(typeof refreshed.id_token === 'string'
+      ? { id_token: refreshed.id_token } : {})
+  };
+  fs.writeFileSync(runtimeAuthRoot, `${JSON.stringify(store, null, 2)}\n`, 'utf8');
+  return true;
 }
 
 async function inspectRuntimeDeploymentMetadata(client, scriptId, deploymentId) {
@@ -1814,6 +1854,7 @@ function writeInstruction0015RuntimeAttemptMarker(marker) {
 
 function instruction0015SafeRecord(operation, status, evidence) {
   const allowedOperations = new Set([
+    instruction0015OAuthReauthorizationOperation,
     instruction0015AuthorizationOperation,
     instruction0015DeploymentAuthorizationOperation
   ]);
@@ -1855,7 +1896,9 @@ function assertInstruction0015AuthorizationMatrix() {
       record.status !== 'PASS' || record.exit_code !== 0 ||
       record.profile_name !== instruction0015RuntimeProfileName ||
       record.prior_profiles_preserved !== true ||
-      record.profile_principal_matches_legacy_profile !== true ||
+      record.existing_profile_refreshed_local_only !== true ||
+      record.refreshed_profile_principal_readable !== true ||
+      record.profile_principal_matches_refreshed_profile !== true ||
       record.local_desktop_client_match !== true ||
       record.profile_refresh !== 'PASS' ||
       record.token_audience_match !== true ||
@@ -1864,7 +1907,7 @@ function assertInstruction0015AuthorizationMatrix() {
       record.runtime_api_scope_coverage !== true ||
       record.oauth_principal_readable !== true ||
       record.oauth_testing_test_user_eligibility !==
-        'PASS_FRESH_REAUTHORIZATION' ||
+        'PASS_REFRESHED_NAMED_PROFILE' ||
       record.standard_cloud_project_linkage !==
         'PASS_ATTESTED_LOCAL_CLIENT_AND_AUDIENCE' ||
       record.apps_script_api_enablement !== 'PASS_DEPLOYMENT_METADATA_READABLE' ||
@@ -1873,7 +1916,7 @@ function assertInstruction0015AuthorizationMatrix() {
       record.deployment_versioned !== true ||
       record.deployment_targets_bound_script !== true ||
       record.visibility_vs_execution_permission !==
-        'FRESH_REAUTHORIZED_DEPLOYMENT_REQUIRED' ||
+        'FRESH_REFRESHED_PROFILE_DEPLOYMENT_REQUIRED' ||
       !/^[a-f0-9]{64}$/.test(String(record.output_sha256 || ''))) {
     fail('INSTRUCTION_0015_AUTHORIZATION_MATRIX_INVALID',
       'INSTRUCTION_0015_AUTHORIZATION_MATRIX_INVALID');
@@ -1890,7 +1933,14 @@ function assertInstruction0015OAuthReauthorization() {
   );
   if (record.profile_name !== instruction0015RuntimeProfileName ||
       record.prior_profiles_preserved !== true ||
+      record.existing_profile_refreshed_local_only !== true ||
       record.local_desktop_client_match !== true ||
+      record.profile_refresh !== 'PASS' ||
+      record.forced_token_refresh !== true ||
+      record.manifest_scope_coverage !== true ||
+      record.runtime_api_scope_coverage !== true ||
+      record.oauth_principal_readable !== true ||
+      !/^[a-f0-9]{64}$/.test(String(record.oauth_principal_fingerprint || '')) ||
       record.runtime_invocation !== 'NOT_EXECUTED') {
     fail('INSTRUCTION_0015_OAUTH_REAUTHORIZATION_INVALID',
       'INSTRUCTION_0015_OAUTH_REAUTHORIZATION_INVALID');
@@ -1948,7 +1998,7 @@ function prepareInstruction0015RuntimeAttempt() {
     clasp_run_semantics_proved: true,
     clasp_functions_source_sha256: semantics.functions_source_sha256,
     prior_deployment_binding_sha256: sha256(runtime.deployment_id),
-    deployment_lineage: 'REQUIRES_FRESH_0015_REAUTHORIZED_DEPLOYMENT'
+    deployment_lineage: 'REQUIRES_FRESH_0015_REFRESHED_PROFILE_DEPLOYMENT'
   });
 }
 
@@ -4243,58 +4293,76 @@ async function main() {
       }
       assertRuntimeBootstrapConfiguration();
       assertRuntimeStagedPayload();
-      const store = readJson(
-        runtimeAuthRoot,
-        'NAMED_RUNTIME_OAUTH_PROFILE_MISSING'
+      const manifest = readJson(
+        path.join(runtimePayloadRoot, 'appsscript.json'),
+        'RUNTIME_STAGED_MANIFEST_MISSING'
       );
-      if (store.tokens && store.tokens[instruction0015RuntimeProfileName]) {
-        fail('INSTRUCTION_0015_OAUTH_PROFILE_ALREADY_EXISTS',
-          'INSTRUCTION_0015_OAUTH_PROFILE_ALREADY_EXISTS');
-      }
-      readNamedRuntimeOAuthProfile(runtimeProfileName);
-      const args = runtimeClaspArgsForProfile(instruction0015RuntimeProfileName, [
-        '--json', 'login', '--creds',
-        relativeDesktopOAuthCredentialPath(runtimeRoot),
-        '--use-project-scopes', '--include-clasp-scopes'
-      ]);
+      const manifestScopes = Array.isArray(manifest.oauthScopes)
+        ? manifest.oauthScopes : [];
       googleOperation = 'ATTEMPTED';
-      const result = runClasp(args, runtimeRoot);
-      if (result.exit_code !== 0) {
-        failClassifiedClaspOperation(
-          instruction0015OAuthReauthorizationOperation,
-          result,
-          guarded
+      const inspection = await inspectOAuthProfile(
+        instruction0015RuntimeProfileName,
+        manifestScopes,
+        { forceRefresh: true }
+      );
+      const profile = inspection.safe;
+      const requirements = [
+        profile.named_profile_present === true,
+        profile.local_desktop_client_match === true,
+        profile.profile_refresh === 'PASS',
+        profile.profile_refresh_mode === 'FORCED_REFRESH',
+        profile.token_audience_match === true,
+        profile.token_lifetime_at_least_six_minutes === true,
+        profile.manifest_scope_coverage === true,
+        profile.runtime_api_scope_coverage === true,
+        profile.oauth_principal_readable === true,
+        /^[a-f0-9]{64}$/.test(
+          String(profile.oauth_principal_fingerprint || '')
+        )
+      ];
+      if (requirements.every(Boolean)) {
+        persistRefreshedRuntimeOAuthProfile(
+          instruction0015RuntimeProfileName,
+          inspection
         );
       }
-      const desktop = localDesktopOAuthClient();
-      const profile = readNamedRuntimeOAuthProfile(
-        instruction0015RuntimeProfileName
-      );
-      const safe = persistOperationRecord(
+      const safe = instruction0015SafeRecord(
         instruction0015OAuthReauthorizationOperation,
-        result,
-        'PASS'
-      );
-      Object.assign(safe, {
+        requirements.every(Boolean) ? 'PASS' : 'REVIEW_REQUIRED',
+        {
         instruction: '0015',
         profile_name: instruction0015RuntimeProfileName,
         prior_profiles_preserved: true,
-        local_desktop_client_match:
-          profile.client_id === desktop.client.client_id,
+        existing_profile_refreshed_local_only: requirements.every(Boolean),
+        forced_token_refresh:
+          profile.profile_refresh === 'PASS' &&
+          profile.profile_refresh_mode === 'FORCED_REFRESH',
+        local_desktop_client_match: profile.local_desktop_client_match,
+        profile_refresh: profile.profile_refresh,
+        token_audience_match: profile.token_audience_match,
+        token_lifetime_at_least_six_minutes:
+          profile.token_lifetime_at_least_six_minutes,
+        manifest_scope_count: profile.manifest_scope_count,
+        granted_scope_count: profile.granted_scope_count,
+        missing_scope_count: profile.missing_scope_count,
+        manifest_scope_coverage: profile.manifest_scope_coverage,
+        missing_runtime_api_scope_count:
+          profile.missing_runtime_api_scope_count,
+        runtime_api_scope_coverage: profile.runtime_api_scope_coverage,
+        oauth_principal_readable: profile.oauth_principal_readable,
+        oauth_principal_fingerprint: profile.oauth_principal_fingerprint,
         runtime_invocation: 'NOT_EXECUTED'
-      });
-      fs.writeFileSync(
-        path.join(operationRecordRoot,
-          `last-${instruction0015OAuthReauthorizationOperation}.json`),
-        `${JSON.stringify(safe, null, 2)}\n`,
-        'utf8'
+        }
       );
-      writeLastOperation(safe);
       writeSafeResult({
-        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        lane: 'local_clasp_runtime_dev', command, status: safe.status,
         instruction: '0015',
-        named_runtime_oauth_profile: 'CONFIGURED_FRESH_LOCAL_ONLY',
+        named_runtime_oauth_profile:
+          safe.status === 'PASS'
+            ? 'REFRESHED_EXISTING_LOCAL_ONLY' : 'REVIEW_REQUIRED',
         prior_profiles_preserved: safe.prior_profiles_preserved,
+        existing_profile_refreshed_local_only:
+          safe.existing_profile_refreshed_local_only,
         local_desktop_client_match: safe.local_desktop_client_match,
         runtime_invocation: 'NOT_EXECUTED'
       });
@@ -4320,7 +4388,6 @@ async function main() {
       const manifestScopes = Array.isArray(manifest.oauthScopes)
         ? manifest.oauthScopes : [];
       googleOperation = 'ATTEMPTED';
-      const legacy = await inspectOAuthProfile(runtimeProfileName, manifestScopes);
       const current = await inspectOAuthProfile(
         instruction0015RuntimeProfileName,
         manifestScopes
@@ -4342,10 +4409,13 @@ async function main() {
         profile_name: instruction0015RuntimeProfileName,
         prior_profiles_preserved:
           reauthorization.prior_profiles_preserved === true,
-        legacy_profile_principal_readable:
-          legacy.safe.oauth_principal_readable === true,
-        profile_principal_matches_legacy_profile:
-          principalsMatch(current.principal, legacy.principal),
+        existing_profile_refreshed_local_only:
+          reauthorization.existing_profile_refreshed_local_only === true,
+        refreshed_profile_principal_readable:
+          reauthorization.oauth_principal_readable === true,
+        profile_principal_matches_refreshed_profile:
+          currentSafe.oauth_principal_fingerprint ===
+          reauthorization.oauth_principal_fingerprint,
         named_profile_present: currentSafe.named_profile_present,
         local_desktop_client_match: currentSafe.local_desktop_client_match,
         profile_refresh: currentSafe.profile_refresh,
@@ -4362,7 +4432,7 @@ async function main() {
         oauth_principal_readable: currentSafe.oauth_principal_readable,
         oauth_testing_test_user_eligibility:
           currentSafe.oauth_principal_readable === true
-            ? 'PASS_FRESH_REAUTHORIZATION' : 'REVIEW_REQUIRED',
+            ? 'PASS_REFRESHED_NAMED_PROFILE' : 'REVIEW_REQUIRED',
         standard_cloud_project_linkage:
           runtime.standard_cloud_project_linked === true &&
           runtime.apps_script_api_enabled_in_cloud_project === true &&
@@ -4384,13 +4454,14 @@ async function main() {
           pullback.runtime_function === allowedRuntimeFunction &&
           versionPullback.version_runtime_function === allowedRuntimeFunction,
         visibility_vs_execution_permission:
-          'FRESH_REAUTHORIZED_DEPLOYMENT_REQUIRED',
+          'FRESH_REFRESHED_PROFILE_DEPLOYMENT_REQUIRED',
         runtime_invocation: 'NOT_EXECUTED'
       };
       const required = [
         safe.prior_profiles_preserved === true,
-        safe.legacy_profile_principal_readable === true,
-        safe.profile_principal_matches_legacy_profile === true,
+        safe.existing_profile_refreshed_local_only === true,
+        safe.refreshed_profile_principal_readable === true,
+        safe.profile_principal_matches_refreshed_profile === true,
         safe.named_profile_present === true,
         safe.local_desktop_client_match === true,
         safe.profile_refresh === 'PASS',
@@ -4399,7 +4470,7 @@ async function main() {
         safe.manifest_scope_coverage === true,
         safe.runtime_api_scope_coverage === true,
         safe.oauth_principal_readable === true,
-        safe.oauth_testing_test_user_eligibility === 'PASS_FRESH_REAUTHORIZATION',
+        safe.oauth_testing_test_user_eligibility === 'PASS_REFRESHED_NAMED_PROFILE',
         safe.standard_cloud_project_linkage ===
           'PASS_ATTESTED_LOCAL_CLIENT_AND_AUDIENCE',
         safe.apps_script_api_enablement === 'PASS_DEPLOYMENT_METADATA_READABLE',
@@ -4516,7 +4587,7 @@ async function main() {
           staged_wrapper_present: pullback.staged_wrapper_present,
           pulled_wrapper_present: pullback.pulled_wrapper_present,
           execution_api_access: 'MYSELF',
-          reauthorized_profile_binding: true,
+          refreshed_profile_binding: true,
           runtime_diagnostic_invocation: 'NOT_EXECUTED'
         }
       );
@@ -4552,7 +4623,7 @@ async function main() {
           fresh_versioned_deployment_created: true,
           deployment_binding_sha256: deployment.deployment_binding_sha256,
           execution_api_access: 'MYSELF',
-          reauthorized_profile_binding: true,
+          refreshed_profile_binding: true,
           runtime_diagnostic_invocation: 'NOT_EXECUTED'
         }
       );
@@ -4596,7 +4667,7 @@ async function main() {
           version_file_count: versionPullback.version_file_count,
           version_wrapper_present: versionPullback.version_wrapper_present,
           execution_api_access: 'MYSELF',
-          reauthorized_profile_binding: true,
+          refreshed_profile_binding: true,
           runtime_diagnostic_invocation: 'NOT_EXECUTED'
         }
       );
@@ -4632,16 +4703,16 @@ async function main() {
           version_payload_pullback_parity: true,
           version_wrapper_present: versionPullback.version_wrapper_present,
           deployment_binding_sha256: deployment.deployment_binding_sha256,
-          reauthorized_profile_binding: true,
+          refreshed_profile_binding: true,
           runtime_diagnostic_invocation: 'NOT_EXECUTED'
         }
       );
 
-      const reauthorizedProfile = readNamedRuntimeOAuthProfile(
+      const refreshedProfile = readNamedRuntimeOAuthProfile(
         instruction0015RuntimeProfileName
       );
       const metadata = await inspectRuntimeDeploymentMetadata(
-        buildOAuthClientForProfile(reauthorizedProfile),
+        buildOAuthClientForProfile(refreshedProfile),
         guarded.config.scriptId,
         deployment.deployment_id
       );
@@ -4697,7 +4768,7 @@ async function main() {
         deployment_binding_sha256: deployment.deployment_binding_sha256,
         execution_binding_sha256: executionBindingSha256,
         deployment_lineage:
-          'FRESH_0015_REAUTHORIZED_PROFILE_VERSION_PULLBACK_PROVED'
+          'FRESH_0015_REFRESHED_PROFILE_VERSION_PULLBACK_PROVED'
       });
       writeSafeResult({
         lane: 'local_clasp_runtime_dev', command, status: 'PASS',
@@ -4740,7 +4811,7 @@ async function main() {
       const versionPullback = assertRuntimeVersionPullbackPayload(prepared.staged);
       const executionBindingSha256 = assertRuntimeExecutionBinding(runtime);
       if (prepared.marker.deployment_lineage !==
-          'FRESH_0015_REAUTHORIZED_PROFILE_VERSION_PULLBACK_PROVED' ||
+          'FRESH_0015_REFRESHED_PROFILE_VERSION_PULLBACK_PROVED' ||
           prepared.marker.deployment_binding_sha256 !==
             sha256(runtime.deployment_id) ||
           prepared.marker.execution_binding_sha256 !== executionBindingSha256 ||
@@ -4778,7 +4849,7 @@ async function main() {
             safe_subtype: classifyRuntimeFailureSubtype(result.raw),
             deployed_version_mode: true,
             scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
-            reauthorized_named_profile: true,
+            refreshed_named_profile: true,
             runtime_function: allowedRuntimeFunction
           }
         );
@@ -4802,7 +4873,7 @@ async function main() {
             ),
             deployed_version_mode: true,
             scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
-            reauthorized_named_profile: true,
+            refreshed_named_profile: true,
             runtime_function: allowedRuntimeFunction
           }
         );
@@ -4816,7 +4887,7 @@ async function main() {
           safe_subtype: 'BOUNDED_DIAGNOSTIC_BODY',
           deployed_version_mode: true,
           scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
-          reauthorized_named_profile: true,
+          refreshed_named_profile: true,
           runtime_function: allowedRuntimeFunction
         }
       );
@@ -4829,7 +4900,7 @@ async function main() {
         instruction: '0015', runtime_function: allowedRuntimeFunction,
         deployed_version_mode: true,
         scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
-        reauthorized_named_profile: true,
+        refreshed_named_profile: true,
         runtime_payload_sha256: prepared.staged.runtime_payload_sha256,
         clasp_version: claspVersion(),
         command_output_sha256: result.output_sha256,

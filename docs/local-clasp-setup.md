@@ -414,22 +414,22 @@ The 0014 runtime command writes `ATTEMPT_STARTED` first, invokes exactly
 generic runtime command or either 0013 command for this instruction.
 
 Instruction 0015 is a separate authorization-root-cause lane after the closed
-0014 result. It must not reuse the prior named profile for the new diagnostic.
-The guarded flow creates one additional ignored local-only named profile,
-preserving the earlier profile, then records an authorization matrix with only
-closed fields. The matrix verifies a refreshed token, token audience, token
-lifetime, all runtime-manifest scopes, required Apps Script client scopes,
-fresh consent eligibility, legacy-profile principal equality, and read-only
+0014 result. Its guarded local remediation force-refreshes the existing named
+personal-synthetic profile in ignored local state; it neither creates a second
+profile nor invokes a runtime function. The authorization matrix contains only
+closed fields and verifies the forced refresh, token audience and lifetime,
+all runtime-manifest scopes, required Apps Script client scopes, same-profile
+principal fingerprint continuity, consent eligibility, and read-only
 API-executable deployment metadata. It records a bound-container ownership
 field as `INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA` when the Apps
 Script/Drive metadata APIs cannot expose that relationship; it does not infer
 an owner, account, identifier, or data value.
 
-The first command opens an operator-only desktop OAuth consent flow. Complete
-it only for the same personal synthetic account that created the earlier local
-profile; do not copy the browser URL, account value, client value, token, or
-credential into chat, logs, or GitHub. The tool captures raw clasp output only
-in ignored local operation state.
+The first command uses the ignored refresh credential of the already verified
+personal-synthetic profile. It must not open a browser or create a credential;
+if a new consent screen is needed, stop and obtain a later operator-only
+instruction rather than pasting any browser URL, account value, client value,
+token, or credential into chat, logs, or GitHub.
 
 ```powershell
 $env:GAS_DEV_CLASP_ALLOWED = 'true'
@@ -444,7 +444,7 @@ pnpm run gas:authorization-matrix:runtime-dev:0015
 Only an exact matrix `PASS` permits preparation. The separate ignored 0015
 marker preserves the 0011, 0013, and 0014 attempt records before any new
 diagnostic. The preflight creates one fresh immutable MYSELF-only deployment
-only to bind the freshly reauthorized profile to independently pull-verified
+only to bind the refreshed existing profile to independently pull-verified
 runtime content. It also verifies API-executable metadata with the same named
 profile before updating its ignored execution binding:
 
