@@ -13,6 +13,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const moduleRoot = path.resolve(__dirname, '..');
 const repositoryRoot = path.resolve(moduleRoot, '..', '..');
@@ -24,6 +25,8 @@ const accessCheckRoot = path.join(devRoot, 'access-check');
 const runtimeRoot = path.join(devRoot, 'runtime');
 const runtimePayloadRoot = path.join(runtimeRoot, 'payload');
 const runtimePullRoot = path.join(devRoot, 'runtime-pull-verify');
+const runtimeVersionPullRoot = path.join(devRoot, 'runtime-version-pull-verify');
+const runtimeExecutionRoot = path.join(devRoot, 'runtime-execution');
 const runtimeInventoryPath = path.join(devRoot, 'runtime-payload-inventory.json');
 const runtimeConfigPath = path.join(devRoot, 'runtime.json');
 const runtimeAuthStatePath = path.join(devRoot, 'runtime-auth-state.json');
@@ -49,6 +52,18 @@ const instruction0013RuntimeAttemptMarkerPath = path.join(
 const instruction0013DeploymentPreflightOperation =
   'instruction-0013-deployment-preflight';
 const instruction0013RuntimeOperation = 'test-runtime-0013';
+const instruction0014RuntimeAttemptMarkerPath = path.join(
+  operationRecordRoot,
+  'instruction-0014-runtime-attempt.json'
+);
+const instruction0014PullbackOperation = 'instruction-0014-runtime-pullback';
+const instruction0014DeploymentOperation =
+  'instruction-0014-fresh-deployment';
+const instruction0014VersionPullbackOperation =
+  'instruction-0014-version-pullback';
+const instruction0014LineageOperation =
+  'instruction-0014-deployment-lineage';
+const instruction0014RuntimeOperation = 'test-runtime-0014';
 const configPath = path.join(devRoot, '.clasp.json');
 const targetPath = path.join(devRoot, 'target.json');
 const inventoryPath = path.join(devRoot, 'payload-inventory.json');
@@ -65,6 +80,8 @@ const allowedTargetAttestations = Object.freeze([
 ]);
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const runtimeProfileName = 'personal-synthetic-runtime';
+const instruction0014DeploymentDescription =
+  'instruction-0014-pull-verified-runtime';
 const expectedCanonicalPayloadSha256 =
   'ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1';
 const canonicalScriptExtensions = Object.freeze(['.gs', '.js']);
@@ -334,6 +351,7 @@ function assertSafeGeneratedPayloadDirectory() {
     'payload', '.clasp.json', '.claspignore', 'target.json',
     'payload-inventory.json', 'last-operation.json', 'access-check',
     'runtime', 'runtime-pull-verify', 'runtime-payload-inventory.json',
+    'runtime-execution', 'runtime-version-pull-verify',
     'runtime.json', 'runtime-auth-state.json', 'prerequisites.json',
     'operation-records', 'credentials', 'oauth'
   ]);
@@ -613,6 +631,104 @@ function assertRuntimeStagedPayload() {
       'RUNTIME_STAGED_PAYLOAD_MISMATCH');
   }
   return expected;
+}
+
+function assertRuntimeCallableWrapper(root, failureCode) {
+  const code = failureCode || 'RUNTIME_CALLABLE_WRAPPER_UNPROVEN';
+  const file = path.join(root, '16_Diagnostics.gs');
+  if (!fs.existsSync(file)) fail(code, code);
+  const source = fs.readFileSync(file, 'utf8');
+  const declarations = source.match(
+    /^function runQuickDiagnostic\(\)\s*\{/gm
+  ) || [];
+  if (declarations.length !== 1) fail(code, code);
+  const sandbox = Object.create(null);
+  try {
+    vm.runInNewContext(source, sandbox, {
+      timeout: 1000,
+      contextCodeGeneration: { strings: false, wasm: false }
+    });
+  } catch (_) {
+    fail(code, code);
+  }
+  if (!Object.prototype.hasOwnProperty.call(sandbox, allowedRuntimeFunction) ||
+      typeof sandbox[allowedRuntimeFunction] !== 'function' ||
+      sandbox[allowedRuntimeFunction].name !== allowedRuntimeFunction) {
+    fail(code, code);
+  }
+  return {
+    runtime_function: allowedRuntimeFunction,
+    top_level_callable_wrapper_present: true
+  };
+}
+
+function assertRuntimePullbackPayload(runtime) {
+  const staged = runtime || assertRuntimeStagedPayload();
+  const payload = path.join(runtimePullRoot, 'payload');
+  assertExactPulledPayload(payload);
+  assertExactPayloadDirectory(
+    payload,
+    'RUNTIME_PULLBACK_PAYLOAD_UNEXPECTED_CONTENT'
+  );
+  const pulled = inventoryFor(payload, canonicalPayloadFileNames);
+  if (pulled.payload_sha256 !== staged.runtime_payload_sha256) {
+    fail('RUNTIME_REMOTE_PULLBACK_PARITY_FAILED',
+      'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED');
+  }
+  const canonicalManifest = JSON.parse(canonicalManifestBytes().toString('utf8'));
+  const pulledManifest = readJson(
+    path.join(payload, 'appsscript.json'),
+    'RUNTIME_PULLBACK_MANIFEST_MISSING'
+  );
+  assertRuntimeManifestOverlay(canonicalManifest, pulledManifest);
+  const stagedWrapper = assertRuntimeCallableWrapper(
+    runtimePayloadRoot,
+    'RUNTIME_STAGED_CALLABLE_WRAPPER_UNPROVEN'
+  );
+  const pulledWrapper = assertRuntimeCallableWrapper(
+    payload,
+    'RUNTIME_PULLBACK_CALLABLE_WRAPPER_UNPROVEN'
+  );
+  return {
+    file_count: pulled.file_count,
+    runtime_payload_sha256: staged.runtime_payload_sha256,
+    pulled_payload_sha256: pulled.payload_sha256,
+    runtime_manifest_sha256: staged.runtime_manifest_sha256,
+    staged_wrapper_present: stagedWrapper.top_level_callable_wrapper_present,
+    pulled_wrapper_present: pulledWrapper.top_level_callable_wrapper_present,
+    runtime_function: pulledWrapper.runtime_function,
+    runtime_overlay_parity: true
+  };
+}
+
+function assertRuntimeVersionPullbackPayload(runtime) {
+  const payload = path.join(runtimeVersionPullRoot, 'payload');
+  assertExactPulledPayload(payload);
+  assertExactPayloadDirectory(
+    payload,
+    'RUNTIME_VERSION_PULLBACK_PAYLOAD_UNEXPECTED_CONTENT'
+  );
+  const pulled = inventoryFor(payload, canonicalPayloadFileNames);
+  if (pulled.payload_sha256 !== runtime.runtime_payload_sha256) {
+    fail('RUNTIME_VERSION_PULLBACK_PARITY_FAILED',
+      'RUNTIME_VERSION_PULLBACK_PARITY_FAILED');
+  }
+  const canonicalManifest = JSON.parse(canonicalManifestBytes().toString('utf8'));
+  assertRuntimeManifestOverlay(canonicalManifest, readJson(
+    path.join(payload, 'appsscript.json'),
+    'RUNTIME_VERSION_PULLBACK_MANIFEST_MISSING'
+  ));
+  const wrapper = assertRuntimeCallableWrapper(
+    payload,
+    'RUNTIME_VERSION_CALLABLE_WRAPPER_UNPROVEN'
+  );
+  return {
+    version_payload_sha256: pulled.payload_sha256,
+    version_file_count: pulled.file_count,
+    version_wrapper_present: wrapper.top_level_callable_wrapper_present,
+    version_runtime_function: wrapper.runtime_function,
+    version_runtime_overlay_parity: true
+  };
 }
 
 function isPlaceholder(value) {
@@ -1245,6 +1361,175 @@ function assertInstruction0013RuntimeAttemptReady(runtime) {
   return marker;
 }
 
+function instruction0013RuntimeAttemptEvidence() {
+  const marker = readJson(
+    instruction0013RuntimeAttemptMarkerPath,
+    'INSTRUCTION_0013_RUNTIME_ATTEMPT_EVIDENCE_MISSING'
+  );
+  const recordPath = path.join(
+    operationRecordRoot,
+    `last-${instruction0013RuntimeOperation}.json`
+  );
+  const record = readJson(
+    recordPath,
+    'INSTRUCTION_0013_RUNTIME_ATTEMPT_EVIDENCE_MISSING'
+  );
+  if (!['ATTEMPT_STARTED', 'ATTEMPT_COMPLETED'].includes(marker.state) ||
+      record.operation !== instruction0013RuntimeOperation ||
+      record.exit_code !== 0 ||
+      ![
+        'DEV_RUNTIME_RESULT_UNPARSEABLE',
+        'REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED'
+      ].includes(record.status) ||
+      !/^[a-f0-9]{64}$/.test(String(record.output_sha256 || ''))) {
+    fail('INSTRUCTION_0013_RUNTIME_ATTEMPT_EVIDENCE_INVALID',
+      'INSTRUCTION_0013_RUNTIME_ATTEMPT_EVIDENCE_INVALID');
+  }
+  return {
+    marker_sha256: sha256(fs.readFileSync(instruction0013RuntimeAttemptMarkerPath)),
+    record_sha256: sha256(fs.readFileSync(recordPath)),
+    output_sha256: record.output_sha256
+  };
+}
+
+function writeInstruction0014RuntimeAttemptMarker(marker) {
+  fs.mkdirSync(operationRecordRoot, { recursive: true });
+  fs.writeFileSync(
+    instruction0014RuntimeAttemptMarkerPath,
+    `${JSON.stringify(marker, null, 2)}\n`,
+    'utf8'
+  );
+  return marker;
+}
+
+function prepareInstruction0014RuntimeAttempt() {
+  const attemptRecordPath = path.join(
+    operationRecordRoot,
+    `last-${instruction0014RuntimeOperation}.json`
+  );
+  if (fs.existsSync(instruction0014RuntimeAttemptMarkerPath) ||
+      fs.existsSync(attemptRecordPath)) {
+    fail('INSTRUCTION_0014_RUNTIME_ATTEMPT_ALREADY_PREPARED',
+      'INSTRUCTION_0014_RUNTIME_ATTEMPT_ALREADY_PREPARED');
+  }
+  const guarded = assertTargetGuard(false);
+  const runtime = assertRuntimeConfigurationState(guarded.target);
+  assertRuntimeSourceContract();
+  const staged = assertRuntimeStagedPayload();
+  const parity = assertRuntimePullbackPayload(staged);
+  const semantics = assertClaspRunFunctionSemantics();
+  const prior0011 = instruction0011RuntimeAttemptEvidence();
+  const prior0013 = instruction0013RuntimeAttemptEvidence();
+  if (guarded.target.runtime_function !== allowedRuntimeFunction ||
+      parity.runtime_function !== allowedRuntimeFunction) {
+    fail('RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN',
+      'RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN');
+  }
+  return writeInstruction0014RuntimeAttemptMarker({
+    schema: 'WORK_OS_INSTRUCTION_0014_RUNTIME_ATTEMPT_V1',
+    instruction: '0014',
+    state: 'PREPARED',
+    runtime_function: allowedRuntimeFunction,
+    instruction_0011_attempt_preserved: true,
+    instruction_0011_attempt_record_sha256: prior0011.record_sha256,
+    instruction_0013_attempt_preserved: true,
+    instruction_0013_marker_sha256: prior0013.marker_sha256,
+    instruction_0013_attempt_record_sha256: prior0013.record_sha256,
+    runtime_payload_sha256: staged.runtime_payload_sha256,
+    runtime_manifest_sha256: staged.runtime_manifest_sha256,
+    staged_wrapper_present: parity.staged_wrapper_present,
+    pulled_wrapper_present: parity.pulled_wrapper_present,
+    function_name_consistency: true,
+    clasp_run_semantics_proved: true,
+    clasp_functions_source_sha256: semantics.functions_source_sha256,
+    deployment_lineage: 'REQUIRES_FRESH_0014_DEPLOYMENT',
+    prior_deployment_binding_sha256: sha256(runtime.deployment_id)
+  });
+}
+
+function assertInstruction0014Prepared(runtime, expectedState) {
+  const marker = readJson(
+    instruction0014RuntimeAttemptMarkerPath,
+    'INSTRUCTION_0014_RUNTIME_ATTEMPT_MARKER_MISSING'
+  );
+  const prior0011 = instruction0011RuntimeAttemptEvidence();
+  const prior0013 = instruction0013RuntimeAttemptEvidence();
+  const staged = assertRuntimeStagedPayload();
+  const parity = assertRuntimePullbackPayload(staged);
+  assertRuntimeSourceContract();
+  const semantics = assertClaspRunFunctionSemantics();
+  if (marker.schema !== 'WORK_OS_INSTRUCTION_0014_RUNTIME_ATTEMPT_V1' ||
+      marker.instruction !== '0014' || marker.state !== expectedState ||
+      marker.runtime_function !== allowedRuntimeFunction ||
+      marker.instruction_0011_attempt_preserved !== true ||
+      marker.instruction_0011_attempt_record_sha256 !== prior0011.record_sha256 ||
+      marker.instruction_0013_attempt_preserved !== true ||
+      marker.instruction_0013_marker_sha256 !== prior0013.marker_sha256 ||
+      marker.instruction_0013_attempt_record_sha256 !== prior0013.record_sha256 ||
+      marker.runtime_payload_sha256 !== staged.runtime_payload_sha256 ||
+      marker.runtime_manifest_sha256 !== staged.runtime_manifest_sha256 ||
+      marker.staged_wrapper_present !== true ||
+      marker.pulled_wrapper_present !== true ||
+      marker.function_name_consistency !== true ||
+      marker.clasp_run_semantics_proved !== true ||
+      marker.clasp_functions_source_sha256 !==
+        semantics.functions_source_sha256 ||
+      parity.runtime_function !== allowedRuntimeFunction ||
+      (expectedState === 'PREPARED' &&
+        marker.prior_deployment_binding_sha256 !== sha256(runtime.deployment_id))) {
+    fail('INSTRUCTION_0014_RUNTIME_ATTEMPT_MARKER_INVALID',
+      'INSTRUCTION_0014_RUNTIME_ATTEMPT_MARKER_INVALID');
+  }
+  return { marker, staged, parity };
+}
+
+function parseFreshVersionedDeployment(raw) {
+  let value;
+  try {
+    value = JSON.parse(String(raw || '').trim());
+  } catch (_) {
+    fail('INSTRUCTION_0014_FRESH_DEPLOYMENT_NOT_PROVEN',
+      'INSTRUCTION_0014_FRESH_DEPLOYMENT_NOT_PROVEN');
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      !/^[A-Za-z0-9_-]{20,}$/.test(String(value.deploymentId || '')) ||
+      !Number.isInteger(value.versionNumber) || value.versionNumber < 1) {
+    fail('INSTRUCTION_0014_FRESH_DEPLOYMENT_NOT_PROVEN',
+      'INSTRUCTION_0014_FRESH_DEPLOYMENT_NOT_PROVEN');
+  }
+  return {
+    deployment_id: value.deploymentId,
+    deployment_binding_sha256: sha256(value.deploymentId),
+    version_number: value.versionNumber
+  };
+}
+
+function assertFreshDeploymentVisible(raw, deployment) {
+  let values;
+  try {
+    values = JSON.parse(String(raw || '').trim());
+  } catch (_) {
+    fail('INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN',
+      'INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN');
+  }
+  if (!Array.isArray(values)) {
+    fail('INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN',
+      'INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN');
+  }
+  const matches = values.filter((value) => value &&
+    value.deploymentId === deployment.deployment_id &&
+    value.versionNumber === deployment.version_number);
+  if (matches.length !== 1) {
+    fail('INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN',
+      'INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN');
+  }
+  return {
+    fresh_versioned_deployment_visible: true,
+    fresh_deployment_matches_created_version: true,
+    visible_deployment_count: values.length
+  };
+}
+
 function assertPassedOperation(operation) {
   const record = readJson(
     path.join(operationRecordRoot, `last-${operation}.json`),
@@ -1323,6 +1608,7 @@ function assertRuntimeParityEvidence() {
   const runtime = assertRuntimeStagedPayload();
   assertPassedOperation('push-runtime');
   assertPassedOperation('pull-verify-runtime');
+  assertRuntimePullbackPayload(runtime);
   return runtime;
 }
 
@@ -1470,6 +1756,20 @@ function classifyClaspFailure(raw, operation) {
     : 'UNKNOWN_CLASP_REMOTE_FAILURE';
 }
 
+function classifyRuntimeFailureSubtype(raw, fallbackCode) {
+  const text = String(raw || '').toLowerCase();
+  if (/script function not found/.test(text)) {
+    return 'VERSIONED_RUNTIME_FUNCTION_NOT_FOUND';
+  }
+  if (/unable to run script function|invalid authentication|unauthorized/.test(text)) {
+    return 'RUNTIME_AUTHORIZATION_REJECTED';
+  }
+  if (fallbackCode === 'DEV_RUNTIME_RESULT_UNPARSEABLE') {
+    return 'NO_BOUNDED_DIAGNOSTIC_BODY';
+  }
+  return 'CLOSED_RUNTIME_FAILURE';
+}
+
 function assertSafeOperationName(operation) {
   if (!/^[a-z][a-z0-9-]{0,40}$/.test(String(operation || ''))) {
     fail('LOCAL_OPERATION_NAME_REJECTED', 'LOCAL_OPERATION_NAME_REJECTED');
@@ -1520,6 +1820,19 @@ function persistOperationRecord(
     String(result.raw || ''),
     'utf8'
   );
+  fs.writeFileSync(
+    path.join(operationRecordRoot, `last-${operation}.json`),
+    `${JSON.stringify(safe, null, 2)}\n`,
+    'utf8'
+  );
+  writeLastOperation(safe);
+  return safe;
+}
+
+function persistClosedOperationEvidence(operation, result, classification, evidence) {
+  const safe = persistOperationRecord(operation, result, classification);
+  const closed = evidence && typeof evidence === 'object' ? evidence : {};
+  Object.assign(safe, closed);
   fs.writeFileSync(
     path.join(operationRecordRoot, `last-${operation}.json`),
     `${JSON.stringify(safe, null, 2)}\n`,
@@ -1589,6 +1902,101 @@ function runtimeClaspArgs(commandArgs) {
   ].concat(commandArgs);
 }
 
+function instruction0014RuntimeClaspArgs() {
+  const args = runtimeClaspArgs([
+    '--json', 'run-function', '--nondev', allowedRuntimeFunction
+  ]);
+  const command = args.slice(-4);
+  if (JSON.stringify(command) !== JSON.stringify([
+    '--json', 'run-function', '--nondev', 'runQuickDiagnostic'
+  ])) {
+    fail('RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN',
+      'RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN');
+  }
+  return args;
+}
+
+function assertClaspRunFunctionSemantics() {
+  const commandSource = fs.readFileSync(path.join(
+    moduleRoot, 'node_modules', '@google', 'clasp', 'build', 'src',
+    'commands', 'run-function.js'
+  ), 'utf8');
+  const functionsSource = fs.readFileSync(path.join(
+    moduleRoot, 'node_modules', '@google', 'clasp', 'build', 'src',
+    'core', 'functions.js'
+  ), 'utf8');
+  const deploymentSource = fs.readFileSync(path.join(
+    moduleRoot, 'node_modules', '@google', 'clasp', 'build', 'src',
+    'core', 'project.js'
+  ), 'utf8');
+  const checks = [
+    commandSource.includes(".option('--nondev'"),
+    commandSource.includes('const devMode = !options.nondev'),
+    commandSource.includes('runFunction(functionName, params, devMode)'),
+    functionsSource.includes(
+      'const scriptId = this.options.project.scriptId'
+    ),
+    functionsSource.includes('function: functionName'),
+    functionsSource.includes('devMode,'),
+    functionsSource.includes('script.scripts.run(request)'),
+    deploymentSource.includes('versionNumber = await this.version(description)'),
+    deploymentSource.includes('script.projects.deployments.create')
+  ];
+  if (checks.some((value) => value !== true)) {
+    fail('CLASP_RUN_FUNCTION_SEMANTICS_UNPROVEN',
+      'CLASP_RUN_FUNCTION_SEMANTICS_UNPROVEN');
+  }
+  return {
+    clasp_version: claspVersion(),
+    nondev_sets_devmode_false: true,
+    function_name_passthrough: true,
+    project_config_value_used_for_scripts_run_path: true,
+    fresh_deploy_creates_immutable_version: true,
+    command_source_sha256: sha256(commandSource),
+    functions_source_sha256: sha256(functionsSource),
+    deployment_source_sha256: sha256(deploymentSource)
+  };
+}
+
+function prepareRuntimeExecutionBinding(deploymentId) {
+  if (!/^[A-Za-z0-9_-]{20,}$/.test(String(deploymentId || ''))) {
+    fail('RUNTIME_EXECUTION_DEPLOYMENT_BINDING_INVALID',
+      'RUNTIME_EXECUTION_DEPLOYMENT_BINDING_INVALID');
+  }
+  assertScriptIdIsNotTracked(deploymentId);
+  if (fs.existsSync(runtimeExecutionRoot)) {
+    const allowed = new Set(['payload', '.clasp.json', '.claspignore']);
+    const entries = fs.readdirSync(runtimeExecutionRoot, { withFileTypes: true });
+    if (entries.some((entry) => !allowed.has(entry.name))) {
+      fail('RUNTIME_EXECUTION_WORKSPACE_UNEXPECTED_CONTENT',
+        'RUNTIME_EXECUTION_WORKSPACE_UNEXPECTED_CONTENT');
+    }
+    fs.rmSync(runtimeExecutionRoot, { recursive: true, force: true });
+  }
+  fs.mkdirSync(path.join(runtimeExecutionRoot, 'payload'), { recursive: true });
+  writeCanonicalClaspProjectConfig(
+    runtimeExecutionRoot,
+    buildCanonicalClaspProjectConfig(deploymentId)
+  );
+  return sha256(deploymentId);
+}
+
+function assertRuntimeExecutionBinding(runtime) {
+  const config = readJson(
+    path.join(runtimeExecutionRoot, '.clasp.json'),
+    'RUNTIME_EXECUTION_DEPLOYMENT_BINDING_MISSING'
+  );
+  assertCanonicalClaspExtensionContract(config);
+  if (config.rootDir !== 'payload' ||
+      config.scriptId !== runtime.deployment_id ||
+      !/^[A-Za-z0-9_-]{20,}$/.test(String(config.scriptId || ''))) {
+    fail('RUNTIME_EXECUTION_DEPLOYMENT_BINDING_MISMATCH',
+      'RUNTIME_EXECUTION_DEPLOYMENT_BINDING_MISMATCH');
+  }
+  assertScriptIdIsNotTracked(config.scriptId);
+  return sha256(config.scriptId);
+}
+
 function markRuntimeAuthVerified(result) {
   const record = {
     schema: 'WORK_OS_LOCAL_CLASP_RUNTIME_AUTH_V1',
@@ -1638,6 +2046,10 @@ function assertRuntimeSourceContract() {
     fail('SAFE_RUNTIME_FUNCTION_CONTRACT_UNPROVEN',
       'SAFE_RUNTIME_FUNCTION_CONTRACT_UNPROVEN');
   }
+  assertRuntimeCallableWrapper(
+    sourceRoot,
+    'SAFE_RUNTIME_FUNCTION_CONTRACT_UNPROVEN'
+  );
 }
 
 function findAcceptanceSummary(value) {
@@ -1932,7 +2344,10 @@ function parseRuntimeCommand(command) {
     'record-runtime-config',
     'stage-runtime', 'push-runtime', 'pull-verify-runtime',
     'prepare-runtime-retry-0013', 'preflight-runtime-retry-0013',
-    'test-runtime-0013', 'test-runtime', 'test', 'open', 'self-test'
+    'test-runtime-0013',
+    'prepare-runtime-retry-0014', 'preflight-runtime-retry-0014',
+    'test-runtime-0014',
+    'test-runtime', 'test', 'open', 'self-test'
   ]
     .includes(command)) {
     fail('UNKNOWN_GAS_DEV_COMMAND', 'UNKNOWN_GAS_DEV_COMMAND');
@@ -2167,6 +2582,61 @@ function selfTest() {
         error.code === 'CORRECTED_VERSIONED_DEPLOYMENT_NOT_PROVEN'
     );
   });
+  test('INSTRUCTION_0014_WRAPPER_MUST_BE_TOP_LEVEL_CALLABLE', () => {
+    const temporaryRoot = fs.mkdtempSync(path.join(
+      os.tmpdir(), 'work-os-runtime-wrapper-'
+    ));
+    try {
+      const diagnosticPath = path.join(temporaryRoot, '16_Diagnostics.gs');
+      fs.writeFileSync(
+        diagnosticPath,
+        'function runQuickDiagnostic() { return { status: "PASS" }; }\n',
+        'utf8'
+      );
+      assert.strictEqual(
+        assertRuntimeCallableWrapper(temporaryRoot)
+          .top_level_callable_wrapper_present,
+        true
+      );
+      fs.writeFileSync(
+        diagnosticPath,
+        '(function () {\nfunction runQuickDiagnostic() { return {}; }\n}());\n',
+        'utf8'
+      );
+      assert.throws(
+        () => assertRuntimeCallableWrapper(temporaryRoot),
+        (error) => error && error.code === 'RUNTIME_CALLABLE_WRAPPER_UNPROVEN'
+      );
+    } finally {
+      fs.rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+  test('INSTRUCTION_0014_CLASP_SEMANTICS_ARE_PACKAGE_SOURCE_PROVED', () => {
+    const semantics = assertClaspRunFunctionSemantics();
+    assert.strictEqual(semantics.clasp_version, '3.3.0');
+    assert.strictEqual(semantics.nondev_sets_devmode_false, true);
+    assert.strictEqual(semantics.function_name_passthrough, true);
+    assert.strictEqual(
+      semantics.project_config_value_used_for_scripts_run_path,
+      true
+    );
+    assert.strictEqual(semantics.fresh_deploy_creates_immutable_version, true);
+  });
+  test('INSTRUCTION_0014_FRESH_DEPLOYMENT_LINEAGE_IS_CLOSED_SAFE', () => {
+    const deploymentId = 'D'.repeat(24);
+    const deployment = parseFreshVersionedDeployment(JSON.stringify({
+      deploymentId,
+      versionNumber: 9,
+      description: 'ignored'
+    }));
+    const visible = assertFreshDeploymentVisible(JSON.stringify([
+      { deploymentId: 'H'.repeat(24) },
+      { deploymentId, versionNumber: 9, description: 'ignored' }
+    ]), deployment);
+    assert.strictEqual(deployment.version_number, 9);
+    assert.strictEqual(visible.fresh_versioned_deployment_visible, true);
+    assert.strictEqual(JSON.stringify(visible).includes(deploymentId), false);
+  });
   const failed = tests.filter((item) => item.status !== 'PASS');
   writeSafeResult({
     suite: 'local_clasp_dev_self_test',
@@ -2344,6 +2814,254 @@ function main() {
         runtime_overlay_pullback_parity: 'PASS',
         ...closedEvidence,
         command_output_sha256: result.output_sha256
+      });
+      return;
+    }
+
+    if (command === 'prepare-runtime-retry-0014') {
+      const marker = prepareInstruction0014RuntimeAttempt();
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: marker.instruction,
+        attempt_marker_state: marker.state,
+        instruction_0011_attempt_preserved:
+          marker.instruction_0011_attempt_preserved,
+        instruction_0013_attempt_preserved:
+          marker.instruction_0013_attempt_preserved,
+        staged_wrapper_present: marker.staged_wrapper_present,
+        pulled_wrapper_present: marker.pulled_wrapper_present,
+        function_name_consistency: marker.function_name_consistency,
+        clasp_run_semantics_proved: marker.clasp_run_semantics_proved,
+        deployment_lineage: marker.deployment_lineage,
+        runtime_function: marker.runtime_function,
+        google_operation: 'NOT_EXECUTED'
+      });
+      return;
+    }
+
+    if (command === 'preflight-runtime-retry-0014') {
+      assertCleanWorktree();
+      runLocalVerifyBeforePush();
+      const guarded = assertTargetGuard(true);
+      if (process.env.GAS_DEV_RUNTIME_ALLOWED !== 'true' ||
+          process.env.GAS_INSTRUCTION_0014_FRESH_DEPLOYMENT_ALLOWED !== 'true') {
+        fail('INSTRUCTION_0014_REMOTE_OPT_IN_REQUIRED',
+          'INSTRUCTION_0014_REMOTE_OPT_IN_REQUIRED');
+      }
+      const runtime = assertRuntimeConfigurationState(guarded.target);
+      const prepared = assertInstruction0014Prepared(
+        runtime,
+        'PREPARED'
+      );
+      writeInstruction0014RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'PREFLIGHT_STARTED'
+      });
+
+      prepareEmptyPullWorkspace(
+        runtimePullRoot,
+        'runtime-pull-verify',
+        'RUNTIME_PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
+      );
+      writeCanonicalClaspProjectConfig(runtimePullRoot, guarded.config);
+      googleOperation = 'ATTEMPTED';
+      const pullResult = runClasp(runtimeClaspArgs(['pull']), runtimePullRoot);
+      if (pullResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0014PullbackOperation,
+          pullResult,
+          guarded
+        );
+      }
+      let pullback;
+      try {
+        pullback = assertRuntimePullbackPayload(prepared.staged);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0014PullbackOperation,
+          pullResult,
+          String(error && error.code || 'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED'),
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0014PullbackOperation,
+        pullResult,
+        'PASS',
+        {
+          parity: 'PASS',
+          file_count: pullback.file_count,
+          runtime_payload_sha256: pullback.runtime_payload_sha256,
+          staged_wrapper_present: pullback.staged_wrapper_present,
+          pulled_wrapper_present: pullback.pulled_wrapper_present,
+          execution_api_access: 'MYSELF',
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+      writeInstruction0014RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'HEAD_PULLBACK_REVERIFIED',
+        instruction_0014_pullback_output_sha256: pullResult.output_sha256
+      });
+
+      const deployResult = runClasp(runtimeClaspArgs([
+        '--json', 'deploy', '--description', instruction0014DeploymentDescription
+      ]), runtimeRoot);
+      if (deployResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0014DeploymentOperation,
+          deployResult
+        );
+      }
+      let deployment;
+      try {
+        deployment = parseFreshVersionedDeployment(deployResult.stdout);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0014DeploymentOperation,
+          deployResult,
+          'INSTRUCTION_0014_FRESH_DEPLOYMENT_NOT_PROVEN',
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0014DeploymentOperation,
+        deployResult,
+        'PASS',
+        {
+          fresh_immutable_version_created: true,
+          fresh_versioned_deployment_created: true,
+          deployment_binding_sha256: deployment.deployment_binding_sha256,
+          execution_api_access: 'MYSELF',
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+      writeInstruction0014RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'FRESH_VERSIONED_DEPLOYMENT_CREATED',
+        instruction_0014_pullback_output_sha256: pullResult.output_sha256,
+        fresh_deployment_output_sha256: deployResult.output_sha256,
+        deployment_binding_sha256: deployment.deployment_binding_sha256
+      });
+
+      prepareEmptyPullWorkspace(
+        runtimeVersionPullRoot,
+        'runtime-version-pull-verify',
+        'RUNTIME_VERSION_PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
+      );
+      writeCanonicalClaspProjectConfig(runtimeVersionPullRoot, guarded.config);
+      const versionPullResult = runClasp(runtimeClaspArgs([
+        '--json', 'pull', '--versionNumber', String(deployment.version_number)
+      ]), runtimeVersionPullRoot);
+      if (versionPullResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0014VersionPullbackOperation,
+          versionPullResult,
+          guarded
+        );
+      }
+      let versionPullback;
+      try {
+        versionPullback = assertRuntimeVersionPullbackPayload(prepared.staged);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0014VersionPullbackOperation,
+          versionPullResult,
+          String(error && error.code || 'RUNTIME_VERSION_PULLBACK_PARITY_FAILED'),
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0014VersionPullbackOperation,
+        versionPullResult,
+        'PASS',
+        {
+          parity: 'PASS',
+          version_payload_sha256: versionPullback.version_payload_sha256,
+          version_file_count: versionPullback.version_file_count,
+          version_wrapper_present: versionPullback.version_wrapper_present,
+          execution_api_access: 'MYSELF',
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+
+      const visibilityResult = runClasp(
+        runtimeClaspArgs(['--json', 'deployments']),
+        runtimeRoot
+      );
+      if (visibilityResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0014LineageOperation,
+          visibilityResult
+        );
+      }
+      let visibility;
+      try {
+        visibility = assertFreshDeploymentVisible(
+          visibilityResult.stdout,
+          deployment
+        );
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0014LineageOperation,
+          visibilityResult,
+          'INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN',
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0014LineageOperation,
+        visibilityResult,
+        'PASS',
+        {
+          ...visibility,
+          version_payload_pullback_parity: true,
+          version_wrapper_present: versionPullback.version_wrapper_present,
+          deployment_binding_sha256: deployment.deployment_binding_sha256,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+
+      runtime.deployment_id = deployment.deployment_id;
+      runtime.deployment_id_tracked = false;
+      runtime.api_executable_deployment = 'CONFIGURED_MYSELF_ONLY';
+      fs.writeFileSync(
+        runtimeConfigPath,
+        `${JSON.stringify(runtime, null, 2)}\n`,
+        'utf8'
+      );
+      const executionBindingSha256 = prepareRuntimeExecutionBinding(
+        deployment.deployment_id
+      );
+      writeInstruction0014RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'PREFLIGHT_PASSED',
+        instruction_0014_pullback_output_sha256: pullResult.output_sha256,
+        fresh_deployment_output_sha256: deployResult.output_sha256,
+        version_pullback_output_sha256: versionPullResult.output_sha256,
+        deployment_lineage_output_sha256: visibilityResult.output_sha256,
+        deployment_binding_sha256: deployment.deployment_binding_sha256,
+        execution_binding_sha256: executionBindingSha256,
+        deployment_lineage: 'FRESH_0014_VERSION_PULLBACK_PROVED'
+      });
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: '0014',
+        runtime_function: allowedRuntimeFunction,
+        head_pullback_parity: 'PASS',
+        staged_wrapper_present: pullback.staged_wrapper_present,
+        pulled_wrapper_present: pullback.pulled_wrapper_present,
+        fresh_versioned_deployment_created: true,
+        version_payload_pullback_parity: 'PASS',
+        version_wrapper_present: versionPullback.version_wrapper_present,
+        deployment_lineage: 'PASS',
+        scripts_run_execution_binding: 'PASS',
+        execution_api_access: 'MYSELF',
+        runtime_diagnostic_invocation: 'NOT_EXECUTED'
       });
       return;
     }
@@ -2826,6 +3544,120 @@ function main() {
       return;
     }
 
+    if (command === 'test-runtime-0014') {
+      const target = assertTargetGuard(true);
+      const runtime = assertRuntimeConfiguration(target.target);
+      const prepared = assertInstruction0014Prepared(
+        runtime,
+        'PREFLIGHT_PASSED'
+      );
+      const attemptRecordPath = path.join(
+        operationRecordRoot,
+        `last-${instruction0014RuntimeOperation}.json`
+      );
+      if (fs.existsSync(attemptRecordPath)) {
+        fail('INSTRUCTION_0014_RUNTIME_ALREADY_ATTEMPTED',
+          'INSTRUCTION_0014_RUNTIME_ALREADY_ATTEMPTED');
+      }
+      const requiredOperations = [
+        instruction0014PullbackOperation,
+        instruction0014DeploymentOperation,
+        instruction0014VersionPullbackOperation,
+        instruction0014LineageOperation
+      ];
+      requiredOperations.forEach(assertPassedOperation);
+      const versionPullback = assertRuntimeVersionPullbackPayload(
+        prepared.staged
+      );
+      const executionBindingSha256 = assertRuntimeExecutionBinding(runtime);
+      if (prepared.marker.deployment_lineage !==
+          'FRESH_0014_VERSION_PULLBACK_PROVED' ||
+          prepared.marker.deployment_binding_sha256 !==
+            sha256(runtime.deployment_id) ||
+          prepared.marker.execution_binding_sha256 !== executionBindingSha256 ||
+          versionPullback.version_runtime_function !== allowedRuntimeFunction ||
+          versionPullback.version_wrapper_present !== true) {
+        fail('INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN',
+          'INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN');
+      }
+      const args = instruction0014RuntimeClaspArgs();
+      writeInstruction0014RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'ATTEMPT_STARTED'
+      });
+      googleOperation = 'ATTEMPTED';
+      const result = runClasp(args, runtimeExecutionRoot);
+      if (result.exit_code !== 0 ||
+          /(?:unable to run script function|script function not found)/i
+            .test(String(result.raw || ''))) {
+        const classification = classifyClaspFailure(
+          result.raw,
+          instruction0014RuntimeOperation
+        );
+        persistClosedOperationEvidence(
+          instruction0014RuntimeOperation,
+          result,
+          classification,
+          {
+            safe_subtype: classifyRuntimeFailureSubtype(result.raw),
+            deployed_version_mode: true,
+            scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+            runtime_function: allowedRuntimeFunction
+          }
+        );
+        fail(classification, classification);
+      }
+      let summary;
+      try {
+        summary = assertSafeRuntimeResult(result.raw);
+      } catch (error) {
+        const classification = String(
+          error && error.code || 'DEV_RUNTIME_CLOSED_CONTRACT_FAILED'
+        );
+        persistClosedOperationEvidence(
+          instruction0014RuntimeOperation,
+          result,
+          classification,
+          {
+            safe_subtype: classifyRuntimeFailureSubtype(
+              result.raw,
+              classification
+            ),
+            deployed_version_mode: true,
+            scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+            runtime_function: allowedRuntimeFunction
+          }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0014RuntimeOperation,
+        result,
+        'PASS',
+        {
+          safe_subtype: 'BOUNDED_DIAGNOSTIC_BODY',
+          deployed_version_mode: true,
+          scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+          runtime_function: allowedRuntimeFunction
+        }
+      );
+      writeInstruction0014RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'ATTEMPT_COMPLETED'
+      });
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: '0014', runtime_function: allowedRuntimeFunction,
+        deployed_version_mode: true,
+        scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+        runtime_payload_sha256: prepared.staged.runtime_payload_sha256,
+        clasp_version: claspVersion(),
+        command_output_sha256: result.output_sha256,
+        bounded_summary: summary
+      });
+      return;
+    }
+
     if (command === 'open') {
       assertTargetGuard(true);
       googleOperation = 'ATTEMPTED';
@@ -2889,8 +3721,12 @@ module.exports = {
   closedPostRemoteFailureCategories,
   buildRuntimeManifestOverlay,
   assertRuntimeManifestOverlay,
+  assertRuntimeCallableWrapper,
+  assertClaspRunFunctionSemantics,
   assertSafeRuntimeResult,
   assertCorrectedVersionedDeploymentBinding,
+  parseFreshVersionedDeployment,
+  assertFreshDeploymentVisible,
   postRemoteFailureClassification,
   persistPostRemoteFailure,
   GateError

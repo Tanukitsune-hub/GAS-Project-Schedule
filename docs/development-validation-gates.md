@@ -53,6 +53,9 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `gas:prepare-runtime-retry:0013` | Self PC | No | Preserves the Instruction 0011 failed-attempt record and creates one separate ignored Instruction 0013 marker before any new Google call. |
 | `gas:preflight-runtime-retry:0013` | Self PC | Named local OAuth, read-only | Lists deployments once and records only closed counts/Booleans proving the ignored local binding is one visible versioned deployment, not HEAD-only. |
 | `gas:test:runtime-dev:0013` | Self PC | Named local OAuth only | Requires the passed Instruction 0013 preflight, marks the attempt before the call, and invokes only `runQuickDiagnostic` once with clasp `--nondev`. |
+| `gas:prepare-runtime-retry:0014` | Self PC | No | Preserves 0011/0013 attempts and proves staged/pulled top-level wrapper, exact function name, overlay parity, and local clasp run semantics before creating a separate 0014 marker. |
+| `gas:preflight-runtime-retry:0014` | Self PC | Named local OAuth; one explicit personal-synthetic deployment opt-in | Re-pulls runtime HEAD, creates one fresh MYSELF-only immutable version/deployment, pulls that exact version back, proves wrapper/manifest/hash lineage, and prepares an ignored deployment-bound execution context. It never invokes a script function. |
+| `gas:test:runtime-dev:0014` | Self PC | Named local OAuth only | Requires every 0014 lineage proof, marks the one-use attempt first, and invokes exactly `runQuickDiagnostic` once with `--nondev` against the API-executable deployment binding. |
 
 GitHub Actions uses read-only repository permission and must not use clasp,
 Google authentication, credentials, secrets, or a script identifier. CI is
@@ -101,6 +104,22 @@ and closed as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, safe subtype
 `VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. The immediate parser record
 `DEV_RUNTIME_RESULT_UNPARSEABLE` remains preserved. Do not delete either
 attempt marker or perform another Instruction 0013 call.
+
+Instruction 0014 records the identified guard defect: clasp 3.3.0's
+`run-function` passes the active project configuration value to `scripts.run`;
+`--nondev` sets `devMode=false` but does not select a separately saved
+deployment binding. Apps Script `scripts.run` instead requires the API
+executable deployment ID as its path parameter. Deployment visibility alone
+therefore did not prove that 0013 executed the selected versioned deployment.
+
+The corrected gate blocks execution until both ignored runtime payloads expose
+the top-level wrapper, the function name is exactly `runQuickDiagnostic`, local
+clasp package source proves argument/devMode handling, and a fresh deployment's
+exact immutable version has been independently pulled and byte-matched. The
+execution-only ignored clasp configuration is then bound to that deployment,
+not the project ID. The 0011 and 0013 markers remain immutable evidence, and a
+separate 0014 marker precedes the sole possible function call. Primary API
+semantics are recorded in `docs/local-clasp-setup.md`.
 
 ## Status discipline
 

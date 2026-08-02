@@ -372,6 +372,47 @@ closed as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, safe subtype
 `DEV_RUNTIME_RESULT_UNPARSEABLE` is preserved. Do not rerun either command or
 create another deployment under this instruction.
 
+Instruction 0014 corrects the execution-context guard exposed by that result.
+Project-local clasp 3.3.0 passes the `.clasp.json` `scriptId` value directly to
+`scripts.run`; `--nondev` changes `devMode` to false but does not substitute a
+separately recorded deployment identifier. The Apps Script API requires the
+API-executable deployment ID in the `scripts.run` path, while `devMode=false`
+selects that deployment's immutable version. See the primary
+[`scripts.run` reference](https://developers.google.com/apps-script/api/reference/rest/v1/scripts/run),
+the [execution guide](https://developers.google.com/apps-script/api/how-tos/execute),
+and [deployment/version semantics](https://developers.google.com/apps-script/concepts/deployments).
+
+The 0014 guard therefore proves the callable wrapper in the ignored staged and
+independent pulled payloads, creates a fresh MYSELF-only versioned deployment
+from the just-pull-verified runtime HEAD, pulls that exact immutable version
+back by version number, and creates a separate ignored execution configuration
+whose `scripts.run` path binding is the new deployment. It preserves the 0011
+and 0013 attempt records and writes its own marker before any new diagnostic:
+
+```powershell
+pnpm run gas:prepare-runtime-retry:0014
+$env:GAS_DEV_CLASP_ALLOWED = 'true'
+$env:GAS_DEV_RUNTIME_ALLOWED = 'true'
+$env:GAS_INSTRUCTION_0014_FRESH_DEPLOYMENT_ALLOWED = 'true'
+pnpm run gas:preflight-runtime-retry:0014
+Remove-Item Env:GAS_INSTRUCTION_0014_FRESH_DEPLOYMENT_ALLOWED
+```
+
+The preflight retains all identifiers and raw clasp output only in ignored
+local state. It prints only closed Booleans, counts, and hashes. If any staged,
+HEAD pull-back, immutable-version pull-back, wrapper, MYSELF overlay, function
+name, package-source semantics, or lineage proof fails, stop without a runtime
+call. Only a closed `PASS` authorizes this one command once:
+
+```powershell
+pnpm run gas:test:runtime-dev:0014
+Remove-Item Env:GAS_DEV_CLASP_ALLOWED, Env:GAS_DEV_RUNTIME_ALLOWED
+```
+
+The 0014 runtime command writes `ATTEMPT_STARTED` first, invokes exactly
+`runQuickDiagnostic` once with `--nondev`, and refuses reuse. Do not run the
+generic runtime command or either 0013 command for this instruction.
+
 ```powershell
 $secret = Read-Host 'Deployment ID (local only)' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)

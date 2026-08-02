@@ -10,8 +10,12 @@ const {
   closedPostRemoteFailureCategories,
   buildRuntimeManifestOverlay,
   assertRuntimeManifestOverlay,
+  assertRuntimeCallableWrapper,
+  assertClaspRunFunctionSemantics,
   assertSafeRuntimeResult,
   assertCorrectedVersionedDeploymentBinding,
+  parseFreshVersionedDeployment,
+  assertFreshDeploymentVisible,
   postPullPayloadObservation,
   newBlankPullPayloadObservation,
   assertNewBlankPulledPayload,
@@ -187,6 +191,9 @@ test('BOOT-08_PACKAGE_SCRIPTS_EXPOSE_CANONICAL_AND_RUNTIME_LANES', () => {
     'gas:prepare-runtime-retry:0013',
     'gas:preflight-runtime-retry:0013',
     'gas:test:runtime-dev:0013',
+    'gas:prepare-runtime-retry:0014',
+    'gas:preflight-runtime-retry:0014',
+    'gas:test:runtime-dev:0014',
     'gas:test:runtime-dev'
   ].forEach((name) => assert.strictEqual(typeof packageJson.scripts[name], 'string'));
 });
@@ -380,7 +387,7 @@ test('BOOT-18_ALL_GENERATED_CLASP_PROJECT_CONFIGS_USE_THE_SHARED_GS_FIRST_HELPER
   assert.doesNotMatch(claspToolSource, /function writePullConfig/);
   assert.strictEqual(
     (claspToolSource.match(/writeCanonicalClaspProjectConfig\(/g) || []).length,
-    6
+    9
   );
 });
 
@@ -666,6 +673,119 @@ test('BOOT-32_VERSIONED_FUNCTION_NOT_FOUND_IS_A_CLOSED_RUNTIME_RESULT', () => {
     'script function not found',
     runtime
   ) > runtime);
+});
+
+test('BOOT-33_INSTRUCTION_0014_PROVES_TOP_LEVEL_WRAPPERS_WITHOUT_GOOGLE', () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(
+    os.tmpdir(), 'work-os-top-level-wrapper-'
+  ));
+  try {
+    const file = path.join(temporaryRoot, '16_Diagnostics.gs');
+    fs.writeFileSync(
+      file,
+      'function runQuickDiagnostic() { return { status: "PASS" }; }\n',
+      'utf8'
+    );
+    assert.strictEqual(
+      assertRuntimeCallableWrapper(temporaryRoot)
+        .top_level_callable_wrapper_present,
+      true
+    );
+    fs.writeFileSync(
+      file,
+      '(function () {\nfunction runQuickDiagnostic() { return {}; }\n}());\n',
+      'utf8'
+    );
+    assert.throws(
+      () => assertRuntimeCallableWrapper(temporaryRoot),
+      /RUNTIME_CALLABLE_WRAPPER_UNPROVEN/
+    );
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+  assert.match(claspToolSource, /staged_wrapper_present/);
+  assert.match(claspToolSource, /pulled_wrapper_present/);
+  assert.match(claspToolSource, /version_wrapper_present/);
+});
+
+test('BOOT-34_CLASP_330_EXECUTION_SEMANTICS_ARE_PACKAGE_SOURCE_PROVED', () => {
+  const semantics = assertClaspRunFunctionSemantics();
+  assert.strictEqual(semantics.clasp_version, '3.3.0');
+  assert.strictEqual(semantics.nondev_sets_devmode_false, true);
+  assert.strictEqual(semantics.function_name_passthrough, true);
+  assert.strictEqual(
+    semantics.project_config_value_used_for_scripts_run_path,
+    true
+  );
+  assert.strictEqual(semantics.fresh_deploy_creates_immutable_version, true);
+});
+
+test('BOOT-35_INSTRUCTION_0014_FRESH_VERSION_LINEAGE_IS_EXACT_AND_SAFE', () => {
+  const deploymentId = 'D'.repeat(24);
+  const deployment = parseFreshVersionedDeployment(JSON.stringify({
+    deploymentId,
+    versionNumber: 11,
+    description: 'ignored'
+  }));
+  const visible = assertFreshDeploymentVisible(JSON.stringify([
+    { deploymentId, versionNumber: 11, description: 'ignored' }
+  ]), deployment);
+  assert.strictEqual(visible.fresh_deployment_matches_created_version, true);
+  assert.strictEqual(JSON.stringify(visible).includes(deploymentId), false);
+  assert.throws(
+    () => assertFreshDeploymentVisible(JSON.stringify([
+      { deploymentId, versionNumber: 10 }
+    ]), deployment),
+    /INSTRUCTION_0014_DEPLOYMENT_LINEAGE_NOT_PROVEN/
+  );
+});
+
+test('BOOT-36_INSTRUCTION_0014_MARKER_AND_LINEAGE_PRECEDE_ONE_CALL', () => {
+  const preflight = claspToolSource.indexOf(
+    "if (command === 'preflight-runtime-retry-0014')"
+  );
+  const freshDeploy = claspToolSource.indexOf(
+    "'--json', 'deploy', '--description'",
+    preflight
+  );
+  const versionPull = claspToolSource.indexOf(
+    "'--json', 'pull', '--versionNumber'",
+    freshDeploy
+  );
+  const executionBinding = claspToolSource.indexOf(
+    'prepareRuntimeExecutionBinding(',
+    versionPull
+  );
+  const runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0014')"
+  );
+  const marker = claspToolSource.indexOf("state: 'ATTEMPT_STARTED'", runtime);
+  const call = claspToolSource.indexOf(
+    'runClasp(args, runtimeExecutionRoot)',
+    marker
+  );
+  assert.ok(preflight >= 0 && freshDeploy > preflight);
+  assert.ok(versionPull > freshDeploy && executionBinding > versionPull);
+  assert.ok(runtime > executionBinding && marker > runtime && call > marker);
+  assert.match(claspToolSource, /instruction-0014-runtime-attempt\.json/);
+  assert.match(claspToolSource, /INSTRUCTION_0014_RUNTIME_ALREADY_ATTEMPTED/);
+  assert.match(claspToolSource, /instruction_0011_attempt_preserved/);
+  assert.match(claspToolSource, /instruction_0013_attempt_preserved/);
+});
+
+test('BOOT-37_INSTRUCTION_0014_CALL_USES_DEPLOYMENT_BOUND_NONDEV_NAME', () => {
+  assert.match(claspToolSource,
+    /runtimeExecutionRoot[\s\S]{0,500}\.clasp\.json/);
+  assert.match(claspToolSource,
+    /config\.scriptId !== runtime\.deployment_id/);
+  assert.match(claspToolSource,
+    /'--json', 'run-function', '--nondev', allowedRuntimeFunction/);
+  assert.match(claspToolSource,
+    /'--json', 'run-function', '--nondev', 'runQuickDiagnostic'/);
+  const matches = claspToolSource.match(
+    /runClasp\(args, runtimeExecutionRoot\)/g
+  ) || [];
+  assert.strictEqual(matches.length, 1);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');
