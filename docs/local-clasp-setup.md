@@ -364,6 +364,14 @@ before the remote call, and refuses a second call. Remove the two temporary
 environment variables after the command. Never delete either instruction's
 attempt record to manufacture another call.
 
+Instruction 0013 is now closed. Its deployment preflight proved the ignored
+binding matched one visible versioned deployment and was not HEAD-only. The
+single deployed-version runtime call returned no bounded diagnostic body and
+closed as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`; the immediate local parser state
+`DEV_RUNTIME_RESULT_UNPARSEABLE` is preserved. Do not rerun either command or
+create another deployment under this instruction.
+
 ```powershell
 $secret = Read-Host 'Deployment ID (local only)' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)

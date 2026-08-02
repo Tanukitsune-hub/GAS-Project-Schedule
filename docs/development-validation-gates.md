@@ -13,9 +13,15 @@ OAuth verification, and exact MYSELF-only runtime overlay parity. Its sole
 standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded
 diagnostic body. A correctly versioned MYSELF-only executable was created and
 bound only after that stop, so it remains untested under the exactly-one rule.
+Instruction 0013 independently proved the corrected binding was a visible
+versioned deployment rather than HEAD-only, then consumed its one deployed-
+version `runQuickDiagnostic` attempt. No bounded diagnostic body was returned;
+the closed result is `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted.
 The active development status remains
 `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` as readiness, not runtime PASS.
-Functional acceptance is `ATTEMPTED_FAILED_CLOSED`. Company handoff remains
+Functional acceptance is `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`.
+Company handoff remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier
@@ -88,6 +94,13 @@ deployment identifier or description. A missing versioned match, a HEAD-only
 result, or a changed local binding stops as
 `CORRECTED_VERSIONED_DEPLOYMENT_NOT_PROVEN`. The retry uses deployed-version
 mode (`--nondev`); it never creates or updates a deployment.
+
+The completed Instruction 0013 preflight proved the corrected versioned
+binding. Its exactly-one runtime call then returned no bounded diagnostic body
+and closed as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. The immediate parser record
+`DEV_RUNTIME_RESULT_UNPARSEABLE` remains preserved. Do not delete either
+attempt marker or perform another Instruction 0013 call.
 
 ## Status discipline
 

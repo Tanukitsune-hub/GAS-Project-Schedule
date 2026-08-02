@@ -19,6 +19,22 @@ Publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+Instruction 0013 preserved the prior failed-attempt evidence under a separate
+one-use marker. Its read-only preflight proved, without publishing identifiers,
+that the ignored local binding matched exactly one visible versioned
+deployment and was not the HEAD test deployment. Existing named OAuth,
+standard-Cloud/API prerequisites, and exact MYSELF-only runtime overlay parity
+remained closed-safe PASS; no deployment was created or updated.
+
+The one authorized deployed-version `runQuickDiagnostic` invocation returned
+no bounded diagnostic body and closed as
+`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. The immediate local parser record
+remains `DEV_RUNTIME_RESULT_UNPARSEABLE`, and Instruction 0013 permits no
+retry. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and
+`REVIEW_REQUIRED`. The publication gate is only a readiness boundary; Phase
+8B overall PASS, Phase 8C GO, and company handoff are not established.
+
 Instruction 0011 safely reattached the relocated local checkout and reconciled
 the canonical status before Google operations. Personal standard-Cloud/API/
 OAuth prerequisites, named OAuth verification, and exact 23-file MYSELF-only
@@ -265,8 +281,10 @@ transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
 five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
 Diagnostic re-observation is authorized. Current-branch CI and non-Google
 local validation pass, and Instruction 0010 independently proved exact
-23-file canonical pull-back parity. Personal Cloud/OAuth/runtime work remains
-unexecuted. The development gate is
+23-file canonical pull-back parity. Instructions 0011 and 0013 completed the
+authorized personal Cloud/OAuth/runtime prerequisites and consumed their
+separately authorized single calls; runtime acceptance remains
+`ATTEMPTED_FAILED_CLOSED` without a bounded diagnostic body. The development gate is
 `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` and company handoff remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 This permits no company

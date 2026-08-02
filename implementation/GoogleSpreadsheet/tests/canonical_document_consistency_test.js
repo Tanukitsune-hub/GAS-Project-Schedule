@@ -4,8 +4,8 @@
  * Canonical current company-handoff contract consistency check.
  *
  * Historical T8/T9/T10/T11 references remain valid evidence. The current
- * contract must record Instruction 0010 canonical parity while keeping company
- * carriage suspended through the remaining personal runtime-readiness lane.
+ * contract must record Instruction 0010 canonical parity and the closed
+ * Instruction 0013 retry while keeping company carriage suspended.
  */
 const assert = require('assert');
 const fs = require('fs');
@@ -242,6 +242,30 @@ function validateInstruction0011RuntimeBoundary(text, label) {
     `${label}: functional acceptance closed state missing`);
 }
 
+function validateInstruction0013RuntimeBoundary(text, label) {
+  assert.match(text, /Instruction 0013/i,
+    `${label}: current Instruction 0013 evidence label missing`);
+  assert.match(text,
+    /(?:preflight|binding)[\s\S]{0,360}visible\s+versioned\s+deployment/i,
+    `${label}: corrected versioned deployment proof missing`);
+  assert.match(text, /(?:not (?:the )?HEAD|not HEAD-only|was not HEAD-only)/i,
+    `${label}: corrected deployment HEAD-only rejection missing`);
+  assert.match(text,
+    /(?:exactly one|one authorized|one deployed-version|sole deployed-version)[\s\S]{0,180}runQuickDiagnostic/i,
+    `${label}: exactly-one deployed-version runtime evidence missing`);
+  assert.match(text, /no\s+bounded\s+(?:diagnostic\s+)?(?:body|result)/i,
+    `${label}: absent bounded diagnostic body evidence missing`);
+  assert.match(text, /REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED/i,
+    `${label}: closed runtime category missing`);
+  assert.match(text, /VERSIONED_RUNTIME_FUNCTION_NOT_FOUND/i,
+    `${label}: closed runtime subtype missing`);
+  assert.match(text,
+    /(?:no\s+retry|retry\s+is\s+(?:not\s+)?permitted|permits\s+no\s+retry)/i,
+    `${label}: Instruction 0013 no-retry boundary missing`);
+  assert.match(text, /ATTEMPTED_FAILED_CLOSED/i,
+    `${label}: functional acceptance closed state missing`);
+}
+
 function contractsFromTexts(texts) {
   return texts.map((item) => ({
     name: item.name,
@@ -336,6 +360,12 @@ test('DOC-01C1_CURRENT_DOCUMENTS_RECORD_THE_0010_PARITY_BOUNDARY', () => {
 test('DOC-01C2_CURRENT_DOCUMENTS_RECORD_THE_0011_RUNTIME_STOP', () => {
   sourceTexts.forEach((entry) => {
     validateInstruction0011RuntimeBoundary(entry.text, entry.name);
+  });
+});
+
+test('DOC-01C3_CURRENT_DOCUMENTS_RECORD_THE_0013_RUNTIME_STOP', () => {
+  sourceTexts.forEach((entry) => {
+    validateInstruction0013RuntimeBoundary(entry.text, entry.name);
   });
 });
 

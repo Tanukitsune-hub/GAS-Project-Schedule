@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; Instruction 0010 independently proved exact 23-file canonical pull-back parity on the approved new blank personal-synthetic target. Instruction 0011 passed personal Cloud/OAuth and exact MYSELF-only runtime overlay parity, but its sole standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded result. The corrected versioned executable was not retested; functional acceptance is `ATTEMPTED_FAILED_CLOSED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. |
+| Current gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; Instruction 0010 independently proved exact 23-file canonical pull-back parity on the approved new blank personal-synthetic target. Instruction 0011 passed personal Cloud/OAuth and exact MYSELF-only runtime overlay parity, but its sole runtime attempt returned no bounded result. Instruction 0013 then proved the corrected versioned binding and made exactly one deployed-version `runQuickDiagnostic` call; it returned no bounded body and closed as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`, with no retry permitted. Functional acceptance is `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. |
 
 ## Diagnostic bounded-acceptance summary
 

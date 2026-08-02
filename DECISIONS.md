@@ -425,3 +425,28 @@ company, production, Deep Diagnostic, Dashboard, Task, Gmail, Calendar,
 migration, provider, and real-data actions remain unauthorized. T11 remains
 `T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, and company handoff
 remains `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
+
+## D-054 - Instruction 0013 closes after the corrected versioned retry
+
+**Decision.** Preserve Instruction 0011 evidence and use a separate one-use
+Instruction 0013 marker. The read-only preflight proved that the ignored local
+binding matched exactly one visible versioned deployment and was not HEAD-only.
+Exactly one deployed-version `runQuickDiagnostic` call was then made. It
+returned no bounded diagnostic body and is closed as
+`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`; the immediate parser record remains
+`DEV_RUNTIME_RESULT_UNPARSEABLE`.
+
+**Rationale.** The corrected deployment-binding prerequisite was independently
+proved before execution, so Instruction 0011's missing-versioned-deployment
+condition no longer explains this attempt. The returned closed message instead
+shows that the requested function was not available from the deployed version.
+The instruction permits exactly one runtime invocation and forbids a retry or
+replacement deployment after that call.
+
+**Consequences.** Functional acceptance remains
+`ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`; no bounded diagnostic summary
+is published. `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` remains only a
+readiness boundary. Phase 8B overall PASS, Phase 8C GO, production, pilot,
+company handoff, and company transfer are not established. Automation remains
+OFF; T11 remains `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains.

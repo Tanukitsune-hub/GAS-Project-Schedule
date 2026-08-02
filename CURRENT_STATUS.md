@@ -5,7 +5,9 @@ Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Mig
 Overall status: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
-functional acceptance: `ATTEMPTED_FAILED_CLOSED` (`BLOCKED_BY_AUTH`)
+functional acceptance: `ATTEMPTED_FAILED_CLOSED`
+(`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`)
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -20,7 +22,28 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED` (`BLOCKED_BY_AUTH`)
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
-## Current Instruction 0011 relocated runtime attempt boundary
+## Current Instruction 0013 corrected versioned runtime retry boundary
+
+The separate ignored one-use marker preserved all Instruction 0011 evidence.
+Before execution, the read-only preflight proved that the ignored local
+binding matched exactly one visible versioned deployment and was not the HEAD
+test deployment. Named OAuth, runtime authentication, standard-Cloud/API/OAuth
+prerequisites, and exact MYSELF-only runtime overlay parity also passed in
+closed-safe form. No deployment was created or updated.
+
+Exactly one deployed-version `runQuickDiagnostic` invocation was attempted.
+It returned no bounded diagnostic body and closed as
+`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`; the immediate local parser record is
+preserved as `DEV_RUNTIME_RESULT_UNPARSEABLE`. Instruction 0013 permits no
+retry. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and
+`REVIEW_REQUIRED`; Phase 8B overall PASS and Phase 8C GO are not established.
+The development gate remains `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` only
+as readiness. Company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`, T11 remains
+`T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`.
+
+## Prior Instruction 0011 relocated runtime attempt boundary
 
 Relocation reattachment, status reconciliation, locked local verification,
 personal standard-Cloud/API/OAuth prerequisites, named OAuth verification, and
@@ -415,8 +438,10 @@ respective historical verification and remain immutable evidence. T11 is
 `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
 occurred. The current non-Google local validation, GitHub publication, and
 current-head CI pass. Instruction 0010 then independently proved the strict
-23-file canonical pull-back parity. The personal Cloud/OAuth/runtime lane
-remains unexecuted, and no company Workspace action is authorized by this
+23-file canonical pull-back parity. Instructions 0011 and 0013 completed the
+authorized runtime prerequisites and consumed their separately authorized
+single attempts; the current result is `ATTEMPTED_FAILED_CLOSED` without a
+bounded diagnostic body. No company Workspace action is authorized by this
 status.
 
 PR #9 records the earlier CI implementation against an older `main` baseline.

@@ -87,6 +87,7 @@ test('BOOT-01_ALL_REQUIRED_CLOSED_FAILURE_CATEGORIES_EXIST', () => {
     'REMOTE_PAYLOAD_REJECTED',
     'NETWORK_OR_TLS_FAILURE',
     'CLASP_REMOTE_CONFLICT',
+    'REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED',
     'UNKNOWN_CLASP_PUSH_FAILURE'
   ].forEach((value) => assert.ok(closedClaspFailureCategories.includes(value)));
 });
@@ -101,6 +102,8 @@ test('BOOT-02_FAILURE_CLASSIFICATION_IS_DETERMINISTIC', () => {
     REMOTE_PAYLOAD_REJECTED: 'payload rejected',
     NETWORK_OR_TLS_FAILURE: 'ETIMEDOUT',
     CLASP_REMOTE_CONFLICT: 'remote changed; push requires --force',
+    REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED:
+      'Script function not found. Please make sure script is deployed as API executable.',
     UNKNOWN_CLASP_PUSH_FAILURE: 'unrecognized synthetic failure'
   };
   Object.entries(fixtures).forEach(([expected, raw]) => {
@@ -649,6 +652,20 @@ test('BOOT-31_INSTRUCTION_0013_RUNTIME_USES_DEPLOYED_VERSION_MODE', () => {
     runtime
   );
   assert.ok(runtime >= 0 && nondev > runtime);
+});
+
+test('BOOT-32_VERSIONED_FUNCTION_NOT_FOUND_IS_A_CLOSED_RUNTIME_RESULT', () => {
+  assert.strictEqual(classifyClaspFailure(
+    'Script function not found. Please make sure script is deployed as API executable.',
+    'test-runtime-0013'
+  ), 'REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED');
+  const runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0013')"
+  );
+  assert.ok(claspToolSource.indexOf(
+    'script function not found',
+    runtime
+  ) > runtime);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

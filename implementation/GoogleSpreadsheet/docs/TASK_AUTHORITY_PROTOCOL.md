@@ -20,8 +20,13 @@ Instruction 0010 independently proved exact 23-file canonical pull-back parity
 on the approved new blank personal-synthetic target. Instruction 0011 passed
 personal Cloud/OAuth and exact MYSELF-only runtime overlay parity, but its sole
 standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded
-result. The corrected versioned executable was not retested; functional
-acceptance is `ATTEMPTED_FAILED_CLOSED`. Company handoff is
+result. The corrected versioned executable was not retested in Instruction
+0011. Instruction 0013 then proved the corrected versioned binding, but its sole
+deployed-version `runQuickDiagnostic` call returned no bounded body and closed
+as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted;
+functional acceptance is `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`
+remains. Company handoff is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. T10 and fixed T11
 are immutable historical evidence; T11 is `T11_SUSPENDED`.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a

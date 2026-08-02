@@ -10,7 +10,13 @@ Phase 8B overall PASS. Instruction 0011 passed personal standard-Cloud/API/
 OAuth setup and exact MYSELF-only runtime overlay parity, but its sole runtime
 attempt stopped as `BLOCKED_BY_AUTH` without a bounded result. The correctly
 versioned MYSELF-only executable was created only after that stop and was not
-retested. Remote-development review remains incomplete. Company handoff is therefore
+retested in Instruction 0011. Instruction 0013 proved that corrected binding
+was a visible versioned deployment, but its sole deployed-version diagnostic
+call returned no bounded body and closed as
+`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted and
+`REVIEW_REQUIRED` remains. Remote-development review remains incomplete.
+Company handoff is therefore
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and there is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company

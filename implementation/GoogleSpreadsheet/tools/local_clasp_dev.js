@@ -80,6 +80,7 @@ const closedClaspFailureCategories = Object.freeze([
   'NETWORK_OR_TLS_FAILURE',
   'CLASP_REMOTE_CONFLICT',
   'REMOTE_MUTATION_NOT_PERFORMED_MANIFEST_CONFIRMATION_REQUIRED',
+  'REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED',
   'UNKNOWN_CLASP_PUSH_FAILURE',
   'UNKNOWN_CLASP_REMOTE_FAILURE'
 ]);
@@ -1399,6 +1400,10 @@ function classifyClaspFailure(raw, operation) {
   ])) return 'APPS_SCRIPT_API_DISABLED';
 
   if (matches([
+    /script function not found/
+  ])) return 'REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED';
+
+  if (matches([
     /invalid_grant/,
     /unauthorized_client/,
     /invalid credentials/,
@@ -2069,6 +2074,14 @@ function selfTest() {
       assert.ok(closedClaspFailureCategories.includes(expected));
     });
   });
+  test('CLASSIFIER_REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED', () => {
+    const expected = 'REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED';
+    assert.strictEqual(classifyClaspFailure(
+      'Script function not found. Please make sure script is deployed as API executable.',
+      instruction0013RuntimeOperation
+    ), expected);
+    assert.ok(closedClaspFailureCategories.includes(expected));
+  });
   test('RUNTIME_OVERLAY_ADDS_ONLY_MYSELF_EXECUTION_API', () => {
     const canonical = {
       timeZone: 'Asia/Tokyo',
@@ -2737,7 +2750,8 @@ function main() {
       googleOperation = 'ATTEMPTED';
       const result = runClasp(args, runtimeRoot);
       if (result.exit_code !== 0 ||
-          /unable to run script function/i.test(String(result.raw || ''))) {
+          /(?:unable to run script function|script function not found)/i
+            .test(String(result.raw || ''))) {
         failClassifiedClaspOperation('test-runtime', result);
       }
       let summary;
@@ -2779,7 +2793,8 @@ function main() {
       googleOperation = 'ATTEMPTED';
       const result = runClasp(args, runtimeRoot);
       if (result.exit_code !== 0 ||
-          /unable to run script function/i.test(String(result.raw || ''))) {
+          /(?:unable to run script function|script function not found)/i
+            .test(String(result.raw || ''))) {
         failClassifiedClaspOperation(instruction0013RuntimeOperation, result);
       }
       let summary;

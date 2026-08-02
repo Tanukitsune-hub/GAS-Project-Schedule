@@ -27,6 +27,24 @@ Google Workspace Personal Work OS.
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0013 - corrected versioned runtime retry boundary
+
+The separate one-use retry marker preserved Instruction 0011 evidence. A
+read-only deployment preflight then proved, without publishing identifiers,
+that the ignored local binding matched exactly one visible versioned
+deployment and was not the HEAD test deployment. Existing named OAuth,
+standard-Cloud/API prerequisites, and exact MYSELF-only runtime overlay parity
+also remained closed-safe PASS. No deployment was created or updated.
+
+Exactly one `runQuickDiagnostic` call was made in deployed-version mode. It
+returned no bounded diagnostic body and closed as
+`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`; the immediate local parser record
+remains `DEV_RUNTIME_RESULT_UNPARSEABLE`. No retry is permitted in Instruction
+0013. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and
+`REVIEW_REQUIRED`; the current gate is still only a readiness boundary, and
+company handoff remains blocked.
+
 ## Instruction 0011 - relocated runtime attempt boundary
 
 The relocated repository was reattached without a OneDrive dependency, and
@@ -388,9 +406,10 @@ historical evidence. They must not be copied or reflected on a company PC
 while this boundary is suspended.
 
 Instruction 0010 independently proved exact 23-file canonical pull-back parity
-on the approved personal-synthetic target. The remaining personal Cloud/OAuth,
-MYSELF-only runtime overlay, API executable, and standalone runtime validation
-lane is not company authorization. No company Workspace action is authorized. Do not
+on the approved personal-synthetic target. Instructions 0011 and 0013 then
+attempted the bounded personal runtime lane, which remains
+`ATTEMPTED_FAILED_CLOSED` without a diagnostic body. This is not company
+authorization. No company Workspace action is authorized. Do not
 carry a package, change an
 Apps Script file, run Setup or a diagnostic, touch Gmail, Calendar,
 Properties, triggers, Automation, tests, Migration, or perform repair. A

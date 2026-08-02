@@ -18,6 +18,21 @@ Current publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0013 closed corrected versioned runtime retry
+
+The separate one-use marker preserved Instruction 0011 evidence. A read-only
+preflight proved that the ignored local binding matched exactly one visible
+versioned deployment and was not the HEAD test deployment, while named OAuth,
+Cloud/API prerequisites, and runtime-overlay parity remained closed-safe PASS.
+No deployment was created or updated.
+
+Exactly one deployed-version `runQuickDiagnostic` call returned no bounded
+diagnostic body. It closed as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with
+safe subtype `VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`; no Instruction 0013 retry
+is permitted. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and
+`REVIEW_REQUIRED`. Phase 8B overall PASS, Phase 8C GO, company handoff,
+production, pilot, migration, and all operational lanes remain unauthorized.
+
 ## Instruction 0011 closed runtime attempt and future boundary
 
 Relocation safety, status reconciliation, local verification, personal
@@ -248,8 +263,9 @@ they are not an active company transfer source.
 The current development gate is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`:
 local non-Google validation, GitHub publication/current-branch CI, and exact
 23-file canonical pull-back parity pass. Personal Cloud/OAuth, runtime-overlay
-parity, API executable deployment, standalone runtime validation, and final
-remote-development review remain unexecuted. Company handoff is
+parity, and corrected versioned deployment prerequisites passed; the bounded
+standalone runtime retry remains `ATTEMPTED_FAILED_CLOSED` without a diagnostic
+body. Final remote-development review remains incomplete. Company handoff is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. No company-PC
 carriage, Workspace action, deployment, Automation enablement, or Phase 8B
 functional acceptance is authorized by this plan. This does not declare T1-01
