@@ -40,6 +40,11 @@
     "gas:prepare-runtime-retry:0014": "node tools/local_clasp_dev.js prepare-runtime-retry-0014",
     "gas:preflight-runtime-retry:0014": "node tools/local_clasp_dev.js preflight-runtime-retry-0014",
     "gas:test:runtime-dev:0014": "node tools/local_clasp_dev.js test-runtime-0014",
+    "gas:reauthorize:runtime-dev:0015": "node tools/local_clasp_dev.js reauthorize-runtime-0015",
+    "gas:authorization-matrix:runtime-dev:0015": "node tools/local_clasp_dev.js authorization-matrix-runtime-0015",
+    "gas:prepare-runtime-retry:0015": "node tools/local_clasp_dev.js prepare-runtime-retry-0015",
+    "gas:preflight-runtime-retry:0015": "node tools/local_clasp_dev.js preflight-runtime-retry-0015",
+    "gas:test:runtime-dev:0015": "node tools/local_clasp_dev.js test-runtime-0015",
     "gas:test:runtime-dev": "node tools/local_clasp_dev.js test-runtime",
     "gas:test:dev": "node tools/local_clasp_dev.js test-runtime",
     "gas:open": "node tools/local_clasp_dev.js open"

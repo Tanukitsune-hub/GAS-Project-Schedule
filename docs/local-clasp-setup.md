@@ -413,6 +413,65 @@ The 0014 runtime command writes `ATTEMPT_STARTED` first, invokes exactly
 `runQuickDiagnostic` once with `--nondev`, and refuses reuse. Do not run the
 generic runtime command or either 0013 command for this instruction.
 
+Instruction 0015 is a separate authorization-root-cause lane after the closed
+0014 result. It must not reuse the prior named profile for the new diagnostic.
+The guarded flow creates one additional ignored local-only named profile,
+preserving the earlier profile, then records an authorization matrix with only
+closed fields. The matrix verifies a refreshed token, token audience, token
+lifetime, all runtime-manifest scopes, required Apps Script client scopes,
+fresh consent eligibility, legacy-profile principal equality, and read-only
+API-executable deployment metadata. It records a bound-container ownership
+field as `INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA` when the Apps
+Script/Drive metadata APIs cannot expose that relationship; it does not infer
+an owner, account, identifier, or data value.
+
+The first command opens an operator-only desktop OAuth consent flow. Complete
+it only for the same personal synthetic account that created the earlier local
+profile; do not copy the browser URL, account value, client value, token, or
+credential into chat, logs, or GitHub. The tool captures raw clasp output only
+in ignored local operation state.
+
+```powershell
+$env:GAS_DEV_CLASP_ALLOWED = 'true'
+$env:GAS_INSTRUCTION_0015_OAUTH_REAUTH_ALLOWED = 'true'
+pnpm run gas:reauthorize:runtime-dev:0015
+Remove-Item Env:GAS_INSTRUCTION_0015_OAUTH_REAUTH_ALLOWED
+
+$env:GAS_DEV_RUNTIME_ALLOWED = 'true'
+pnpm run gas:authorization-matrix:runtime-dev:0015
+```
+
+Only an exact matrix `PASS` permits preparation. The separate ignored 0015
+marker preserves the 0011, 0013, and 0014 attempt records before any new
+diagnostic. The preflight creates one fresh immutable MYSELF-only deployment
+only to bind the freshly reauthorized profile to independently pull-verified
+runtime content. It also verifies API-executable metadata with the same named
+profile before updating its ignored execution binding:
+
+```powershell
+pnpm run gas:prepare-runtime-retry:0015
+$env:GAS_INSTRUCTION_0015_FRESH_DEPLOYMENT_ALLOWED = 'true'
+pnpm run gas:preflight-runtime-retry:0015
+Remove-Item Env:GAS_INSTRUCTION_0015_FRESH_DEPLOYMENT_ALLOWED
+```
+
+If either command is not an exact closed `PASS`, stop: it does not authorize a
+diagnostic call. If both pass, Instruction 0015 permits exactly one invocation
+of only `runQuickDiagnostic` from the deployment-bound execution workspace:
+
+```powershell
+pnpm run gas:test:runtime-dev:0015
+Remove-Item Env:GAS_DEV_CLASP_ALLOWED, Env:GAS_DEV_RUNTIME_ALLOWED
+```
+
+The 0015 guard writes `ATTEMPT_STARTED` before the call and permanently blocks
+a second 0015 call without a later tracked instruction. A bounded result may
+publish only the existing closed diagnostic summary; any absent or rejected
+body closes the lane without retry. This lane never changes canonical Apps
+Script source or canonical `appsscript.json`, enables Automation, or authorizes
+company, production, real-data, migration, Gmail, Calendar, Dashboard, Task,
+or test-harness work.
+
 ```powershell
 $secret = Read-Host 'Deployment ID (local only)' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)

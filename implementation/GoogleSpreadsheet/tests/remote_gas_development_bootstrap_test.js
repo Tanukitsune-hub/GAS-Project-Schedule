@@ -387,7 +387,7 @@ test('BOOT-18_ALL_GENERATED_CLASP_PROJECT_CONFIGS_USE_THE_SHARED_GS_FIRST_HELPER
   assert.doesNotMatch(claspToolSource, /function writePullConfig/);
   assert.strictEqual(
     (claspToolSource.match(/writeCanonicalClaspProjectConfig\(/g) || []).length,
-    9
+    11
   );
 });
 
@@ -782,10 +782,78 @@ test('BOOT-37_INSTRUCTION_0014_CALL_USES_DEPLOYMENT_BOUND_NONDEV_NAME', () => {
     /'--json', 'run-function', '--nondev', allowedRuntimeFunction/);
   assert.match(claspToolSource,
     /'--json', 'run-function', '--nondev', 'runQuickDiagnostic'/);
-  const matches = claspToolSource.match(
+  const instruction0014Runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0014')"
+  );
+  const instruction0015Runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0015')"
+  );
+  const matches = claspToolSource.slice(
+    instruction0014Runtime,
+    instruction0015Runtime
+  ).match(
     /runClasp\(args, runtimeExecutionRoot\)/g
   ) || [];
   assert.strictEqual(matches.length, 1);
+});
+
+test('BOOT-38_INSTRUCTION_0015_REAUTHORIZATION_MATRIX_AND_ONE_USE_CALL_ARE_GUARDED', () => {
+  assert.strictEqual(
+    packageJson.scripts['gas:reauthorize:runtime-dev:0015'],
+    'node tools/local_clasp_dev.js reauthorize-runtime-0015'
+  );
+  assert.strictEqual(
+    packageJson.scripts['gas:authorization-matrix:runtime-dev:0015'],
+    'node tools/local_clasp_dev.js authorization-matrix-runtime-0015'
+  );
+  assert.strictEqual(
+    packageJson.scripts['gas:prepare-runtime-retry:0015'],
+    'node tools/local_clasp_dev.js prepare-runtime-retry-0015'
+  );
+  assert.strictEqual(
+    packageJson.scripts['gas:preflight-runtime-retry:0015'],
+    'node tools/local_clasp_dev.js preflight-runtime-retry-0015'
+  );
+  assert.strictEqual(
+    packageJson.scripts['gas:test:runtime-dev:0015'],
+    'node tools/local_clasp_dev.js test-runtime-0015'
+  );
+  assert.match(claspToolSource, /personal-synthetic-runtime-0015/);
+  assert.match(claspToolSource, /getTokenInfo\(accessToken\)/);
+  assert.match(claspToolSource, /manifest_scope_coverage/);
+  assert.match(claspToolSource, /runtime_api_scope_coverage/);
+  assert.match(claspToolSource, /PASS_FRESH_REAUTHORIZATION/);
+  assert.match(claspToolSource, /FRESH_REAUTHORIZED_DEPLOYMENT_REQUIRED/);
+  assert.match(claspToolSource, /INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA/);
+  assert.match(claspToolSource, /instruction-0015-runtime-attempt\.json/);
+  const reauthorize = claspToolSource.indexOf(
+    "if (command === 'reauthorize-runtime-0015')"
+  );
+  const matrix = claspToolSource.indexOf(
+    "if (command === 'authorization-matrix-runtime-0015')"
+  );
+  const prepare = claspToolSource.indexOf(
+    "if (command === 'prepare-runtime-retry-0015')"
+  );
+  const preflight = claspToolSource.indexOf(
+    "if (command === 'preflight-runtime-retry-0015')"
+  );
+  const runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0015')"
+  );
+  const marker = claspToolSource.indexOf("state: 'ATTEMPT_STARTED'", runtime);
+  const call = claspToolSource.indexOf(
+    'runClasp(args, runtimeExecutionRoot)',
+    marker
+  );
+  assert.ok(reauthorize >= 0 && matrix > reauthorize && prepare > matrix);
+  assert.ok(preflight > prepare && runtime > preflight);
+  assert.ok(marker > runtime && call > marker);
+  const runtimeSegment = claspToolSource.slice(runtime, call + 160);
+  assert.match(claspToolSource,
+    /function instruction0015RuntimeClaspArgs\(\)[\s\S]{0,420}'--json', 'run-function', '--nondev', 'runQuickDiagnostic'/);
+  assert.match(runtimeSegment, /INSTRUCTION_0015_RUNTIME_ALREADY_ATTEMPTED/);
+  assert.match(claspToolSource.slice(runtime), /reauthorized_named_profile: true/);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

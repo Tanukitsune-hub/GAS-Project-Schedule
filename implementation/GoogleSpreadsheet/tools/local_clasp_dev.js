@@ -11,6 +11,7 @@ const assert = require('node:assert');
 const childProcess = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const { createRequire } = require('node:module');
 const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -64,6 +65,24 @@ const instruction0014VersionPullbackOperation =
 const instruction0014LineageOperation =
   'instruction-0014-deployment-lineage';
 const instruction0014RuntimeOperation = 'test-runtime-0014';
+const instruction0015RuntimeAttemptMarkerPath = path.join(
+  operationRecordRoot,
+  'instruction-0015-runtime-attempt.json'
+);
+const instruction0015AuthorizationOperation =
+  'instruction-0015-authorization-matrix';
+const instruction0015OAuthReauthorizationOperation =
+  'instruction-0015-oauth-reauthorize';
+const instruction0015PullbackOperation = 'instruction-0015-runtime-pullback';
+const instruction0015DeploymentOperation =
+  'instruction-0015-fresh-deployment';
+const instruction0015VersionPullbackOperation =
+  'instruction-0015-version-pullback';
+const instruction0015LineageOperation =
+  'instruction-0015-deployment-lineage';
+const instruction0015DeploymentAuthorizationOperation =
+  'instruction-0015-deployment-authorization';
+const instruction0015RuntimeOperation = 'test-runtime-0015';
 const configPath = path.join(devRoot, '.clasp.json');
 const targetPath = path.join(devRoot, 'target.json');
 const inventoryPath = path.join(devRoot, 'payload-inventory.json');
@@ -80,8 +99,16 @@ const allowedTargetAttestations = Object.freeze([
 ]);
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const runtimeProfileName = 'personal-synthetic-runtime';
+const instruction0015RuntimeProfileName = 'personal-synthetic-runtime-0015';
+const requiredRuntimeApiScopes = Object.freeze([
+  'https://www.googleapis.com/auth/script.deployments',
+  'https://www.googleapis.com/auth/script.projects',
+  'https://www.googleapis.com/auth/userinfo.email'
+]);
 const instruction0014DeploymentDescription =
   'instruction-0014-pull-verified-runtime';
+const instruction0015DeploymentDescription =
+  'instruction-0015-reauthorized-runtime';
 const expectedCanonicalPayloadSha256 =
   'ba70c8bce8ea35bfdb85878eb2e78b4dc6f4df7e2bf4b8336ce9a6d1be8e20d1';
 const canonicalScriptExtensions = Object.freeze(['.gs', '.js']);
@@ -729,6 +756,269 @@ function assertRuntimeVersionPullbackPayload(runtime) {
     version_runtime_function: wrapper.runtime_function,
     version_runtime_overlay_parity: true
   };
+}
+
+function safeGoogleErrorCategory(error) {
+  const status = Number(error && (
+    error.code || (error.response && error.response.status)
+  ));
+  if (status === 401) return 'AUTH_FAILURE';
+  if (status === 403) return 'ACCESS_DENIED';
+  if (status === 404) return 'NOT_FOUND';
+  if (Number.isInteger(status) && status >= 400) return 'HTTP_ERROR';
+  const code = String(error && error.code || '');
+  if (/invalid_grant|unauthorized|invalid_token/i.test(code)) {
+    return 'AUTH_FAILURE';
+  }
+  if (error instanceof TypeError) return 'CLIENT_METHOD_UNAVAILABLE';
+  return 'READ_ONLY_METADATA_FAILURE';
+}
+
+function runtimeScopeCoverage(requiredScopes, grantedScopes) {
+  if (!Array.isArray(requiredScopes) ||
+      requiredScopes.some((scope) => typeof scope !== 'string' || !scope) ||
+      !Array.isArray(grantedScopes) ||
+      grantedScopes.some((scope) => typeof scope !== 'string' || !scope)) {
+    fail('RUNTIME_OAUTH_SCOPE_EVIDENCE_INVALID',
+      'RUNTIME_OAUTH_SCOPE_EVIDENCE_INVALID');
+  }
+  const granted = new Set(grantedScopes);
+  const missing = requiredScopes.filter((scope) => !granted.has(scope));
+  return {
+    manifest_scope_count: requiredScopes.length,
+    granted_scope_count: granted.size,
+    missing_scope_count: missing.length,
+    manifest_scope_coverage: missing.length === 0
+  };
+}
+
+function localDesktopOAuthClient() {
+  const credentialsRoot = path.join(devRoot, 'credentials');
+  if (!fs.existsSync(credentialsRoot)) {
+    fail('LOCAL_DESKTOP_OAUTH_CLIENT_MISSING',
+      'LOCAL_DESKTOP_OAUTH_CLIENT_MISSING');
+  }
+  const entries = fs.readdirSync(credentialsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.json'));
+  if (entries.length !== 1) {
+    fail('LOCAL_DESKTOP_OAUTH_CLIENT_AMBIGUOUS',
+      'LOCAL_DESKTOP_OAUTH_CLIENT_AMBIGUOUS');
+  }
+  const credentialPath = path.join(credentialsRoot, entries[0].name);
+  const document = readJson(
+    credentialPath,
+    'LOCAL_DESKTOP_OAUTH_CLIENT_INVALID'
+  );
+  const client = document && document.installed;
+  const localhostRedirect = client && Array.isArray(client.redirect_uris) &&
+    client.redirect_uris.some((uri) => {
+      try {
+        return new URL(uri).hostname === 'localhost';
+      } catch (_) {
+        return false;
+      }
+    });
+  if (!client || typeof client.client_id !== 'string' ||
+      typeof client.client_secret !== 'string' ||
+      typeof client.project_id !== 'string' || !localhostRedirect) {
+    fail('LOCAL_DESKTOP_OAUTH_CLIENT_INVALID',
+      'LOCAL_DESKTOP_OAUTH_CLIENT_INVALID');
+  }
+  return { client, credentialPath };
+}
+
+function readNamedRuntimeOAuthProfile(profileName) {
+  const store = readJson(runtimeAuthRoot, 'NAMED_RUNTIME_OAUTH_PROFILE_MISSING');
+  const profile = store && store.tokens && store.tokens[profileName];
+  if (!profile || profile.type !== 'authorized_user' ||
+      typeof profile.client_id !== 'string' ||
+      typeof profile.client_secret !== 'string' ||
+      typeof profile.refresh_token !== 'string') {
+    fail('NAMED_RUNTIME_OAUTH_PROFILE_MISSING',
+      'NAMED_RUNTIME_OAUTH_PROFILE_MISSING');
+  }
+  return profile;
+}
+
+function relativeDesktopOAuthCredentialPath(runtimeWorkspace) {
+  const credential = localDesktopOAuthClient();
+  const relative = path.relative(runtimeWorkspace, credential.credentialPath)
+    .split(path.sep).join('/');
+  if (!relative || path.isAbsolute(relative)) {
+    fail('LOCAL_DESKTOP_OAUTH_CLIENT_INVALID',
+      'LOCAL_DESKTOP_OAUTH_CLIENT_INVALID');
+  }
+  return relative;
+}
+
+function runtimeGoogleApiLibraries() {
+  const entrypoint = fs.realpathSync(claspEntrypoint());
+  const claspRequire = createRequire(entrypoint);
+  const { OAuth2Client } = claspRequire('google-auth-library');
+  const { google } = claspRequire('googleapis');
+  if (typeof OAuth2Client !== 'function' || !google ||
+      typeof google.oauth2 !== 'function' || typeof google.script !== 'function') {
+    fail('LOCAL_RUNTIME_GOOGLE_CLIENT_UNAVAILABLE',
+      'LOCAL_RUNTIME_GOOGLE_CLIENT_UNAVAILABLE');
+  }
+  return { OAuth2Client, google };
+}
+
+function buildOAuthClientForProfile(profile) {
+  const { OAuth2Client } = runtimeGoogleApiLibraries();
+  const client = new OAuth2Client({
+    clientId: profile.client_id,
+    clientSecret: profile.client_secret
+  });
+  client.setCredentials(profile);
+  return client;
+}
+
+function principalsMatch(left, right) {
+  return Boolean(left && right &&
+    typeof left.email === 'string' && typeof left.id === 'string' &&
+    left.email === right.email && left.id === right.id);
+}
+
+async function inspectOAuthProfile(profileName, manifestScopes) {
+  const profile = readNamedRuntimeOAuthProfile(profileName);
+  const desktop = localDesktopOAuthClient();
+  const safe = {
+    named_profile_present: true,
+    local_desktop_client_match: profile.client_id === desktop.client.client_id,
+    profile_refresh: 'NOT_EXECUTED',
+    token_audience_match: false,
+    token_lifetime_at_least_six_minutes: false,
+    manifest_scope_count: manifestScopes.length,
+    granted_scope_count: 0,
+    missing_scope_count: manifestScopes.length,
+    manifest_scope_coverage: false,
+    runtime_api_scope_coverage: false,
+    missing_runtime_api_scope_count: requiredRuntimeApiScopes.length,
+    oauth_principal_readable: false
+  };
+  const client = buildOAuthClientForProfile(profile);
+  let accessToken;
+  try {
+    const access = await client.getAccessToken();
+    accessToken = typeof access === 'string' ? access : access && access.token;
+    safe.profile_refresh = accessToken ? 'PASS' : 'FAIL';
+    if (!accessToken) return { safe, client, principal: null };
+  } catch (error) {
+    safe.profile_refresh = safeGoogleErrorCategory(error);
+    return { safe, client, principal: null };
+  }
+  try {
+    const tokenInfo = await client.getTokenInfo(accessToken);
+    const scopeEvidence = runtimeScopeCoverage(
+      manifestScopes,
+      Array.isArray(tokenInfo.scopes) ? tokenInfo.scopes : []
+    );
+    const runtimeApiScopeEvidence = runtimeScopeCoverage(
+      requiredRuntimeApiScopes,
+      Array.isArray(tokenInfo.scopes) ? tokenInfo.scopes : []
+    );
+    Object.assign(safe, scopeEvidence, {
+      token_audience_match: tokenInfo.aud === profile.client_id,
+      token_lifetime_at_least_six_minutes:
+        Number(tokenInfo.expiry_date) - Date.now() > 360000,
+      runtime_api_scope_coverage:
+        runtimeApiScopeEvidence.manifest_scope_coverage,
+      missing_runtime_api_scope_count:
+        runtimeApiScopeEvidence.missing_scope_count
+    });
+  } catch (error) {
+    const category = safeGoogleErrorCategory(error);
+    safe.token_audience_match = category;
+    safe.manifest_scope_coverage = category;
+    safe.runtime_api_scope_coverage = category;
+  }
+  try {
+    const { google } = runtimeGoogleApiLibraries();
+    const oauth2 = google.oauth2({ version: 'v2', auth: client });
+    const response = await oauth2.userinfo.get();
+    const principal = response.data && {
+      email: response.data.email,
+      id: response.data.id
+    };
+    safe.oauth_principal_readable = Boolean(principal && principal.email && principal.id);
+    return { safe, client, principal };
+  } catch (error) {
+    safe.oauth_principal_readable = safeGoogleErrorCategory(error);
+    return { safe, client, principal: null };
+  }
+}
+
+async function inspectRuntimeDeploymentMetadata(client, scriptId, deploymentId) {
+  const safe = {
+    deployment_metadata_access: 'NOT_EXECUTED',
+    api_executable_deployment: false,
+    deployment_access_myself: false,
+    deployment_versioned: false,
+    deployment_targets_bound_script: false
+  };
+  try {
+    const { google } = runtimeGoogleApiLibraries();
+    const script = google.script({ version: 'v1', auth: client });
+    const response = await script.projects.deployments.get({
+      scriptId,
+      deploymentId
+    });
+    const deployment = response.data || {};
+    const entryPoints = Array.isArray(deployment.entryPoints)
+      ? deployment.entryPoints : [];
+    const execution = entryPoints.find((entry) =>
+      entry && entry.entryPointType === 'EXECUTION_API'
+    );
+    const configuration = execution && execution.executionApi &&
+      execution.executionApi.entryPointConfig;
+    safe.deployment_metadata_access = 'PASS';
+    safe.api_executable_deployment = Boolean(execution);
+    safe.deployment_access_myself = Boolean(
+      configuration && configuration.access === 'MYSELF'
+    );
+    safe.deployment_versioned = Boolean(
+      deployment.deploymentConfig &&
+      Number.isInteger(deployment.deploymentConfig.versionNumber) &&
+      deployment.deploymentConfig.versionNumber > 0
+    );
+    safe.deployment_targets_bound_script = Boolean(
+      deployment.deploymentConfig &&
+      deployment.deploymentConfig.scriptId === scriptId
+    );
+  } catch (error) {
+    safe.deployment_metadata_access = safeGoogleErrorCategory(error);
+  }
+  return safe;
+}
+
+async function inspectRuntimeTargetOwnership(client, scriptId, principal) {
+  const safe = {
+    script_drive_metadata_access: 'NOT_EXECUTED',
+    script_owner_matches_profile: 'UNKNOWN',
+    script_editable_by_profile: 'UNKNOWN',
+    bound_container_owner_authorization:
+      'INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA'
+  };
+  try {
+    const { google } = runtimeGoogleApiLibraries();
+    const drive = google.drive({ version: 'v3', auth: client });
+    const response = await drive.files.get({
+      fileId: scriptId,
+      fields: 'capabilities(canEdit),owners(emailAddress)',
+      supportsAllDrives: true
+    });
+    const owners = Array.isArray(response.data && response.data.owners)
+      ? response.data.owners : [];
+    safe.script_drive_metadata_access = 'PASS';
+    safe.script_owner_matches_profile = Boolean(principal &&
+      owners.some((owner) => owner && owner.emailAddress === principal.email));
+    safe.script_editable_by_profile = Boolean(response.data &&
+      response.data.capabilities && response.data.capabilities.canEdit === true);
+  } catch (error) {
+    safe.script_drive_metadata_access = safeGoogleErrorCategory(error);
+  }
+  return safe;
 }
 
 function isPlaceholder(value) {
@@ -1483,6 +1773,232 @@ function assertInstruction0014Prepared(runtime, expectedState) {
   return { marker, staged, parity };
 }
 
+function instruction0014RuntimeAttemptEvidence() {
+  const marker = readJson(
+    instruction0014RuntimeAttemptMarkerPath,
+    'INSTRUCTION_0014_RUNTIME_ATTEMPT_EVIDENCE_MISSING'
+  );
+  const recordPath = path.join(
+    operationRecordRoot,
+    `last-${instruction0014RuntimeOperation}.json`
+  );
+  const record = readJson(
+    recordPath,
+    'INSTRUCTION_0014_RUNTIME_ATTEMPT_EVIDENCE_MISSING'
+  );
+  if (!['ATTEMPT_STARTED', 'ATTEMPT_COMPLETED'].includes(marker.state) ||
+      record.operation !== instruction0014RuntimeOperation ||
+      record.status !== 'BLOCKED_BY_AUTH' || record.exit_code !== 0 ||
+      record.safe_subtype !== 'RUNTIME_AUTHORIZATION_REJECTED' ||
+      !/^[a-f0-9]{64}$/.test(String(record.output_sha256 || ''))) {
+    fail('INSTRUCTION_0014_RUNTIME_ATTEMPT_EVIDENCE_INVALID',
+      'INSTRUCTION_0014_RUNTIME_ATTEMPT_EVIDENCE_INVALID');
+  }
+  return {
+    marker_sha256: sha256(fs.readFileSync(instruction0014RuntimeAttemptMarkerPath)),
+    record_sha256: sha256(fs.readFileSync(recordPath)),
+    output_sha256: record.output_sha256
+  };
+}
+
+function writeInstruction0015RuntimeAttemptMarker(marker) {
+  assertSafeGeneratedPayloadDirectory();
+  fs.mkdirSync(operationRecordRoot, { recursive: true });
+  fs.writeFileSync(
+    instruction0015RuntimeAttemptMarkerPath,
+    `${JSON.stringify(marker, null, 2)}\n`,
+    'utf8'
+  );
+  return marker;
+}
+
+function instruction0015SafeRecord(operation, status, evidence) {
+  const allowedOperations = new Set([
+    instruction0015AuthorizationOperation,
+    instruction0015DeploymentAuthorizationOperation
+  ]);
+  if (!allowedOperations.has(operation) ||
+      !['PASS', 'REVIEW_REQUIRED'].includes(status) ||
+      !evidence || typeof evidence !== 'object' || Array.isArray(evidence)) {
+    fail('INSTRUCTION_0015_SAFE_RECORD_INVALID',
+      'INSTRUCTION_0015_SAFE_RECORD_INVALID');
+  }
+  const safe = {
+    operation,
+    status,
+    exit_code: 0,
+    script_extension_contract: scriptExtensionContract,
+    ...evidence
+  };
+  safe.output_sha256 = sha256(JSON.stringify(safe));
+  assertSafeGeneratedPayloadDirectory();
+  fs.mkdirSync(operationRecordRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(operationRecordRoot, `last-${operation}.json`),
+    `${JSON.stringify(safe, null, 2)}\n`,
+    'utf8'
+  );
+  writeLastOperation(safe);
+  return safe;
+}
+
+function assertInstruction0015AuthorizationMatrix() {
+  const recordPath = path.join(
+    operationRecordRoot,
+    `last-${instruction0015AuthorizationOperation}.json`
+  );
+  const record = readJson(
+    recordPath,
+    'INSTRUCTION_0015_AUTHORIZATION_MATRIX_MISSING'
+  );
+  if (record.operation !== instruction0015AuthorizationOperation ||
+      record.status !== 'PASS' || record.exit_code !== 0 ||
+      record.profile_name !== instruction0015RuntimeProfileName ||
+      record.prior_profiles_preserved !== true ||
+      record.profile_principal_matches_legacy_profile !== true ||
+      record.local_desktop_client_match !== true ||
+      record.profile_refresh !== 'PASS' ||
+      record.token_audience_match !== true ||
+      record.token_lifetime_at_least_six_minutes !== true ||
+      record.manifest_scope_coverage !== true ||
+      record.runtime_api_scope_coverage !== true ||
+      record.oauth_principal_readable !== true ||
+      record.oauth_testing_test_user_eligibility !==
+        'PASS_FRESH_REAUTHORIZATION' ||
+      record.standard_cloud_project_linkage !==
+        'PASS_ATTESTED_LOCAL_CLIENT_AND_AUDIENCE' ||
+      record.apps_script_api_enablement !== 'PASS_DEPLOYMENT_METADATA_READABLE' ||
+      record.api_executable_deployment !== true ||
+      record.deployment_access_myself !== true ||
+      record.deployment_versioned !== true ||
+      record.deployment_targets_bound_script !== true ||
+      record.visibility_vs_execution_permission !==
+        'FRESH_REAUTHORIZED_DEPLOYMENT_REQUIRED' ||
+      !/^[a-f0-9]{64}$/.test(String(record.output_sha256 || ''))) {
+    fail('INSTRUCTION_0015_AUTHORIZATION_MATRIX_INVALID',
+      'INSTRUCTION_0015_AUTHORIZATION_MATRIX_INVALID');
+  }
+  return {
+    record,
+    record_sha256: sha256(fs.readFileSync(recordPath))
+  };
+}
+
+function assertInstruction0015OAuthReauthorization() {
+  const record = assertPassedOperation(
+    instruction0015OAuthReauthorizationOperation
+  );
+  if (record.profile_name !== instruction0015RuntimeProfileName ||
+      record.prior_profiles_preserved !== true ||
+      record.local_desktop_client_match !== true ||
+      record.runtime_invocation !== 'NOT_EXECUTED') {
+    fail('INSTRUCTION_0015_OAUTH_REAUTHORIZATION_INVALID',
+      'INSTRUCTION_0015_OAUTH_REAUTHORIZATION_INVALID');
+  }
+  return record;
+}
+
+function prepareInstruction0015RuntimeAttempt() {
+  const attemptRecordPath = path.join(
+    operationRecordRoot,
+    `last-${instruction0015RuntimeOperation}.json`
+  );
+  if (fs.existsSync(instruction0015RuntimeAttemptMarkerPath) ||
+      fs.existsSync(attemptRecordPath)) {
+    fail('INSTRUCTION_0015_RUNTIME_ATTEMPT_ALREADY_PREPARED',
+      'INSTRUCTION_0015_RUNTIME_ATTEMPT_ALREADY_PREPARED');
+  }
+  const guarded = assertTargetGuard(false);
+  const runtime = assertRuntimeConfigurationState(guarded.target);
+  const matrix = assertInstruction0015AuthorizationMatrix();
+  const prior0011 = instruction0011RuntimeAttemptEvidence();
+  const prior0013 = instruction0013RuntimeAttemptEvidence();
+  const prior0014 = instruction0014RuntimeAttemptEvidence();
+  const staged = assertRuntimeStagedPayload();
+  const pullback = assertRuntimePullbackPayload(staged);
+  const versionPullback = assertRuntimeVersionPullbackPayload(staged);
+  const semantics = assertClaspRunFunctionSemantics();
+  if (guarded.target.runtime_function !== allowedRuntimeFunction ||
+      pullback.runtime_function !== allowedRuntimeFunction ||
+      versionPullback.version_runtime_function !== allowedRuntimeFunction) {
+    fail('RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN',
+      'RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN');
+  }
+  return writeInstruction0015RuntimeAttemptMarker({
+    schema: 'WORK_OS_INSTRUCTION_0015_RUNTIME_ATTEMPT_V1',
+    instruction: '0015',
+    state: 'PREPARED',
+    runtime_function: allowedRuntimeFunction,
+    runtime_profile_name: instruction0015RuntimeProfileName,
+    instruction_0011_attempt_preserved: true,
+    instruction_0011_attempt_record_sha256: prior0011.record_sha256,
+    instruction_0013_attempt_preserved: true,
+    instruction_0013_marker_sha256: prior0013.marker_sha256,
+    instruction_0013_attempt_record_sha256: prior0013.record_sha256,
+    instruction_0014_attempt_preserved: true,
+    instruction_0014_marker_sha256: prior0014.marker_sha256,
+    instruction_0014_attempt_record_sha256: prior0014.record_sha256,
+    authorization_matrix_sha256: matrix.record_sha256,
+    runtime_payload_sha256: staged.runtime_payload_sha256,
+    runtime_manifest_sha256: staged.runtime_manifest_sha256,
+    staged_wrapper_present: pullback.staged_wrapper_present,
+    pulled_wrapper_present: pullback.pulled_wrapper_present,
+    version_wrapper_present: versionPullback.version_wrapper_present,
+    function_name_consistency: true,
+    clasp_run_semantics_proved: true,
+    clasp_functions_source_sha256: semantics.functions_source_sha256,
+    prior_deployment_binding_sha256: sha256(runtime.deployment_id),
+    deployment_lineage: 'REQUIRES_FRESH_0015_REAUTHORIZED_DEPLOYMENT'
+  });
+}
+
+function assertInstruction0015Prepared(runtime, expectedState) {
+  const marker = readJson(
+    instruction0015RuntimeAttemptMarkerPath,
+    'INSTRUCTION_0015_RUNTIME_ATTEMPT_MARKER_MISSING'
+  );
+  const matrix = assertInstruction0015AuthorizationMatrix();
+  const prior0011 = instruction0011RuntimeAttemptEvidence();
+  const prior0013 = instruction0013RuntimeAttemptEvidence();
+  const prior0014 = instruction0014RuntimeAttemptEvidence();
+  const staged = assertRuntimeStagedPayload();
+  const pullback = assertRuntimePullbackPayload(staged);
+  const versionPullback = assertRuntimeVersionPullbackPayload(staged);
+  const semantics = assertClaspRunFunctionSemantics();
+  if (marker.schema !== 'WORK_OS_INSTRUCTION_0015_RUNTIME_ATTEMPT_V1' ||
+      marker.instruction !== '0015' || marker.state !== expectedState ||
+      marker.runtime_function !== allowedRuntimeFunction ||
+      marker.runtime_profile_name !== instruction0015RuntimeProfileName ||
+      marker.instruction_0011_attempt_preserved !== true ||
+      marker.instruction_0011_attempt_record_sha256 !== prior0011.record_sha256 ||
+      marker.instruction_0013_attempt_preserved !== true ||
+      marker.instruction_0013_marker_sha256 !== prior0013.marker_sha256 ||
+      marker.instruction_0013_attempt_record_sha256 !== prior0013.record_sha256 ||
+      marker.instruction_0014_attempt_preserved !== true ||
+      marker.instruction_0014_marker_sha256 !== prior0014.marker_sha256 ||
+      marker.instruction_0014_attempt_record_sha256 !== prior0014.record_sha256 ||
+      marker.authorization_matrix_sha256 !== matrix.record_sha256 ||
+      marker.runtime_payload_sha256 !== staged.runtime_payload_sha256 ||
+      marker.runtime_manifest_sha256 !== staged.runtime_manifest_sha256 ||
+      marker.staged_wrapper_present !== true ||
+      marker.pulled_wrapper_present !== true ||
+      marker.version_wrapper_present !== true ||
+      marker.function_name_consistency !== true ||
+      marker.clasp_run_semantics_proved !== true ||
+      marker.clasp_functions_source_sha256 !== semantics.functions_source_sha256 ||
+      pullback.runtime_function !== allowedRuntimeFunction ||
+      versionPullback.version_runtime_function !== allowedRuntimeFunction) {
+    fail('INSTRUCTION_0015_RUNTIME_ATTEMPT_MARKER_INVALID',
+      'INSTRUCTION_0015_RUNTIME_ATTEMPT_MARKER_INVALID');
+  }
+  if (expectedState === 'PREPARED' &&
+      marker.prior_deployment_binding_sha256 !== sha256(runtime.deployment_id)) {
+    fail('INSTRUCTION_0015_RUNTIME_ATTEMPT_MARKER_INVALID',
+      'INSTRUCTION_0015_RUNTIME_ATTEMPT_MARKER_INVALID');
+  }
+  return { marker, staged, pullback, versionPullback };
+}
+
 function parseFreshVersionedDeployment(raw) {
   let value;
   try {
@@ -1892,18 +2408,41 @@ function claspVersion() {
 }
 
 function runtimeClaspArgs(commandArgs) {
+  return runtimeClaspArgsForProfile(runtimeProfileName, commandArgs);
+}
+
+function runtimeClaspArgsForProfile(profileName, commandArgs) {
   if (!fs.existsSync(runtimeAuthRoot)) {
     fail('NAMED_RUNTIME_OAUTH_PROFILE_MISSING',
       'NAMED_RUNTIME_OAUTH_PROFILE_MISSING');
   }
+  if (![runtimeProfileName, instruction0015RuntimeProfileName]
+    .includes(profileName)) {
+    fail('NAMED_RUNTIME_OAUTH_PROFILE_REJECTED',
+      'NAMED_RUNTIME_OAUTH_PROFILE_REJECTED');
+  }
   return [
     '--auth', runtimeAuthRoot,
-    '--user', runtimeProfileName
+    '--user', profileName
   ].concat(commandArgs);
 }
 
 function instruction0014RuntimeClaspArgs() {
   const args = runtimeClaspArgs([
+    '--json', 'run-function', '--nondev', allowedRuntimeFunction
+  ]);
+  const command = args.slice(-4);
+  if (JSON.stringify(command) !== JSON.stringify([
+    '--json', 'run-function', '--nondev', 'runQuickDiagnostic'
+  ])) {
+    fail('RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN',
+      'RUNTIME_FUNCTION_NAME_CONSISTENCY_UNPROVEN');
+  }
+  return args;
+}
+
+function instruction0015RuntimeClaspArgs() {
+  const args = runtimeClaspArgsForProfile(instruction0015RuntimeProfileName, [
     '--json', 'run-function', '--nondev', allowedRuntimeFunction
   ]);
   const command = args.slice(-4);
@@ -2347,6 +2886,9 @@ function parseRuntimeCommand(command) {
     'test-runtime-0013',
     'prepare-runtime-retry-0014', 'preflight-runtime-retry-0014',
     'test-runtime-0014',
+    'reauthorize-runtime-0015', 'authorization-matrix-runtime-0015',
+    'prepare-runtime-retry-0015', 'preflight-runtime-retry-0015',
+    'test-runtime-0015',
     'test-runtime', 'test', 'open', 'self-test'
   ]
     .includes(command)) {
@@ -2637,6 +3179,41 @@ function selfTest() {
     assert.strictEqual(visible.fresh_versioned_deployment_visible, true);
     assert.strictEqual(JSON.stringify(visible).includes(deploymentId), false);
   });
+  test('INSTRUCTION_0015_SCOPE_COVERAGE_REQUIRES_EVERY_MANIFEST_SCOPE', () => {
+    const complete = runtimeScopeCoverage(
+      ['scope.alpha', 'scope.beta'],
+      ['scope.beta', 'scope.alpha', 'scope.extra']
+    );
+    assert.strictEqual(complete.manifest_scope_coverage, true);
+    assert.strictEqual(complete.missing_scope_count, 0);
+    const incomplete = runtimeScopeCoverage(
+      ['scope.alpha', 'scope.beta'],
+      ['scope.alpha']
+    );
+    assert.strictEqual(incomplete.manifest_scope_coverage, false);
+    assert.strictEqual(incomplete.missing_scope_count, 1);
+  });
+  test('INSTRUCTION_0015_GOOGLE_ERROR_CATEGORIES_ARE_CLOSED', () => {
+    assert.strictEqual(safeGoogleErrorCategory({ code: 401 }), 'AUTH_FAILURE');
+    assert.strictEqual(safeGoogleErrorCategory({ code: 403 }), 'ACCESS_DENIED');
+    assert.strictEqual(safeGoogleErrorCategory({ code: 404 }), 'NOT_FOUND');
+    assert.strictEqual(
+      safeGoogleErrorCategory(Object.assign(new Error('closed'), {
+        code: 'invalid_grant'
+      })),
+      'AUTH_FAILURE'
+    );
+  });
+  test('INSTRUCTION_0015_PROFILE_COMPARISON_DOES_NOT_EMIT_PRINCIPALS', () => {
+    const matching = {
+      email: 'synthetic@example.test',
+      id: 'synthetic-id'
+    };
+    assert.strictEqual(principalsMatch(matching, { ...matching }), true);
+    assert.strictEqual(principalsMatch(matching, {
+      email: 'other@example.test', id: 'synthetic-id'
+    }), false);
+  });
   const failed = tests.filter((item) => item.status !== 'PASS');
   writeSafeResult({
     suite: 'local_clasp_dev_self_test',
@@ -2648,7 +3225,7 @@ function selfTest() {
   if (failed.length) process.exitCode = 1;
 }
 
-function main() {
+async function main() {
   const command = parseRuntimeCommand(process.argv[2]);
   if (command === 'self-test') return selfTest();
   let googleOperation = 'NOT_EXECUTED';
@@ -3658,6 +4235,609 @@ function main() {
       return;
     }
 
+    if (command === 'reauthorize-runtime-0015') {
+      const guarded = assertTargetGuard(true);
+      if (process.env.GAS_INSTRUCTION_0015_OAUTH_REAUTH_ALLOWED !== 'true') {
+        fail('INSTRUCTION_0015_OAUTH_REAUTHORIZATION_OPT_IN_REQUIRED',
+          'INSTRUCTION_0015_OAUTH_REAUTHORIZATION_OPT_IN_REQUIRED');
+      }
+      assertRuntimeBootstrapConfiguration();
+      assertRuntimeStagedPayload();
+      const store = readJson(
+        runtimeAuthRoot,
+        'NAMED_RUNTIME_OAUTH_PROFILE_MISSING'
+      );
+      if (store.tokens && store.tokens[instruction0015RuntimeProfileName]) {
+        fail('INSTRUCTION_0015_OAUTH_PROFILE_ALREADY_EXISTS',
+          'INSTRUCTION_0015_OAUTH_PROFILE_ALREADY_EXISTS');
+      }
+      readNamedRuntimeOAuthProfile(runtimeProfileName);
+      const args = runtimeClaspArgsForProfile(instruction0015RuntimeProfileName, [
+        '--json', 'login', '--creds',
+        relativeDesktopOAuthCredentialPath(runtimeRoot),
+        '--use-project-scopes', '--include-clasp-scopes'
+      ]);
+      googleOperation = 'ATTEMPTED';
+      const result = runClasp(args, runtimeRoot);
+      if (result.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0015OAuthReauthorizationOperation,
+          result,
+          guarded
+        );
+      }
+      const desktop = localDesktopOAuthClient();
+      const profile = readNamedRuntimeOAuthProfile(
+        instruction0015RuntimeProfileName
+      );
+      const safe = persistOperationRecord(
+        instruction0015OAuthReauthorizationOperation,
+        result,
+        'PASS'
+      );
+      Object.assign(safe, {
+        instruction: '0015',
+        profile_name: instruction0015RuntimeProfileName,
+        prior_profiles_preserved: true,
+        local_desktop_client_match:
+          profile.client_id === desktop.client.client_id,
+        runtime_invocation: 'NOT_EXECUTED'
+      });
+      fs.writeFileSync(
+        path.join(operationRecordRoot,
+          `last-${instruction0015OAuthReauthorizationOperation}.json`),
+        `${JSON.stringify(safe, null, 2)}\n`,
+        'utf8'
+      );
+      writeLastOperation(safe);
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: '0015',
+        named_runtime_oauth_profile: 'CONFIGURED_FRESH_LOCAL_ONLY',
+        prior_profiles_preserved: safe.prior_profiles_preserved,
+        local_desktop_client_match: safe.local_desktop_client_match,
+        runtime_invocation: 'NOT_EXECUTED'
+      });
+      return;
+    }
+
+    if (command === 'authorization-matrix-runtime-0015') {
+      const guarded = assertTargetGuard(true);
+      if (process.env.GAS_DEV_RUNTIME_ALLOWED !== 'true') {
+        fail('DEV_RUNTIME_OPT_IN_REQUIRED', 'DEV_RUNTIME_OPT_IN_REQUIRED');
+      }
+      const runtime = assertRuntimeConfigurationState(guarded.target);
+      const staged = assertRuntimeStagedPayload();
+      const pullback = assertRuntimePullbackPayload(staged);
+      const versionPullback = assertRuntimeVersionPullbackPayload(staged);
+      assertRuntimeSourceContract();
+      assertClaspRunFunctionSemantics();
+      const reauthorization = assertInstruction0015OAuthReauthorization();
+      const manifest = readJson(
+        path.join(runtimePayloadRoot, 'appsscript.json'),
+        'RUNTIME_STAGED_MANIFEST_MISSING'
+      );
+      const manifestScopes = Array.isArray(manifest.oauthScopes)
+        ? manifest.oauthScopes : [];
+      googleOperation = 'ATTEMPTED';
+      const legacy = await inspectOAuthProfile(runtimeProfileName, manifestScopes);
+      const current = await inspectOAuthProfile(
+        instruction0015RuntimeProfileName,
+        manifestScopes
+      );
+      const deployment = await inspectRuntimeDeploymentMetadata(
+        current.client,
+        guarded.config.scriptId,
+        runtime.deployment_id
+      );
+      const ownership = await inspectRuntimeTargetOwnership(
+        current.client,
+        guarded.config.scriptId,
+        current.principal
+      );
+      const currentSafe = current.safe;
+      const safe = {
+        schema: 'WORK_OS_INSTRUCTION_0015_AUTHORIZATION_MATRIX_V1',
+        instruction: '0015',
+        profile_name: instruction0015RuntimeProfileName,
+        prior_profiles_preserved:
+          reauthorization.prior_profiles_preserved === true,
+        legacy_profile_principal_readable:
+          legacy.safe.oauth_principal_readable === true,
+        profile_principal_matches_legacy_profile:
+          principalsMatch(current.principal, legacy.principal),
+        named_profile_present: currentSafe.named_profile_present,
+        local_desktop_client_match: currentSafe.local_desktop_client_match,
+        profile_refresh: currentSafe.profile_refresh,
+        token_audience_match: currentSafe.token_audience_match,
+        token_lifetime_at_least_six_minutes:
+          currentSafe.token_lifetime_at_least_six_minutes,
+        manifest_scope_count: currentSafe.manifest_scope_count,
+        granted_scope_count: currentSafe.granted_scope_count,
+        missing_scope_count: currentSafe.missing_scope_count,
+        manifest_scope_coverage: currentSafe.manifest_scope_coverage,
+        missing_runtime_api_scope_count:
+          currentSafe.missing_runtime_api_scope_count,
+        runtime_api_scope_coverage: currentSafe.runtime_api_scope_coverage,
+        oauth_principal_readable: currentSafe.oauth_principal_readable,
+        oauth_testing_test_user_eligibility:
+          currentSafe.oauth_principal_readable === true
+            ? 'PASS_FRESH_REAUTHORIZATION' : 'REVIEW_REQUIRED',
+        standard_cloud_project_linkage:
+          runtime.standard_cloud_project_linked === true &&
+          runtime.apps_script_api_enabled_in_cloud_project === true &&
+          currentSafe.local_desktop_client_match === true &&
+          currentSafe.token_audience_match === true
+            ? 'PASS_ATTESTED_LOCAL_CLIENT_AND_AUDIENCE'
+            : 'REVIEW_REQUIRED',
+        apps_script_api_enablement:
+          deployment.deployment_metadata_access === 'PASS'
+            ? 'PASS_DEPLOYMENT_METADATA_READABLE' :
+            deployment.deployment_metadata_access,
+        ...deployment,
+        ...ownership,
+        staged_wrapper_present: pullback.staged_wrapper_present,
+        head_pullback_wrapper_present: pullback.pulled_wrapper_present,
+        immutable_version_wrapper_present: versionPullback.version_wrapper_present,
+        function_name_consistency:
+          guarded.target.runtime_function === allowedRuntimeFunction &&
+          pullback.runtime_function === allowedRuntimeFunction &&
+          versionPullback.version_runtime_function === allowedRuntimeFunction,
+        visibility_vs_execution_permission:
+          'FRESH_REAUTHORIZED_DEPLOYMENT_REQUIRED',
+        runtime_invocation: 'NOT_EXECUTED'
+      };
+      const required = [
+        safe.prior_profiles_preserved === true,
+        safe.legacy_profile_principal_readable === true,
+        safe.profile_principal_matches_legacy_profile === true,
+        safe.named_profile_present === true,
+        safe.local_desktop_client_match === true,
+        safe.profile_refresh === 'PASS',
+        safe.token_audience_match === true,
+        safe.token_lifetime_at_least_six_minutes === true,
+        safe.manifest_scope_coverage === true,
+        safe.runtime_api_scope_coverage === true,
+        safe.oauth_principal_readable === true,
+        safe.oauth_testing_test_user_eligibility === 'PASS_FRESH_REAUTHORIZATION',
+        safe.standard_cloud_project_linkage ===
+          'PASS_ATTESTED_LOCAL_CLIENT_AND_AUDIENCE',
+        safe.apps_script_api_enablement === 'PASS_DEPLOYMENT_METADATA_READABLE',
+        safe.api_executable_deployment === true,
+        safe.deployment_access_myself === true,
+        safe.deployment_versioned === true,
+        safe.deployment_targets_bound_script === true,
+        safe.staged_wrapper_present === true,
+        safe.head_pullback_wrapper_present === true,
+        safe.immutable_version_wrapper_present === true,
+        safe.function_name_consistency === true
+      ];
+      const record = instruction0015SafeRecord(
+        instruction0015AuthorizationOperation,
+        required.every(Boolean) ? 'PASS' : 'REVIEW_REQUIRED',
+        safe
+      );
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: record.status,
+        instruction: '0015',
+        profile_authorization: record.status,
+        manifest_scope_count: record.manifest_scope_count,
+        granted_scope_count: record.granted_scope_count,
+        missing_scope_count: record.missing_scope_count,
+        manifest_scope_coverage: record.manifest_scope_coverage,
+        runtime_api_scope_coverage: record.runtime_api_scope_coverage,
+        deployment_metadata_access: record.deployment_metadata_access,
+        deployment_access_myself: record.deployment_access_myself,
+        visibility_vs_execution_permission:
+          record.visibility_vs_execution_permission,
+        bound_container_owner_authorization:
+          record.bound_container_owner_authorization,
+        runtime_invocation: 'NOT_EXECUTED'
+      });
+      return;
+    }
+
+    if (command === 'prepare-runtime-retry-0015') {
+      const marker = prepareInstruction0015RuntimeAttempt();
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: marker.instruction,
+        attempt_marker_state: marker.state,
+        instruction_0011_attempt_preserved:
+          marker.instruction_0011_attempt_preserved,
+        instruction_0013_attempt_preserved:
+          marker.instruction_0013_attempt_preserved,
+        instruction_0014_attempt_preserved:
+          marker.instruction_0014_attempt_preserved,
+        runtime_profile_name: marker.runtime_profile_name,
+        staged_wrapper_present: marker.staged_wrapper_present,
+        pulled_wrapper_present: marker.pulled_wrapper_present,
+        version_wrapper_present: marker.version_wrapper_present,
+        runtime_function: marker.runtime_function,
+        google_operation: 'NOT_EXECUTED'
+      });
+      return;
+    }
+
+    if (command === 'preflight-runtime-retry-0015') {
+      assertCleanWorktree();
+      runLocalVerifyBeforePush();
+      const guarded = assertTargetGuard(true);
+      if (process.env.GAS_DEV_RUNTIME_ALLOWED !== 'true' ||
+          process.env.GAS_INSTRUCTION_0015_FRESH_DEPLOYMENT_ALLOWED !== 'true') {
+        fail('INSTRUCTION_0015_REMOTE_OPT_IN_REQUIRED',
+          'INSTRUCTION_0015_REMOTE_OPT_IN_REQUIRED');
+      }
+      const runtime = assertRuntimeConfigurationState(guarded.target);
+      const prepared = assertInstruction0015Prepared(runtime, 'PREPARED');
+      writeInstruction0015RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'PREFLIGHT_STARTED'
+      });
+
+      prepareEmptyPullWorkspace(
+        runtimePullRoot,
+        'runtime-pull-verify',
+        'RUNTIME_PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
+      );
+      writeCanonicalClaspProjectConfig(runtimePullRoot, guarded.config);
+      googleOperation = 'ATTEMPTED';
+      const pullResult = runClasp(
+        runtimeClaspArgsForProfile(instruction0015RuntimeProfileName, ['pull']),
+        runtimePullRoot
+      );
+      if (pullResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0015PullbackOperation,
+          pullResult,
+          guarded
+        );
+      }
+      let pullback;
+      try {
+        pullback = assertRuntimePullbackPayload(prepared.staged);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0015PullbackOperation,
+          pullResult,
+          String(error && error.code || 'RUNTIME_REMOTE_PULLBACK_PARITY_FAILED'),
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0015PullbackOperation,
+        pullResult,
+        'PASS',
+        {
+          parity: 'PASS',
+          file_count: pullback.file_count,
+          runtime_payload_sha256: pullback.runtime_payload_sha256,
+          staged_wrapper_present: pullback.staged_wrapper_present,
+          pulled_wrapper_present: pullback.pulled_wrapper_present,
+          execution_api_access: 'MYSELF',
+          reauthorized_profile_binding: true,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+
+      const deployResult = runClasp(runtimeClaspArgsForProfile(
+        instruction0015RuntimeProfileName,
+        ['--json', 'deploy', '--description', instruction0015DeploymentDescription]
+      ), runtimeRoot);
+      if (deployResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0015DeploymentOperation,
+          deployResult
+        );
+      }
+      let deployment;
+      try {
+        deployment = parseFreshVersionedDeployment(deployResult.stdout);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0015DeploymentOperation,
+          deployResult,
+          'INSTRUCTION_0015_FRESH_DEPLOYMENT_NOT_PROVEN',
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0015DeploymentOperation,
+        deployResult,
+        'PASS',
+        {
+          fresh_immutable_version_created: true,
+          fresh_versioned_deployment_created: true,
+          deployment_binding_sha256: deployment.deployment_binding_sha256,
+          execution_api_access: 'MYSELF',
+          reauthorized_profile_binding: true,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+
+      prepareEmptyPullWorkspace(
+        runtimeVersionPullRoot,
+        'runtime-version-pull-verify',
+        'RUNTIME_VERSION_PULL_VERIFY_WORKSPACE_UNEXPECTED_CONTENT'
+      );
+      writeCanonicalClaspProjectConfig(runtimeVersionPullRoot, guarded.config);
+      const versionPullResult = runClasp(runtimeClaspArgsForProfile(
+        instruction0015RuntimeProfileName,
+        ['--json', 'pull', '--versionNumber', String(deployment.version_number)]
+      ), runtimeVersionPullRoot);
+      if (versionPullResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0015VersionPullbackOperation,
+          versionPullResult,
+          guarded
+        );
+      }
+      let versionPullback;
+      try {
+        versionPullback = assertRuntimeVersionPullbackPayload(prepared.staged);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0015VersionPullbackOperation,
+          versionPullResult,
+          String(error && error.code || 'RUNTIME_VERSION_PULLBACK_PARITY_FAILED'),
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0015VersionPullbackOperation,
+        versionPullResult,
+        'PASS',
+        {
+          parity: 'PASS',
+          version_payload_sha256: versionPullback.version_payload_sha256,
+          version_file_count: versionPullback.version_file_count,
+          version_wrapper_present: versionPullback.version_wrapper_present,
+          execution_api_access: 'MYSELF',
+          reauthorized_profile_binding: true,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+
+      const visibilityResult = runClasp(runtimeClaspArgsForProfile(
+        instruction0015RuntimeProfileName,
+        ['--json', 'deployments']
+      ), runtimeRoot);
+      if (visibilityResult.exit_code !== 0) {
+        failClassifiedClaspOperation(
+          instruction0015LineageOperation,
+          visibilityResult
+        );
+      }
+      let visibility;
+      try {
+        visibility = assertFreshDeploymentVisible(visibilityResult.stdout, deployment);
+      } catch (error) {
+        persistClosedOperationEvidence(
+          instruction0015LineageOperation,
+          visibilityResult,
+          'INSTRUCTION_0015_DEPLOYMENT_LINEAGE_NOT_PROVEN',
+          { runtime_diagnostic_invocation: 'NOT_EXECUTED' }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0015LineageOperation,
+        visibilityResult,
+        'PASS',
+        {
+          ...visibility,
+          version_payload_pullback_parity: true,
+          version_wrapper_present: versionPullback.version_wrapper_present,
+          deployment_binding_sha256: deployment.deployment_binding_sha256,
+          reauthorized_profile_binding: true,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+
+      const reauthorizedProfile = readNamedRuntimeOAuthProfile(
+        instruction0015RuntimeProfileName
+      );
+      const metadata = await inspectRuntimeDeploymentMetadata(
+        buildOAuthClientForProfile(reauthorizedProfile),
+        guarded.config.scriptId,
+        deployment.deployment_id
+      );
+      const metadataPass = metadata.deployment_metadata_access === 'PASS' &&
+        metadata.api_executable_deployment === true &&
+        metadata.deployment_access_myself === true &&
+        metadata.deployment_versioned === true &&
+        metadata.deployment_targets_bound_script === true;
+      const authorization = instruction0015SafeRecord(
+        instruction0015DeploymentAuthorizationOperation,
+        metadataPass ? 'PASS' : 'REVIEW_REQUIRED',
+        {
+          schema: 'WORK_OS_INSTRUCTION_0015_DEPLOYMENT_AUTHORIZATION_V1',
+          instruction: '0015',
+          profile_name: instruction0015RuntimeProfileName,
+          deployment_created_by_named_profile: true,
+          ...metadata,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        }
+      );
+      if (authorization.status !== 'PASS') {
+        writeInstruction0015RuntimeAttemptMarker({
+          ...prepared.marker,
+          state: 'DEPLOYMENT_AUTHORIZATION_REVIEW_REQUIRED'
+        });
+        writeSafeResult({
+          lane: 'local_clasp_runtime_dev', command,
+          status: authorization.status, instruction: '0015',
+          deployment_authorization: authorization.status,
+          runtime_diagnostic_invocation: 'NOT_EXECUTED'
+        });
+        return;
+      }
+
+      runtime.deployment_id = deployment.deployment_id;
+      runtime.deployment_id_tracked = false;
+      runtime.api_executable_deployment = 'CONFIGURED_MYSELF_ONLY';
+      fs.writeFileSync(
+        runtimeConfigPath,
+        `${JSON.stringify(runtime, null, 2)}\n`,
+        'utf8'
+      );
+      const executionBindingSha256 = prepareRuntimeExecutionBinding(
+        deployment.deployment_id
+      );
+      writeInstruction0015RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'PREFLIGHT_PASSED',
+        instruction_0015_pullback_output_sha256: pullResult.output_sha256,
+        fresh_deployment_output_sha256: deployResult.output_sha256,
+        version_pullback_output_sha256: versionPullResult.output_sha256,
+        deployment_lineage_output_sha256: visibilityResult.output_sha256,
+        deployment_binding_sha256: deployment.deployment_binding_sha256,
+        execution_binding_sha256: executionBindingSha256,
+        deployment_lineage:
+          'FRESH_0015_REAUTHORIZED_PROFILE_VERSION_PULLBACK_PROVED'
+      });
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: '0015', runtime_function: allowedRuntimeFunction,
+        head_pullback_parity: 'PASS',
+        staged_wrapper_present: pullback.staged_wrapper_present,
+        pulled_wrapper_present: pullback.pulled_wrapper_present,
+        fresh_versioned_deployment_created: true,
+        version_payload_pullback_parity: 'PASS',
+        version_wrapper_present: versionPullback.version_wrapper_present,
+        deployment_lineage: 'PASS',
+        profile_deployment_authorization: 'PASS',
+        execution_api_access: 'MYSELF',
+        runtime_diagnostic_invocation: 'NOT_EXECUTED'
+      });
+      return;
+    }
+
+    if (command === 'test-runtime-0015') {
+      const guarded = assertTargetGuard(true);
+      const runtime = assertRuntimeConfiguration(guarded.target);
+      const prepared = assertInstruction0015Prepared(runtime, 'PREFLIGHT_PASSED');
+      const attemptRecordPath = path.join(
+        operationRecordRoot,
+        `last-${instruction0015RuntimeOperation}.json`
+      );
+      if (fs.existsSync(attemptRecordPath)) {
+        fail('INSTRUCTION_0015_RUNTIME_ALREADY_ATTEMPTED',
+          'INSTRUCTION_0015_RUNTIME_ALREADY_ATTEMPTED');
+      }
+      [
+        instruction0015PullbackOperation,
+        instruction0015DeploymentOperation,
+        instruction0015VersionPullbackOperation,
+        instruction0015LineageOperation
+      ].forEach(assertPassedOperation);
+      const authorization = assertPassedOperation(
+        instruction0015DeploymentAuthorizationOperation
+      );
+      const versionPullback = assertRuntimeVersionPullbackPayload(prepared.staged);
+      const executionBindingSha256 = assertRuntimeExecutionBinding(runtime);
+      if (prepared.marker.deployment_lineage !==
+          'FRESH_0015_REAUTHORIZED_PROFILE_VERSION_PULLBACK_PROVED' ||
+          prepared.marker.deployment_binding_sha256 !==
+            sha256(runtime.deployment_id) ||
+          prepared.marker.execution_binding_sha256 !== executionBindingSha256 ||
+          authorization.profile_name !== instruction0015RuntimeProfileName ||
+          authorization.deployment_created_by_named_profile !== true ||
+          authorization.deployment_metadata_access !== 'PASS' ||
+          authorization.api_executable_deployment !== true ||
+          authorization.deployment_access_myself !== true ||
+          authorization.deployment_versioned !== true ||
+          authorization.deployment_targets_bound_script !== true ||
+          versionPullback.version_runtime_function !== allowedRuntimeFunction ||
+          versionPullback.version_wrapper_present !== true) {
+        fail('INSTRUCTION_0015_DEPLOYMENT_AUTHORIZATION_NOT_PROVEN',
+          'INSTRUCTION_0015_DEPLOYMENT_AUTHORIZATION_NOT_PROVEN');
+      }
+      const args = instruction0015RuntimeClaspArgs();
+      writeInstruction0015RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'ATTEMPT_STARTED'
+      });
+      googleOperation = 'ATTEMPTED';
+      const result = runClasp(args, runtimeExecutionRoot);
+      if (result.exit_code !== 0 ||
+          /(?:unable to run script function|script function not found)/i
+            .test(String(result.raw || ''))) {
+        const classification = classifyClaspFailure(
+          result.raw,
+          instruction0015RuntimeOperation
+        );
+        persistClosedOperationEvidence(
+          instruction0015RuntimeOperation,
+          result,
+          classification,
+          {
+            safe_subtype: classifyRuntimeFailureSubtype(result.raw),
+            deployed_version_mode: true,
+            scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+            reauthorized_named_profile: true,
+            runtime_function: allowedRuntimeFunction
+          }
+        );
+        fail(classification, classification);
+      }
+      let summary;
+      try {
+        summary = assertSafeRuntimeResult(result.raw);
+      } catch (error) {
+        const classification = String(
+          error && error.code || 'DEV_RUNTIME_CLOSED_CONTRACT_FAILED'
+        );
+        persistClosedOperationEvidence(
+          instruction0015RuntimeOperation,
+          result,
+          classification,
+          {
+            safe_subtype: classifyRuntimeFailureSubtype(
+              result.raw,
+              classification
+            ),
+            deployed_version_mode: true,
+            scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+            reauthorized_named_profile: true,
+            runtime_function: allowedRuntimeFunction
+          }
+        );
+        throw error;
+      }
+      persistClosedOperationEvidence(
+        instruction0015RuntimeOperation,
+        result,
+        'PASS',
+        {
+          safe_subtype: 'BOUNDED_DIAGNOSTIC_BODY',
+          deployed_version_mode: true,
+          scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+          reauthorized_named_profile: true,
+          runtime_function: allowedRuntimeFunction
+        }
+      );
+      writeInstruction0015RuntimeAttemptMarker({
+        ...prepared.marker,
+        state: 'ATTEMPT_COMPLETED'
+      });
+      writeSafeResult({
+        lane: 'local_clasp_runtime_dev', command, status: 'PASS',
+        instruction: '0015', runtime_function: allowedRuntimeFunction,
+        deployed_version_mode: true,
+        scripts_run_execution_binding: 'API_EXECUTABLE_DEPLOYMENT',
+        reauthorized_named_profile: true,
+        runtime_payload_sha256: prepared.staged.runtime_payload_sha256,
+        clasp_version: claspVersion(),
+        command_output_sha256: result.output_sha256,
+        bounded_summary: summary
+      });
+      return;
+    }
+
     if (command === 'open') {
       assertTargetGuard(true);
       googleOperation = 'ATTEMPTED';
@@ -3681,7 +4861,19 @@ function main() {
   }
 }
 
-if (require.main === module) main();
+if (require.main === module) {
+  main().catch((error) => {
+    const code = error && error.code || 'LOCAL_CLASP_UNEXPECTED_FAILURE';
+    writeSafeResult({
+      lane: 'local_clasp_dev',
+      command: 'unknown',
+      status: code,
+      google_operation: 'NOT_EXECUTED',
+      message: code
+    });
+    process.exitCode = 2;
+  });
+}
 
 module.exports = {
   canonicalPayloadNames,
@@ -3724,6 +4916,9 @@ module.exports = {
   assertRuntimeCallableWrapper,
   assertClaspRunFunctionSemantics,
   assertSafeRuntimeResult,
+  runtimeScopeCoverage,
+  safeGoogleErrorCategory,
+  principalsMatch,
   assertCorrectedVersionedDeploymentBinding,
   parseFreshVersionedDeployment,
   assertFreshDeploymentVisible,
