@@ -229,6 +229,19 @@ function validateInstruction0010CurrentParity(text, label) {
   );
 }
 
+function validateInstruction0011RuntimeBoundary(text, label) {
+  assert.match(text, /Instruction 0011/i,
+    `${label}: current Instruction 0011 evidence label missing`);
+  assert.match(text, /runtime[\s\S]{0,220}(?:push\/pull parity|overlay parity)[\s\S]{0,220}(?:passed|PASS)/i,
+    `${label}: runtime overlay parity evidence missing`);
+  assert.match(text, /(?:sole|exactly one|single)[\s\S]{0,180}runQuickDiagnostic[\s\S]{0,220}BLOCKED_BY_AUTH/i,
+    `${label}: exactly-one runtime stop evidence missing`);
+  assert.match(text, /versioned[\s\S]{0,220}(?:not retried|not retested|no second|no retry|prohibited a retry)/i,
+    `${label}: corrected deployment no-retry boundary missing`);
+  assert.match(text, /ATTEMPTED_FAILED_CLOSED/i,
+    `${label}: functional acceptance closed state missing`);
+}
+
 function contractsFromTexts(texts) {
   return texts.map((item) => ({
     name: item.name,
@@ -318,6 +331,12 @@ test('DOC-01C1_CURRENT_DOCUMENTS_RECORD_THE_0010_PARITY_BOUNDARY', () => {
     ),
     /Instruction 0010 evidence label missing/
   );
+});
+
+test('DOC-01C2_CURRENT_DOCUMENTS_RECORD_THE_0011_RUNTIME_STOP', () => {
+  sourceTexts.forEach((entry) => {
+    validateInstruction0011RuntimeBoundary(entry.text, entry.name);
+  });
 });
 
 test('DOC-01D_STALE_LOCAL_FAILURE_COMPANY_HANDOFF_IS_REJECTED', () => {

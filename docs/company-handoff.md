@@ -6,9 +6,11 @@ Instruction 0010 independently proved exact 23-file canonical pull-back parity
 on the explicitly approved new blank, spreadsheet-bound, personal synthetic
 target. One operator-reported first-time Setup result is `COMPLETE`, but it is
 not a standalone API-executable runtime diagnostic and does not establish
-Phase 8B overall PASS. Personal standard Cloud/OAuth setup, MYSELF-only runtime
-overlay parity/deployment, one guarded read-only runtime validation, and remote
-development review remain incomplete. Company handoff is therefore
+Phase 8B overall PASS. Instruction 0011 passed personal standard-Cloud/API/
+OAuth setup and exact MYSELF-only runtime overlay parity, but its sole runtime
+attempt stopped as `BLOCKED_BY_AUTH` without a bounded result. The correctly
+versioned MYSELF-only executable was created only after that stop and was not
+retested. Remote-development review remains incomplete. Company handoff is therefore
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and there is no active
 company transfer source. Instruction 0005 is
 `SUPERSEDED_NOT_EXECUTED`: do not carry T11, replace five files, run a Company

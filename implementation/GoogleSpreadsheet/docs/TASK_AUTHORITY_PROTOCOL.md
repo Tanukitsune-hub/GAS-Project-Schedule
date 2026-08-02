@@ -17,20 +17,20 @@ acceptance requires separate future approval and remains `NOT_EXECUTED`.
 
 The current development gate is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`.
 Instruction 0010 independently proved exact 23-file canonical pull-back parity
-on the approved new blank personal-synthetic target. One operator-reported
-first-time Setup result is `COMPLETE`, including its internal S90 gate, but it
-is not a standalone API-executable diagnostic and does not establish Phase 8B
-overall PASS. Personal Cloud/OAuth, MYSELF-only runtime overlay parity and
-deployment, and standalone runtime validation remain `NOT_EXECUTED`; company
-handoff is `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. T10 and fixed T11
+on the approved new blank personal-synthetic target. Instruction 0011 passed
+personal Cloud/OAuth and exact MYSELF-only runtime overlay parity, but its sole
+standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded
+result. The corrected versioned executable was not retested; functional
+acceptance is `ATTEMPTED_FAILED_CLOSED`. Company handoff is
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. T10 and fixed T11
 are immutable historical evidence; T11 is `T11_SUSPENDED`.
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`, so it authorizes neither a
 Company-PC carriage nor a T1-01 re-observation. Quick/Deep expose a bounded
 pre-detail acceptance summary of closed IDs, counts, read-only Booleans, and
 Task/Ledger aggregates; an incomplete summary is `REVIEW_REQUIRED` and never
 repairs authority, Calendar, Dashboard, Setup state, or version properties.
-The sole active lane is the remaining personal-only Cloud/OAuth/runtime
-readiness work under the guarded local clasp tooling.
+Any future runtime attempt requires a later explicit instruction under the
+guarded local clasp tooling.
 
 The canonical publication-facing protocol is
 `../../docs/TASK_AUTHORITY_PROTOCOL.md`. This source-copy summary is kept

@@ -330,6 +330,12 @@ deployment. Use a masked local prompt for its identifier and attest the final
 runtime guard. The identifier is written only to ignored runtime configuration
 and is never printed:
 
+Instruction 0011 consumed its single runtime attempt before a versioned
+deployment binding was verified. The result is `BLOCKED_BY_AUTH`; the corrected
+versioned deployment was not retested. A local `last-test-runtime.json` record
+therefore blocks a second attempt. Do not remove it or run the diagnostic again
+without a later explicit instruction and corresponding tracked guard change.
+
 ```powershell
 $secret = Read-Host 'Deployment ID (local only)' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)

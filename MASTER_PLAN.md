@@ -1,6 +1,6 @@
 # Master Plan
 
-Last updated: 2026-08-02
+Last updated: 2026-08-03
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Current contract: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 Current publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
@@ -18,6 +18,23 @@ Current publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0011 closed runtime attempt and future boundary
+
+Relocation safety, status reconciliation, local verification, personal
+standard-Cloud/API/OAuth setup, named OAuth verification, and exact MYSELF-only
+runtime push/pull parity passed. Exactly one standalone `runQuickDiagnostic`
+API attempt then stopped as `BLOCKED_BY_AUTH` without a bounded diagnostic
+body. The local-only deployment binding used for that attempt was not a listed
+versioned deployment. A MYSELF-only versioned API executable was created and
+locally rebound afterward, but the exactly-one rule prohibited a retry.
+
+The current gate remains `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` as a
+readiness boundary, not a runtime PASS. Functional acceptance is
+`ATTEMPTED_FAILED_CLOSED`. A later instruction must explicitly
+authorize any new attempt and independently confirm the corrected deployment
+binding first. Company, production, migration, Deep Diagnostic, Dashboard,
+Task, Gmail, Calendar, Automation, and provider work remain unauthorized.
+
 ## Instruction 0010 canonical parity and next runtime lane
 
 The approved new blank, spreadsheet-bound, personal synthetic target passed
@@ -33,7 +50,7 @@ does not declare Phase 8B overall PASS. The current development gate is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and there is
 `NO_ACTIVE_COMPANY_TRANSFER`.
 
-The next permitted lane is limited to personal standard Cloud linkage,
+At the close of Instruction 0010, the next permitted lane was limited to personal standard Cloud linkage,
 Cloud-project Apps Script API enablement, OAuth Testing/Desktop-client setup,
 MYSELF-only runtime overlay parity and API executable deployment, and exactly
 one guarded standalone read-only `runQuickDiagnostic`. Those steps remain

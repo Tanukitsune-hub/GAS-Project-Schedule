@@ -1,11 +1,11 @@
 # Current Status
 
-Last updated: 2026-08-02
+Last updated: 2026-08-03
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 Overall status: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
-functional acceptance: `NOT_EXECUTED`
+functional acceptance: `ATTEMPTED_FAILED_CLOSED` (`BLOCKED_BY_AUTH`)
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -19,6 +19,26 @@ functional acceptance: `NOT_EXECUTED`
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Current Instruction 0011 relocated runtime attempt boundary
+
+Relocation reattachment, status reconciliation, locked local verification,
+personal standard-Cloud/API/OAuth prerequisites, named OAuth verification, and
+exact `23`-file MYSELF-only runtime push/pull parity passed. The runtime payload
+and independent pull-back both have SHA-256
+`5524d8412d79bbe8a9b77c916ec1132507b931a1c0b7dbb852eaafe991b74e7a`.
+
+The instruction's sole standalone `runQuickDiagnostic` API attempt returned no
+bounded diagnostic body and stopped as `BLOCKED_BY_AUTH`; the local parser's
+immediate closed status was `DEV_RUNTIME_RESULT_UNPARSEABLE`. The supplied
+local-only deployment binding was absent from the target's deployment list,
+which contained only a HEAD test deployment. A MYSELF-only versioned API
+executable was created and locally rebound after the stop, but no second
+diagnostic call was made. Runtime acceptance is not PASS, and any future retry
+requires a later explicit instruction. The development gate remains
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`, T11 remains
+`T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
 ## Current 0010 canonical parity and runtime boundary
 
@@ -37,7 +57,8 @@ status is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Company handoff remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`, T11 remains
 `T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
-Personal standard Cloud linkage, Cloud-project Apps Script API enablement,
+At the close of Instruction 0010, personal standard Cloud linkage,
+Cloud-project Apps Script API enablement,
 OAuth Testing/Desktop-client runtime configuration, MYSELF-only overlay
 push/pull parity, API executable deployment, and the guarded standalone
 read-only `runQuickDiagnostic` invocation remain `NOT_EXECUTED`.

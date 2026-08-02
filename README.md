@@ -27,6 +27,27 @@ Google Workspace Personal Work OS.
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0011 - relocated runtime attempt boundary
+
+The relocated repository was reattached without a OneDrive dependency, and
+the tracked status inconsistency was reconciled before Google operations.
+Personal standard-Cloud linkage, Cloud-project Apps Script API enablement,
+OAuth Testing/Desktop-client setup, named OAuth verification, and exact
+`23`-file MYSELF-only runtime push/pull parity passed. The runtime payload
+SHA-256 is
+`5524d8412d79bbe8a9b77c916ec1132507b931a1c0b7dbb852eaafe991b74e7a`.
+
+Exactly one standalone `runQuickDiagnostic` API attempt was made. It returned
+no bounded diagnostic body and stopped as `BLOCKED_BY_AUTH` (the local parser
+initially recorded `DEV_RUNTIME_RESULT_UNPARSEABLE`). The supplied local-only
+deployment binding did not match the target's deployment list, which contained
+only a HEAD test deployment. After the stop, one MYSELF-only versioned API
+executable was created and its ignored local binding was verified, but the
+diagnostic was not retried. Functional acceptance is therefore
+`ATTEMPTED_FAILED_CLOSED`, not PASS. The development gate remains
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` only as a readiness boundary for a
+separately authorized future attempt; company handoff remains blocked.
+
 ## Instruction 0010 - canonical parity and current runtime boundary
 
 Instruction 0010 used the explicitly approved new blank, spreadsheet-bound,
@@ -45,7 +66,8 @@ Phase 8B overall PASS. The highest supported development status is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` with
 `NO_ACTIVE_COMPANY_TRANSFER`.
 
-Personal standard Cloud linkage, Cloud-project Apps Script API enablement,
+At the close of Instruction 0010, personal standard Cloud linkage,
+Cloud-project Apps Script API enablement,
 OAuth Testing/Desktop-client runtime configuration, the MYSELF-only runtime
 overlay push/pull parity, API executable deployment, and the one guarded
 standalone read-only runtime invocation remain `NOT_EXECUTED`.

@@ -7,7 +7,7 @@
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Authority store | protected hidden `Task Authority Ledger` / 21 columns |
-| Current gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; Instruction 0010 independently proved exact 23-file canonical pull-back parity on the approved new blank personal-synthetic target. One operator-reported first-time Setup result is `COMPLETE`, including its internal S90 gate, but it is not a standalone API-executable diagnostic and does not establish Phase 8B overall PASS. Personal Cloud/OAuth, MYSELF-only runtime overlay parity/deployment, and the guarded standalone read-only runtime invocation are `NOT_EXECUTED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`; functional acceptance remains `NOT_EXECUTED`. |
+| Current gate | `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; Instruction 0010 independently proved exact 23-file canonical pull-back parity on the approved new blank personal-synthetic target. Instruction 0011 passed personal Cloud/OAuth and exact MYSELF-only runtime overlay parity, but its sole standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded result. The corrected versioned executable was not retested; functional acceptance is `ATTEMPTED_FAILED_CLOSED`. T10 and T11 are immutable historical evidence, T11 is `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains explicit. Company handoff is `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. |
 
 ## Diagnostic bounded-acceptance summary
 

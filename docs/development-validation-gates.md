@@ -8,10 +8,14 @@ two-file blank preflight passed, and an independent pull-back then proved exact
 `23`-file canonical byte parity at the approved payload hash. The operator also
 reported one first-time Setup result as `COMPLETE`; that report is not a
 standalone API-executable diagnostic and does not establish Phase 8B overall
-PASS. The active development status is
-`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Personal Cloud/OAuth, MYSELF-only
-runtime overlay parity/deployment, and the one guarded standalone read-only
-runtime invocation remain `NOT_EXECUTED`. Company handoff remains
+PASS. Instruction 0011 then passed personal Cloud/OAuth prerequisites, named
+OAuth verification, and exact MYSELF-only runtime overlay parity. Its sole
+standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded
+diagnostic body. A correctly versioned MYSELF-only executable was created and
+bound only after that stop, so it remains untested under the exactly-one rule.
+The active development status remains
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` as readiness, not runtime PASS.
+Functional acceptance is `ATTEMPTED_FAILED_CLOSED`. Company handoff remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 
 Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`. Fixed T11 and all earlier

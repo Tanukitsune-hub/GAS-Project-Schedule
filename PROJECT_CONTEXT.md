@@ -1,6 +1,6 @@
 # Project Context
 
-Last updated: 2026-08-02
+Last updated: 2026-08-03
 Project ID: `google-workspace-personal-work-os`
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 Current candidate: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
@@ -19,6 +19,20 @@ Publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+Instruction 0011 safely reattached the relocated local checkout and reconciled
+the canonical status before Google operations. Personal standard-Cloud/API/
+OAuth prerequisites, named OAuth verification, and exact 23-file MYSELF-only
+runtime overlay parity passed at runtime payload SHA-256
+`5524d8412d79bbe8a9b77c916ec1132507b931a1c0b7dbb852eaafe991b74e7a`.
+The sole standalone `runQuickDiagnostic` API attempt returned no bounded body
+and stopped as `BLOCKED_BY_AUTH`; its supplied local-only deployment binding
+was not present in the target's deployment list, which had only a HEAD test
+deployment. A MYSELF-only versioned executable was created and rebound after
+the stop, but no retry was made. Functional acceptance is
+`ATTEMPTED_FAILED_CLOSED`. The gate remains
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` only as a readiness boundary, while
+company handoff remains `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
+
 Instruction 0010 used the explicitly approved new blank, spreadsheet-bound,
 personal, non-company synthetic target. The separate two-file blank preflight
 passed, and an independent pull-back then proved the exact `23` canonical
@@ -29,7 +43,7 @@ the internal S90 gate, but it is not standalone API-executable runtime evidence
 and does not establish Phase 8B overall PASS. The highest supported development
 status is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`; company handoff remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` with
-`NO_ACTIVE_COMPANY_TRANSFER`. Personal Cloud/OAuth configuration, MYSELF-only
+`NO_ACTIVE_COMPANY_TRANSFER`. At the close of Instruction 0010, personal Cloud/OAuth configuration, MYSELF-only
 runtime overlay parity, API executable deployment, and one guarded standalone
 read-only runtime invocation remain `NOT_EXECUTED`.
 

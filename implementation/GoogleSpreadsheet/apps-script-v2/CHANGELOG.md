@@ -2,6 +2,19 @@
 
 ## 2.8.11-prepilot - 2026-07-31 T1-01 bounded Diagnostic summary visibility remediation
 
+### Instruction 0011 relocated runtime evidence - 2026-08-03
+
+- Recorded PASS for personal Cloud/OAuth prerequisites, named OAuth, and exact
+  23-file MYSELF-only runtime overlay push/pull parity.
+- Recorded the exactly-one standalone runtime attempt as `BLOCKED_BY_AUTH`
+  without a bounded diagnostic result. A corrected versioned MYSELF-only API
+  executable was created and locally rebound only after the stop and was not
+  retested.
+- Added fail-closed handling for clasp's exit-zero authorization message and a
+  local prior-attempt guard. No Apps Script executable source, canonical
+  manifest, company target, release package, transfer envelope, or fixed ref
+  changed.
+
 ### Instruction 0011 status-only reconciliation - 2026-08-02
 
 - Reconciled current canonical status documents and the v2.8.11 workflow

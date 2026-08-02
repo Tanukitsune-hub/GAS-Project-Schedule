@@ -1063,6 +1063,13 @@ function assertRuntimeConfiguration(target) {
   return runtime;
 }
 
+function assertRuntimeDiagnosticNotPreviouslyAttempted() {
+  const priorRecord = path.join(operationRecordRoot, 'last-test-runtime.json');
+  if (fs.existsSync(priorRecord)) {
+    fail('DEV_RUNTIME_ALREADY_ATTEMPTED', 'DEV_RUNTIME_ALREADY_ATTEMPTED');
+  }
+}
+
 function assertPassedOperation(operation) {
   const record = readJson(
     path.join(operationRecordRoot, `last-${operation}.json`),
@@ -1222,6 +1229,7 @@ function classifyClaspFailure(raw, operation) {
     /login required/,
     /not logged in/,
     /authentication required/,
+    /unable to run script function/,
     /request had invalid authentication credentials/,
     /\b401\b[^\n]*(?:unauthorized|auth)/
   ])) return 'BLOCKED_BY_AUTH';
@@ -2449,12 +2457,14 @@ function main() {
       assertRuntimeConfiguration(target.target);
       assertRuntimeSourceContract();
       const runtime = assertRuntimeStagedPayload();
+      assertRuntimeDiagnosticNotPreviouslyAttempted();
       const args = runtimeClaspArgs([
         '--json', 'run-function', allowedRuntimeFunction
       ]);
       googleOperation = 'ATTEMPTED';
       const result = runClasp(args, runtimeRoot);
-      if (result.exit_code !== 0) {
+      if (result.exit_code !== 0 ||
+          /unable to run script function/i.test(String(result.raw || ''))) {
         failClassifiedClaspOperation('test-runtime', result);
       }
       let summary;

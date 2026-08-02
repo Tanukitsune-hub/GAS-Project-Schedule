@@ -401,3 +401,27 @@ one guarded standalone read-only `runQuickDiagnostic` remain `NOT_EXECUTED`.
 Automation remains OFF; `T11_SUSPENDED` and `NO_ACTIVE_COMPANY_TRANSFER`
 remain unchanged. No company, production, Phase 8C, or pilot action is
 authorized.
+
+## D-053 - Instruction 0011 stops after the sole runtime attempt fails closed
+
+**Decision.** Instruction 0011 retains
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` as a readiness boundary, not a
+runtime PASS. Personal standard-Cloud/API/OAuth prerequisites, named OAuth, and
+exact MYSELF-only runtime overlay push/pull parity passed. The instruction's
+single standalone `runQuickDiagnostic` API attempt returned no bounded result
+and is closed as `BLOCKED_BY_AUTH`; the immediate parser category
+`DEV_RUNTIME_RESULT_UNPARSEABLE` is preserved as implementation evidence.
+
+**Rationale.** Read-only deployment enumeration proved that the local-only ID
+used for the call was not present and that only a HEAD test deployment existed.
+The correctly versioned MYSELF-only API executable was created and locally
+bound only after the failed attempt. The instruction authorizes exactly one
+runtime invocation, so corrected prerequisites do not authorize a retry.
+
+**Consequences.** Functional acceptance is `ATTEMPTED_FAILED_CLOSED`. A later
+explicit instruction is required for any new runtime attempt and must first
+verify the corrected versioned deployment binding. Automation remains OFF;
+company, production, Deep Diagnostic, Dashboard, Task, Gmail, Calendar,
+migration, provider, and real-data actions remain unauthorized. T11 remains
+`T11_SUSPENDED`, there is `NO_ACTIVE_COMPANY_TRANSFER`, and company handoff
+remains `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.

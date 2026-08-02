@@ -553,6 +553,33 @@ test('BOOT-27_RUNTIME_MANIFEST_FORCE_IS_SCOPED_AND_NOOP_FAILS_CLOSED', () => {
     /runClasp\(\['push',\s*['"]--force['"]\],\s*devRoot\)/);
 });
 
+test('BOOT-28_RUNTIME_AUTH_NORESULT_IS_CLOSED_AND_SECOND_ATTEMPT_IS_BLOCKED', () => {
+  assert.strictEqual(
+    classifyClaspFailure(
+      'Unable to run script function. Please make sure you have permission.',
+      'test-runtime'
+    ),
+    'BLOCKED_BY_AUTH'
+  );
+  const runtimeCommand = claspToolSource.indexOf("if (command === 'test' || command === 'test-runtime')");
+  const priorAttemptGuard = claspToolSource.indexOf(
+    'assertRuntimeDiagnosticNotPreviouslyAttempted();',
+    runtimeCommand
+  );
+  const googleAttempt = claspToolSource.indexOf(
+    "googleOperation = 'ATTEMPTED';",
+    priorAttemptGuard
+  );
+  const remoteCall = claspToolSource.indexOf(
+    'runClasp(args, runtimeRoot)',
+    googleAttempt
+  );
+  assert.ok(runtimeCommand >= 0 && priorAttemptGuard > runtimeCommand);
+  assert.ok(googleAttempt > priorAttemptGuard && remoteCall > googleAttempt);
+  assert.match(claspToolSource, /DEV_RUNTIME_ALREADY_ATTEMPTED/);
+  assert.match(claspToolSource, /last-test-runtime\.json/);
+});
+
 const failed = tests.filter((item) => item.status === 'FAIL');
 process.stdout.write(`${JSON.stringify({
   suite: 'remote_gas_development_bootstrap',

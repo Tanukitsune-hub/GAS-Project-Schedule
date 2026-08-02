@@ -7,9 +7,11 @@ Current corrective-integration gate:
 proved exact 23-file canonical pull-back parity on the approved new blank
 personal-synthetic target. One operator-reported first-time Setup result is
 `COMPLETE`, but it is not a standalone API-executable diagnostic and does not
-establish Phase 8B overall PASS. Personal Cloud/OAuth, MYSELF-only runtime
-overlay parity/deployment, and standalone runtime validation are
-`NOT_EXECUTED`. Company handoff is
+establish Phase 8B overall PASS. Instruction 0011 passed personal Cloud/OAuth
+and exact MYSELF-only runtime overlay parity, but its sole standalone runtime
+attempt stopped as `BLOCKED_BY_AUTH` without a bounded result. The corrected
+versioned executable was not retested; functional acceptance is
+`ATTEMPTED_FAILED_CLOSED`. Company handoff is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. Fixed T10 and T11 are
 immutable historical evidence, T11 is `T11_SUSPENDED`, and there is
 `NO_ACTIVE_COMPANY_TRANSFER`. One observed Setup S00-S99 run is historical;
