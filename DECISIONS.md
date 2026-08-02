@@ -450,3 +450,31 @@ is published. `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` remains only a
 readiness boundary. Phase 8B overall PASS, Phase 8C GO, production, pilot,
 company handoff, and company transfer are not established. Automation remains
 OFF; T11 remains `T11_SUSPENDED`, and `NO_ACTIVE_COMPANY_TRANSFER` remains.
+
+## D-055 - Instruction 0014 binds runtime execution to a proved immutable version and still fails closed by authorization
+
+**Decision.** Treat the Instruction 0013 deployment-visibility check as
+insufficient execution-context proof. Project-local clasp 3.3.0 passes the
+active project configuration value to `scripts.run`; `--nondev` sets
+`devMode=false` but does not substitute the separately recorded deployment
+binding. Instruction 0014 therefore preserves the 0011/0013 attempt evidence,
+requires wrapper proof in staged and independent pulled payloads, creates one
+fresh MYSELF-only versioned deployment, pulls that exact immutable version
+back, and binds the execution-only local configuration to that deployment.
+
+**Rationale.** The staged, HEAD-pulled, and immutable-version-pulled 23-file
+payloads proved the same top-level `runQuickDiagnostic` wrapper and MYSELF-only
+runtime overlay before execution. This identifies the earlier guard defect as
+the execution binding rather than missing tracked source or unproved version
+content. The single newly authorized call then reached the corrected
+deployment-bound path but returned no bounded diagnostic body and closed with
+category `BLOCKED_BY_AUTH`, safe subtype `RUNTIME_AUTHORIZATION_REJECTED`.
+
+**Consequences.** Instruction 0014 is
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`; no retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`.
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` remains a readiness boundary only.
+Phase 8B overall PASS, Phase 8C GO, production, pilot, company handoff, company
+transfer, and all operational lanes remain unauthorized. Automation remains
+OFF, T11 remains `T11_SUSPENDED`, and there is
+`NO_ACTIVE_COMPANY_TRANSFER`.

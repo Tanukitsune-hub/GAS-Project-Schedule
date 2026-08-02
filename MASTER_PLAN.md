@@ -18,6 +18,27 @@ Current publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0014 closes after execution-context remediation
+
+The root cause of Instruction 0013's function-not-found result was the runtime
+execution-binding guard: clasp 3.3.0 passed the active project configuration
+value to `scripts.run`, and `--nondev` did not select the separately saved
+deployment. The tracked source wrapper was present; deployment visibility had
+not proved the actual execution context.
+
+Instruction 0014 preserved both earlier attempt records, proved the wrapper in
+staged and independent HEAD pull-back payloads, created one fresh MYSELF-only
+immutable version/deployment, and pulled that exact version back. Payload,
+manifest-overlay, wrapper, function-name, lineage, and deployment-bound
+execution proofs all passed before the one authorized call.
+
+Exactly one Instruction 0014 `runQuickDiagnostic` call returned no bounded diagnostic body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED`; Phase 8B
+overall PASS, Phase 8C GO, production, pilot, company handoff, transfer, and
+all operational lanes remain unauthorized.
+
 ## Instruction 0013 closed corrected versioned runtime retry
 
 The separate one-use marker preserved Instruction 0011 evidence. A read-only

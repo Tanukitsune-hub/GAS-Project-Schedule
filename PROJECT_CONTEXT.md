@@ -19,6 +19,28 @@ Publication gate: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+Instruction 0014 identified and remediated the runtime execution-context guard
+gap. Project-local clasp 3.3.0 used the active project configuration value as
+the `scripts.run` path binding; `--nondev` set `devMode=false` but did not use
+the separately recorded deployment. The prior deployment-list proof therefore
+did not prove that Instruction 0013 selected that version, while tracked source
+continued to contain the required top-level wrapper.
+
+The 0014 preflight preserved all 0011/0013 evidence, proved
+`runQuickDiagnostic` in the staged and independent HEAD-pulled runtime
+payloads, created one fresh MYSELF-only immutable version/deployment, and
+pulled that exact version back. Exact 23-file payload, MYSELF overlay, wrapper,
+function-name, lineage, and deployment-bound execution-context checks passed.
+
+The one authorized Instruction 0014 `runQuickDiagnostic` call returned no
+bounded diagnostic body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`; the gate
+remains only `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`. Phase 8B overall PASS,
+Phase 8C GO, company handoff, production/pilot readiness, and company transfer
+are not established.
+
 Instruction 0013 preserved the prior failed-attempt evidence under a separate
 one-use marker. Its read-only preflight proved, without publishing identifiers,
 that the ignored local binding matched exactly one visible versioned

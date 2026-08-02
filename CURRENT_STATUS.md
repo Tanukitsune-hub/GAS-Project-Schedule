@@ -6,8 +6,8 @@ Overall status: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 Automation default: `OFF`  
 Observed controlled Sandbox Setup S00-S99: `PASS`; separately scoped
 functional acceptance: `ATTEMPTED_FAILED_CLOSED`
-(`REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
-`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`)
+(`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`)
 
 <!-- CURRENT_TRANSFER_CONTRACT_START -->
 | Field | Value |
@@ -21,6 +21,31 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Current Instruction 0014 runtime execution-binding closure
+
+Package-source and primary-API review identified the Instruction 0013 guard
+gap: clasp 3.3.0 passed its active project configuration value to
+`scripts.run`, while `--nondev` only set `devMode=false`; the separately stored
+deployment binding was not selected by that command. Deployment visibility
+alone was therefore insufficient, and missing tracked source was not the root
+cause.
+
+The remediated preflight preserved the 0011/0013 attempts, proved the
+top-level `runQuickDiagnostic` wrapper in staged and independent HEAD-pulled
+runtime payloads, created one fresh MYSELF-only immutable version/deployment,
+and pulled that exact version back. The 23-file payload hash, MYSELF manifest
+overlay, wrapper, exact function name, version lineage, and deployment-bound
+execution context all passed.
+
+The sole Instruction 0014 `runQuickDiagnostic` invocation returned no bounded
+diagnostic body. It is closed with overall status
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, and safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`; no retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`. Phase 8B
+overall PASS, Phase 8C GO, production/pilot readiness, company handoff, and
+company transfer are not established. Automation remains OFF, T11 remains
+`T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
 ## Current Instruction 0013 corrected versioned runtime retry boundary
 

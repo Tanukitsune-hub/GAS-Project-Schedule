@@ -27,6 +27,30 @@ Google Workspace Personal Work OS.
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0014 - runtime execution binding remediated, retry closed
+
+The root-cause review verified that clasp 3.3.0 `run-function` passed the
+active project configuration value to `scripts.run`; `--nondev` selected
+`devMode=false` but did not substitute the separately stored deployment
+binding. Instruction 0013 had therefore proved deployment visibility without
+proving that its call selected that deployment. This execution-context guard
+gap, rather than missing tracked source, explains the prior function-not-found
+result.
+
+The corrected guard proved the top-level `runQuickDiagnostic` wrapper in the
+staged runtime payload and independent HEAD pull-back. It created one fresh
+MYSELF-only versioned deployment, pulled that exact immutable version back,
+and proved the same 23-file hash, runtime manifest overlay, wrapper, function
+name, and deployment-bound `scripts.run` context. Instruction 0011 and 0013
+attempt evidence remains preserved.
+
+Exactly one Instruction 0014 `runQuickDiagnostic` call was then attempted. It
+returned no bounded diagnostic body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED`, category `BLOCKED_BY_AUTH`, safe
+subtype `RUNTIME_AUTHORIZATION_REJECTED`. No retry is permitted. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`; the current
+gate is still only a readiness boundary, and company handoff remains blocked.
+
 ## Instruction 0013 - corrected versioned runtime retry boundary
 
 The separate one-use retry marker preserved Instruction 0011 evidence. A
