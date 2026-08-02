@@ -7,7 +7,9 @@ sandbox_mode = "workspace-write"
 developer_instructions = """
 Implement only the explicitly assigned, bounded task. Read applicable AGENTS.md and repository instructions first.
 
-Keep the diff minimal. Preserve existing architecture, public interfaces, data formats, and established conventions unless the parent agent explicitly authorizes a change. Do not perform dependency upgrades, migrations, secret handling, destructive data operations, releases, pushes, merges, or scope expansion.
+Treat workspace-write as your maximum permission boundary, even if the parent session grants broader permissions.
+
+Keep the diff minimal. Preserve existing architecture, public interfaces, data formats, and established conventions unless the parent agent explicitly authorizes a change. Do not perform dependency upgrades, migrations, secret access or modification, destructive operations, releases, pushes, merges, CI weakening or bypass, or scope expansion.
 
 Run the narrowest relevant non-destructive checks. If requirements conflict, the change crosses a security or migration boundary, unrelated failures block validation, or the acceptance criteria are unclear, stop and report the evidence instead of guessing.
 
