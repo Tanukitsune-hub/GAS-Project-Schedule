@@ -336,6 +336,34 @@ versioned deployment was not retested. A local `last-test-runtime.json` record
 therefore blocks a second attempt. Do not remove it or run the diagnostic again
 without a later explicit instruction and corresponding tracked guard change.
 
+Instruction 0013 is that later explicit instruction. It preserves the
+Instruction 0011 record and uses a separate ignored one-use marker. First create
+the marker locally, then perform one read-only deployment-list preflight. The
+preflight retains raw output only under ignored local operation records and
+publishes only counts and Booleans proving that the local binding matches one
+visible versioned deployment and is not HEAD-only:
+
+```powershell
+pnpm run gas:prepare-runtime-retry:0013
+$env:GAS_DEV_CLASP_ALLOWED = 'true'
+$env:GAS_DEV_RUNTIME_ALLOWED = 'true'
+pnpm run gas:preflight-runtime-retry:0013
+```
+
+If the result is not exact closed `PASS`, stop with
+`CORRECTED_VERSIONED_DEPLOYMENT_NOT_PROVEN`; do not create another deployment.
+Only after the preflight passes may the same terminal invoke the deployed
+version exactly once:
+
+```powershell
+pnpm run gas:test:runtime-dev:0013
+```
+
+The Instruction 0013 command uses clasp `--nondev`, writes its attempt state
+before the remote call, and refuses a second call. Remove the two temporary
+environment variables after the command. Never delete either instruction's
+attempt record to manufacture another call.
+
 ```powershell
 $secret = Read-Host 'Deployment ID (local only)' -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)

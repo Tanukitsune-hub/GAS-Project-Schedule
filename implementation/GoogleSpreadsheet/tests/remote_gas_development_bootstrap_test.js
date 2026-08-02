@@ -11,6 +11,7 @@ const {
   buildRuntimeManifestOverlay,
   assertRuntimeManifestOverlay,
   assertSafeRuntimeResult,
+  assertCorrectedVersionedDeploymentBinding,
   postPullPayloadObservation,
   newBlankPullPayloadObservation,
   assertNewBlankPulledPayload,
@@ -180,6 +181,9 @@ test('BOOT-08_PACKAGE_SCRIPTS_EXPOSE_CANONICAL_AND_RUNTIME_LANES', () => {
     'gas:stage:runtime-dev',
     'gas:push:runtime-dev',
     'gas:pull-verify:runtime-dev',
+    'gas:prepare-runtime-retry:0013',
+    'gas:preflight-runtime-retry:0013',
+    'gas:test:runtime-dev:0013',
     'gas:test:runtime-dev'
   ].forEach((name) => assert.strictEqual(typeof packageJson.scripts[name], 'string'));
 });
@@ -578,6 +582,73 @@ test('BOOT-28_RUNTIME_AUTH_NORESULT_IS_CLOSED_AND_SECOND_ATTEMPT_IS_BLOCKED', ()
   assert.ok(googleAttempt > priorAttemptGuard && remoteCall > googleAttempt);
   assert.match(claspToolSource, /DEV_RUNTIME_ALREADY_ATTEMPTED/);
   assert.match(claspToolSource, /last-test-runtime\.json/);
+});
+
+test('BOOT-29_INSTRUCTION_0013_MARKER_IS_SEPARATE_AND_PRECEDES_GOOGLE_CALLS', () => {
+  assert.match(claspToolSource, /instruction-0013-runtime-attempt\.json/);
+  assert.match(claspToolSource, /last-test-runtime\.json/);
+  const preflight = claspToolSource.indexOf(
+    "if (command === 'preflight-runtime-retry-0013')"
+  );
+  const preflightMarker = claspToolSource.indexOf(
+    "state: 'DEPLOYMENT_PREFLIGHT_STARTED'",
+    preflight
+  );
+  const deploymentCall = claspToolSource.indexOf(
+    'runClasp(args, runtimeRoot)',
+    preflightMarker
+  );
+  const runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0013')"
+  );
+  const attemptMarker = claspToolSource.indexOf(
+    "state: 'ATTEMPT_STARTED'",
+    runtime
+  );
+  const runtimeCall = claspToolSource.indexOf(
+    'runClasp(args, runtimeRoot)',
+    attemptMarker
+  );
+  assert.ok(preflight >= 0 && preflightMarker > preflight);
+  assert.ok(deploymentCall > preflightMarker);
+  assert.ok(runtime >= 0 && attemptMarker > runtime);
+  assert.ok(runtimeCall > attemptMarker);
+  assert.match(claspToolSource, /INSTRUCTION_0013_RUNTIME_ALREADY_ATTEMPTED/);
+});
+
+test('BOOT-30_CORRECTED_VERSIONED_BINDING_PREFLIGHT_IS_CLOSED_SAFE', () => {
+  const expected = 'D'.repeat(24);
+  const result = assertCorrectedVersionedDeploymentBinding(JSON.stringify([
+    { deploymentId: 'H'.repeat(24) },
+    { deploymentId: expected, versionNumber: 3, description: 'not retained' }
+  ]), expected);
+  assert.deepStrictEqual(result, {
+    corrected_versioned_deployment_binding: 'PASS',
+    versioned_deployment_visible: true,
+    local_binding_matches_visible_versioned_deployment: true,
+    head_test_deployment_only: false,
+    visible_deployment_count: 2,
+    visible_versioned_deployment_count: 1,
+    visible_head_deployment_count: 1
+  });
+  assert.strictEqual(JSON.stringify(result).includes(expected), false);
+  assert.throws(
+    () => assertCorrectedVersionedDeploymentBinding(JSON.stringify([
+      { deploymentId: expected }
+    ]), expected),
+    /CORRECTED_VERSIONED_DEPLOYMENT_NOT_PROVEN/
+  );
+});
+
+test('BOOT-31_INSTRUCTION_0013_RUNTIME_USES_DEPLOYED_VERSION_MODE', () => {
+  const runtime = claspToolSource.indexOf(
+    "if (command === 'test-runtime-0013')"
+  );
+  const nondev = claspToolSource.indexOf(
+    "'--json', 'run-function', '--nondev', allowedRuntimeFunction",
+    runtime
+  );
+  assert.ok(runtime >= 0 && nondev > runtime);
 });
 
 const failed = tests.filter((item) => item.status === 'FAIL');

@@ -44,6 +44,9 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `gas:push:runtime-dev` | Self PC | Named local OAuth only | Guarded same-target runtime-overlay push after Cloud/OAuth prerequisites; clasp `--force` is confined to the ignored MYSELF-only manifest overlay. |
 | `gas:pull-verify:runtime-dev` | Self PC | Named local OAuth only | Separate runtime pull-back and exact dev-runtime payload parity. |
 | `gas:test:runtime-dev` | Self PC | Named local OAuth only | Exactly one `runQuickDiagnostic`; bounded complete IDs and false side effects. |
+| `gas:prepare-runtime-retry:0013` | Self PC | No | Preserves the Instruction 0011 failed-attempt record and creates one separate ignored Instruction 0013 marker before any new Google call. |
+| `gas:preflight-runtime-retry:0013` | Self PC | Named local OAuth, read-only | Lists deployments once and records only closed counts/Booleans proving the ignored local binding is one visible versioned deployment, not HEAD-only. |
+| `gas:test:runtime-dev:0013` | Self PC | Named local OAuth only | Requires the passed Instruction 0013 preflight, marks the attempt before the call, and invokes only `runQuickDiagnostic` once with clasp `--nondev`. |
 
 GitHub Actions uses read-only repository permission and must not use clasp,
 Google authentication, credentials, secrets, or a script identifier. CI is
@@ -76,6 +79,15 @@ The runtime lane is distinct: its ignored staged manifest intentionally adds
 only `executionApi.access = MYSELF`, so clasp 3.3.0 receives `--force` only for
 that guarded overlay push. A runtime `Skipping push.` result still fails closed,
 and a separate exact runtime pull-back remains mandatory.
+
+Instruction 0013 does not remove or reuse Instruction 0011's
+`last-test-runtime.json`. Its separate one-use marker is written before the
+deployment-list preflight, and the diagnostic attempt state is durably updated
+before the single `scripts.run` call. The corrected binding preflight emits no
+deployment identifier or description. A missing versioned match, a HEAD-only
+result, or a changed local binding stops as
+`CORRECTED_VERSIONED_DEPLOYMENT_NOT_PROVEN`. The retry uses deployed-version
+mode (`--nondev`); it never creates or updates a deployment.
 
 ## Status discipline
 
