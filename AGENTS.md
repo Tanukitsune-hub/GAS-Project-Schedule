@@ -16,34 +16,6 @@ directory being changed. The repository’s canonical implementation is
   credentials, OAuth tokens, `.clasp.json`, `.clasprc.json`, `clasp push`, or
   any secret context.
 
-## Codex subagent delegation
-
-- At the start of the first non-trivial task after a checkout, branch switch,
-  pull, or workspace relocation, verify that the current `HEAD` contains
-  `.codex/config.toml` and the three files under `.codex/agents/`. Do not infer
-  project agents from `main` when the active branch is different.
-- For unfamiliar, evidence-heavy, or cross-file work, and for work likely to
-  touch more than two files, explicitly spawn `luna_explorer` before changes.
-  Give it one bounded question, one module, or a cluster of roughly 3-5 files.
-- Use `luna_executor` only for one explicit, low-risk mechanical change set,
-  preferably one or two non-overlapping files with clear acceptance criteria.
-- After non-trivial implementation or before accepting a completion report,
-  explicitly spawn `luna_auditor` for one invariant, test family, check family,
-  or small file cluster.
-- Main Codex retains requirement interpretation, architecture, authorization,
-  security, Google runtime, company-handoff, and final-acceptance decisions. A
-  subagent report is evidence, not approval.
-- Wait for delegated agents and record the agent name, assigned scope, thread
-  result, completion state, and any timeout or sandbox error in the completion
-  report. Do not claim an independent audit when no usable result returned.
-- If the Windows sandbox/helper returns `Access Denied` or a bounded agent
-  times out, stop that agent without repeated retries, record the exact failure,
-  and continue only in the main thread or after the local sandbox is repaired.
-  Do not weaken repository controls or switch to full access merely to make an
-  agent run.
-- Machine-specific `[windows] sandbox` settings belong in the user-level Codex
-  configuration, not in this repository.
-
 ## Local clasp validation and company handoff
 
 - A project-local `@google/clasp` is for a dedicated personal, synthetic dev

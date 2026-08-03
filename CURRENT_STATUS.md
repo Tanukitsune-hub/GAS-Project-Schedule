@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-08-03
+Last updated: 2026-08-04
 Candidate version: Code `2.8.11-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 Overall status: `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`
 Automation default: `OFF`  
@@ -21,6 +21,22 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Transfer path | `NO_ACTIVE_COMPANY_TRANSFER` |
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
+
+## Instruction 0017 PR #11 governance-scope remediation
+
+Instruction 0017 found that the PR #11 `.codex` configuration/agent files and
+the root `AGENTS.md` delegation-only section had entered the branch without
+explicit authorization in the PR #11 instruction chain. The additive scope
+remediation removes only that governance scope. Apps Script source, canonical
+`appsscript.json`, runtime tooling, and Instruction 0011 through 0015 evidence
+remain unchanged.
+
+This is a repository-scope correction only. The development gate remains
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` as a readiness boundary;
+functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`.
+Automation remains OFF, company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`, T11 remains
+`T11_SUSPENDED`, and there is `NO_ACTIVE_COMPANY_TRANSFER`.
 
 ## Current Instruction 0015 authorization-root-cause closure
 
