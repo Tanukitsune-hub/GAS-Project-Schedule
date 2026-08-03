@@ -19,6 +19,7 @@ acceptance and does not authorize any Google-side or operator-PC action.
 | Field | Value |
 |---|---|
 | Starting HEAD | `3ec8c7693a5b7bf8645a8f5b85f35652374800ae` |
+| Initial implementation commit | `06a7cc4ad8066e87acae141ba10b48cdab887969` |
 | PR state before editing | Open / Draft / unmerged |
 | Starting worktree | Clean |
 
@@ -78,7 +79,7 @@ authorization state, requires preservation of prior markers, plans
 second start, and can close the synthetic marker without executing anything.
 The Instruction 0019 marker itself remains `NOT_AUTHORIZED` with count `0`.
 
-## Pre-commit local validation evidence
+## Local validation evidence
 
 | Check | Result |
 |---|---|
@@ -89,10 +90,13 @@ The Instruction 0019 marker itself remains `NOT_AUTHORIZED` with count `0`.
 | Remote GAS bootstrap synthetic regression | `38/38 PASS` |
 | Local clasp tooling self-test | `34/34 PASS` |
 | New tool and test syntax checks | `PASS` |
+| Clean committed-tree `pnpm run verify:local` | `11/11 PASS`; `53` suites |
+| Clean committed-tree tracked secret/local-path scan | `0` hits |
 
-Full local verification on a clean committed tree, final diff checks, tracked
-secret scans, and GitHub Actions remain completion checks. Their final state is
-recorded in the PR update and completion report after publication.
+The clean-tree gate also passed generated-file, JSON, YAML, Apps Script
+inventory/static, release, transfer, and fixed-reference checks. Final diff
+checks and GitHub Actions are recorded in the PR update and completion report
+after publication.
 
 The portable Node runtime used for local verification was obtained outside the
 repository and matched the official checksum. It did not add a tracked or
