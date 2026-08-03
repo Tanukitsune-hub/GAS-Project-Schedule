@@ -1,8 +1,8 @@
 # Google Workspace 0017 PR #11 Lineage and Scope Audit Evidence
 
-Instruction date: 2026-08-03 JST  
-Remediation date: 2026-08-04 JST  
-Work ID: 0005 / Instruction 0017  
+Instruction date: 2026-08-03 JST
+Remediation date: 2026-08-04 JST
+Work ID: 0005 / Instruction 0017
 Scope: repository governance correction only; no Google, Workspace, runtime, or
 real-data operation.
 
@@ -105,14 +105,15 @@ acceptance scope unchanged and preserves all historical evidence.
 | Command | Result |
 |---|---|
 | `pnpm install --frozen-lockfile` | PASS |
+| `pnpm run verify:local` after the clean remediation commit | PASS (`11/11`) |
 | `node tests/canonical_document_consistency_test.js` | PASS (`22`) |
 | `node tests/remote_gas_development_bootstrap_test.js` | PASS (`38`) |
 | `node tools/local_clasp_dev.js self-test` | PASS (`34`) |
-| `pnpm run verify:local` before commit | `WORKTREE_NOT_CLEAN` by design; the gate requires the additive commit's clean worktree |
 
-The final `pnpm run verify:local` is run after the normal additive commit, when
-the worktree is clean. Its result and the post-push GitHub Actions run/job/step
-conclusions are published in the PR #11 safe summary and final work report.
+The initial pre-commit gate correctly returned `WORKTREE_NOT_CLEAN`; the final
+gate was then run against the clean normal remediation commit. Post-push GitHub
+Actions run/job/step conclusions are published in the PR #11 safe summary and
+final work report.
 
 ## Boundaries retained
 
