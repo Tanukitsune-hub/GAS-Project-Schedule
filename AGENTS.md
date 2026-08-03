@@ -10,10 +10,10 @@ This repository follows a staged, evidence-first development process.
 
 ## Delegation policy
 
-- Use `luna_explorer` before changes when the repository or task is unfamiliar, cross-file impact is likely, or evidence must be gathered.
-- Use `luna_executor` only after scope, affected files, constraints, and acceptance criteria are clear.
+- Use `terra_explorer` before changes when the repository or task is unfamiliar, cross-file impact is likely, or evidence must be gathered.
+- Use `terra_executor` only after scope, affected files, constraints, and acceptance criteria are clear.
 - Use at most one write-capable agent for any overlapping file set. Do not run competing write agents on the same code path.
-- Use `luna_auditor` after implementation or when validating a completion report. The auditor must remain independent and read-only.
+- Use `terra_auditor` after implementation or when validating a completion report. The auditor must remain independent and read-only.
 - Wait for delegated agents to finish, then independently evaluate their evidence and conclusions in the main thread.
 
 ## Delivery standard
