@@ -22,6 +22,28 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0019 remote-only authorization diagnostic design
+
+Instruction 0019 adds only a local closed-field schema, normalizer,
+classifier, decision tree, one-use marker planner, synthetic regressions, and
+a disabled placeholder command. The placeholder exits with
+`AUTH_DIAGNOSTIC_EXECUTION_NOT_AUTHORIZED` before any credential, OAuth state,
+environment variable, Google setting, file, clasp module, or network access.
+
+The repository-only evidence matrix is `8` `LOCALLY_ATTESTED`, `1` `INFERRED`,
+and `2` `UNKNOWN_NOT_EXPOSED`. Actual principal execution permission remains
+inferred; script and bound-container ownership remain unknown and unexposed.
+No Google-side root cause is claimed. The selected design outcome is
+`REMOTE_ONLY_AUTH_DIAGNOSTIC_DESIGN_COMPLETE`; real-environment verification
+and any execution require a later, separately authorized Work ID. No operator
+PC action is needed before that later Work ID begins.
+
+No Google, Workspace, Apps Script API, OAuth endpoint, Cloud API, clasp remote,
+deployment, runtime diagnostic, company, production, or real-data operation
+was performed. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` /
+`REVIEW_REQUIRED`; Automation remains OFF and all company-transfer boundaries
+remain unchanged.
+
 ## Instruction 0018 independent PR #11 re-audit
 
 The no-Google re-audit preserved Instruction 0017's governance remediation and

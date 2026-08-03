@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:work-os:remote-only-auth-diagnostic:evidence:v1",
+  "title": "Remote-only authorization diagnostic evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "source_boundary",
+    "evidence"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "WORK_OS_REMOTE_ONLY_AUTH_DIAGNOSTIC_EVIDENCE_V1"
+    },
+    "source_boundary": {
+      "const": "TRACKED_REPOSITORY_EVIDENCE_ONLY"
+    },
+    "evidence": {
+      "$ref": "#/$defs/evidence"
+    }
+  },
+  "$defs": {
+    "evidenceStatus": {
+      "enum": [
+        "LOCALLY_ATTESTED",
+        "INFERRED",
+        "UNKNOWN_NOT_EXPOSED"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "named_oauth_profile_usability",
+        "oauth_scope_coverage",
+        "desktop_client_cloud_project_alignment",
+        "oauth_testing_principal_eligibility",
+        "standard_cloud_project_linkage",
+        "apps_script_api_project_enablement",
+        "api_executable_myself_access",
+        "oauth_principal_execution_permission",
+        "script_project_ownership_alignment",
+        "bound_container_ownership_alignment",
+        "runtime_function_deployment_lineage"
+      ],
+      "properties": {
+        "named_oauth_profile_usability": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "oauth_scope_coverage": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "desktop_client_cloud_project_alignment": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "oauth_testing_principal_eligibility": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "standard_cloud_project_linkage": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "apps_script_api_project_enablement": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "api_executable_myself_access": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "oauth_principal_execution_permission": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "script_project_ownership_alignment": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "bound_container_ownership_alignment": {
+          "$ref": "#/$defs/evidenceStatus"
+        },
+        "runtime_function_deployment_lineage": {
+          "$ref": "#/$defs/evidenceStatus"
+        }
+      }
+    },
+    "oneUseMarker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_id",
+        "authorization_state",
+        "attempt_state",
+        "invocation_count",
+        "prior_attempt_markers_preserved"
+      ],
+      "properties": {
+        "schema_id": {
+          "const": "WORK_OS_AUTH_DIAGNOSTIC_ONE_USE_MARKER_V1"
+        },
+        "authorization_state": {
+          "enum": [
+            "NOT_AUTHORIZED",
+            "AUTHORIZED_BY_LATER_TRACKED_INSTRUCTION"
+          ]
+        },
+        "attempt_state": {
+          "enum": [
+            "NOT_STARTED",
+            "ATTEMPT_STARTED",
+            "ATTEMPT_CLOSED"
+          ]
+        },
+        "invocation_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "prior_attempt_markers_preserved": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
