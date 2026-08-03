@@ -22,6 +22,23 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0018 independent PR #11 re-audit
+
+The no-Google re-audit preserved Instruction 0017's governance remediation and
+found two bounded local-tool gaps: the retired generic runtime command could
+reach an unbound historical path, and the tracked identifier scan did not
+cover `expected_script_id`. Both are remediated with fail-closed behavior,
+absent unversioned package aliases, and local regression coverage. Apps Script
+source, canonical `appsscript.json`, ignored local state, and historical
+attempt evidence remain unchanged.
+
+The selected static-review outcome is
+`READY_FOR_GUARDED_AUTH_DIAGNOSTIC_DESIGN`. It does not authorize a Google,
+clasp, OAuth, deployment, Workspace, company, production, or real-data
+operation. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` /
+`REVIEW_REQUIRED`; a later tracked instruction must design any next diagnostic
+without reusing a closed attempt marker.
+
 ## Instruction 0017 PR #11 governance-scope remediation
 
 Instruction 0017 found that the PR #11 `.codex` configuration/agent files and

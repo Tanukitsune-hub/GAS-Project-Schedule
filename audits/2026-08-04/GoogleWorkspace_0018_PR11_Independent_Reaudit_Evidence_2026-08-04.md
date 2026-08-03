@@ -21,6 +21,8 @@ OAuth action, clasp operation, deployment, Workspace action, or another
 |---|---|
 | Starting HEAD | `e2af19558756891bf4b2e59d82c2269711ce1b1e` |
 | Remediation-reviewed HEAD | `c02b11f21923b86d0ddc87fb38606542c1a5224c` |
+| Initial evidence-publication HEAD | `0eff57261d0cf5a6ac5b2b62ad34a5e4fbe854d0` |
+| Guard-remediation HEAD | `07b34a0f6ef4c72af803f90f7e1018a34ebbbae5` |
 | PR #11 base tip / merge base | `6ebe881075311722d5a1563511ca80936070bc67` |
 | PR #11 state at review | Open / Draft / mergeable / unmerged |
 | Parent PR #10 | Open / Draft; its head is the PR #11 base |
@@ -39,8 +41,15 @@ or history rewrite occurred in this work.
 - The removed scope entered the branch through merge
   `bc38675ac99109b7a03375c4e76b0666876a2806`; the prior conclusion that it
   was not an ancestor merge of PR #12 or PR #13 remains supported.
+- The PR delta also contains historical merge
+  `e07d5c943b164356ba5a542dc4d216a381d75dbf`, from the recorded
+  Instruction 0009 continuation branch. Neither merged PR #12 nor merged PR
+  #13 is an ancestor of the current PR #11 head.
 - Apps Script source, canonical `appsscript.json`, runtime tooling, ignored
-  local state, and Instruction 0011 through 0015 evidence were preserved.
+  local state, and Instruction 0011 through 0015 evidence were preserved at
+  the initial re-audit head. The later bounded local-tool remediation is
+  recorded below; it does not alter Apps Script source, canonical
+  `appsscript.json`, ignored local state, or historical attempt evidence.
 
 Instruction 0015's statement that repository-local `.codex` definitions were
 absent was contradicted at its final branch state, as Instruction 0017 already
@@ -82,46 +91,84 @@ boundary as `INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`.
 
 The runtime tool and non-Google regression suite were reviewed for marker
 ordering, deployment-bound execution context, exact function name, overlay
-parity, closed output records, classifier behavior, and retry refusal. No
-concrete guard defect was identified in the current tracked code.
+parity, closed output records, classifier behavior, and retry refusal. The
+following bounded local-tool defects were found after the first evidence
+publication and remediated at `07b34a0f6ef4c72af803f90f7e1018a34ebbbae5`:
 
-One material documentation/test gap was found and remediated. Five current
-runtime documents and the implementation README stopped at Instruction 0013,
-while root current-status documents and `docs/local-clasp-setup.md` recorded
-the later closure. The remediated documents now record the 0014 execution-path
-correction, 0015 authorization matrix, final closure, and boundaries. The
-canonical-document suite now rejects removal of this supersession evidence.
+1. The legacy unversioned `test` / `test-runtime` entrypoint used the old
+   Instruction 0011 marker and an unbound runtime workspace. If ignored local
+   state were missing or recreated, it could bypass the separately closed
+   0013–0015 marker, immutable-version, and deployment-bound execution guards.
+   It now fails `RUNTIME_GENERIC_COMMAND_RETIRED` before a clasp or Google
+   operation; both unversioned package aliases and their current execution
+   instructions were removed.
+2. The tracked identifier scan matched `scriptId` but not the
+   `expected_script_id` field used by the safe example declaration. It now
+   detects both fields while preserving documented placeholders as non-hits.
 
-No Apps Script source, canonical manifest, runtime tool, credentials, ignored
-local state, deployment binding, or historical audit was changed. The bounded
-manual security review found no reportable credential, identifier, local-path,
-output-redaction, or retry-control regression; it is not a replacement for an
-independently provisioned exhaustive security scan.
+Both findings require a privileged local developer context and were remediated
+as defense-in-depth runtime-safety and secret-hygiene gaps. They do not prove a
+remote attacker path or alter functional runtime acceptance.
+
+The earlier documentation/test remediation remains in place. Current status,
+company-boundary, implementation README, validation-gate, local-clasp, and
+visualization text now distinguish the 0014 execution-binding correction and
+the 0015 authorization closure from runtime PASS. Regressions cover the
+retired generic entrypoint, absent aliases, safe no-Google failure result,
+`expected_script_id` placeholder handling, and the current visualization
+closure fields.
+
+No Apps Script source, canonical manifest, credential, ignored local state,
+deployment binding, or historical attempt audit was changed. The runtime tool,
+package command surface, non-Google validation gate, current-status documents,
+and local regression tests were changed only as described above.
 
 ## Local evidence
 
-At `c02b11f21923b86d0ddc87fb38606542c1a5224c` on a clean committed tree:
+At `07b34a0f6ef4c72af803f90f7e1018a34ebbbae5` on a clean committed tree:
 
 | Command | Result |
 |---|---|
 | `pnpm install --frozen-lockfile` | PASS; lockfile unchanged |
 | `pnpm run verify:local` | PASS `11/11`; 52 suites; secret/local-path scan `0` hits |
+| `node tests/local_validation_secret_scan_test.js` | PASS `13/13` |
 | `node tests/canonical_document_consistency_test.js` | PASS `23/23` |
 | `node tests/remote_gas_development_bootstrap_test.js` | PASS `38/38` |
 | `node tools/local_clasp_dev.js self-test` | PASS `34/34` |
 | `git diff --check` | PASS |
+
+## CI evidence for guard-remediation head
+
+The normal push of `07b34a0f6ef4c72af803f90f7e1018a34ebbbae5` completed both
+required GitHub Actions executions successfully:
+
+| Event | Run | Job | Result |
+|---|---:|---:|---|
+| push | `30833072509` | `91751498635` | `SUCCESS`; all 9 steps succeeded |
+| pull request | `30833077383` | `91751514713` | `SUCCESS`; all 9 steps succeeded |
+
+The locked-install and non-Google verification-gate log segments were inspected
+without retaining raw log output. No required job or step was failed,
+cancelled, skipped, or left unexecuted.
 
 No Google, clasp remote, OAuth, deployment, Apps Script API, Workspace,
 company, production, or real-data operation was performed.
 
 ## Agent evidence and limitation
 
-The available native worker completed the Codex Security configuration preflight
-with status `ready`. Repository-local Luna definitions were not restored.
-Attempts to start a separate native read-only lineage/audit worker through the
-active host project-thread interface did not return a usable worker result, so
-Main Codex completed the reconstruction and final audit. This evidence does
-not claim an independent worker result.
+Repository-local Luna definitions were not restored. Two native read-only
+validation workers independently confirmed the generic-runtime and
+`expected_script_id` findings before remediation. A native read-only auditor
+then confirmed the corrected guard ordering, absent aliases, placeholder-safe
+identifier scan, unchanged Apps Script source/manifest, and retained status
+boundaries. It also correctly identified the stale statement in this audit
+that said runtime tooling was unchanged; this addendum replaces that statement.
+
+One exploratory worker returned a contradictory result outside its assigned
+lineage scope. Main Codex did not rely on that result and independently
+reconstructed the branch ancestry, scope, runtime-attempt sequence, diff, and
+validation evidence. No agent performed Git writes, Google, clasp, OAuth,
+deployment, Workspace, or real-data operations.
 
 ## Retained boundaries and minimum next decision
 
