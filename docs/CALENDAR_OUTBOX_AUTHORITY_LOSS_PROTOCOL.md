@@ -10,11 +10,23 @@ personal-synthetic target. One operator-reported first-time Setup result is
 establish Phase 8B overall PASS. Instruction 0011 passed personal Cloud/OAuth
 and exact MYSELF-only runtime overlay parity, but its sole standalone runtime
 attempt stopped as `BLOCKED_BY_AUTH` without a bounded result. The corrected
-versioned executable was not retested; functional acceptance is
+versioned executable was not retested in Instruction 0011; functional acceptance is
 `ATTEMPTED_FAILED_CLOSED`. Instruction 0013 proved that versioned binding, but
 its sole deployed-version diagnostic call returned no bounded body and closed
 as `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
-`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted and
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No Instruction 0013 retry is
+permitted. Instruction 0014 then proved that clasp 3.3.0 selected the
+deployment-bound `scripts.run` context and that staged, HEAD-pulled, and
+immutable-version-pulled payloads contained the wrapper before its sole call.
+It returned no bounded body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`; no Instruction 0014 retry is permitted.
+Instruction 0015 force-refreshed the existing named local-only OAuth profile,
+proved `7` required runtime-manifest scopes within `19` grants, retained
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`, and made one separately
+marked deployment-bound `runQuickDiagnostic` call. It returned no bounded body
+and closed as `RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`; no Instruction 0015 retry is permitted.
 `REVIEW_REQUIRED` remains. Company handoff is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. Fixed T10 and T11 are
 immutable historical evidence, T11 is `T11_SUSPENDED`, and there is

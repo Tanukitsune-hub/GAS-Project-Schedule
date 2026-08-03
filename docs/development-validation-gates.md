@@ -12,12 +12,26 @@ PASS. Instruction 0011 then passed personal Cloud/OAuth prerequisites, named
 OAuth verification, and exact MYSELF-only runtime overlay parity. Its sole
 standalone runtime attempt stopped as `BLOCKED_BY_AUTH` without a bounded
 diagnostic body. A correctly versioned MYSELF-only executable was created and
-bound only after that stop, so it remains untested under the exactly-one rule.
+bound only after that stop, so it was untested under Instruction 0011's
+exactly-one rule.
 Instruction 0013 independently proved the corrected binding was a visible
 versioned deployment rather than HEAD-only, then consumed its one deployed-
 version `runQuickDiagnostic` attempt. No bounded diagnostic body was returned;
-the closed result is `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
-`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted.
+the closed result was `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED`, with safe subtype
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted for Instruction
+0013. Instruction 0014 then proved that clasp 3.3.0 selected the `scripts.run`
+path from project configuration, corrected the execution binding, and proved
+the staged, HEAD-pulled, and immutable-version-pulled wrappers before its sole
+deployment-bound call. That call returned no bounded body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`; no Instruction 0014 retry is permitted.
+Instruction 0015 force-refreshed the existing named local-only OAuth profile,
+proved `7` required runtime-manifest scopes within `19` grants, and retained
+the ownership uncertainty as `INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`.
+Its separately marked, deployment-bound sole `runQuickDiagnostic` call again
+returned no bounded body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`. No Instruction 0015 retry is permitted.
 The active development status remains
 `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` as readiness, not runtime PASS.
 Functional acceptance is `ATTEMPTED_FAILED_CLOSED` and `REVIEW_REQUIRED`.

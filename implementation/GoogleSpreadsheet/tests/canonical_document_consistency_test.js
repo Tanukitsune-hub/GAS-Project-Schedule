@@ -18,6 +18,13 @@ const documentNames = [
   'MASTER_PLAN.md',
   'PROJECT_CONTEXT.md'
 ];
+const currentRuntimeDocumentNames = [
+  'docs/development-validation-gates.md',
+  'docs/company-handoff.md',
+  'docs/TASK_AUTHORITY_PROTOCOL.md',
+  'docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md',
+  'implementation/GoogleSpreadsheet/apps-script-v2/README.md'
+];
 const startMarker = '<!-- CURRENT_TRANSFER_CONTRACT_START -->';
 const endMarker = '<!-- CURRENT_TRANSFER_CONTRACT_END -->';
 const activeCompanyPcStartMarker =
@@ -329,6 +336,29 @@ function validateInstruction0015RuntimeBoundary(text, label) {
     `${label}: functional acceptance closed state missing`);
 }
 
+function validateCurrentRuntimeDocumentSupersession(text, label) {
+  assert.match(text, /Instruction 0014/i,
+    `${label}: Instruction 0014 supersession missing`);
+  assert.match(text, /(?:scripts\.run|deployment-bound)/i,
+    `${label}: deployment-bound execution correction missing`);
+  assert.match(text, /Instruction 0015/i,
+    `${label}: Instruction 0015 supersession missing`);
+  assert.match(text, /force-refreshed/i,
+    `${label}: named-profile refresh evidence missing`);
+  assert.match(text, /(?:`?7`?)[\s\S]{0,160}(?:`?19`?)[\s\S]{0,160}(?:scope|grant)/i,
+    `${label}: closed scope-coverage counts missing`);
+  assert.match(text, /INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA/,
+    `${label}: ownership uncertainty boundary missing`);
+  assert.match(text, /RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED/i,
+    `${label}: final closed runtime status missing`);
+  assert.match(text, /BLOCKED_BY_AUTH/i,
+    `${label}: final closed runtime category missing`);
+  assert.match(text, /RUNTIME_AUTHORIZATION_REJECTED/i,
+    `${label}: final closed runtime subtype missing`);
+  assert.match(text, /ATTEMPTED_FAILED_CLOSED/i,
+    `${label}: functional acceptance closed state missing`);
+}
+
 function contractsFromTexts(texts) {
   return texts.map((item) => ({
     name: item.name,
@@ -337,6 +367,10 @@ function contractsFromTexts(texts) {
 }
 
 const sourceTexts = documentNames.map((name) => ({
+  name,
+  text: fs.readFileSync(path.join(repositoryRoot, name), 'utf8')
+}));
+const currentRuntimeTexts = currentRuntimeDocumentNames.map((name) => ({
   name,
   text: fs.readFileSync(path.join(repositoryRoot, name), 'utf8')
 }));
@@ -442,6 +476,22 @@ test('DOC-01C5_CURRENT_DOCUMENTS_RECORD_THE_0015_RUNTIME_STOP', () => {
   sourceTexts.forEach((entry) => {
     validateInstruction0015RuntimeBoundary(entry.text, entry.name);
   });
+});
+
+test('DOC-01C6_CURRENT_RUNTIME_DOCUMENTS_RECORD_THE_0015_SUPERSESSION', () => {
+  currentRuntimeTexts.forEach((entry) => {
+    validateCurrentRuntimeDocumentSupersession(entry.text, entry.name);
+  });
+  const fixture = currentRuntimeTexts.map((entry) => ({
+    name: entry.name,
+    text: entry.text.replace(/Instruction 0015/g, 'Instruction UNKNOWN')
+  }));
+  assert.throws(
+    () => fixture.forEach((entry) =>
+      validateCurrentRuntimeDocumentSupersession(entry.text, entry.name)
+    ),
+    /Instruction 0015 supersession missing/
+  );
 });
 
 test('DOC-01D_STALE_LOCAL_FAILURE_COMPANY_HANDOFF_IS_REJECTED', () => {

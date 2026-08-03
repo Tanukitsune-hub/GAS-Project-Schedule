@@ -17,13 +17,23 @@ evidence E11 are normal-published and detached-HTTPS-clone verified historical
 evidence. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`; T11 is
 `T11_SUSPENDED` and does not authorize a Company-PC carriage or T1-01
 re-observation. The current development gate is
-`NO_GO_LOCAL_CLASP_VALIDATION`: Instruction 0009 branch publication and
-current GitHub Actions validation pass, but the isolated read-only target pull
-observed 2 files where the canonical payload requires 23
-(`REMOTE_PULL_PAYLOAD_SHAPE_MISMATCH`). This does not infer target identity;
-canonical retry/push, pull-back parity, Cloud/OAuth, deployment, and runtime
-validation are not executed. Company handoff is
-`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`.
+`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` only as a readiness boundary.
+Instruction 0010 subsequently proved exact 23-file canonical pull-back parity
+on the approved personal-synthetic target. Instructions 0011 and 0013
+consumed one bounded call each without a diagnostic body. Instruction 0014
+proved the clasp 3.3.0 deployment-bound `scripts.run` correction and staged,
+HEAD-pulled, and immutable-version-pulled wrapper presence; its sole call
+closed as `RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`. Instruction 0015 force-refreshed the
+existing named local-only OAuth profile, proved `7` required runtime-manifest
+scopes within `19` grants, retained
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA`, and made one separately
+marked deployment-bound `runQuickDiagnostic` call. It again returned no
+bounded body and closed as `RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
+`BLOCKED_BY_AUTH` / `RUNTIME_AUTHORIZATION_REJECTED`; no Instruction 0015
+retry is permitted. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` /
+`REVIEW_REQUIRED`, and company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 A completed Sandbox must not rerun Setup to apply this visibility-only patch.
 
 `2.8.10-prepilot` retains the R4/R5 authority contract and every historical
@@ -124,11 +134,12 @@ backup directory was local-only and was not present in GitHub; this historical
 fact is corrected in the Round 4 implementation report rather than rewriting
 the historic Round 3 report.
 
-The following v2.8.10/T10 paragraph is historical provenance. Current
-versions are Code `2.8.11-prepilot`, Schema `2.6`, AI Schema `2.0`, and
-Migration `3`; Automation remains OFF by default. The current development
-gate is `NO_GO_LOCAL_CLASP_VALIDATION`; company handoff is
-`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE`. T11 and T10 are
+The following v2.8.10/T10 paragraph is historical provenance. Its former
+`NO_GO_LOCAL_CLASP_VALIDATION` and
+`NO_GO_COMPANY_HANDOFF_LOCAL_VALIDATION_FAILURE` labels are not current.
+Current versions are Code `2.8.11-prepilot`, Schema `2.6`, AI Schema `2.0`,
+and Migration `3`; Automation remains OFF by default. The current gate,
+functional closure, and company boundary are stated above. T11 and T10 are
 historical evidence only: T11 is suspended and no Company-PC transfer or
 Workspace action is authorized.
 The verified v2.8.7

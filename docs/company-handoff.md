@@ -14,8 +14,22 @@ retested in Instruction 0011. Instruction 0013 proved that corrected binding
 was a visible versioned deployment, but its sole deployed-version diagnostic
 call returned no bounded body and closed as
 `REMOTE_QUICK_DIAGNOSTIC_FAILED_CLOSED` /
-`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No retry is permitted and
-`REVIEW_REQUIRED` remains. Remote-development review remains incomplete.
+`VERSIONED_RUNTIME_FUNCTION_NOT_FOUND`. No Instruction 0013 retry is
+permitted. Instruction 0014 then proved that clasp 3.3.0 used the project
+configuration's `scripts.run` path, corrected the deployment-bound execution
+context, and proved staged, HEAD-pulled, and immutable-version-pulled wrappers
+before its sole call. It returned no bounded body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`; no Instruction 0014 retry is permitted.
+Instruction 0015 force-refreshed the existing named local-only OAuth profile,
+proved `7` required runtime-manifest scopes within `19` grants, and retained
+`INCONCLUSIVE_NOT_EXPOSED_BY_APPS_SCRIPT_METADATA` for non-observable
+ownership. Its separately marked sole deployment-bound `runQuickDiagnostic`
+call again returned no bounded body and closed as
+`RUNTIME_QUICK_DIAGNOSTIC_FAILED_CLOSED` / `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED`; no Instruction 0015 retry is permitted.
+Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` and
+`REVIEW_REQUIRED`. Remote-development review remains incomplete.
 Company handoff is therefore
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` and there is no active
 company transfer source. Instruction 0005 is
