@@ -503,11 +503,14 @@ respective historical verification and remain immutable evidence. T11 is
 `SUPERSEDED_NOT_EXECUTED`; no five-file replacement or T1-01 re-observation
 occurred. The current non-Google local validation, GitHub publication, and
 current-head CI pass. Instruction 0010 then independently proved the strict
-23-file canonical pull-back parity. Instructions 0011 and 0013 completed the
-authorized runtime prerequisites and consumed their separately authorized
-single attempts; the current result is `ATTEMPTED_FAILED_CLOSED` without a
-bounded diagnostic body. No company Workspace action is authorized by this
-status.
+23-file canonical pull-back parity. Instructions 0011, 0013, 0014, and 0015
+each consumed a separately authorized single attempt. Instruction 0014
+corrected the deployment-bound execution context, and Instruction 0015
+refreshed the named local-only profile and proved its closed authorization
+matrix; its result remained `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED` without a bounded diagnostic body. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED`. No company
+Workspace action is authorized by this status.
 
 PR #9 records the earlier CI implementation against an older `main` baseline.
 Its reviewed semantics are integrated as one current-branch workflow and were

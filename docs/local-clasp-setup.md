@@ -486,66 +486,21 @@ safe subtype `RUNTIME_AUTHORIZATION_REJECTED`. Do not rerun the 0015 diagnostic
 or prepare a new 0015 attempt; functional acceptance remains
 `ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED`.
 
-```powershell
-$secret = Read-Host 'Deployment ID (local only)' -AsSecureString
-$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
-try {
-  $env:GAS_RUNTIME_DEPLOYMENT_ID = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-  $env:GAS_API_EXECUTABLE_MYSELF_ONLY = 'true'
-  $env:GAS_TEST_MODE_CONFIRMED = 'true'
-  $env:GAS_AUTOMATION_DISABLED_CONFIRMED = 'true'
-  pnpm run gas:runtime-config:dev
-} finally {
-  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
-  Remove-Variable secret, ptr -ErrorAction SilentlyContinue
-  @(
-    'GAS_RUNTIME_DEPLOYMENT_ID',
-    'GAS_API_EXECUTABLE_MYSELF_ONLY',
-    'GAS_TEST_MODE_CONFIRMED',
-    'GAS_AUTOMATION_DISABLED_CONFIRMED'
-  ) | ForEach-Object { Remove-Item "Env:$_" -ErrorAction SilentlyContinue }
-}
-```
+## Retired generic runtime command
 
-Do not paste the identifier, credential path, account identity, Cloud project
-identifier, or OAuth browser URL into chat, GitHub, logs, or evidence.
+The unversioned `test` / `test-runtime` command is retired. It fails
+`RUNTIME_GENERIC_COMMAND_RETIRED` before a Google operation, and the former
+generic package aliases have been removed. It must not be used to replay the
+Instruction 0011 attempt or to bypass the separately closed Instruction
+0013–0015 markers, versioned deployment binding, or deployment-bound execution
+context.
 
-```powershell
-$env:GAS_DEV_CLASP_ALLOWED = 'true'
-$env:GAS_DEV_RUNTIME_ALLOWED = 'true'
-pnpm run gas:test:runtime-dev
-```
-
-The runtime call is exactly one `runQuickDiagnostic`. It accepts only the
-bounded summary with complete WARN/FAIL IDs, false side-effect Booleans,
-50 Task columns, and a hidden/protected/21-column validated Ledger. Lower
-detail JSON and Workspace content are neither printed nor retained in tracked
-evidence.
-
-## Optional safe runtime dry-run
-
-The only candidate function is the existing `runQuickDiagnostic` read-only
-contract. It remains `NOT_EXECUTED` unless all of the following are true:
-
-- the target declaration explicitly enables runtime dry-run;
-- the self-PC operator sets `GAS_DEV_RUNTIME_ALLOWED=true` in that terminal;
-- the Apps Script API executable/runtime prerequisites have been independently
-  configured for the personal synthetic project; and
-- the returned bounded summary proves every listed side-effect Boolean false.
-
-Run only after canonical and runtime-overlay push/pull parity and the manual
-Cloud/OAuth/API-executable prerequisites:
-
-```powershell
-$env:GAS_DEV_RUNTIME_ALLOWED = 'true'
-pnpm run gas:test:runtime-dev
-```
-
-Instruction 0008 permits only one personal-synthetic API-executable deployment
-with access limited to the deploying user. Do not create a web app, public or
-company deployment, alter the canonical manifest, configure a provider,
-enable Automation or triggers, or use real Gmail, Calendar, Sheet, or business
-data.
+The only candidate function remains the read-only `runQuickDiagnostic`
+contract, but all recorded one-use lanes are closed. A future diagnostic
+requires a later tracked instruction with its own marker, target and
+authorization guard, and privacy-safe evidence design. Do not paste an
+identifier, credential path, account identity, Cloud-project identifier, or
+OAuth browser URL into chat, GitHub, logs, or evidence.
 
 ## Result classification
 

@@ -23,7 +23,8 @@ const currentRuntimeDocumentNames = [
   'docs/company-handoff.md',
   'docs/TASK_AUTHORITY_PROTOCOL.md',
   'docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md',
-  'implementation/GoogleSpreadsheet/apps-script-v2/README.md'
+  'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
+  'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_11.html'
 ];
 const startMarker = '<!-- CURRENT_TRANSFER_CONTRACT_START -->';
 const endMarker = '<!-- CURRENT_TRANSFER_CONTRACT_END -->';

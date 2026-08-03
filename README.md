@@ -453,10 +453,14 @@ historical evidence. They must not be copied or reflected on a company PC
 while this boundary is suspended.
 
 Instruction 0010 independently proved exact 23-file canonical pull-back parity
-on the approved personal-synthetic target. Instructions 0011 and 0013 then
-attempted the bounded personal runtime lane, which remains
-`ATTEMPTED_FAILED_CLOSED` without a diagnostic body. This is not company
-authorization. No company Workspace action is authorized. Do not
+on the approved personal-synthetic target. Instructions 0011, 0013, 0014, and
+0015 each consumed a separately marked bounded personal-runtime attempt.
+Instruction 0014 corrected the deployment-bound execution context, and
+Instruction 0015 refreshed the named local-only profile and proved its closed
+authorization matrix; the final two calls closed as `BLOCKED_BY_AUTH` /
+`RUNTIME_AUTHORIZATION_REJECTED` without a bounded diagnostic body. Functional
+acceptance remains `ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED`. This is not
+company authorization. No company Workspace action is authorized. Do not
 carry a package, change an
 Apps Script file, run Setup or a diagnostic, touch Gmail, Calendar,
 Properties, triggers, Automation, tests, Migration, or perform repair. A

@@ -325,11 +325,13 @@ transfer targets. Instruction 0005 is `SUPERSEDED_NOT_EXECUTED`: no
 five-file replacement, Company-PC carriage, or Company Sandbox T1-01 Quick
 Diagnostic re-observation is authorized. Current-branch CI and non-Google
 local validation pass, and Instruction 0010 independently proved exact
-23-file canonical pull-back parity. Instructions 0011 and 0013 completed the
-authorized personal Cloud/OAuth/runtime prerequisites and consumed their
-separately authorized single calls; runtime acceptance remains
-`ATTEMPTED_FAILED_CLOSED` without a bounded diagnostic body. The development gate is
-`READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` and company handoff remains
+23-file canonical pull-back parity. Instructions 0011, 0013, 0014, and 0015
+consumed separately authorized single calls. Instruction 0014 corrected the
+deployment-bound execution context; Instruction 0015 refreshed the named
+local-only profile and proved its closed authorization matrix. The final
+closure is `ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED` with
+`RUNTIME_AUTHORIZATION_REJECTED` and no bounded diagnostic body. The
+development gate is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION` and company handoff remains
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
 This permits no company
 Workspace action, Setup, S90, S99, Dashboard

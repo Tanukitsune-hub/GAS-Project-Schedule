@@ -3280,6 +3280,10 @@ async function main() {
   if (command === 'self-test') return selfTest();
   let googleOperation = 'NOT_EXECUTED';
   try {
+    if (command === 'test' || command === 'test-runtime') {
+      fail('RUNTIME_GENERIC_COMMAND_RETIRED', 'RUNTIME_GENERIC_COMMAND_RETIRED');
+    }
+
     if (command === 'stage') {
       const inventory = assertCanonicalPayloadContract(stagePayload());
       writeSafeResult({
@@ -4080,45 +4084,6 @@ async function main() {
         script_extension_contract: scriptExtensionContract,
         command_output_sha256: result.output_sha256
       });
-      return;
-    }
-
-    if (command === 'test' || command === 'test-runtime') {
-      const target = assertTargetGuard(true);
-      assertRuntimeConfiguration(target.target);
-      assertRuntimeSourceContract();
-      const runtime = assertRuntimeStagedPayload();
-      assertRuntimeDiagnosticNotPreviouslyAttempted();
-      const args = runtimeClaspArgs([
-        '--json', 'run-function', allowedRuntimeFunction
-      ]);
-      googleOperation = 'ATTEMPTED';
-      const result = runClasp(args, runtimeRoot);
-      if (result.exit_code !== 0 ||
-          /(?:unable to run script function|script function not found)/i
-            .test(String(result.raw || ''))) {
-        failClassifiedClaspOperation('test-runtime', result);
-      }
-      let summary;
-      try {
-        summary = assertSafeRuntimeResult(result.stdout);
-      } catch (error) {
-        persistOperationRecord(
-          'test-runtime',
-          result,
-          String(error && error.code || 'DEV_RUNTIME_CLOSED_CONTRACT_FAILED')
-        );
-        throw error;
-      }
-      const safe = {
-        lane: 'local_clasp_dev', command, status: 'PASS',
-        runtime_function: allowedRuntimeFunction, file_count: runtime.file_count,
-        runtime_payload_sha256: runtime.runtime_payload_sha256,
-        clasp_version: claspVersion(), command_output_sha256: result.output_sha256,
-        bounded_summary: summary
-      };
-      persistOperationRecord('test-runtime', result, 'PASS');
-      writeSafeResult(safe);
       return;
     }
 

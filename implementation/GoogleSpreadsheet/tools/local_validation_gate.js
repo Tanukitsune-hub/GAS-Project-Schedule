@@ -229,7 +229,7 @@ function contentHasSensitivePattern(content) {
 
 function hasTrackedScriptId(content) {
   return Array.from(String(content).matchAll(
-    /"scriptId"\s*:\s*"([A-Za-z0-9_-]{20,})"/ig
+    /"(?:scriptId|expected_script_id)"\s*:\s*"([A-Za-z0-9_-]{20,})"/ig
   )).some((match) => !/^(?:REPLACE_WITH|YOUR_SCRIPT_ID|LOCAL_ONLY|EXAMPLE)/i
     .test(match[1]));
 }

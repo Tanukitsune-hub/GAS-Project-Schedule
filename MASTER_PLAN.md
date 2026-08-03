@@ -303,9 +303,12 @@ they are not an active company transfer source.
 The current development gate is `READY_FOR_LOCAL_CLASP_RUNTIME_VALIDATION`:
 local non-Google validation, GitHub publication/current-branch CI, and exact
 23-file canonical pull-back parity pass. Personal Cloud/OAuth, runtime-overlay
-parity, and corrected versioned deployment prerequisites passed; the bounded
-standalone runtime retry remains `ATTEMPTED_FAILED_CLOSED` without a diagnostic
-body. Final remote-development review remains incomplete. Company handoff is
+parity, corrected versioned deployment prerequisites, and the Instruction 0015
+closed authorization matrix passed. Instructions 0011, 0013, 0014, and 0015
+each consumed their independently marked runtime call; the final closure is
+`ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED` with
+`RUNTIME_AUTHORIZATION_REJECTED` and no bounded diagnostic body. Final
+remote-development review remains incomplete. Company handoff is
 `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`. No company-PC
 carriage, Workspace action, deployment, Automation enablement, or Phase 8B
 functional acceptance is authorized by this plan. This does not declare T1-01

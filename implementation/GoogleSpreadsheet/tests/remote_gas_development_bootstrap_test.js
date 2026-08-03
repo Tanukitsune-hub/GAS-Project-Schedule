@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert');
+const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -193,9 +194,10 @@ test('BOOT-08_PACKAGE_SCRIPTS_EXPOSE_CANONICAL_AND_RUNTIME_LANES', () => {
     'gas:test:runtime-dev:0013',
     'gas:prepare-runtime-retry:0014',
     'gas:preflight-runtime-retry:0014',
-    'gas:test:runtime-dev:0014',
-    'gas:test:runtime-dev'
+    'gas:test:runtime-dev:0014'
   ].forEach((name) => assert.strictEqual(typeof packageJson.scripts[name], 'string'));
+  assert.strictEqual(packageJson.scripts['gas:test:runtime-dev'], undefined);
+  assert.strictEqual(packageJson.scripts['gas:test:dev'], undefined);
 });
 
 test('BOOT-09_LOCAL_SECRET_DIRECTORIES_REMAIN_IGNORED', () => {
@@ -567,7 +569,7 @@ test('BOOT-27_RUNTIME_MANIFEST_FORCE_IS_SCOPED_AND_NOOP_FAILS_CLOSED', () => {
     /runClasp\(\['push',\s*['"]--force['"]\],\s*devRoot\)/);
 });
 
-test('BOOT-28_RUNTIME_AUTH_NORESULT_IS_CLOSED_AND_SECOND_ATTEMPT_IS_BLOCKED', () => {
+test('BOOT-28_GENERIC_RUNTIME_COMMAND_IS_RETIRED_AND_HISTORICAL_RESULT_REMAINS_CLASSIFIABLE', () => {
   assert.strictEqual(
     classifyClaspFailure(
       'Unable to run script function. Please make sure you have permission.',
@@ -575,21 +577,26 @@ test('BOOT-28_RUNTIME_AUTH_NORESULT_IS_CLOSED_AND_SECOND_ATTEMPT_IS_BLOCKED', ()
     ),
     'BLOCKED_BY_AUTH'
   );
-  const runtimeCommand = claspToolSource.indexOf("if (command === 'test' || command === 'test-runtime')");
-  const priorAttemptGuard = claspToolSource.indexOf(
-    'assertRuntimeDiagnosticNotPreviouslyAttempted();',
-    runtimeCommand
+  const runtimeCommand = claspToolSource.indexOf(
+    "if (command === 'test' || command === 'test-runtime')"
   );
-  const googleAttempt = claspToolSource.indexOf(
-    "googleOperation = 'ATTEMPTED';",
-    priorAttemptGuard
+  const stageCommand = claspToolSource.indexOf("if (command === 'stage')", runtimeCommand);
+  const genericCommandSegment = claspToolSource.slice(runtimeCommand, stageCommand);
+  assert.ok(runtimeCommand >= 0 && stageCommand > runtimeCommand);
+  assert.match(genericCommandSegment, /RUNTIME_GENERIC_COMMAND_RETIRED/);
+  assert.doesNotMatch(genericCommandSegment, /runClasp\(/);
+  assert.doesNotMatch(genericCommandSegment, /googleOperation\s*=\s*'ATTEMPTED'/);
+  assert.strictEqual(packageJson.scripts['gas:test:runtime-dev'], undefined);
+  assert.strictEqual(packageJson.scripts['gas:test:dev'], undefined);
+  const retiredInvocation = childProcess.spawnSync(
+    process.execPath,
+    [path.join(moduleRoot, 'tools', 'local_clasp_dev.js'), 'test-runtime'],
+    { encoding: 'utf8' }
   );
-  const remoteCall = claspToolSource.indexOf(
-    'runClasp(args, runtimeRoot)',
-    googleAttempt
-  );
-  assert.ok(runtimeCommand >= 0 && priorAttemptGuard > runtimeCommand);
-  assert.ok(googleAttempt > priorAttemptGuard && remoteCall > googleAttempt);
+  assert.strictEqual(retiredInvocation.status, 2);
+  const safeResult = JSON.parse(retiredInvocation.stdout);
+  assert.strictEqual(safeResult.status, 'RUNTIME_GENERIC_COMMAND_RETIRED');
+  assert.strictEqual(safeResult.google_operation, 'NOT_EXECUTED');
   assert.match(claspToolSource, /DEV_RUNTIME_ALREADY_ATTEMPTED/);
   assert.match(claspToolSource, /last-test-runtime\.json/);
 });

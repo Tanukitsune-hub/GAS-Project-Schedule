@@ -21,6 +21,11 @@ assert.strictEqual(
   false
 );
 assert.strictEqual(hasTrackedScriptId(`{"scriptId":"${'A'.repeat(24)}"}`), true);
+assert.strictEqual(
+  hasTrackedScriptId('{"expected_script_id":"REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID"}'),
+  false
+);
+assert.strictEqual(hasTrackedScriptId(`{"expected_script_id":"${'B'.repeat(24)}"}`), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/.clasp.json'), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/credentials.local.json'), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/.env.example'), false);
@@ -28,7 +33,7 @@ assert.strictEqual(isForbiddenCredentialPath('nested/.clasp.example.json'), fals
 
 process.stdout.write(`${JSON.stringify({
   suite: 'local_validation_secret_scan',
-  passed: 11,
+  passed: 13,
   failed: 0,
   policy: 'changed_content_and_tracked_path_guards'
 }, null, 2)}\n`);

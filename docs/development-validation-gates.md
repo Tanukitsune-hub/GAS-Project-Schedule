@@ -63,13 +63,18 @@ release/transfer artifacts remain immutable historical evidence; T11 is
 | `gas:runtime-config:dev` | Self PC | Local secret input only | Closed Cloud/OAuth/deployment attestations and a masked deployment binding under ignored local state. |
 | `gas:push:runtime-dev` | Self PC | Named local OAuth only | Guarded same-target runtime-overlay push after Cloud/OAuth prerequisites; clasp `--force` is confined to the ignored MYSELF-only manifest overlay. |
 | `gas:pull-verify:runtime-dev` | Self PC | Named local OAuth only | Separate runtime pull-back and exact dev-runtime payload parity. |
-| `gas:test:runtime-dev` | Self PC | Named local OAuth only | Exactly one `runQuickDiagnostic`; bounded complete IDs and false side effects. |
+| Retired generic `test-runtime` command | Self PC | No | Fails `RUNTIME_GENERIC_COMMAND_RETIRED` before any Google operation. The former unversioned package aliases are removed and cannot replay a historical attempt. |
 | `gas:prepare-runtime-retry:0013` | Self PC | No | Preserves the Instruction 0011 failed-attempt record and creates one separate ignored Instruction 0013 marker before any new Google call. |
 | `gas:preflight-runtime-retry:0013` | Self PC | Named local OAuth, read-only | Lists deployments once and records only closed counts/Booleans proving the ignored local binding is one visible versioned deployment, not HEAD-only. |
 | `gas:test:runtime-dev:0013` | Self PC | Named local OAuth only | Requires the passed Instruction 0013 preflight, marks the attempt before the call, and invokes only `runQuickDiagnostic` once with clasp `--nondev`. |
 | `gas:prepare-runtime-retry:0014` | Self PC | No | Preserves 0011/0013 attempts and proves staged/pulled top-level wrapper, exact function name, overlay parity, and local clasp run semantics before creating a separate 0014 marker. |
 | `gas:preflight-runtime-retry:0014` | Self PC | Named local OAuth; one explicit personal-synthetic deployment opt-in | Re-pulls runtime HEAD, creates one fresh MYSELF-only immutable version/deployment, pulls that exact version back, proves wrapper/manifest/hash lineage, and prepares an ignored deployment-bound execution context. It never invokes a script function. |
 | `gas:test:runtime-dev:0014` | Self PC | Named local OAuth only | Requires every 0014 lineage proof, marks the one-use attempt first, and invokes exactly `runQuickDiagnostic` once with `--nondev` against the API-executable deployment binding. |
+| `gas:reauthorize:runtime-dev:0015` | Self PC | Local-only OAuth state | Forces refresh of the existing named local profile; it does not invoke a script function. |
+| `gas:authorization-matrix:runtime-dev:0015` | Self PC | Named local OAuth; read-only metadata | Records only closed authorization-matrix evidence and preserves ownership uncertainty. |
+| `gas:prepare-runtime-retry:0015` | Self PC | No | Preserves 0011/0013/0014 evidence and creates the separate 0015 one-use marker. |
+| `gas:preflight-runtime-retry:0015` | Self PC | Named local OAuth; one explicit personal-synthetic deployment opt-in | Proves fresh deployment lineage and execution context without invoking a script function. |
+| `gas:test:runtime-dev:0015` | Self PC | Named local OAuth only | Historical one-use lane; its preserved marker prevents replay. A later instruction must define any new diagnostic lane. |
 
 GitHub Actions uses read-only repository permission and must not use clasp,
 Google authentication, credentials, secrets, or a script identifier. CI is
