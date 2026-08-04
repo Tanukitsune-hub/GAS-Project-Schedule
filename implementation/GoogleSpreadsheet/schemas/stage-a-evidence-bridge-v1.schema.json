@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gas-project-schedule:stage-a-evidence-bridge:v1",
+  "title": "Synthetic Stage A evidence bridge contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_id", "bindings", "records"],
+  "properties": {
+    "schema_id": { "const": "GAS_STAGE_A_EVIDENCE_BRIDGE_V1" },
+    "bindings": { "$ref": "#/$defs/closedBindings" },
+    "records": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/evidenceRecord" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "requirementKey": {
+      "enum": [
+        "target_personal_synthetic_non_company",
+        "target_intended_bound_sandbox",
+        "automation_off",
+        "test_mode_true_where_applicable",
+        "oauth_client_standard_cloud_project_equality",
+        "apps_script_api_project_enablement",
+        "oauth_audience_client_equality",
+        "required_scope_coverage",
+        "token_validity_threshold",
+        "oauth_principal_myself_identity_equality",
+        "immutable_api_executable_deployment_binding",
+        "execution_target_is_api_executable_deployment_id",
+        "execution_api_target_semantics",
+        "function_and_version_lineage",
+        "script_project_ownership_evidence",
+        "bound_container_ownership_evidence",
+        "cross_domain_transfer_shared_drive_absent",
+        "prior_attempt_markers_preserved"
+      ]
+    },
+    "evidenceStatus": {
+      "enum": [
+        "DIRECTLY_VERIFIED",
+        "LOCALLY_ATTESTED",
+        "INFERRED",
+        "UNKNOWN_NOT_EXPOSED",
+        "CONTRADICTED"
+      ]
+    },
+    "verificationMethod": {
+      "enum": [
+        "OFFICIAL_API_CURRENT_STATE",
+        "OPERATOR_UI_PROJECT_LINK",
+        "FRESH_SAME_PRINCIPAL_MUTATION_PROVENANCE",
+        "LOCAL_CRYPTOGRAPHIC_BINDING"
+      ]
+    },
+    "sourceCategory": {
+      "enum": [
+        "SYNTHETIC_OFFICIAL_API_CURRENT_STATE",
+        "SYNTHETIC_OPERATOR_UI_PROJECT_LINK",
+        "SYNTHETIC_FRESH_SAME_PRINCIPAL_MUTATION_PROVENANCE",
+        "SYNTHETIC_LOCAL_CRYPTOGRAPHIC_BINDING",
+        "SYNTHETIC_UNRESOLVED"
+      ]
+    },
+    "phase": {
+      "enum": [
+        "CURRENT_STATE",
+        "OPERATOR_PROJECT_LINK",
+        "FRESH_OPERATION_PROVENANCE",
+        "LOCAL_CRYPTOGRAPHIC_BINDING",
+        "NOT_VERIFIED"
+      ]
+    },
+    "closedBindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_attestation_sha256",
+        "oauth_current_state_sha256",
+        "transport_semantics_sha256",
+        "oauth_client_project_number_sha256",
+        "operator_ui_project_number_sha256",
+        "operator_project_link_sha256",
+        "verified_principal_sha256",
+        "script_ownership_snapshot_sha256",
+        "bound_container_ownership_snapshot_sha256",
+        "parent_binding_sha256",
+        "ownership_current_state_sha256",
+        "mutation_marker_sha256",
+        "deployment_identifier_sha256",
+        "deployment_response_sha256",
+        "deployment_reconciliation_sha256",
+        "fresh_provenance_sha256",
+        "prior_markers_sha256",
+        "immutable_version_number"
+      ],
+      "properties": {
+        "target_attestation_sha256": { "$ref": "#/$defs/sha256" },
+        "oauth_current_state_sha256": { "$ref": "#/$defs/sha256" },
+        "transport_semantics_sha256": { "$ref": "#/$defs/sha256" },
+        "oauth_client_project_number_sha256": { "$ref": "#/$defs/sha256" },
+        "operator_ui_project_number_sha256": { "$ref": "#/$defs/sha256" },
+        "operator_project_link_sha256": { "$ref": "#/$defs/sha256" },
+        "verified_principal_sha256": { "$ref": "#/$defs/sha256" },
+        "script_ownership_snapshot_sha256": { "$ref": "#/$defs/sha256" },
+        "bound_container_ownership_snapshot_sha256": { "$ref": "#/$defs/sha256" },
+        "parent_binding_sha256": { "$ref": "#/$defs/sha256" },
+        "ownership_current_state_sha256": { "$ref": "#/$defs/sha256" },
+        "mutation_marker_sha256": { "$ref": "#/$defs/sha256" },
+        "deployment_identifier_sha256": { "$ref": "#/$defs/sha256" },
+        "deployment_response_sha256": { "$ref": "#/$defs/sha256" },
+        "deployment_reconciliation_sha256": { "$ref": "#/$defs/sha256" },
+        "fresh_provenance_sha256": { "$ref": "#/$defs/sha256" },
+        "prior_markers_sha256": { "$ref": "#/$defs/sha256" },
+        "immutable_version_number": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "closedChecks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cryptographic_equality",
+        "current_state_verified",
+        "current_ownership_checks_complete",
+        "verified_principal_matches_operation",
+        "deployment_after_ownership_checks",
+        "fresh_operation",
+        "stale_provenance",
+        "immutable_version",
+        "api_executable_myself",
+        "shared_drive_absent",
+        "pending_owner_absent",
+        "historical_transfer_proof_required"
+      ],
+      "properties": {
+        "cryptographic_equality": { "type": "boolean" },
+        "current_state_verified": { "type": "boolean" },
+        "current_ownership_checks_complete": { "type": "boolean" },
+        "verified_principal_matches_operation": { "type": "boolean" },
+        "deployment_after_ownership_checks": { "type": "boolean" },
+        "fresh_operation": { "type": "boolean" },
+        "stale_provenance": { "type": "boolean" },
+        "immutable_version": { "type": "boolean" },
+        "api_executable_myself": { "type": "boolean" },
+        "shared_drive_absent": { "type": "boolean" },
+        "pending_owner_absent": { "type": "boolean" },
+        "historical_transfer_proof_required": { "type": "boolean" },
+        "script_file_owned_by_principal": { "type": "boolean" },
+        "bound_container_file_owned_by_principal": { "type": "boolean" },
+        "single_current_owner_each_file": { "type": "boolean" },
+        "owner_domain_equal": { "type": "boolean" },
+        "parent_binding_equal": { "type": "boolean" },
+        "permission_enumeration_complete": { "type": "boolean" },
+        "script_drive_id_absent": { "type": "boolean" },
+        "bound_container_drive_id_absent": { "type": "boolean" },
+        "script_owned_by_me": { "type": "boolean" },
+        "bound_container_owned_by_me": { "type": "boolean" },
+        "script_single_current_owner": { "type": "boolean" },
+        "bound_container_single_current_owner": { "type": "boolean" },
+        "script_current_owner_principal_equal": { "type": "boolean" },
+        "bound_container_current_owner_principal_equal": { "type": "boolean" },
+        "script_owner_domain_equal": { "type": "boolean" },
+        "bound_container_owner_domain_equal": { "type": "boolean" },
+        "script_permission_enumeration_complete": { "type": "boolean" },
+        "bound_container_permission_enumeration_complete": { "type": "boolean" },
+        "script_shared_drive_absent": { "type": "boolean" },
+        "bound_container_shared_drive_absent": { "type": "boolean" },
+        "script_pending_owner_absent": { "type": "boolean" },
+        "bound_container_pending_owner_absent": { "type": "boolean" },
+        "mutation_marker_before_request": { "type": "boolean" },
+        "exactly_one_immutable_version": { "type": "boolean" },
+        "exactly_one_myself_deployment": { "type": "boolean" },
+        "deployment_response_reconciled": { "type": "boolean" },
+        "read_only_reconciliation_exact": { "type": "boolean" },
+        "immutable_version_number": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "evidenceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_key",
+        "evidence_status",
+        "verification_method",
+        "sequence",
+        "evidence_fingerprint",
+        "binding_fingerprint",
+        "source_category",
+        "phase",
+        "operator_evidence_consumed",
+        "raw_value_retained",
+        "checks"
+      ],
+      "properties": {
+        "requirement_key": { "$ref": "#/$defs/requirementKey" },
+        "evidence_status": { "$ref": "#/$defs/evidenceStatus" },
+        "verification_method": {
+          "anyOf": [
+            { "$ref": "#/$defs/verificationMethod" },
+            { "type": "null" }
+          ]
+        },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "evidence_fingerprint": { "$ref": "#/$defs/sha256" },
+        "binding_fingerprint": { "$ref": "#/$defs/sha256" },
+        "source_category": { "$ref": "#/$defs/sourceCategory" },
+        "phase": { "$ref": "#/$defs/phase" },
+        "operator_evidence_consumed": { "type": "boolean" },
+        "raw_value_retained": { "const": false },
+        "checks": { "$ref": "#/$defs/closedChecks" }
+      }
+    }
+  }
+}

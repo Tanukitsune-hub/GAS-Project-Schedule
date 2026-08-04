@@ -308,3 +308,86 @@ real target, authorize a mutation, or create a Stage A snapshot. Any later
 instruction must resolve the platform-evidence conflict through an explicitly
 reviewed architecture decision before it can treat a Stage A snapshot as
 all-direct.
+
+## Instruction 0022 Stage A evidence bridge
+
+Instruction 0022 corrects the feasibility model without weakening the
+all-`DIRECTLY_VERIFIED` requirement. A direct result is now valid only when it
+has an approved verification method, passes the method's closed checks, has a
+sequence-ordering record, and exposes no raw value. The only permitted methods
+are `OFFICIAL_API_CURRENT_STATE`, `OPERATOR_UI_PROJECT_LINK`,
+`FRESH_SAME_PRINCIPAL_MUTATION_PROVENANCE`, and
+`LOCAL_CRYPTOGRAPHIC_BINDING`.
+
+The synthetic normalizer fixes a required method and a required closed binding
+fingerprint for all 18 requirements. It recomputes the Cloud-project UI-link,
+current-ownership, and fresh-provenance composite SHA-256 bindings before it
+can construct a snapshot. This prevents a generic local binding or a
+self-reported Boolean from satisfying an unrelated direct requirement.
+
+### Cloud-project linkage
+
+The Apps Script Project resource does not return the standard Cloud-project
+association, while the Apps Script settings guidance identifies Project
+Settings > Google Cloud Project as the official UI location for its project
+number. A later authorized tool must obtain the OAuth-client project number
+from an authoritative local/configured source without pattern-inference, reduce
+it to an ignored local SHA-256 fingerprint, and compare it in memory with one
+non-echoing operator entry of the Settings value. It retains only the equality
+Boolean, method, sequence bucket, combined fingerprint, and
+`raw_value_retained: false`.
+
+The UI observation is direct only if the target has already been tied to the
+same current-state session, digit normalization succeeds, and the two hashes
+are exactly equal. The future command is intentionally not implemented here:
+the tracked placeholder returns
+`STAGE_A_OPERATOR_EVIDENCE_CAPTURE_NOT_AUTHORIZED` before it reads input,
+files, environment state, OAuth, a browser, a Google client, or a network.
+
+### Ownership and fresh deployment provenance
+
+The bridge replaces the impossible demand for a deployment-resource deployer
+field with an exact fresh-operation chain. A later authorization must first
+prove current script and bound-container Drive state: My Drive only, one current
+owner, `ownedByMe`, owner/principal equality in memory, owner-domain equality
+in memory, parent binding equality, no Shared Drive, and no `pendingOwner`
+across complete permission enumeration. Every retained value is a Boolean,
+count, approved enum, or SHA-256 fingerprint.
+
+For a direct current-state result, the closed contract independently requires,
+for each script and container file, `driveId` absence, `ownedByMe`, one current
+owner, current-owner/principal equality, current owner-domain equality,
+complete permission enumeration, absent Shared Drive, and absent
+`pendingOwner`, plus Apps Script parent/container equality.
+
+Only after those direct current-state checks may one ignored pre-mutation
+marker bind the directly verified principal fingerprint and current-state
+snapshot to one immutable version and one MYSELF API-executable deployment.
+The response is reduced to a deployment fingerprint and allowed version value,
+then reconciled read-only against the same immutable version, API entry point,
+MYSELF access, and snapshot fingerprint. A deployment made before the ownership
+checks, by another principal, without exact reconciliation, or with stale
+provenance is rejected. No second deployment, `scripts.run`, clasp run-function,
+or application function is allowed by this design.
+
+The fresh-provenance binding deterministically covers the verified principal,
+ownership snapshot, pre-mutation marker, deployment identifier/response/
+reconciliation fingerprints, and immutable version number. The contract also
+requires marker-before-request, exactly-one-version, exactly-one-deployment,
+and exact read-only-reconciliation checks.
+
+The documented ownership-change remediation is redeployment in the current
+domain or Shared Drive. The bridge therefore requires fresh post-check
+deployment provenance, not impossible proof of complete ownership-transfer
+history. A current Shared Drive or pending-owner condition blocks this
+non-Shared-Drive contract and requires a later architecture decision.
+
+### Synthetic-only contract
+
+The bridge schema, normalizer, deterministic SHA-256 snapshot model, fixtures,
+and regression tests are local-only. They reject raw project numbers, IDs,
+emails, URLs, screenshots, paths, free-form evidence, unknown methods,
+methodless direct results, incomplete all-direct snapshots, stale deployment
+provenance, and ownership conflicts. A structural all-direct snapshot is
+`STAGE_A_EVIDENCE_BRIDGE_SYNTHETIC_SNAPSHOT_READY_ONLY` only: Stage B remains
+unstarted, retry remains false, and no remote or function path exists.

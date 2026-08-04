@@ -22,6 +22,31 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0022 Stage A evidence bridge
+
+Instruction 0022 preserves Instruction 0021's historical
+`STAGE_A_BLOCKED_NEEDS_OPERATOR_OR_PLATFORM_EVIDENCE` result and adds only a
+synthetic, no-call evidence bridge. Its selected design outcome is
+`STAGE_A_EVIDENCE_BRIDGE_READY_FOR_SINGLE_OPERATOR_SESSION`: it does not
+establish a fresh Stage A pass, create a deployment, or authorize Stage B.
+
+The bridge keeps the all-`DIRECTLY_VERIFIED` rule. A direct result now also
+requires one approved verification method, its closed method-specific checks,
+and a non-identifying evidence fingerprint. The future Cloud-project link uses
+one bounded Apps Script Project Settings observation plus a non-echoing,
+in-memory project-number comparison. Current Drive ownership, parent binding,
+Shared Drive, and pending-owner observations are separately required for both
+the script and bound container. A fresh immutable MYSELF deployment can prove
+the new deployment's same-principal provenance only after those current-state
+checks; it is not treated as a complete ownership-transfer history.
+
+No active prompt, OAuth/profile or target read, Google/Drive/Apps Script API
+operation, browser action, deployment, function invocation, or Stage B marker
+exists in the tracked implementation. Functional runtime acceptance remains
+`ATTEMPTED_FAILED_CLOSED` / `REVIEW_REQUIRED`; Automation remains OFF, T11
+remains `T11_SUSPENDED`, and company handoff remains
+`NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW`.
+
 ## Instruction 0021 Stage A direct-verification closure
 
 Instruction 0021 inspected the current official API surface and the existing

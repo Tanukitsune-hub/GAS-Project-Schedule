@@ -18,6 +18,7 @@
     "verify:release": "node tools/local_validation_gate.js --section release",
     "verify:transfer": "node tools/local_validation_gate.js --section transfer",
     "auth:diagnostic:placeholder:0019": "node tools/auth_diagnostic_design.js",
+    "gas:stage-a:operator-evidence-placeholder:0022": "node tools/stage_a_operator_evidence_capture.js",
     "gas:stage:dev": "node tools/local_clasp_dev.js stage",
     "gas:bind:dev": "node tools/local_clasp_dev.js bind-target",
     "gas:prerequisites:dev": "node tools/local_clasp_dev.js record-prerequisites",
