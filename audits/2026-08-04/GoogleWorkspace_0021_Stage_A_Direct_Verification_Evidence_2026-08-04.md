@@ -102,11 +102,28 @@ no-mutation decision. The existing disabled placeholder remains unchanged and
 continues to return `AUTH_DIAGNOSTIC_EXECUTION_NOT_AUTHORIZED` before any
 environment, file, credential, OAuth, clasp, Google-client, or network access.
 
-## Validation and publication
+## Local validation and publication boundary
 
-The full required local validation, secret/identifier scans, normal Git
-publication, and push/pull-request CI are recorded after they complete. No CI
-job may use Google credentials, OAuth state, clasp remote, or a Google API.
+On the clean committed Stage A0 contract tree, all required local checks passed:
+
+| Check | Result |
+|---|---|
+| `pnpm install --frozen-lockfile` | `PASS`; lockfile unchanged |
+| `pnpm run verify:local` | `11/11 PASS`; `55` Node suites |
+| Stage A0 synthetic contract | `8/8 PASS` |
+| Instruction 0019 disabled placeholder | `12/12 PASS` |
+| Instruction 0020 architecture | `15/15 PASS` |
+| Secret/credential/identifier/local-path scan | `13/13 PASS`; `0` changed-text hits |
+| Canonical-document consistency | `23/23 PASS` |
+| Remote GAS bootstrap synthetic regression | `38/38 PASS` |
+| Local clasp self-test | `34/34 PASS` |
+| `git diff --check` | `PASS` |
+
+All listed tests are local and non-Google. The Stage A0 module has no
+environment, filesystem, OAuth, clasp, Google-client, HTTP, or network path.
+Normal publication and the final push/pull-request CI are recorded only after
+they complete. No CI job may use Google credentials, OAuth state, clasp remote,
+or a Google API.
 
 ## Retained boundaries
 
