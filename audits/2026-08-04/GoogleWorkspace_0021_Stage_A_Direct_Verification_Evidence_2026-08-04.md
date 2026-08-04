@@ -125,6 +125,27 @@ Normal publication and the final push/pull-request CI are recorded only after
 they complete. No CI job may use Google credentials, OAuth state, clasp remote,
 or a Google API.
 
+## Publication addendum
+
+This additive record captures the normal publication and CI evidence for the
+validated Stage A0 evidence head immediately before this addendum:
+
+| Field | Closed-safe value |
+|---|---|
+| Evidence-publication head | `75a14efe20be4913d0ef6b00eb7f61a101777cfc` |
+| Push CI | run `30892643577` / job `91938083520` / `SUCCESS` |
+| Pull-request CI | run `30892647610` / job `91938097798` / `SUCCESS` |
+| Required steps | `9/9` successful for each job; none failed, cancelled, skipped, pending, or unexecuted |
+| CI commands | locked install and the non-Google verification gate completed successfully |
+| PR metadata | title/body updated for Instructions 0010–0021; PR remained Draft |
+
+The workflow uses read-only repository permissions and has no Google
+credential context or remote clasp command. Its logs were inspected without
+retaining raw output; no `scripts.run` or clasp remote command was logged.
+The normal self-referential CI evidence for this publication addendum's own
+commit is retained in the privacy-safe PR completion comment rather than
+creating an unnecessary audit-only commit chain.
+
 ## Retained boundaries
 
 Functional runtime acceptance remains `ATTEMPTED_FAILED_CLOSED` /
