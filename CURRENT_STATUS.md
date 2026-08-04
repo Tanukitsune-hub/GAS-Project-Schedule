@@ -22,6 +22,30 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0021 Stage A direct-verification closure
+
+Instruction 0021 inspected the current official API surface and the existing
+fail-closed local design before reading any ignored OAuth/profile, ignored
+target binding, ignored marker, or Google target metadata. The actual Apps
+Script/standard Cloud-project linkage and the MYSELF deployment-deployer/
+OAuth-principal equality are not directly exposed by the permitted resources.
+Current owner or pending-owner metadata would not establish complete
+cross-domain/ownership-transfer/Shared Drive safety either.
+
+The selected Stage A0 result is
+`STAGE_A_BLOCKED_NEEDS_OPERATOR_OR_PLATFORM_EVIDENCE`: `1`
+`DIRECTLY_VERIFIED`, `12` `LOCALLY_ATTESTED`, `0` `INFERRED`, `5`
+`UNKNOWN_NOT_EXPOSED`, and `0` `CONTRADICTED`. No target mutation, probe
+staging, version/deployment creation, Stage B marker, OAuth/profile read,
+Google metadata call, `scripts.run`, clasp run-function, or function invocation
+occurred. The all-direct Stage A snapshot SHA-256 is not available because an
+all-direct snapshot was not eligible.
+
+This is a platform-evidence closure, not a Google-side root-cause claim.
+Functional runtime acceptance remains `ATTEMPTED_FAILED_CLOSED` /
+`REVIEW_REQUIRED`; Automation remains OFF and all company boundaries remain
+unchanged.
+
 ## Instruction 0020 remote-only authorization diagnostic architecture
 
 Instruction 0020 selects only a future architecture: the future transport is

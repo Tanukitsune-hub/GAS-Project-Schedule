@@ -1,0 +1,48 @@
+{
+  "all_direct_synthetic": {
+    "target_personal_synthetic_non_company": "DIRECTLY_VERIFIED",
+    "target_intended_bound_sandbox": "DIRECTLY_VERIFIED",
+    "automation_off": "DIRECTLY_VERIFIED",
+    "test_mode_true_where_applicable": "DIRECTLY_VERIFIED",
+    "oauth_client_standard_cloud_project_equality": "DIRECTLY_VERIFIED",
+    "apps_script_api_project_enablement": "DIRECTLY_VERIFIED",
+    "oauth_audience_client_equality": "DIRECTLY_VERIFIED",
+    "required_scope_coverage": "DIRECTLY_VERIFIED",
+    "token_validity_threshold": "DIRECTLY_VERIFIED",
+    "oauth_principal_myself_identity_equality": "DIRECTLY_VERIFIED",
+    "immutable_api_executable_deployment_binding": "DIRECTLY_VERIFIED",
+    "execution_target_is_api_executable_deployment_id": "DIRECTLY_VERIFIED",
+    "execution_api_target_semantics": "DIRECTLY_VERIFIED",
+    "function_and_version_lineage": "DIRECTLY_VERIFIED",
+    "script_project_ownership_evidence": "DIRECTLY_VERIFIED",
+    "bound_container_ownership_evidence": "DIRECTLY_VERIFIED",
+    "cross_domain_transfer_shared_drive_absent": "DIRECTLY_VERIFIED",
+    "prior_attempt_markers_preserved": "DIRECTLY_VERIFIED"
+  },
+  "platform_evidence_unexposed": {
+    "target_personal_synthetic_non_company": "LOCALLY_ATTESTED",
+    "target_intended_bound_sandbox": "LOCALLY_ATTESTED",
+    "automation_off": "LOCALLY_ATTESTED",
+    "test_mode_true_where_applicable": "LOCALLY_ATTESTED",
+    "oauth_client_standard_cloud_project_equality": "UNKNOWN_NOT_EXPOSED",
+    "apps_script_api_project_enablement": "LOCALLY_ATTESTED",
+    "oauth_audience_client_equality": "LOCALLY_ATTESTED",
+    "required_scope_coverage": "LOCALLY_ATTESTED",
+    "token_validity_threshold": "LOCALLY_ATTESTED",
+    "oauth_principal_myself_identity_equality": "UNKNOWN_NOT_EXPOSED",
+    "immutable_api_executable_deployment_binding": "LOCALLY_ATTESTED",
+    "execution_target_is_api_executable_deployment_id": "LOCALLY_ATTESTED",
+    "execution_api_target_semantics": "DIRECTLY_VERIFIED",
+    "function_and_version_lineage": "LOCALLY_ATTESTED",
+    "script_project_ownership_evidence": "UNKNOWN_NOT_EXPOSED",
+    "bound_container_ownership_evidence": "UNKNOWN_NOT_EXPOSED",
+    "cross_domain_transfer_shared_drive_absent": "UNKNOWN_NOT_EXPOSED",
+    "prior_attempt_markers_preserved": "LOCALLY_ATTESTED"
+  },
+  "target_attestation_not_direct": {
+    "target_personal_synthetic_non_company": "LOCALLY_ATTESTED"
+  },
+  "contradicted": {
+    "automation_off": "CONTRADICTED"
+  }
+}

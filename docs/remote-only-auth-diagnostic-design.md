@@ -278,3 +278,33 @@ free-form fields. `retry_permitted` is always `false`.
 The architecture adds synthetic schema, fixture, normalizer, classifier, and
 marker-state tests for these rules. It does not add a transport implementation
 or a runnable probe.
+
+## Instruction 0021 Stage A0 direct-verification closure
+
+Instruction 0021 adds a separate synthetic Stage A0 evidence schema and
+decision model for the target-attestation fields that are more specific than
+the original architecture model: personal/synthetic/non-company target,
+intended bound sandbox, Automation OFF, and TEST_MODE true where applicable.
+It keeps the existing mandatory project, identity, deployment, ownership, and
+prior-marker requirements.
+
+The current official API surface proves the transport semantic but does not
+expose the actual Apps Script/standard Cloud-project linkage or the identity
+of the user who created an existing MYSELF API-executable deployment. Project
+creator metadata is not a substitute for either field. Drive metadata can at
+most provide current ownership, shared-drive state, and a pending-owner
+observation when authorized; it is not a complete ownership-transfer history.
+
+Therefore the actual Stage A0 result is
+`STAGE_A_BLOCKED_NEEDS_OPERATOR_OR_PLATFORM_EVIDENCE`, with no ignored
+credential/profile/binding read and no Google metadata operation. The synthetic
+model has `1` directly verified transport-semantic field, `12` locally
+attested historical fields, and `5` unavailable fields. It blocks target
+mutation, overlay staging, version/deployment creation, Stage B marker
+creation, `scripts.run`, clasp run-function, and every function invocation.
+
+The all-direct fixture remains only a structural test: it does not establish a
+real target, authorize a mutation, or create a Stage A snapshot. Any later
+instruction must resolve the platform-evidence conflict through an explicitly
+reviewed architecture decision before it can treat a Stage A snapshot as
+all-direct.
