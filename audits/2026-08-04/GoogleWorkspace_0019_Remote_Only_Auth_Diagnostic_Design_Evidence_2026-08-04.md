@@ -123,3 +123,30 @@ authorization are not established.
 No secret, credential, OAuth material, account detail, actual Google
 identifier, Workspace URL, local absolute path, raw remote output, company
 data, personal data, or real data is included in this evidence.
+
+## Final publication addendum
+
+This additive publication record completes the Instruction 0019 evidence; it
+does not rewrite the historical design, local-validation, or non-execution
+facts above.
+
+| Field | Closed-safe value |
+|---|---|
+| Implementation commit | `06a7cc4ad8066e87acae141ba10b48cdab887969` |
+| Final evidence/publication commit | `004f6bbd71caf3376afc18c0228d46c90e344572` |
+| Final remote HEAD | `004f6bbd71caf3376afc18c0228d46c90e344572` |
+| Push CI | run `30863009648` / job `91848840154` / `SUCCESS` |
+| Pull-request CI | run `30863012395` / job `91848848991` / `SUCCESS` |
+| Required steps | `9/9` successful for each job; none failed, cancelled, skipped, pending, or unexecuted |
+| PR body | cumulative privacy-safe update completed; PR remained Draft |
+
+The final publication verification rechecked the two preserved commits, clean
+working tree, final remote head, audit accessibility, PR state, and both CI
+runs. Locked installation and the non-Google verification gate succeeded in
+both runs. The workflow remained read-only and contained no Google credential,
+OAuth, clasp-remote, deployment, Apps Script API, Workspace, or real-data
+operation.
+
+The Instruction 0019 GitHub completion comment supplements this tracked audit
+with a review-facing summary; it does not replace this tracked evidence or add
+runtime authority.

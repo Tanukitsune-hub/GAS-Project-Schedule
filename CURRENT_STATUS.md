@@ -22,6 +22,39 @@ functional acceptance: `ATTEMPTED_FAILED_CLOSED`
 | Company handoff | `NO_GO_COMPANY_HANDOFF_PENDING_REMOTE_DEVELOPMENT_REVIEW` |
 <!-- CURRENT_TRANSFER_CONTRACT_END -->
 
+## Instruction 0020 remote-only authorization diagnostic architecture
+
+Instruction 0020 selects only a future architecture: the future transport is
+`DIRECT_REST_SCRIPTS_RUN`, and the first future probe is an ignored runtime-
+overlay constant-returning authorization probe. Neither selection adds an
+executable request, probe source, OAuth reader, clasp command, or operator-PC
+step to this branch. The existing disabled placeholder remains the only
+tracked command and still returns
+`AUTH_DIAGNOSTIC_EXECUTION_NOT_AUTHORIZED` before any environment, file,
+credential, OAuth, clasp, Google-client, or network access.
+
+The architecture adds a stricter Stage A vocabulary that includes
+`DIRECTLY_VERIFIED` and `CONTRADICTED`. The preserved primary-source finding
+and package-source inspection distinguish the configuration key name from the
+execution target: the future path must be an API-executable deployment target,
+not a Script-ID substitute. Current repository evidence is still not a fresh
+Stage A pass because actual target binding, ownership, and
+cross-domain/transfer/Shared Drive evidence require a later direct
+verification. A future call is forbidden unless every call-authorizing Stage A
+field is freshly `DIRECTLY_VERIFIED`. This is a fail-closed design fact, not a
+claim that a Google-side root cause is known.
+
+Stage B remains a pure model: a later Work-ID-specific ignored marker must
+persist `ATTEMPT_STARTED` before one allowed future dispatch, bind the exact
+immutable API-executable deployment, require `MYSELF`, prohibit HEAD/function
+fallbacks and follow-up diagnostics, then close with retry always false. A
+probe pass is explicitly not functional runtime acceptance. No Google,
+Workspace, Apps Script API, OAuth endpoint, Cloud API, clasp remote,
+deployment, runtime diagnostic, company, production, or real-data operation
+was performed. Functional acceptance remains `ATTEMPTED_FAILED_CLOSED` /
+`REVIEW_REQUIRED`; Automation remains OFF and all company-transfer boundaries
+remain unchanged.
+
 ## Instruction 0019 remote-only authorization diagnostic design
 
 Instruction 0019 adds only a local closed-field schema, normalizer,

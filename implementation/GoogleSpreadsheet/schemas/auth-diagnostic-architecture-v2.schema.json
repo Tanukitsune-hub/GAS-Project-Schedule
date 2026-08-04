@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:work-os:remote-only-auth-diagnostic:architecture:v2",
+  "title": "Synthetic-only future authorization diagnostic response contract",
+  "description": "Closed, redacted data contracts only. This schema does not authorize execution.",
+  "$ref": "#/$defs/safeResponse",
+  "$defs": {
+    "evidenceStatus": {
+      "type": "string",
+      "enum": [
+        "DIRECTLY_VERIFIED",
+        "LOCALLY_ATTESTED",
+        "INFERRED",
+        "UNKNOWN_NOT_EXPOSED",
+        "CONTRADICTED"
+      ]
+    },
+    "stageAEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "oauth_client_standard_cloud_project_equality",
+        "apps_script_api_project_enablement",
+        "oauth_audience_client_equality",
+        "required_scope_coverage",
+        "token_validity_threshold",
+        "oauth_principal_myself_identity_equality",
+        "immutable_api_executable_deployment_binding",
+        "execution_target_is_api_executable_deployment_id",
+        "execution_api_target_semantics",
+        "function_and_version_lineage",
+        "script_project_ownership_evidence",
+        "bound_container_ownership_evidence",
+        "cross_domain_transfer_shared_drive_absent",
+        "prior_attempt_markers_preserved"
+      ],
+      "properties": {
+        "oauth_client_standard_cloud_project_equality": { "$ref": "#/$defs/evidenceStatus" },
+        "apps_script_api_project_enablement": { "$ref": "#/$defs/evidenceStatus" },
+        "oauth_audience_client_equality": { "$ref": "#/$defs/evidenceStatus" },
+        "required_scope_coverage": { "$ref": "#/$defs/evidenceStatus" },
+        "token_validity_threshold": { "$ref": "#/$defs/evidenceStatus" },
+        "oauth_principal_myself_identity_equality": { "$ref": "#/$defs/evidenceStatus" },
+        "immutable_api_executable_deployment_binding": { "$ref": "#/$defs/evidenceStatus" },
+        "execution_target_is_api_executable_deployment_id": { "$ref": "#/$defs/evidenceStatus" },
+        "execution_api_target_semantics": { "$ref": "#/$defs/evidenceStatus" },
+        "function_and_version_lineage": { "$ref": "#/$defs/evidenceStatus" },
+        "script_project_ownership_evidence": { "$ref": "#/$defs/evidenceStatus" },
+        "bound_container_ownership_evidence": { "$ref": "#/$defs/evidenceStatus" },
+        "cross_domain_transfer_shared_drive_absent": { "$ref": "#/$defs/evidenceStatus" },
+        "prior_attempt_markers_preserved": { "$ref": "#/$defs/evidenceStatus" }
+      }
+    },
+    "stageBMarker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "authorization_state",
+        "separately_authorized_work_marker",
+        "work_marker_sha256",
+        "stage_a_preflight",
+        "stage_a_preflight_sha256",
+        "attempt_state",
+        "invocation_count",
+        "target_kind",
+        "deployment_binding_sha256",
+        "transport",
+        "probe_function",
+        "execution_api_access",
+        "head_fallback_allowed",
+        "target_fallback_allowed",
+        "function_fallback_allowed",
+        "follow_up_run_quick_diagnostic_allowed",
+        "retry_permitted",
+        "prior_attempt_markers_preserved"
+      ],
+      "properties": {
+        "contract_version": { "const": "AUTH_DIAGNOSTIC_STAGE_B_MARKER_V2" },
+        "authorization_state": {
+          "enum": [
+            "NOT_AUTHORIZED",
+            "AUTHORIZED_BY_SEPARATE_WORK_ID"
+          ]
+        },
+        "separately_authorized_work_marker": { "type": "boolean" },
+        "work_marker_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "stage_a_preflight": { "$ref": "#/$defs/stageAEvidence" },
+        "stage_a_preflight_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "attempt_state": {
+          "enum": [
+            "NOT_STARTED",
+            "ATTEMPT_STARTED",
+            "ATTEMPT_CLOSED"
+          ]
+        },
+        "invocation_count": { "type": "integer", "minimum": 0, "maximum": 1 },
+        "target_kind": { "const": "API_EXECUTABLE_DEPLOYMENT_ID" },
+        "deployment_binding_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "transport": { "const": "DIRECT_REST_SCRIPTS_RUN" },
+        "probe_function": { "const": "IGNORED_RUNTIME_OVERLAY_CONSTANT_AUTHORIZATION_PROBE" },
+        "execution_api_access": { "const": "MYSELF" },
+        "head_fallback_allowed": { "const": false },
+        "target_fallback_allowed": { "const": false },
+        "function_fallback_allowed": { "const": false },
+        "follow_up_run_quick_diagnostic_allowed": { "const": false },
+        "retry_permitted": { "const": false },
+        "prior_attempt_markers_preserved": { "type": "boolean" }
+      }
+    },
+    "safeResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "attempt_state",
+        "http_status",
+        "google_api_status",
+        "normalized_reason",
+        "operation_object_returned",
+        "script_started",
+        "probe_contract_returned",
+        "all_side_effects_false",
+        "response_sha256",
+        "elapsed_time_bucket",
+        "retry_permitted"
+      ],
+      "properties": {
+        "contract_version": { "const": "AUTH_DIAGNOSTIC_SAFE_RESPONSE_V2" },
+        "attempt_state": { "const": "ATTEMPT_CLOSED" },
+        "http_status": { "type": "integer", "minimum": 0, "maximum": 599 },
+        "google_api_status": {
+          "enum": [
+            "NO_RESPONSE",
+            "OK",
+            "UNAUTHENTICATED",
+            "PERMISSION_DENIED",
+            "NOT_FOUND",
+            "INTERNAL",
+            "UNKNOWN"
+          ]
+        },
+        "normalized_reason": {
+          "enum": [
+            "AUTH_DIAGNOSTIC_CALLER_NOT_PERMITTED",
+            "AUTH_DIAGNOSTIC_DEPLOYMENT_NOT_FOUND",
+            "AUTH_DIAGNOSTIC_SCRIPT_NOT_STARTED",
+            "AUTH_DIAGNOSTIC_SCRIPT_RUNTIME_ERROR",
+            "AUTH_DIAGNOSTIC_PROBE_PASS_NOT_FUNCTIONAL_ACCEPTANCE",
+            "AUTH_DIAGNOSTIC_UNKNOWN_FAILED_CLOSED"
+          ]
+        },
+        "operation_object_returned": { "type": "boolean" },
+        "script_started": { "type": "boolean" },
+        "probe_contract_returned": { "type": "boolean" },
+        "all_side_effects_false": { "type": "boolean" },
+        "response_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "elapsed_time_bucket": {
+          "enum": [
+            "LT_1S",
+            "ONE_TO_FIVE_S",
+            "GT_FIVE_S",
+            "UNKNOWN"
+          ]
+        },
+        "retry_permitted": { "const": false }
+      }
+    }
+  }
+}
