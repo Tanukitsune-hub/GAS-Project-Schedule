@@ -1,39 +1,77 @@
-# Repository Working Rules
+# Codex Repository Instructions
 
-Follow the latest GitHub instruction and any more-specific `AGENTS.md` in the
-directory being changed. The repository’s canonical implementation is
-`implementation/GoogleSpreadsheet/`.
+Policy baseline: 2026-08-06
 
-## GitHub Actions CI
+These rules govern Codex/local implementation agents. ChatGPT may finish GitHub-only work without invoking Codex. Route B means ChatGPT edits and Codex verifies/fixes; Route C means Codex implements.
 
-- Keep one proportionate standard workflow at `.github/workflows/ci.yml`.
-- CI must run tracked JSON/YAML validation, the Apps Script static validator,
-  all current Node regression suites, and the committed non-Google local
-  verification gate.
-- Do not remove or weaken an existing CI check without recording the reason in
-  the relevant pull request and canonical documentation.
-- CI uses read-only repository permissions and must never use Google
-  credentials, OAuth tokens, `.clasp.json`, `.clasprc.json`, `clasp push`, or
-  any secret context.
+## Authority and handoff
 
-## Local clasp validation and company handoff
+- Follow: latest explicit user instruction; the exact handoff at its referenced ref; closest nested `AGENTS.md`; this file; then other repository docs.
+- GitHub files carry the full ChatGPT–Codex instruction and report; chat is only a pointer unless GitHub is unavailable.
+- Every Route B/C task must read the named `docs/handoffs/<WORK-ID>-instruction.md`. It defines outcome, scope/non-goals, decisions, targets, checks, Git/PR requirements, and stop conditions.
+- If its path/ref is missing or inconsistent, do not rebuild requirements from old chat, stale handoffs, or unrelated branches. Report a BLOCKER.
+- Material scope/design changes require an updated handoff/ref. Do not edit the instruction unless asked.
 
-- A project-local `@google/clasp` is for a dedicated personal, synthetic dev
-  Apps Script project only. It is never a company or production target.
-- Before any company handoff, an intended GAS change must pass the local
-  static/regression gate and GitHub Actions; where the dedicated dev target is
-  configured, it must also pass guarded local clasp push and pull-back parity.
-- Company PCs do not use clasp. Their future scope is manual reflection,
-  authorization review, and a separately approved minimal smoke test.
-- A skipped clasp lane is a company-handoff blocker unless a later governing
-  instruction explicitly records a different decision.
+## Efficient execution
 
-## Information and reporting boundaries
+- Start with handoff-named files; inspect only applicable rules, code, tests, diffs, and history.
+- Do not repeat repo-wide orientation, confirmed decisions, known summaries, or routine prose already supplied by ChatGPT.
+- Build the smallest coherent end-to-end outcome. Apply YAGNI; avoid speculative features, broad refactors, parallel systems, and premature abstractions.
+- Resolve routine reversible ambiguity with the simplest safe assumption and record it. Escalate only when outcome, authorization, safety, security, financial correctness, or reversibility changes materially.
+- Subagents are optional. Use them only for independent parallel work or focused high-risk verification; never use competing writers on overlapping files or duplicate review loops.
+- Prefer one run through implementation, checks, in-scope fixes, commit, push, PR update, and report.
 
-- Never commit `.clasp.json`, `.clasprc.json`, OAuth material, API keys,
-  credentials, company data, personal data, Workspace IDs, or Workspace URLs.
-- Final reports must state GitHub Actions, non-Google local verification,
-  clasp target guard, dev push, pull-back parity, runtime dry-run status,
-  missing prerequisites, and remaining company-side checks.
-- Preserve historical release, transfer, audit, and instruction artifacts.
-  Do not use reset, clean, rebase, amend, force push, or unrelated revert.
+## Implementation and checks
+
+- Implement the primary workflow first; add only essential safety/usability. Investigation is not completion unless requested.
+- Normal checks: relevant lint/type/syntax, focused tests for changed logic, one happy path, and a runnable smoke test.
+- Strengthen checks for destructive work, auth/secrets, migrations, deployment, external writes, security, and financial calculations.
+- After fixes, rerun affected checks/smoke only. Never conceal failures or claim unrun checks.
+- BLOCKER means primary use fails, material data/security/financial risk remains, required authorization is missing, or safe continuation is impossible. Defer lesser gaps without stopping delivery.
+
+## Git and safety
+
+- Check status, branch, remote, and diff; preserve unrelated work and history. Use the handoff branch or a task branch; stage only in-scope files.
+- Do not force-push, rewrite history, merge, release, deploy, delete data, rotate secrets, or operate external systems unless explicitly authorized in the handoff.
+- Never commit secrets, credentials, personal/private production data, or machine-specific paths.
+- Use repository-specific CI proportionately; do not copy tooling mechanically from another repo.
+
+## Report and completion
+
+- Write the complete result to `docs/handoffs/<WORK-ID>-report.md`; commit/push it with the work and link instruction/report in the PR.
+- Report: outcome; changed files; material decisions/assumptions; tests/CI; trial steps; limitations/deferred; simplifications; branch/commit/PR; work time; actual token usage if observable, otherwise `unavailable`; BLOCKER status.
+- Chat reply only: Work ID, report path, commit, branch, PR, BLOCKER status. Do not duplicate the report.
+- Done when primary use works end to end, critical checks pass, no BLOCKER remains, material risks/recovery are recorded, and GitHub is updated. Check consistency once, then stop.
+
+## Repository-specific rules: Google Workspace Personal Work OS
+
+### Canonical context
+
+- Read `CURRENT_STATUS.md`, `DECISIONS.md`, `PROJECT_CONTEXT.md`, and `MASTER_PLAN.md` before implementation, then only the audits, legacy `instructions/`, source README, and evidence referenced by the handoff.
+- Existing `instructions/`, audits, releases, and evidence remain historical/canonical records. New ChatGPT–Codex task exchange uses `docs/handoffs/`; do not rewrite historical evidence to fit a new task.
+- Use the latest canonical status and gates. Passing local tests or CI never by itself authorizes production, pilot, automation, deployment, company handoff, or a GO status.
+
+### External-action guardrails
+
+- Default to no live Google/Workspace action. Do not access or mutate real Gmail, Calendar, Drive, Sheets, Apps Script, OAuth, Cloud project, deployment, trigger, account, or provider state unless the exact handoff explicitly authorizes the exact bounded action.
+- Authorization for one call, target, function, account, or attempt does not authorize retries, fallbacks, alternate targets/functions, follow-up diagnostics, deployment, or mutation. Fail closed when evidence or authorization is incomplete.
+- Do not place credentials, tokens, project/script/deployment IDs, private URLs, account details, message bodies, personal data, or raw provider errors in GitHub, chat, fixtures, reports, or logs. Use synthetic/redacted evidence.
+
+### Implementation and validation
+
+- Preserve Apps Script V8/browser compatibility in deployed source. Node-only APIs may be used only in clearly separated local tests/tools.
+- Keep source, manifest, generated release artifacts, versions/schemas, tests, audit evidence, and canonical status consistent. Do not declare acceptance from partial parity.
+- Run the relevant static validator and focused regression suites; use existing CI where applicable. Record skipped live-provider validation explicitly rather than implying coverage.
+- Do not weaken fail-closed gates, privacy filters, authorization boundaries, or automation-off controls merely to make a test pass.
+
+### Active branch controls: local clasp validation
+
+- The canonical implementation is `implementation/GoogleSpreadsheet/`.
+- Keep one proportionate standard workflow at `.github/workflows/ci.yml`. It must run tracked JSON/YAML validation, the Apps Script static validator, current Node regression suites, and the committed non-Google local verification gate.
+- CI must use read-only repository permissions and no Google credentials, OAuth tokens, `.clasp.json`, `.clasprc.json`, `clasp push`, or secret context.
+- A project-local `@google/clasp` may target only a dedicated personal, synthetic development Apps Script project, never a company or production target.
+- Before any company handoff, the intended change must pass local static/regression checks and CI; where the dedicated dev target is configured, it must also pass the separately authorized guarded push and pull-back parity.
+- Company PCs do not use clasp. Their future scope is manual reflection, authorization review, and a separately approved minimal smoke test.
+- A skipped clasp lane remains a company-handoff blocker unless a later governing handoff explicitly decides otherwise.
+- Final evidence must state CI, non-Google verification, target guard, dev push, pull-back parity, runtime dry-run, missing prerequisites, and remaining company-side checks.
+- Preserve historical release, transfer, audit, and instruction artifacts. Do not reset, clean, rebase, amend, force-push, or perform unrelated reverts.
