@@ -12,6 +12,14 @@ These rules govern Codex/local implementation agents. ChatGPT may finish GitHub-
 - If its path/ref is missing or inconsistent, do not rebuild requirements from old chat, stale handoffs, or unrelated branches. Report a BLOCKER.
 - Material scope/design changes require an updated handoff/ref. Do not edit the instruction unless asked.
 
+## Before starting implementation
+
+1. Check `git status`, the current branch, remote, and upstream.
+2. Fetch the latest remote changes.
+3. Fast-forward pull when it is safe and does not overwrite, stash, commit, or otherwise disturb local work.
+4. If local changes, divergence, missing upstream, or another unsafe condition exists, stop before implementation and explain the state and safest next step.
+5. Begin implementation only after the repository state is understood and safely synchronized, or the handoff explicitly authorizes working from the current state.
+
 ## Efficient execution
 
 - Start with handoff-named files; inspect only applicable rules, code, tests, diffs, and history.
