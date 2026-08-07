@@ -57,7 +57,7 @@ These rules govern Codex/local implementation agents. ChatGPT may finish GitHub-
 ## Report and completion
 
 - Write the complete result to `docs/handoffs/<WORK-ID>-report.md`; commit/push it with the work and link instruction/report in the PR.
-- Report: outcome; changed files; material decisions/assumptions; tests/CI; trial steps; limitations/deferred; simplifications; branch/commit/PR; work time; actual token usage if observable, otherwise `unavailable`; BLOCKER status.
+- Report: outcome; changed files; material decisions/assumptions; tests/CI; trial steps; limitations/deferred; simplifications; branch/commit/PR; BLOCKER status.
 - Chat reply only: Work ID, report path, commit, branch, PR, BLOCKER status. Do not duplicate the report.
 - Done when primary use works end to end, critical checks pass, no BLOCKER remains, material risks/recovery are recorded, and GitHub is updated. Check consistency once, then stop.
 
