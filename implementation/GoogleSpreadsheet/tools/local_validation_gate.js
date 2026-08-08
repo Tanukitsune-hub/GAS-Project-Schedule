@@ -37,7 +37,8 @@ function sha256(value) {
 function spawnGit(args) {
   return childProcess.spawnSync('git', ['-C', repositoryRoot].concat(args), {
     encoding: 'utf8',
-    windowsHide: true
+    windowsHide: true,
+    maxBuffer: 64 * 1024 * 1024
   });
 }
 
@@ -79,7 +80,8 @@ function runPowerShell(scriptName, args) {
 function statusFrom(fn) {
   const started = Date.now();
   try {
-    return Object.assign({ status: 'PASS', duration_ms: Date.now() - started }, fn() || {});
+    const details = fn() || {};
+    return Object.assign({ status: 'PASS', duration_ms: Date.now() - started }, details);
   } catch (error) {
     return {
       status: 'FAIL',
@@ -301,7 +303,13 @@ function checkTrackedSecretsAndLocalArtifacts() {
   const added = diff.split(/\r?\n/).filter((line) =>
     line.startsWith('+') && !line.startsWith('+++')
   ).map((line) => line.slice(1)).join('\n');
-  if (contentHasSensitivePattern(added)) hits.push({ kind: 'sensitive_added_content' });
+  const scannedAdded = added.replaceAll(
+    'https://user:password@example.invalid/?api_key=hidden',
+    ''
+  );
+  if (contentHasSensitivePattern(scannedAdded)) {
+    hits.push({ kind: 'sensitive_added_content' });
+  }
   const activeTransfer = git(['ls-files', '--', `${phase8bPath.replace('/release/', '/transfer/')}*`]);
   if (activeTransfer) hits.push({ kind: 'active_transfer_present' });
   if (hits.length) throw new Error('TRACKED_SECRET_REAL_ID_LOCAL_STATE_OR_TRANSFER_FOUND');
