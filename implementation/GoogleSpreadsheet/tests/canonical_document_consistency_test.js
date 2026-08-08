@@ -84,7 +84,8 @@ if (!fs.existsSync(contractPath)) {
   check(() => assert.strictEqual(contract.automation, false));
   check(() => assert.strictEqual(contract.active_transfer, null));
   check(() => assert.strictEqual(contract.active_deployment, null));
-  check(() => assert.ok(releasePaths.every((target) => fs.isDirectorySync(target)),
+  check(() => assert.ok(releasePaths.every((target) =>
+    fs.statSync(target).isDirectory()),
     'Release B12 must contain both generated packages'));
 }
 
