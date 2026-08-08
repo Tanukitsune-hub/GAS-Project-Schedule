@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 Candidate version: Code `2.8.12-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
@@ -37,10 +37,10 @@ selected by this status.
 
 ```text
 A12 source/static/focused validation: PASS (50 suites / 710 assertions; validator 11/11)
-B12 release reproducibility/parity: PENDING_FINAL_RECORD
-Complete local verification gate: PENDING_FINAL_RECORD
-Fresh-clone verification: PENDING_FINAL_RECORD
-GitHub Actions at final PR head: PENDING_FINAL_RECORD
+B12 release reproducibility/parity: PASS
+Complete local verification gate at Codex completion head: PASS (11/11; 51 suites)
+Fresh-clone verification: PASS (11/11; release verifier PASS; secret scan 0 hits; clean worktree)
+GitHub Actions at Codex completion head d02af1bc8154143bcb3b4fb9c9c8553a0bb7854a: PASS (push + pull_request)
 Live Google Workspace validation: NOT_EXECUTED
 Real AI Provider validation: NOT_EXECUTED
 Company handoff: NOT_AUTHORIZED
@@ -48,7 +48,9 @@ Company handoff: NOT_AUTHORIZED
 
 Exact completed results and immutable SHAs are recorded in
 `docs/handoffs/0002-report.md`; source/release identity is machine-checked by
-`CURRENT_CONTRACT.json` and the release verifiers.
+`CURRENT_CONTRACT.json` and the release verifiers. The 2026-08-09 status-only
+consistency update records already-completed evidence and changes no product,
+release, runtime, deployment, or authorization boundary.
 
 ## Remaining project-level blockers
 
