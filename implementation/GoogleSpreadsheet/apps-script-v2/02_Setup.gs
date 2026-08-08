@@ -2,6 +2,86 @@
  * New-environment-only, staged setup available through the Phase 4 build.
  */
 var WorkOsSetup = (function () {
+  var MODULE_CONTRACT_ID = 'WORK_OS_V2_S90_CONTRACT_2_8_11';
+
+  function safeNormalizationEvidence(value) {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+    var allowedStatus = {
+      CANONICAL: true,
+      NORMALIZED: true,
+      FAILED_POSTCONDITION: true
+    };
+    var status = String(
+      value.normalization_status || value.status || ''
+    );
+    if (!allowedStatus[status]) {
+      return null;
+    }
+    var checkedCellCount = Number(value.checked_cell_count);
+    var noncanonicalCount = Number(value.noncanonical_count);
+    return {
+      normalization_status: status,
+      write_performed: value.write_performed === true,
+      flush_performed: value.flush_performed === true,
+      postcondition_verified: value.postcondition_verified === true,
+      checked_cell_count:
+        Number.isFinite(checkedCellCount) && checkedCellCount >= 0
+          ? Math.floor(checkedCellCount)
+          : 0,
+      noncanonical_count:
+        Number.isFinite(noncanonicalCount) && noncanonicalCount >= 0
+          ? Math.floor(noncanonicalCount)
+          : 0
+    };
+  }
+
+  function moduleVersionSkewError() {
+    var error = new WorkOsAppError(
+      'E_MODULE_VERSION_SKEW',
+      'S90_QUICK_DIAGNOSTIC',
+      false,
+      'Setup-critical module contract is not aligned.'
+    );
+    error.module_contract_status = 'MISMATCH';
+    return error;
+  }
+
+  function assertS90ModuleContract() {
+    if (String(WorkOsConfig.S90_MODULE_CONTRACT_ID || '') !==
+        MODULE_CONTRACT_ID ||
+        typeof WorkOsDashboard === 'undefined' ||
+        !WorkOsDashboard ||
+        String(WorkOsDashboard.MODULE_CONTRACT_ID || '') !==
+          MODULE_CONTRACT_ID) {
+      throw moduleVersionSkewError();
+    }
+    return { status: 'ALIGNED' };
+  }
+
+  function normalizationEvidenceFromResult(result) {
+    var direct = safeNormalizationEvidence(
+      result && result.dashboard_number_format_normalization
+    );
+    if (direct) {
+      return direct;
+    }
+    var stages = result && Array.isArray(result.stage_results)
+      ? result.stage_results
+      : [];
+    for (var index = 0; index < stages.length; index += 1) {
+      var summary = stages[index] && stages[index].safe_summary;
+      var nested = safeNormalizationEvidence(
+        summary && summary.dashboard_number_format_normalization
+      );
+      if (nested) {
+        return nested;
+      }
+    }
+    return null;
+  }
+
   function getBoundSpreadsheet() {
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     if (!spreadsheet) {
@@ -345,14 +425,35 @@ var WorkOsSetup = (function () {
   }
 
   function storeLastResult(result) {
+    var stored = {
+      status: result.status,
+      code: result.code || '',
+      next_stage: result.next_stage || '',
+      recorded_at: new Date().toISOString()
+    };
+    var normalization = normalizationEvidenceFromResult(result);
+    if (normalization) {
+      stored.dashboard_number_format_normalization = normalization;
+    }
+    if (result.module_contract_status === 'ALIGNED' ||
+        result.module_contract_status === 'MISMATCH') {
+      stored.module_contract_status = result.module_contract_status;
+    } else if (Array.isArray(result.stage_results)) {
+      for (var index = 0; index < result.stage_results.length; index += 1) {
+        var safeSummary = result.stage_results[index] &&
+          result.stage_results[index].safe_summary;
+        if (safeSummary &&
+            (safeSummary.module_contract_status === 'ALIGNED' ||
+             safeSummary.module_contract_status === 'MISMATCH')) {
+          stored.module_contract_status =
+            safeSummary.module_contract_status;
+          break;
+        }
+      }
+    }
     properties().setProperty(
       WorkOsConfig.PROPERTIES.SETUP_LAST_RESULT,
-      JSON.stringify({
-        status: result.status,
-        code: result.code || '',
-        next_stage: result.next_stage || '',
-        recorded_at: new Date().toISOString()
-      })
+      JSON.stringify(stored)
     );
   }
 
@@ -446,7 +547,43 @@ var WorkOsSetup = (function () {
     var result =
       WorkOsSheetBuilder.refreshValidationsAndProtections(spreadsheet);
     assertSetupBudget(budget, 'SETUP_LAYOUT_REFRESH');
+    result.task_authority_control_plane =
+      WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
+    assertSetupBudget(budget, 'SETUP_LAYOUT_REFRESH');
     return result;
+  }
+
+  function validateTaskAuthorityForSetup(spreadsheet) {
+    var taskSheet = spreadsheet.getSheetByName(WorkOsConfig.SHEETS.TASKS);
+    if (!taskSheet) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MISSING_SHEET',
+        'SETUP_AUTHORITY_VALIDATION',
+        false,
+        'Task sheet is missing during authority validation.'
+      );
+    }
+    return WorkOsUtilities.withScriptLock(function () {
+      var report = WorkOsTaskRepository.validateAllTaskAuthorities(taskSheet, {
+        mode: 'SETUP',
+        recover_prepared: true,
+        recover_relocated: true,
+        quarantine_invalid: true,
+        mark_orphaned: true
+      });
+      var nonOperational = report.rows.filter(function (item) {
+        return item.status !== 'VALID';
+      });
+      if (nonOperational.length) {
+        throw new WorkOsAppError(
+          'E_TASK_AUTHORITY_INVALID',
+          'SETUP_AUTHORITY_VALIDATION',
+          false,
+          'Task authority contains quarantined, recoverable-drift, or invalid rows.'
+        );
+      }
+      return report;
+    }, WorkOsConfig.LOCK_WAIT_MS);
   }
 
   function runImplementedStage(stage, spreadsheet, budget) {
@@ -466,12 +603,24 @@ var WorkOsSetup = (function () {
       return WorkOsSheetBuilder.ensureSheets(spreadsheet);
     }
     if (stage === 'S20_CREATE_SCHEMAS') {
-      return WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+      var columnMaps = WorkOsSheetBuilder.applyAllSchemas(spreadsheet);
+      var taskAuthorityControlPlane =
+        WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
+      return {
+        column_maps: columnMaps,
+        task_authority_control_plane: taskAuthorityControlPlane,
+        task_authority: validateTaskAuthorityForSetup(spreadsheet)
+      };
     }
     if (stage === 'S30_APPLY_SMALL_VALIDATIONS') {
       WorkOsSheetBuilder.applyValidationsAndFormats(spreadsheet);
+      var taskAuthorityControlPlaneS30 =
+        WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
       WorkOsSheetBuilder.applyVisibility(spreadsheet);
-      return { applied: true };
+      return {
+        applied: true,
+        task_authority_control_plane: taskAuthorityControlPlaneS30
+      };
     }
     if (stage === 'S40_SEED_SAFE_SETTINGS') {
       return WorkOsSheetBuilder.seedSafeSettings(spreadsheet);
@@ -529,16 +678,45 @@ var WorkOsSetup = (function () {
       return WorkOsAutomation.ensureEditTrigger();
     }
     if (stage === 'S90_QUICK_DIAGNOSTIC') {
-      return WorkOsDiagnostics.runQuickDiagnostic(
-        spreadsheet,
-        { budget: budget }
-      );
+      if (typeof WorkOsDashboard === 'undefined' ||
+          !WorkOsDashboard ||
+          typeof WorkOsDashboard
+            .normalizeSystemBlockNumberFormatForSetup !== 'function') {
+        throw new WorkOsAppError(
+          'E_DASHBOARD_MODULE_MISSING',
+          stage,
+          false,
+          'Dashboard number-format control-plane module is unavailable.'
+        );
+      }
+      var moduleContract = assertS90ModuleContract();
+      // This is the only Setup-owned number-format repair path. It proves
+      // the exact Dashboard control plane before writing the 17 x 3 system
+      // block, then leaves Quick Diagnostic itself read-only.
+      var normalization =
+        WorkOsDashboard.normalizeSystemBlockNumberFormatForSetup(spreadsheet);
+      var safeEvidence = safeNormalizationEvidence(normalization);
+      var diagnostic;
+      try {
+        diagnostic = WorkOsDiagnostics.runQuickDiagnostic(
+          spreadsheet,
+          { budget: budget }
+        );
+      } catch (diagnosticFailure) {
+        diagnosticFailure.module_contract_status = moduleContract.status;
+        diagnosticFailure.dashboard_normalization_evidence = safeEvidence;
+        throw diagnosticFailure;
+      }
+      diagnostic.module_contract_status = moduleContract.status;
+      diagnostic.dashboard_number_format_normalization =
+        safeEvidence;
+      return diagnostic;
     }
     if (stage === 'S99_COMPLETE') {
       return {
         completed: true,
         phase_boundary:
-          'READY_FOR_INDEPENDENT_REAUDIT'
+          'READY_FOR_PHASE8B_SANDBOX_RETRANSFER'
       };
     }
     throw new WorkOsAppError(
@@ -584,6 +762,11 @@ var WorkOsSetup = (function () {
         completed,
         budget
       );
+      var setupAuthority = null;
+      if (completed.indexOf('S20_CREATE_SCHEMAS') !== -1) {
+        WorkOsSheetBuilder.ensureTaskAuthorityLedgerControlPlane(spreadsheet);
+        setupAuthority = validateTaskAuthorityForSetup(spreadsheet);
+      }
       assertCompletedStageIntegrity(completed, spreadsheet, budget);
       var versionRefresh = refreshCompletedVersionMetadata(
         spreadsheet,
@@ -638,19 +821,34 @@ var WorkOsSetup = (function () {
           budget
         );
         if (stage === 'S90_QUICK_DIAGNOSTIC' && output.status === 'FAIL') {
-          throw new WorkOsAppError(
+          var diagnosticError = new WorkOsAppError(
             'E_QUICK_DIAGNOSTIC_FAILED',
             stage,
             false,
             'Quick Diagnosticが不合格のためSetupを完了しません。'
           );
+          diagnosticError.module_contract_status =
+            output.module_contract_status;
+          diagnosticError.dashboard_normalization_evidence =
+            output.dashboard_number_format_normalization;
+          throw diagnosticError;
         }
         recordCompletedStage(stage);
-        stageResults.push({
+        var stageResult = {
           stage: stage,
           duration_ms: Date.now() - stageStartedAt,
           result: output ? 'COMPLETED' : 'COMPLETED'
-        });
+        };
+        if (stage === 'S90_QUICK_DIAGNOSTIC') {
+          stageResult.safe_summary = {
+            module_contract_status: output.module_contract_status,
+            dashboard_number_format_normalization:
+              safeNormalizationEvidence(
+                output.dashboard_number_format_normalization
+              )
+          };
+        }
+        stageResults.push(stageResult);
         completed = getCompletedStages();
       }
       var completeResult = {
@@ -660,6 +858,7 @@ var WorkOsSetup = (function () {
         stage_results: stageResults,
         v2_schema_extension: v2Extension,
         completed_layout_refresh: layoutRefresh,
+        task_authority_validation: setupAuthority,
         version_metadata_refresh: versionRefresh,
         edit_trigger_refresh: editTriggerRefresh,
         duration_ms: Date.now() - startedAt
@@ -668,6 +867,9 @@ var WorkOsSetup = (function () {
       return completeResult;
     } catch (error) {
       var safe = WorkOsUtilities.safeError(error, 'SETUP');
+      var failedNormalization = safeNormalizationEvidence(
+        error && error.dashboard_normalization_evidence
+      );
       var failedResult = {
         status: safe.code === 'E_BUDGET_EXHAUSTED'
           ? 'PAUSED'
@@ -681,6 +883,16 @@ var WorkOsSetup = (function () {
         completed_stages: getCompletedStagesSafely(),
         duration_ms: Date.now() - startedAt
       };
+      if (failedNormalization) {
+        failedResult.dashboard_number_format_normalization =
+          failedNormalization;
+      }
+      if (error &&
+          (error.module_contract_status === 'ALIGNED' ||
+           error.module_contract_status === 'MISMATCH')) {
+        failedResult.module_contract_status =
+          error.module_contract_status;
+      }
       try {
         storeLastResult(failedResult);
       } catch (storeError) {
@@ -771,6 +983,7 @@ var WorkOsSetup = (function () {
   }
 
   return Object.freeze({
+    MODULE_CONTRACT_ID: MODULE_CONTRACT_ID,
     snapshotEnvironment: snapshotEnvironment,
     classifyEnvironmentDescriptors: classifyEnvironmentDescriptors,
     validateEnvironment: validateEnvironment,

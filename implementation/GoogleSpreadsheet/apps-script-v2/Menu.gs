@@ -256,6 +256,139 @@ function nextActionForResult_(title, value) {
   return '次の操作: 必要に応じてDashboardまたは状態確認を実行してください。';
 }
 
+function boundedAcceptanceSummaryInteger_(value) {
+  var numberValue = Number(value);
+  return isFinite(numberValue) && numberValue >= 0 &&
+    Math.floor(numberValue) === numberValue && numberValue <= 100000
+    ? String(numberValue)
+    : 'UNKNOWN';
+}
+
+function boundedAcceptanceSummaryBoolean_(value) {
+  if (value === true) {
+    return 'true';
+  }
+  if (value === false) {
+    return 'false';
+  }
+  return 'UNKNOWN';
+}
+
+function boundedAcceptanceSummaryEnum_(value, allowed, fallback) {
+  var text = String(value || '');
+  return allowed.indexOf(text) !== -1 ? text : fallback;
+}
+
+function boundedAcceptanceSummaryIds_(value, complete) {
+  if (!Array.isArray(value)) {
+    return 'UNAVAILABLE';
+  }
+  var previous = '';
+  var valid = value.every(function (candidate) {
+    var id = String(candidate || '');
+    var accepted = /^[A-Za-z][A-Za-z0-9_]{0,47}$/.test(id) &&
+      (previous === '' || previous < id);
+    previous = id;
+    return accepted;
+  });
+  if (!valid) {
+    return 'UNAVAILABLE';
+  }
+  var completeness = boundedAcceptanceSummaryBoolean_(complete);
+  if (completeness === 'UNKNOWN') {
+    return 'UNAVAILABLE';
+  }
+  return (value.length ? value.join(', ') : '(none)') +
+    ' [complete=' + completeness + ']';
+}
+
+function formatBoundedAcceptanceSummary_(summary) {
+  var value = summary || {};
+  var contract = String(value.summary_contract_id || '');
+  if (contract !== 'WORK_OS_V2_DIAGNOSTIC_ACCEPTANCE_SUMMARY_V1') {
+    contract = 'UNAVAILABLE';
+  }
+  var kind = boundedAcceptanceSummaryEnum_(
+    value.diagnostic_kind,
+    ['QUICK', 'DEEP_MANUAL_READ_ONLY'],
+    'UNKNOWN'
+  );
+  var status = boundedAcceptanceSummaryEnum_(
+    value.status,
+    ['PASS', 'WARN', 'FAIL'],
+    'UNKNOWN'
+  );
+  var completeness = boundedAcceptanceSummaryEnum_(
+    value.acceptance_summary_status,
+    ['COMPLETE', 'REVIEW_REQUIRED'],
+    'REVIEW_REQUIRED'
+  );
+  var lines = [
+    '--- Bounded Acceptance Summary ---',
+    'summary_contract_id=' + contract,
+    'diagnostic_kind=' + kind,
+    'status=' + status,
+    'pass_count=' + boundedAcceptanceSummaryInteger_(value.pass_count),
+    'warn_count=' + boundedAcceptanceSummaryInteger_(value.warn_count),
+    'fail_count=' + boundedAcceptanceSummaryInteger_(value.fail_count),
+    'not_executed_count=' +
+      boundedAcceptanceSummaryInteger_(value.not_executed_count),
+    'warn_check_ids=' + boundedAcceptanceSummaryIds_(
+      value.warn_check_ids,
+      value.warn_ids_complete
+    ),
+    'fail_check_ids=' + boundedAcceptanceSummaryIds_(
+      value.fail_check_ids,
+      value.fail_ids_complete
+    ),
+    'acceptance_summary_status=' + completeness,
+    'external_services_called=' +
+      boundedAcceptanceSummaryBoolean_(value.external_services_called),
+    'writes_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.writes_performed),
+    'spreadsheet_write_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.spreadsheet_write_performed),
+    'properties_write_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.properties_write_performed),
+    'trigger_write_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.trigger_write_performed),
+    'flush_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.flush_performed),
+    'calendar_api_called=' +
+      boundedAcceptanceSummaryBoolean_(value.calendar_api_called),
+    'gmail_api_called=' +
+      boundedAcceptanceSummaryBoolean_(value.gmail_api_called),
+    'external_ai_request_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.external_ai_request_performed),
+    'dashboard_repair_performed=' +
+      boundedAcceptanceSummaryBoolean_(value.dashboard_repair_performed),
+    'task_physical_column_count=' +
+      boundedAcceptanceSummaryInteger_(value.task_physical_column_count),
+    'task_schema_ids_state=' + boundedAcceptanceSummaryEnum_(
+      value.task_schema_ids_state,
+      ['PASS', 'WARN', 'FAIL', 'NOT_EXECUTED', 'NOT_YET_IMPLEMENTED'],
+      'UNKNOWN'
+    ),
+    'task_schema_headers_state=' + boundedAcceptanceSummaryEnum_(
+      value.task_schema_headers_state,
+      ['PASS', 'WARN', 'FAIL', 'NOT_EXECUTED', 'NOT_YET_IMPLEMENTED'],
+      'UNKNOWN'
+    ),
+    'ledger_physical_column_count=' +
+      boundedAcceptanceSummaryInteger_(value.ledger_physical_column_count),
+    'ledger_hidden_state=' +
+      boundedAcceptanceSummaryBoolean_(value.ledger_hidden_state),
+    'ledger_protection_state=' +
+      boundedAcceptanceSummaryBoolean_(value.ledger_protection_state),
+    'ledger_authority_validator_state=' + boundedAcceptanceSummaryEnum_(
+      value.ledger_authority_validator_state,
+      ['PASS', 'WARN', 'FAIL', 'NOT_EXECUTED', 'NOT_YET_IMPLEMENTED'],
+      'UNKNOWN'
+    )
+  ];
+  return lines.join('\n');
+}
+
 function showSafeResult_(title, result) {
   var value = result || {};
   var status = String(value.status || '完了');
@@ -278,6 +411,10 @@ function showSafeResult_(title, result) {
       ? '\n次stage: ' + String(value.next_stage)
       : '') +
     counts + '\n' + action;
+  if (value.acceptance_summary) {
+    summary += '\n\n' +
+      formatBoundedAcceptanceSummary_(value.acceptance_summary);
+  }
   var details = WorkOsUtilities.redact(
     JSON.stringify(value, null, 2)
   );

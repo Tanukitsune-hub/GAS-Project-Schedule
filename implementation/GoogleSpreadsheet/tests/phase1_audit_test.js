@@ -180,6 +180,10 @@ class FakeSheet {
     return this.name;
   }
 
+  getParent() {
+    return this.parent || null;
+  }
+
   getRange(row, column, rowCount, columnCount) {
     return new FakeRange(this, row, column, rowCount, columnCount);
   }
@@ -238,6 +242,16 @@ class FakeSheet {
     return this;
   }
 
+  hideSheet() {
+    this.hidden = true;
+    return this;
+  }
+
+  showSheet() {
+    this.hidden = false;
+    return this;
+  }
+
   isSheetHidden() {
     return this.hidden;
   }
@@ -250,6 +264,12 @@ class FakeSheet {
 class FakeSpreadsheet {
   constructor(sheets) {
     this.sheets = sheets;
+    this.owner = {
+      getEmail: () => 'synthetic.user@example.invalid'
+    };
+    this.sheets.forEach((sheet) => {
+      sheet.parent = this;
+    });
   }
 
   getSheets() {
@@ -258,6 +278,10 @@ class FakeSpreadsheet {
 
   getSheetByName(name) {
     return this.sheets.find((sheet) => sheet.getName() === name) || null;
+  }
+
+  getOwner() {
+    return this.owner;
   }
 }
 
@@ -293,6 +317,14 @@ class FakeProtection {
     return this.domainEdit;
   }
 
+  canEdit() {
+    return true;
+  }
+
+  getTargetAudiences() {
+    return [];
+  }
+
   getEditors() {
     return this.editorEmails.map((email) => ({
       getEmail: () => email
@@ -322,6 +354,10 @@ class FakeProtection {
 
   getRange() {
     return this.range;
+  }
+
+  getRangeName() {
+    return null;
   }
 
   setRange(range) {
@@ -477,6 +513,32 @@ function taskSheet() {
   sheet
     .getRange(1, 1, 1, schema.length)
     .setValues([schema.map((column) => column.id)]);
+  sheet
+    .getRange(2, 1, 1, schema.length)
+    .setValues([schema.map((column) => column.header)]);
+  const ledgerSchema = sandbox.WorkOsSchemas.getSheetSchema(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+  );
+  const ledger = new FakeSheet(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER,
+    100,
+    ledgerSchema.length
+  );
+  ledger.getRange(1, 1, 1, ledgerSchema.length).setValues([
+    ledgerSchema.map((column) => column.id)
+  ]);
+  ledger.getRange(2, 1, 1, ledgerSchema.length).setValues([
+    ledgerSchema.map((column) => column.header)
+  ]);
+  ledger.hideSheet();
+  ledger.protect()
+    .setDescription(
+      `WORK_OS_V2_PHASE1_${sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER}_MANAGEMENT_SHEET`
+    )
+    .setWarningOnly(false)
+    .setDomainEdit(false)
+    .setUnprotectedRanges([]);
+  new FakeSpreadsheet([sheet, ledger]);
   return sheet;
 }
 
@@ -493,7 +555,8 @@ const expectedTaskIds = [
   'pending_action_type', 'pending_changes_json', 'created_at', 'updated_at',
   'last_calendar_sync_at', 'authoritative_snapshot_json',
   'business_version', 'calendar_reconcile_required',
-  'calendar_intent_version'
+  'calendar_intent_version', 'authority_generation', 'authority_hash',
+  'authority_state'
 ];
 
 const expectedTaskHeaders = [
@@ -508,7 +571,8 @@ const expectedTaskHeaders = [
   'pending_action_type', 'pending_changes_json', 'created_at', 'updated_at',
   'last_calendar_sync_at', 'authoritative_snapshot_json',
   'business_version', 'calendar_reconcile_required',
-  'calendar_intent_version'
+  'calendar_intent_version', 'authority_generation', 'authority_hash',
+  'authority_state'
 ];
 
 test('P1-AUD-01_LITERAL_SCHEMA_CONTRACT', () => {
@@ -615,7 +679,7 @@ test('P1-AUD-05_INVALID_CALENDAR_DATES_REJECTED', () => {
   assert.strictEqual(validation.ok, false);
 });
 
-test('P1-AUD-06_STRICT_TYPED_READ', () => {
+test('P1-AUD-06_UNTRUSTED_TYPED_ROW_IS_EXCLUDED', () => {
   const sheet = taskSheet();
   const schema = sandbox.WorkOsSchemas.getSheetSchema(
     sandbox.WorkOsConfig.SHEETS.TASKS
@@ -631,11 +695,11 @@ test('P1-AUD-06_STRICT_TYPED_READ', () => {
   const context = sandbox.WorkOsTaskRepository.createContext(sheet);
   assert.throws(
     () => sandbox.WorkOsTaskRepository.readTaskAtRow(context, 3),
-    (error) => error.code === 'E_TASK_TYPE'
+    (error) => error.code === 'E_TASK_AUTHORITY_EXCLUDED'
   );
 });
 
-test('P1-AUD-06B_INVALID_ENUM_READ_IS_REJECTED', () => {
+test('P1-AUD-06B_UNTRUSTED_ENUM_ROW_IS_EXCLUDED', () => {
   const sheet = taskSheet();
   const schema = sandbox.WorkOsSchemas.getSheetSchema(
     sandbox.WorkOsConfig.SHEETS.TASKS
@@ -649,7 +713,7 @@ test('P1-AUD-06B_INVALID_ENUM_READ_IS_REJECTED', () => {
   const context = sandbox.WorkOsTaskRepository.createContext(sheet);
   assert.throws(
     () => sandbox.WorkOsTaskRepository.readTaskAtRow(context, 3),
-    (error) => error.code === 'E_INVALID_ENUM'
+    (error) => error.code === 'E_TASK_AUTHORITY_EXCLUDED'
   );
 });
 
@@ -943,10 +1007,17 @@ test('P1-AUD-16B_PROTECTION_POLICY_CHECKS_GEOMETRY_AND_ACCESS', () => {
     (column) => column.visible === false
   );
   const prefix = `WORK_OS_V2_PHASE1_${sandbox.WorkOsConfig.SHEETS.TASKS}`;
+  const headerGeometry = sandbox.WorkOsSchemas
+    .headerProtectionGeometryForSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   const rangeProtections = [
     new FakeProtection(
       `${prefix}_HEADER_IDS`,
-      sheet.getRange(1, 1, 1, schema.length)
+      sheet.getRange(
+        headerGeometry.row,
+        headerGeometry.column,
+        headerGeometry.rows,
+        headerGeometry.columns
+      )
     ),
     new FakeProtection(
       `${prefix}_MANAGEMENT_COLUMNS`,
@@ -979,8 +1050,11 @@ test('P1-AUD-16B_PROTECTION_POLICY_CHECKS_GEOMETRY_AND_ACCESS', () => {
     type === sandbox.SpreadsheetApp.ProtectionType.RANGE
       ? rangeProtections
       : [taskPolicy];
+  const ledger = sheet.getParent().getSheetByName(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+  );
   let result = sandbox.WorkOsDiagnostics.runQuickDiagnostic(
-    new FakeSpreadsheet([sheet])
+    new FakeSpreadsheet([sheet, ledger])
   );
   assert.strictEqual(
     result.checks.find((item) => item.id === 'TASK_PROTECTIONS').status,
@@ -991,9 +1065,41 @@ test('P1-AUD-16B_PROTECTION_POLICY_CHECKS_GEOMETRY_AND_ACCESS', () => {
     'PASS'
   );
 
+  rangeProtections[0].setRange(sheet.getRange(1, 1, 1, schema.length));
+  result = sandbox.WorkOsDiagnostics.runQuickDiagnostic(
+    new FakeSpreadsheet([sheet, ledger])
+  );
+  assert.strictEqual(
+    result.checks.find((item) => item.id === 'TASK_PROTECTIONS').status,
+    'FAIL'
+  );
+
+  rangeProtections[0].setRange(sheet.getRange(
+    headerGeometry.row,
+    headerGeometry.column,
+    headerGeometry.rows,
+    headerGeometry.columns
+  ));
+  rangeProtections.push(new FakeProtection(
+    `${prefix}_HEADER_IDS`,
+    sheet.getRange(
+      headerGeometry.row,
+      headerGeometry.column,
+      headerGeometry.rows,
+      headerGeometry.columns
+    )
+  ));
+  result = sandbox.WorkOsDiagnostics.runQuickDiagnostic(
+    new FakeSpreadsheet([sheet, ledger])
+  );
+  assert.strictEqual(
+    result.checks.find((item) => item.id === 'TASK_PROTECTIONS').status,
+    'FAIL'
+  );
+
   taskPolicy.editorEmails.push('unexpected.editor@example.invalid');
   result = sandbox.WorkOsDiagnostics.runQuickDiagnostic(
-    new FakeSpreadsheet([sheet])
+    new FakeSpreadsheet([sheet, ledger])
   );
   assert.strictEqual(
     result.checks.find((item) => item.id === 'TASK_EDIT_POLICY').status,

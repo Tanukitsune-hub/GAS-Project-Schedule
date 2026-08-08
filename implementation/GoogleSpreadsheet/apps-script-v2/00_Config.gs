@@ -5,14 +5,46 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.4-prepilot',
-  SCHEMA_VERSION: '2.5',
+  CODE_VERSION: '2.8.12-prepilot',
+  SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
-  MIGRATION_VERSION: '2',
+  MIGRATION_VERSION: '3',
+  S90_MODULE_CONTRACT_ID: 'WORK_OS_V2_S90_CONTRACT_2_8_11',
+  DIAGNOSTIC_ACCEPTANCE_SUMMARY_CONTRACT_ID:
+    'WORK_OS_V2_DIAGNOSTIC_ACCEPTANCE_SUMMARY_V1',
+  // This deliberately exceeds the known Quick Diagnostic check population
+  // while keeping the summary bounded enough to remain above UI detail caps.
+  DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_IDS: 96,
+  DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_ID_LENGTH: 48,
   TIMEZONE: 'Asia/Tokyo',
   HEADER_ID_ROW: 1,
   HEADER_LABEL_ROW: 2,
   DATA_START_ROW: 3,
+  // The only Dashboard rows that Setup may seed before an explicit refresh.
+  // Dashboard ownership validation compares these values exactly; it must not
+  // treat arbitrary rows with the same three keys as a safe legacy surface.
+  DASHBOARD_LEGACY_SEED_ROWS: Object.freeze([
+    Object.freeze({
+      metric_key: 'AUTOMATION_STATUS',
+      metric_value: 'OFF',
+      note: '初期停止。明示更新後に現在状態を表示します。'
+    }),
+    Object.freeze({
+      metric_key: 'SYSTEM_HEALTH',
+      metric_value: '未更新',
+      note: 'メニューから運用Dashboardを更新してください。'
+    }),
+    Object.freeze({
+      metric_key: 'QUICK_DIAGNOSTIC',
+      metric_value: 'NOT_EXECUTED',
+      note: 'Dashboard未更新'
+    })
+  ]),
+  // The Dashboard system block contains only string values. Setup may
+  // establish this deterministic plain-text contract after (and only after)
+  // the Dashboard control plane and the exact system surface are proven safe.
+  // Diagnostics remain read-only and require this value exactly.
+  DASHBOARD_SYSTEM_BLOCK_TEXT_FORMAT: '@',
   TASK_INITIAL_ROWS: 100,
   SETTINGS_INITIAL_ROWS: 50,
   DEFAULT_INITIAL_ROWS: 100,
@@ -46,6 +78,13 @@ var WorkOsConfig = Object.freeze({
   V2_EXTENSION_CHUNK_ROWS: 500,
   V2_EXTENSION_MAX_ROWS: 10000,
   V2_EXTENSION_BUDGET_RESERVE_MS: 5000,
+  AUTHORITY_LEDGER_CHUNK_ROWS: 50,
+  // A ledger snapshot is intentionally kept below the Google Sheets cell
+  // limit.  The protocol fails closed rather than truncating recovery state.
+  AUTHORITY_LEDGER_MAX_SNAPSHOT_CHARS: 45000,
+  // Bound runtime scans and expansion so a malformed workbook cannot turn an
+  // authority check into an unbounded Sheet read/write operation.
+  AUTHORITY_LEDGER_MAX_DATA_ROWS: 10000,
   MOCK_AI_MODEL: 'work-os-deterministic-mock-v2',
   MOCK_PROMPT_VERSION: 'phase3-mock-v1',
   AI_PROVIDER: 'MOCK',
@@ -100,7 +139,8 @@ var WorkOsConfig = Object.freeze({
     MESSAGE_STATE: 'メール状態',
     SYSTEM_CONFIG: 'システム設定',
     PROMPT_VERSIONS: 'プロンプト版管理',
-    SYNC_STATE: '同期状態'
+    SYNC_STATE: '同期状態',
+    TASK_AUTHORITY_LEDGER: 'Task Authority Ledger'
   }),
   V1_SHEET_NAMES: Object.freeze([
     '要確認',
@@ -130,7 +170,9 @@ var WorkOsConfig = Object.freeze({
     AUTOMATION_SCAN_PAGE_TOKEN:
       'WORK_OS_V2_AUTOMATION_SCAN_PAGE_TOKEN',
     AI_PROVIDER_SUPPRESS_UNTIL:
-      'WORK_OS_V2_AI_PROVIDER_SUPPRESS_UNTIL'
+      'WORK_OS_V2_AI_PROVIDER_SUPPRESS_UNTIL',
+    AUTHORITY_MIGRATION_STATE:
+      'WORK_OS_V2_AUTHORITY_MIGRATION_STATE'
   }),
   SETUP_STAGES: Object.freeze([
     'S00_VALIDATE_ENV',
@@ -220,6 +262,16 @@ var WorkOsEnums = Object.freeze({
     UPCOMING: 'UPCOMING',
     TODAY: 'TODAY',
     OVERDUE: 'OVERDUE'
+  }),
+  AuthorityControlState: Object.freeze({
+    ACTIVE: 'ACTIVE',
+    ORPHANED: 'ORPHANED',
+    QUARANTINED: 'QUARANTINED',
+    UNRECOVERABLE: 'UNRECOVERABLE'
+  }),
+  AuthorityTransactionState: Object.freeze({
+    IDLE: 'IDLE',
+    PREPARED: 'PREPARED'
   })
 });
 
@@ -233,12 +285,14 @@ var WorkOsSheetOrder = Object.freeze([
   WorkOsConfig.SHEETS.MESSAGE_STATE,
   WorkOsConfig.SHEETS.SYSTEM_CONFIG,
   WorkOsConfig.SHEETS.PROMPT_VERSIONS,
-  WorkOsConfig.SHEETS.SYNC_STATE
+  WorkOsConfig.SHEETS.SYNC_STATE,
+  WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
 ]);
 
 var WorkOsHiddenSheets = Object.freeze([
   WorkOsConfig.SHEETS.MESSAGE_STATE,
   WorkOsConfig.SHEETS.SYSTEM_CONFIG,
   WorkOsConfig.SHEETS.PROMPT_VERSIONS,
-  WorkOsConfig.SHEETS.SYNC_STATE
+  WorkOsConfig.SHEETS.SYNC_STATE,
+  WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
 ]);

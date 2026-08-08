@@ -1,10 +1,13 @@
 'use strict';
 
 /**
- * Phase 5 v2.0 -> v2.1 append-only schema extension tests.
+ * Schema 2.5 -> 2.6 authority-ledger migration regression tests.
  *
- * This reuses the completed-v2 in-memory fixture used by the baseline upgrade
- * suite. No real Spreadsheet, Lock service, or external API is contacted.
+ * These tests deliberately use only the in-memory Apps Script facade from the
+ * baseline suite.  They do not contact Google Workspace.  The historical
+ * snapshot-cell migration assertions were replaced with fail-closed coverage:
+ * Schema 2.6 may seed authority exactly once from the independent Schema 2.5
+ * note anchor, never from the editable snapshot cell or a live Task row.
  */
 const assert = require('assert');
 const fs = require('fs');
@@ -12,7 +15,7 @@ const path = require('path');
 const vm = require('vm');
 
 const baselinePath = path.resolve(__dirname, 'baseline_upgrade_test.js');
-let baselineSource = fs.readFileSync(baselinePath, 'utf8');
+let baselineSource = fs.readFileSync(baselinePath, 'utf8').replace(/\r\n/g, '\n');
 baselineSource = baselineSource.replace(
   "  '03_SheetBuilder.gs',\n  '02_Setup.gs'\n",
   "  '03_SheetBuilder.gs',\n  '02_Setup.gs',\n" +
@@ -27,6 +30,7 @@ if (reportIndex < 0) {
 const exposure = `
 globalThis.__phase5SchemaFixture = {
   sandbox,
+  FakeRange,
   FakeSheet,
   FakeSpreadsheet,
   makeCompletedPhase4Environment,
@@ -76,100 +80,232 @@ sandbox.LockService = {
   }
 };
 
+/*
+ * The baseline fixture intentionally models only the APIs needed by the
+ * earlier version refresh.  Schema 2.6 correctly hardens the new authority
+ * ledger before converting any row, so this suite supplies no-op layout and
+ * protection facades while retaining real cell/note mutations and write
+ * counts.  The fake protection is intentionally stateful enough to validate
+ * that the ledger is hidden before a budget pause is returned.
+ */
+class FakeProtection {
+  constructor(sheet, type, range) {
+    this.sheet = sheet;
+    this.type = type;
+    this.range = range || null;
+    this.description = '';
+    this.editors = [];
+    this.unprotectedRanges = [];
+  }
+
+  setDescription(value) {
+    this.description = String(value || '');
+    return this;
+  }
+
+  getDescription() {
+    return this.description;
+  }
+
+  setRange(range) {
+    this.range = range;
+    return this;
+  }
+
+  setWarningOnly() { return this; }
+
+  addEditor(editor) {
+    if (this.editors.indexOf(editor) < 0) {
+      this.editors.push(editor);
+    }
+    return this;
+  }
+
+  getEditors() { return this.editors.slice(); }
+
+  removeEditors(editors) {
+    this.editors = this.editors.filter((editor) => editors.indexOf(editor) < 0);
+    return this;
+  }
+
+  canDomainEdit() { return false; }
+
+  setDomainEdit() { return this; }
+
+  setUnprotectedRanges(ranges) {
+    this.unprotectedRanges = ranges.slice();
+    return this;
+  }
+}
+
+function ensureNotes(sheet) {
+  if (!sheet.notes) {
+    sheet.notes = Array.from({ length: sheet.maxRows }, () =>
+      Array.from({ length: sheet.maxColumns }, () => '')
+    );
+  }
+  return sheet.notes;
+}
+
+const originalInsertRowsAfter = fixture.FakeSheet.prototype.insertRowsAfter;
+fixture.FakeSheet.prototype.insertRowsAfter = function (afterRow, count) {
+  const notes = ensureNotes(this);
+  const result = originalInsertRowsAfter.call(this, afterRow, count);
+  for (let index = 0; index < count; index += 1) {
+    notes.push(Array.from({ length: this.maxColumns }, () => ''));
+  }
+  return result;
+};
+
 fixture.FakeSheet.prototype.insertColumnsAfter = function (afterColumn, count) {
   assert.strictEqual(afterColumn, this.maxColumns);
+  const notes = ensureNotes(this);
   for (let index = 0; index < count; index += 1) {
     this.cells.forEach((row) => row.push(''));
+    notes.forEach((row) => row.push(''));
   }
   this.maxColumns += count;
   this.writeCount += 1;
   return this;
 };
 
-function validClassification() {
-  const input = {
-    schema_version: sandbox.WorkOsConfig.AI_SCHEMA_VERSION,
-    message: {
-      message_id: 'synthetic-schema-message',
-      thread_id: 'synthetic-schema-thread',
-      stable_thread_key: 'root:synthetic-schema-thread',
-      subject: '[MOCK:INFORMATION_ONLY] Synthetic schema extension',
-      sender: 'fixture@example.invalid',
-      received_at: '2026-07-24T00:00:00.000Z',
-      plain_body: 'Synthetic body used only for an in-memory test.',
-      prior_messages: []
-    },
-    active_tasks: [],
-    context: {
-      today: '2026-07-24',
-      timezone: sandbox.WorkOsConfig.TIMEZONE
-    },
-    constraints: {
-      max_actions: sandbox.WorkOsConfig.MAX_AI_ACTIONS,
-      no_attachment_analysis: true,
-      no_email_send: true
+fixture.FakeSheet.prototype.deleteColumns = function (startColumn, count) {
+  assert(startColumn >= 1 && count >= 0, 'deleteColumns bounds');
+  assert(startColumn + count - 1 <= this.maxColumns, 'deleteColumns range');
+  const notes = ensureNotes(this);
+  this.cells.forEach((row) => row.splice(startColumn - 1, count));
+  notes.forEach((row) => row.splice(startColumn - 1, count));
+  this.maxColumns -= count;
+  this.writeCount += 1;
+  return this;
+};
+
+fixture.FakeRange.prototype.getNotes = function () {
+  const notes = ensureNotes(this.sheet);
+  return Array.from({ length: this.rowCount }, (_unused, rowOffset) =>
+    Array.from({ length: this.columnCount }, (_unusedColumn, columnOffset) =>
+      notes[this.row - 1 + rowOffset][this.column - 1 + columnOffset]
+    )
+  );
+};
+
+fixture.FakeRange.prototype.getNote = function () {
+  return this.getNotes()[0][0];
+};
+
+fixture.FakeRange.prototype.setNote = function (value) {
+  const notes = ensureNotes(this.sheet);
+  for (let rowOffset = 0; rowOffset < this.rowCount; rowOffset += 1) {
+    for (let columnOffset = 0; columnOffset < this.columnCount; columnOffset += 1) {
+      notes[this.row - 1 + rowOffset][this.column - 1 + columnOffset] =
+        String(value || '');
     }
-  };
-  return new sandbox.WorkOsAiAdapter.MockAiAdapter().classify(input);
+  }
+  this.sheet.writeCount += 1;
+  return this;
+};
+
+['setFontWeight', 'setBackground', 'setDataValidation', 'setNumberFormat'].forEach(
+  (method) => {
+    fixture.FakeRange.prototype[method] = function () { return this; };
+  }
+);
+
+fixture.FakeRange.prototype.protect = function () {
+  this.sheet._protections = this.sheet._protections || [];
+  const protection = new FakeProtection(this.sheet, 'RANGE', this);
+  this.sheet._protections.push(protection);
+  return protection;
+};
+
+fixture.FakeSheet.prototype.getProtections = function (type) {
+  const protections = this._protections || [];
+  if (!type) {
+    return protections.slice();
+  }
+  const expected = type === sandbox.SpreadsheetApp.ProtectionType.RANGE
+    ? 'RANGE'
+    : 'SHEET';
+  return protections.filter((protection) => protection.type === expected);
+};
+
+fixture.FakeSheet.prototype.protect = function () {
+  this._protections = this._protections || [];
+  const protection = new FakeProtection(this, 'SHEET', null);
+  this._protections.push(protection);
+  return protection;
+};
+
+fixture.FakeSheet.prototype.setFrozenRows = function () { return this; };
+fixture.FakeSheet.prototype.hideRows = function () { return this; };
+fixture.FakeSheet.prototype.hideColumns = function () { return this; };
+fixture.FakeSheet.prototype.hideSheet = function () {
+  this.hidden = true;
+  return this;
+};
+fixture.FakeSheet.prototype.showSheet = function () {
+  this.hidden = false;
+  return this;
+};
+fixture.FakeSheet.prototype.isSheetHidden = function () {
+  return this.hidden === true;
+};
+fixture.FakeSheet.prototype.getParent = function () {
+  return this.parent || null;
+};
+
+fixture.FakeSpreadsheet.prototype.insertSheet = function (name, index) {
+  const sheet = new fixture.FakeSheet(name, 100, 1);
+  sheet.parent = this;
+  const targetIndex = Number.isInteger(index) ? index : this.sheets.length;
+  this.sheets.splice(targetIndex, 0, sheet);
+  return sheet;
+};
+fixture.FakeSpreadsheet.prototype.setActiveSheet = function (sheet) {
+  this.activeSheet = sheet;
+  return this;
+};
+fixture.FakeSpreadsheet.prototype.getActiveSheet = function () {
+  return this.activeSheet || this.sheets[0] || null;
+};
+fixture.FakeSpreadsheet.prototype.moveActiveSheet = function (position) {
+  const active = this.getActiveSheet();
+  const prior = this.sheets.indexOf(active);
+  if (prior < 0) {
+    return this;
+  }
+  this.sheets.splice(prior, 1);
+  this.sheets.splice(Math.max(0, position - 1), 0, active);
+  return this;
+};
+
+sandbox.SpreadsheetApp.flush = () => {};
+sandbox.SpreadsheetApp.newDataValidation = () => ({
+  requireCheckbox() { return this; },
+  requireValueInList() { return this; },
+  setAllowInvalid() { return this; },
+  build() { return { fake_rule: true }; }
+});
+
+function attachSpreadsheetParents(spreadsheet) {
+  spreadsheet.getSheets().forEach((sheet) => {
+    sheet.parent = spreadsheet;
+    ensureNotes(sheet);
+  });
 }
 
-function legacyEnvironment(options = {}) {
-  const environment = fixture.makeCompletedPhase4Environment();
-  const messageSheet = environment.spreadsheet.getSheetByName(
-    sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE
-  );
-  const classification = validClassification();
-  fixture.setRecord(
-    messageSheet,
-    sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE,
-    3,
-    {
-      message_id: 'synthetic-schema-message',
-      thread_id: 'synthetic-schema-thread',
-      stable_thread_key: 'root:synthetic-schema-thread',
-      received_at: new sandbox.Date('2026-07-24T00:00:00.000Z'),
-      discovered_at: new sandbox.Date('2026-07-24T00:01:00.000Z'),
-      source_mode: 'MANUAL',
-      processing_status: 'CLASSIFIED',
-      resume_stage: 'TASK_WRITE',
-      classification_json: JSON.stringify(classification),
-      classification_hash: options.invalid_hash
-        ? '0'.repeat(64)
-        : sandbox.WorkOsAiAdapter.legacyClassificationHash(classification),
-      action_count: classification.actions.length,
-      retry_count: 0,
-      schema_version: '2.0',
-      updated_at: new sandbox.Date('2026-07-24T00:02:00.000Z')
-    }
-  );
-  messageSheet.cells.forEach((row) => row.pop());
-  messageSheet.maxColumns -= 1;
-  messageSheet.writeCount = 0;
-  return { environment, messageSheet, classification };
+function activateEnvironment(environment) {
+  attachSpreadsheetParents(environment.spreadsheet);
+  sandbox.SpreadsheetApp.getActiveSpreadsheet = () => environment.spreadsheet;
+  sandbox.PropertiesService.getScriptProperties = () => environment.properties;
 }
 
-const schema24SnapshotFields = [
-  'needs_review',
-  'decision',
-  'status',
-  'completed',
-  'excluded',
-  'task_title',
-  'due_date',
-  'suggested_due_date',
-  'deadline_basis',
-  'priority',
-  'waiting_for_reply',
-  'calendar_sync_mode',
-  'comment',
-  'review_state',
-  'review_type',
-  'calendar_category',
-  'calendar_importance',
-  'manual_fields',
-  'pending_action_type',
-  'pending_changes_json'
-];
+function resetWriteCounts(environment) {
+  environment.spreadsheet.getSheets().forEach((sheet) => {
+    sheet.writeCount = 0;
+  });
+  environment.properties.writeCount = 0;
+}
 
 function snapshotValue(column, value) {
   if (value === '' || value == null) {
@@ -179,49 +315,171 @@ function snapshotValue(column, value) {
     return value.toISOString();
   }
   if (column.enumName) {
-    return sandbox.WorkOsSchemas.toInternalEnum(
-      column.enumName,
-      value
-    );
+    return sandbox.WorkOsSchemas.toInternalEnum(column.enumName, value);
   }
-  if (column.type === 'JsonArray' ||
-      column.type === 'JsonObject') {
+  if (column.type === 'JsonArray' || column.type === 'JsonObject') {
     return JSON.parse(String(value));
   }
   return value;
 }
 
-function schema24Environment() {
-  const state = legacyEnvironment();
-  const taskSheet = state.environment.taskSheet;
-  const schema = sandbox.WorkOsSchemas.getSheetSchema(
-    sandbox.WorkOsConfig.SHEETS.TASKS
-  );
-  const ids = Array.from(sandbox.WorkOsSchemas.getInternalIds(
-    sandbox.WorkOsConfig.SHEETS.TASKS
-  ));
-  const map = sandbox.WorkOsSchemas.buildColumnMapFromIds(ids);
-  const row = taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1];
+function taskSchemaDetails() {
+  const taskName = sandbox.WorkOsConfig.SHEETS.TASKS;
+  const ids = Array.from(sandbox.WorkOsSchemas.getInternalIds(taskName));
+  return {
+    taskName,
+    ids,
+    legacyIds: ids.slice(0, -3),
+    schema: sandbox.WorkOsSchemas.getSheetSchema(taskName),
+    map: sandbox.WorkOsSchemas.buildColumnMapFromIds(ids)
+  };
+}
+
+function trimTaskToSchema25(taskSheet) {
+  const details = taskSchemaDetails();
+  const removed = details.ids.length - details.legacyIds.length;
+  const notes = ensureNotes(taskSheet);
+  taskSheet.cells.forEach((row) => row.splice(details.legacyIds.length, removed));
+  notes.forEach((row) => row.splice(details.legacyIds.length, removed));
+  taskSheet.maxColumns = details.legacyIds.length;
+  return details;
+}
+
+function snapshotForLegacyTaskRow(taskSheet, rowNumber, details) {
+  const row = taskSheet.cells[rowNumber - 1];
   const values = {};
-  schema24SnapshotFields.forEach((id) => {
-    values[id] = snapshotValue(schema[map[id]], row[map[id]]);
+  details.legacyIds.forEach((id) => {
+    if (id === 'authoritative_snapshot_json') {
+      return;
+    }
+    values[id] = snapshotValue(
+      details.schema[details.map[id]],
+      row[details.legacyIds.indexOf(id)]
+    );
   });
-  row[map.authoritative_snapshot_json] = JSON.stringify({
-    schema_version: '2.4',
-    task_id: row[map.task_id],
+  return {
+    format: 'FULL_ROW_V1',
+    schema_version: '2.5',
+    task_id: String(row[details.legacyIds.indexOf('task_id')] || ''),
     values
-  });
-  taskSheet.cells.forEach((taskRow) => {
-    taskRow.splice(taskRow.length - 3, 3);
-  });
-  taskSheet.maxColumns -= 3;
-  taskSheet.writeCount = 0;
+  };
+}
+
+function setLegacyAuthorityNote(taskSheet, rowNumber, details, noteMode) {
+  const snapshotColumn = details.legacyIds.indexOf('authoritative_snapshot_json') + 1;
+  let note;
+  if (noteMode === 'MISSING') {
+    note = '';
+  } else if (noteMode === 'MALFORMED') {
+    note = 'WORK_OS_TASK_AUTHORITY_V2:{malformed';
+  } else {
+    note = 'WORK_OS_TASK_AUTHORITY_V2:' + JSON.stringify(
+      snapshotForLegacyTaskRow(taskSheet, rowNumber, details)
+    );
+  }
+  taskSheet.getRange(rowNumber, snapshotColumn, 1, 1).setNote(note);
+}
+
+function schema25Environment(options = {}) {
+  const environment = fixture.makeCompletedPhase4Environment();
+  activateEnvironment(environment);
+  const details = taskSchemaDetails();
+  const taskSheet = environment.spreadsheet.getSheetByName(details.taskName);
+  const ledgerName = sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+  const ledgerIndex = environment.spreadsheet.sheets.findIndex(
+    (sheet) => sheet.getName() === ledgerName
+  );
+  if (ledgerIndex >= 0) {
+    environment.spreadsheet.sheets.splice(ledgerIndex, 1);
+  }
+  trimTaskToSchema25(taskSheet);
+  const count = Math.max(1, Number(options.taskCount || 1));
+  const requiredMaxRow = sandbox.WorkOsConfig.DATA_START_ROW + count - 1;
+  if (taskSheet.getMaxRows() < requiredMaxRow) {
+    taskSheet.insertRowsAfter(
+      taskSheet.getMaxRows(),
+      requiredMaxRow - taskSheet.getMaxRows()
+    );
+  }
+  const sourceMap = sandbox.WorkOsSchemas.buildColumnMapFromIds(details.legacyIds);
+  const base = taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1].slice();
+  for (let index = 0; index < count; index += 1) {
+    const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW + index;
+    const row = base.slice();
+    const suffix = (index + 1).toString(16).padStart(32, '0');
+    row[sourceMap.task_id] = `tsk_${suffix}`;
+    row[sourceMap.origin_key] = `org_${suffix}`;
+    row[sourceMap.task_title] = `Schema 2.5 migration task ${index + 1}`;
+    // These Schema 2.5 control fields predate the three Schema 2.6 authority
+    // columns.  The Phase-4 baseline intentionally leaves them blank, but a
+    // real 2.5 row must already satisfy the Task write contract before it can
+    // become a ledger-backed 2.6 record.
+    row[sourceMap.business_version] = 1;
+    row[sourceMap.calendar_reconcile_required] = false;
+    row[sourceMap.calendar_intent_version] = 0;
+    taskSheet.cells[rowNumber - 1] = row;
+    setLegacyAuthorityNote(
+      taskSheet,
+      rowNumber,
+      details,
+      options.noteMode || 'VALID'
+    );
+  }
+  if (typeof options.mutateTask === 'function') {
+    options.mutateTask(taskSheet, details);
+  }
+  resetWriteCounts(environment);
+  return { environment, taskSheet, details };
+}
+
+function pre25Environment() {
+  const environment = fixture.makeCompletedPhase4Environment();
+  activateEnvironment(environment);
+  const details = taskSchemaDetails();
+  const taskSheet = environment.spreadsheet.getSheetByName(details.taskName);
+  const legacy23Width = details.ids.length - 4;
+  const notes = ensureNotes(taskSheet);
+  taskSheet.cells.forEach((row) => row.splice(legacy23Width, 4));
+  notes.forEach((row) => row.splice(legacy23Width, 4));
+  taskSheet.maxColumns = legacy23Width;
+  resetWriteCounts(environment);
+  return { environment, taskSheet, details };
+}
+
+function current26Environment() {
+  const state = schema25Environment();
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(result.status, 'UPDATED');
+  resetWriteCounts(state.environment);
   return state;
 }
 
-function rowById(sheet, internalId) {
-  const ids = sheet.cells[0];
-  return sheet.cells[2][ids.indexOf(internalId)];
+function taskCell(sheet, rowNumber, id) {
+  return sheet.cells[rowNumber - 1][sheet.cells[0].indexOf(id)];
+}
+
+function ledgerRecord(state, taskId) {
+  const ledger = state.environment.spreadsheet.getSheetByName(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+  );
+  assert(ledger, 'Task Authority Ledger must exist');
+  const taskIdIndex = ledger.cells[0].indexOf('task_id');
+  const row = ledger.cells.slice(2).find((candidate) =>
+    String(candidate[taskIdIndex] || '') === String(taskId)
+  );
+  assert(row, `ledger record missing for ${taskId}`);
+  return Object.fromEntries(ledger.cells[0].map((id, index) => [id, row[index]]));
+}
+
+function workbookSnapshot(spreadsheet) {
+  return spreadsheet.getSheets().map((sheet) => ({
+    name: sheet.getName(),
+    cells: structuredClone(sheet.cells),
+    notes: structuredClone(ensureNotes(sheet)),
+    hidden: sheet.isSheetHidden()
+  }));
 }
 
 function totalWrites(spreadsheet) {
@@ -229,52 +487,6 @@ function totalWrites(spreadsheet) {
     (sum, sheet) => sum + sheet.writeCount,
     0
   );
-}
-
-function populateLegacyClassifications(state, messageCount) {
-  const legacyIds = Array.from(sandbox.WorkOsSchemas.getInternalIds(
-    sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE
-  )).slice(0, -1);
-  const requiredMaxRow = sandbox.WorkOsConfig.DATA_START_ROW + messageCount - 1;
-  if (state.messageSheet.getMaxRows() < requiredMaxRow) {
-    state.messageSheet.insertRowsAfter(
-      state.messageSheet.getMaxRows(),
-      requiredMaxRow - state.messageSheet.getMaxRows()
-    );
-  }
-  const classificationText = JSON.stringify(state.classification);
-  const legacyHash = sandbox.WorkOsAiAdapter.legacyClassificationHash(
-    state.classification
-  );
-  const values = Array.from({ length: messageCount }, (_unused, index) => {
-    const sequence = String(index + 1).padStart(5, '0');
-    const record = {
-      message_id: `synthetic-schema-message-${sequence}`,
-      thread_id: `synthetic-schema-thread-${sequence}`,
-      stable_thread_key: `root:synthetic-schema-thread-${sequence}`,
-      received_at: new sandbox.Date('2026-07-24T00:00:00.000Z'),
-      discovered_at: new sandbox.Date('2026-07-24T00:01:00.000Z'),
-      source_mode: 'MANUAL',
-      processing_status: 'CLASSIFIED',
-      resume_stage: 'TASK_WRITE',
-      classification_json: classificationText,
-      classification_hash: legacyHash,
-      action_count: state.classification.actions.length,
-      retry_count: 0,
-      schema_version: '2.0',
-      updated_at: new sandbox.Date('2026-07-24T00:02:00.000Z')
-    };
-    return legacyIds.map((id) =>
-      Object.prototype.hasOwnProperty.call(record, id) ? record[id] : ''
-    );
-  });
-  state.messageSheet.getRange(
-    sandbox.WorkOsConfig.DATA_START_ROW,
-    1,
-    messageCount,
-    legacyIds.length
-  ).setValues(values);
-  state.messageSheet.writeCount = 0;
 }
 
 const tests = [];
@@ -297,482 +509,576 @@ function test(id, body) {
   }
 }
 
-test('P5-S01_LEGACY_V2_EXTENSION_IS_APPEND_ONLY_AND_PRESERVES_DATA', () => {
-  const state = legacyEnvironment();
-  const taskBefore = fixture.snapshotCells(state.environment.taskSheet);
-  const settingsBefore = fixture.snapshotCells(state.environment.settingsSheet);
+test('P5-S01_SCHEMA_2_5_TO_2_6_IS_APPEND_ONLY_AND_SEEDS_LEDGER_FROM_NOTE', () => {
+  const state = schema25Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const titleBefore = taskCell(state.taskSheet, rowNumber, 'task_title');
+  const commentBefore = taskCell(state.taskSheet, rowNumber, 'comment');
+  const settingsBefore = structuredClone(
+    state.environment.spreadsheet.getSheetByName(
+      sandbox.WorkOsConfig.SHEETS.SETTINGS
+    ).cells
+  );
+
   const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
   assert.strictEqual(result.status, 'UPDATED');
-  assert.strictEqual(result.appended_columns, 1);
+  assert.strictEqual(result.appended_columns, 3);
   assert.strictEqual(result.updated_task_rows, 1);
-  assert.strictEqual(result.updated_message_rows, 1);
-  const taskSnapshotIndex =
-    state.environment.taskSheet.cells[0].indexOf(
-      'authoritative_snapshot_json'
-    );
-  assert.ok(taskSnapshotIndex >= 0);
-  state.environment.taskSheet.cells.forEach((row, index) => {
-    assert.strictEqual(
-      JSON.stringify(row.slice(0, taskSnapshotIndex)),
-      JSON.stringify(taskBefore[index].slice(0, taskSnapshotIndex))
-    );
-  });
-  const taskSnapshot = JSON.parse(
-    state.environment.taskSheet.cells[2][taskSnapshotIndex]
+  assert.strictEqual(result.quarantined_task_rows, 0);
+  assert.strictEqual(
+    JSON.stringify(state.taskSheet.cells[0]),
+    JSON.stringify(state.details.ids)
   );
   assert.strictEqual(
-    taskSnapshot.schema_version,
-    sandbox.WorkOsConfig.SCHEMA_VERSION
+    JSON.stringify(state.taskSheet.cells[1]),
+    JSON.stringify(sandbox.WorkOsSchemas.getHeaders(state.details.taskName))
   );
-  assert.strictEqual(
-    taskSnapshot.task_id,
-    state.environment.taskSheet.cells[2][
-      state.environment.taskSheet.cells[0].indexOf('task_id')
-    ]
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'task_title'), titleBefore);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'comment'), commentBefore);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_generation'), 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_state'), 'COMMITTED');
+  assert.notStrictEqual(taskCell(state.taskSheet, rowNumber, 'authoritative_snapshot_json'), '');
+
+  const record = ledgerRecord(state, taskId);
+  assert.strictEqual(record.control_state, 'ACTIVE');
+  assert.strictEqual(record.active_slot, 'A');
+  assert.strictEqual(record.committed_generation, 1);
+  assert.strictEqual(record.transaction_state, 'IDLE');
+  assert.strictEqual(record.physical_row_hint, rowNumber);
+  const ledger = state.environment.spreadsheet.getSheetByName(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
   );
+  assert.strictEqual(ledger.isSheetHidden(), true);
   assert.strictEqual(
-    JSON.stringify(state.environment.settingsSheet.cells),
+    JSON.stringify(state.environment.spreadsheet.getSheetByName(
+      sandbox.WorkOsConfig.SHEETS.SETTINGS
+    ).cells),
     JSON.stringify(settingsBefore)
   );
-
-  const ids = Array.from(sandbox.WorkOsSchemas.getInternalIds(
-    sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE
-  ));
-  assert.strictEqual(JSON.stringify(state.messageSheet.cells[0]), JSON.stringify(ids));
-  assert.strictEqual(
-    rowById(state.messageSheet, 'schema_version'),
-    sandbox.WorkOsConfig.SCHEMA_VERSION
-  );
-  const provenance = JSON.parse(
-    rowById(state.messageSheet, 'classification_provenance_json')
-  );
-  assert.strictEqual(
-    JSON.stringify(provenance),
-    JSON.stringify(sandbox.WorkOsAiAdapter.getMetadata(null))
-  );
-  assert.strictEqual(
-    rowById(state.messageSheet, 'classification_hash'),
-    sandbox.WorkOsAiAdapter.classificationHash(
-      state.classification,
-      provenance
-    )
-  );
 });
 
-test('P5-S02_SECOND_EXTENSION_RUN_IS_STRICT_NO_OP', () => {
-  const state = legacyEnvironment();
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+test('P5-S02_SECOND_SCHEMA_2_6_RUN_IS_STATE_NO_OP_AFTER_HEADER_REASSERTION', () => {
+  const state = current26Environment();
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  const writes = totalWrites(state.environment.spreadsheet);
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
-  const beforeCells = state.environment.spreadsheet.getSheets().map((sheet) =>
-    fixture.snapshotCells(sheet)
-  );
-  const beforeWrites = totalWrites(state.environment.spreadsheet);
-  const second = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
-  );
-  assert.strictEqual(second.status, 'CURRENT');
-  assert.strictEqual(second.changed, false);
-  assert.deepStrictEqual(
-    state.environment.spreadsheet.getSheets().map((sheet) =>
-      fixture.snapshotCells(sheet)
-    ),
-    beforeCells
-  );
+  assert.strictEqual(result.status, 'CURRENT');
+  assert.strictEqual(result.changed, false);
   assert.strictEqual(
-    totalWrites(state.environment.spreadsheet),
-    beforeWrites
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
   );
+  // The migration intentionally reasserts the two canonical Task header rows
+  // on every invocation.  Those two idempotent writes are control-plane only;
+  // the workbook state and every authority record remain unchanged.
+  assert.strictEqual(totalWrites(state.environment.spreadsheet), writes + 2);
 });
 
-test('P5-S02B_SCHEMA_2_2_ROW_UPGRADES_TO_2_4_WITHOUT_DATA_LOSS', () => {
-  const state = legacyEnvironment();
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+test('P5-S02B_CURRENT_TASK_HEADER_ROWS_ARE_RESTORED_CANONICALLY_WITHOUT_REBASELINE', () => {
+  const state = current26Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const titleBefore = taskCell(state.taskSheet, rowNumber, 'task_title');
+  state.taskSheet.cells[0][0] = 'owner_changed_internal_id';
+  state.taskSheet.cells[1][0] = 'owner changed header';
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
-  const schemaIndex = state.messageSheet.cells[0].indexOf('schema_version');
-  state.messageSheet.cells[
-    sandbox.WorkOsConfig.DATA_START_ROW - 1
-  ][schemaIndex] = '2.2';
-  const classificationBefore = rowById(
-    state.messageSheet,
-    'classification_json'
+  assert.strictEqual(result.status, 'CURRENT');
+  assert.strictEqual(
+    JSON.stringify(state.taskSheet.cells[0]),
+    JSON.stringify(state.details.ids)
   );
+  assert.strictEqual(
+    JSON.stringify(state.taskSheet.cells[1]),
+    JSON.stringify(sandbox.WorkOsSchemas.getHeaders(state.details.taskName))
+  );
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'task_title'), titleBefore);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_generation'), 1);
+});
+
+test('P5-S03_CORRUPT_LEGACY_NOTE_QUARANTINES_WITHOUT_SNAPSHOT_CELL_FALLBACK', () => {
+  const state = schema25Environment({ noteMode: 'MALFORMED' });
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const titleBefore = taskCell(state.taskSheet, rowNumber, 'task_title');
+  const snapshotIndex = state.details.legacyIds.indexOf('authoritative_snapshot_json');
+  state.taskSheet.cells[rowNumber - 1][snapshotIndex] = JSON.stringify({
+    task_id: taskId,
+    values: { task_title: 'must never become authority' }
+  });
   const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
   assert.strictEqual(result.status, 'UPDATED');
-  assert.strictEqual(result.updated_message_rows, 1);
-  assert.strictEqual(
-    rowById(state.messageSheet, 'schema_version'),
-    sandbox.WorkOsConfig.SCHEMA_VERSION
-  );
-  assert.strictEqual(
-    rowById(state.messageSheet, 'classification_json'),
-    classificationBefore
-  );
+  assert.strictEqual(result.updated_task_rows, 0);
+  assert.strictEqual(result.quarantined_task_rows, 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'task_title'), titleBefore);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_state'), 'QUARANTINED');
+  const record = ledgerRecord(state, taskId);
+  assert.strictEqual(record.control_state, 'QUARANTINED');
+  assert.strictEqual(record.quarantine_reason_code, 'E_TASK_AUTHORITY_LEGACY_NOTE_INVALID');
 });
 
-test('P5-S03_CORRUPT_CHECKPOINT_STOPS_BEFORE_ANY_MUTATION', () => {
-  const state = legacyEnvironment({ invalid_hash: true });
-  const beforeCells = state.environment.spreadsheet.getSheets().map((sheet) =>
-    fixture.snapshotCells(sheet)
-  );
-  const beforeWidth = state.messageSheet.maxColumns;
-  assert.throws(
-    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-      state.environment.spreadsheet
-    ),
-    (error) => error.code === 'E_V2_EXTENSION_STATE_INVALID'
-  );
-  assert.strictEqual(state.messageSheet.maxColumns, beforeWidth);
-  assert.deepStrictEqual(
-    state.environment.spreadsheet.getSheets().map((sheet) =>
-      fixture.snapshotCells(sheet)
-    ),
-    beforeCells
-  );
-});
-
-test('P5-S04_UNKNOWN_SCHEMA_IS_NOT_MODIFIED', () => {
-  const environment = fixture.makeCompletedPhase4Environment();
-  const taskSheet = environment.taskSheet;
-  taskSheet.cells[0][0] = 'unknown_internal_id';
-  const beforeCells = environment.spreadsheet.getSheets().map((sheet) =>
-    fixture.snapshotCells(sheet)
-  );
-  const beforeWrites = totalWrites(environment.spreadsheet);
+test('P5-S04_UNKNOWN_PHYSICAL_TASK_SCHEMA_IS_NOT_MODIFIED', () => {
+  const state = schema25Environment();
+  state.taskSheet.cells.forEach((row) => row.pop());
+  ensureNotes(state.taskSheet).forEach((row) => row.pop());
+  state.taskSheet.maxColumns -= 1;
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  const writes = totalWrites(state.environment.spreadsheet);
   const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    environment.spreadsheet
+    state.environment.spreadsheet
   );
   assert.strictEqual(result.status, 'NOT_APPLICABLE');
   assert.strictEqual(result.changed, false);
-  assert.deepStrictEqual(
-    environment.spreadsheet.getSheets().map((sheet) =>
-      fixture.snapshotCells(sheet)
-    ),
-    beforeCells
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
   );
-  assert.strictEqual(totalWrites(environment.spreadsheet), beforeWrites);
+  assert.strictEqual(totalWrites(state.environment.spreadsheet), writes);
 });
 
-test('P5-S05_SOFT_BUDGET_PAUSES_BEFORE_MUTATION', () => {
-  const state = legacyEnvironment();
-  const beforeCells = state.environment.spreadsheet.getSheets().map((sheet) =>
-    fixture.snapshotCells(sheet)
-  );
-  const beforeWidth = state.messageSheet.maxColumns;
+test('P5-S05_BUDGET_PAUSE_HARDENS_CONTROL_PLANE_BEFORE_ANY_TASK_CONVERSION', () => {
+  const state = schema25Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
   const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet,
     { isExhausted: () => true }
   );
   assert.strictEqual(result.status, 'PAUSED');
-  assert.strictEqual(result.changed, false);
-  assert.strictEqual(state.messageSheet.maxColumns, beforeWidth);
-  assert.deepStrictEqual(
-    state.environment.spreadsheet.getSheets().map((sheet) =>
-      fixture.snapshotCells(sheet)
-    ),
-    beforeCells
+  assert.strictEqual(result.appended_columns, 3);
+  assert.strictEqual(result.updated_task_rows, 0);
+  assert.strictEqual(result.quarantined_task_rows, 0);
+  assert.strictEqual(state.taskSheet.getMaxColumns(), state.details.ids.length);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_generation'), '');
+  const ledger = state.environment.spreadsheet.getSheetByName(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
   );
-});
-
-test('P5-S06_EXTENSION_CAP_STOPS_BEFORE_MUTATION', () => {
-  const state = legacyEnvironment();
-  const requiredMaxRows =
-    sandbox.WorkOsConfig.DATA_START_ROW - 1 +
-    sandbox.WorkOsConfig.V2_EXTENSION_MAX_ROWS + 1;
-  state.messageSheet.insertRowsAfter(
-    state.messageSheet.getMaxRows(),
-    requiredMaxRows - state.messageSheet.getMaxRows()
-  );
-  const beforeWidth = state.messageSheet.maxColumns;
-  const beforeWrites = totalWrites(state.environment.spreadsheet);
-  assert.throws(
-    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-      state.environment.spreadsheet
-    ),
-    (error) => error.code === 'E_V2_EXTENSION_TOO_LARGE'
-  );
-  assert.strictEqual(state.messageSheet.maxColumns, beforeWidth);
-  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
-});
-
-test('P5-S07_MULTI_CHUNK_PARTIAL_WRITE_RESUMES_TO_CURRENT', () => {
-  const state = legacyEnvironment();
-  const messageCount = sandbox.WorkOsConfig.V2_EXTENSION_CHUNK_ROWS + 1;
-  populateLegacyClassifications(state, messageCount);
-  let budgetChecks = 0;
-  const first = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet,
-    {
-      isExhausted: () => {
-        budgetChecks += 1;
-        return budgetChecks >= 10;
-      }
-    }
-  );
-  assert.strictEqual(first.status, 'PAUSED');
-  assert.strictEqual(first.changed, true);
-  assert.strictEqual(first.appended_columns, 1);
-  assert.strictEqual(
-    first.updated_message_rows,
-    sandbox.WorkOsConfig.V2_EXTENSION_CHUNK_ROWS
-  );
-  assert.strictEqual(first.remaining_message_rows, 1);
+  assert(ledger, 'ledger must exist before pause is returned');
+  assert.strictEqual(ledger.isSheetHidden(), true);
+  const persisted = JSON.parse(state.environment.properties.getProperty(
+    sandbox.WorkOsConfig.PROPERTIES.AUTHORITY_MIGRATION_STATE
+  ));
+  assert.strictEqual(persisted.state, 'PREPARED');
+  assert.strictEqual(persisted.next_row, rowNumber);
 
   const resumed = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
   assert.strictEqual(resumed.status, 'UPDATED');
-  assert.strictEqual(resumed.appended_columns, 0);
-  assert.strictEqual(resumed.updated_message_rows, 1);
+  assert.strictEqual(resumed.updated_task_rows, 1);
+});
 
+test('P5-S06_CORRUPT_AUTHORITY_MIGRATION_CHECKPOINT_STOPS_BEFORE_ANY_MUTATION', () => {
+  const state = schema25Environment();
+  state.environment.properties.setProperty(
+    sandbox.WorkOsConfig.PROPERTIES.AUTHORITY_MIGRATION_STATE,
+    '{not-json'
+  );
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  const writes = totalWrites(state.environment.spreadsheet);
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet
+    ),
+    (error) => error.code === 'E_TASK_AUTHORITY_MIGRATION_STATE'
+  );
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
+  );
+  assert.strictEqual(totalWrites(state.environment.spreadsheet), writes);
+});
+
+test('P5-S07_MULTI_CHUNK_TASK_MIGRATION_PAUSES_RESUMES_AND_BECOMES_IDEMPOTENT', () => {
+  const taskCount = sandbox.WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS + 1;
+  const state = schema25Environment({ taskCount });
+  let budgetChecks = 0;
+  const paused = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet,
+    {
+      isExhausted: () => {
+        budgetChecks += 1;
+        return budgetChecks > 1;
+      }
+    }
+  );
+  assert.strictEqual(paused.status, 'PAUSED');
+  assert.strictEqual(paused.updated_task_rows, sandbox.WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS);
+  assert.strictEqual(paused.quarantined_task_rows, 0);
+  assert.strictEqual(
+    JSON.parse(state.environment.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.AUTHORITY_MIGRATION_STATE
+    )).next_row,
+    sandbox.WorkOsConfig.DATA_START_ROW + sandbox.WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS
+  );
+
+  const resumed = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(resumed.status, 'UPDATED');
+  assert.strictEqual(resumed.updated_task_rows, 1);
+  assert.strictEqual(resumed.quarantined_task_rows, 0);
+  assert.strictEqual(
+    state.environment.properties.getProperty(
+      sandbox.WorkOsConfig.PROPERTIES.AUTHORITY_MIGRATION_STATE
+    ),
+    null
+  );
   const current = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
   assert.strictEqual(current.status, 'CURRENT');
-  assert.strictEqual(current.changed, false);
-  const schemaIndex = state.messageSheet.cells[0].indexOf('schema_version');
-  const provenanceIndex = state.messageSheet.cells[0].indexOf(
-    'classification_provenance_json'
-  );
-  for (let index = 0; index < messageCount; index += 1) {
-    const row = state.messageSheet.cells[
-      sandbox.WorkOsConfig.DATA_START_ROW - 1 + index
-    ];
-    assert.strictEqual(row[schemaIndex], sandbox.WorkOsConfig.SCHEMA_VERSION);
-    assert.notStrictEqual(row[provenanceIndex], '');
-  }
-});
-
-test('R3-02F_SCHEMA_2_4_TO_2_5_USES_SNAPSHOT_TRUST_ANCHOR', () => {
-  const state = schema24Environment();
-  const taskSheet = state.environment.taskSheet;
-  const titleBefore = rowById(taskSheet, 'task_title');
-  const commentBefore = rowById(taskSheet, 'comment');
-  const taskIdBefore = rowById(taskSheet, 'task_id');
-
-  const result = sandbox.WorkOsMigrations
-    .ensureV2ExtensionsBeforeValidation(state.environment.spreadsheet);
-  assert.strictEqual(result.status, 'UPDATED');
-  assert.strictEqual(result.updated_task_rows, 1);
-  assert.strictEqual(result.appended_columns, 4);
-  assert.strictEqual(rowById(taskSheet, 'task_title'), titleBefore);
-  assert.strictEqual(rowById(taskSheet, 'comment'), commentBefore);
-  assert.strictEqual(rowById(taskSheet, 'task_id'), taskIdBefore);
-  assert.strictEqual(rowById(taskSheet, 'business_version'), 1);
-  assert.strictEqual(
-    rowById(taskSheet, 'calendar_reconcile_required'),
-    false
-  );
-  assert.strictEqual(rowById(taskSheet, 'calendar_intent_version'), 0);
-  const snapshot = JSON.parse(
-    rowById(taskSheet, 'authoritative_snapshot_json')
-  );
-  assert.strictEqual(snapshot.format, 'FULL_ROW_V1');
-  assert.strictEqual(snapshot.schema_version, '2.5');
-  assert.strictEqual(snapshot.task_id, taskIdBefore);
-});
-
-test('R3-02G_SCHEMA_2_4_DRIFT_FAILS_BEFORE_ANY_MUTATION', () => {
-  const state = schema24Environment();
-  const taskSheet = state.environment.taskSheet;
-  const titleIndex = taskSheet.cells[0].indexOf('task_title');
-  taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1][titleIndex] =
-    'Schema 2.4 live drift';
-  const beforeCells = state.environment.spreadsheet.getSheets()
-    .map((sheet) => fixture.snapshotCells(sheet));
-  const beforeWrites = totalWrites(state.environment.spreadsheet);
-  assert.throws(
-    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-      state.environment.spreadsheet
-    ),
-    (error) => error.code === 'E_TASK_SNAPSHOT_INVALID'
-  );
-  assert.deepStrictEqual(
-    state.environment.spreadsheet.getSheets()
-      .map((sheet) => fixture.snapshotCells(sheet)),
-    beforeCells
-  );
-  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
-});
-
-test('R3-02I_SCHEMA_2_4_MANAGEMENT_STATE_IS_VALIDATED_SEPARATELY', () => {
-  const state = schema24Environment();
-  const taskSheet = state.environment.taskSheet;
-  const originIndex = taskSheet.cells[0].indexOf('origin_key');
-  taskSheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1][originIndex] =
-    'invalid-origin-key';
-  const beforeCells = state.environment.spreadsheet.getSheets()
-    .map((sheet) => fixture.snapshotCells(sheet));
-  const beforeWrites = totalWrites(state.environment.spreadsheet);
-  assert.throws(
-    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-      state.environment.spreadsheet
-    ),
-    (error) => error.code === 'E_TASK_VALIDATION'
-  );
-  assert.deepStrictEqual(
-    state.environment.spreadsheet.getSheets()
-      .map((sheet) => fixture.snapshotCells(sheet)),
-    beforeCells
-  );
-  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
-});
-
-test('R3-02H_TASK_MIGRATION_PAUSES_RESUMES_AND_IS_IDEMPOTENT', () => {
-  const state = legacyEnvironment();
-  const taskSheet = state.environment.taskSheet;
-  const currentIds = Array.from(sandbox.WorkOsSchemas.getInternalIds(
-    sandbox.WorkOsConfig.SHEETS.TASKS
-  ));
-  const sourceIds = currentIds.slice(0, -4);
-  const taskCount = sandbox.WorkOsConfig.V2_EXTENSION_CHUNK_ROWS + 1;
-  const requiredMaxRow =
-    sandbox.WorkOsConfig.DATA_START_ROW + taskCount - 1;
-  if (taskSheet.getMaxRows() < requiredMaxRow) {
-    taskSheet.insertRowsAfter(
-      taskSheet.getMaxRows(),
-      requiredMaxRow - taskSheet.getMaxRows()
-    );
-  }
-  const base = taskSheet.cells[
-    sandbox.WorkOsConfig.DATA_START_ROW - 1
-  ].slice(0, sourceIds.length);
-  const taskIdIndex = sourceIds.indexOf('task_id');
-  const originIndex = sourceIds.indexOf('origin_key');
-  const titleIndex = sourceIds.indexOf('task_title');
-  const rows = Array.from({ length: taskCount }, (_unused, index) => {
-    const row = base.slice();
-    const suffix = (index + 1).toString(16).padStart(32, '0');
-    row[taskIdIndex] = `tsk_${suffix}`;
-    row[originIndex] = `org_${suffix}`;
-    row[titleIndex] = `Migration Task ${index + 1}`;
-    return row;
-  });
-  taskSheet.getRange(
-    sandbox.WorkOsConfig.DATA_START_ROW,
-    1,
-    taskCount,
-    sourceIds.length
-  ).setValues(rows);
-  taskSheet.cells.forEach((row) => row.splice(row.length - 4, 4));
-  taskSheet.maxColumns -= 4;
-  taskSheet.writeCount = 0;
-
-  let budgetChecks = 0;
-  const paused = sandbox.WorkOsMigrations
-    .ensureV2ExtensionsBeforeValidation(
-      state.environment.spreadsheet,
-      {
-        isExhausted: () => {
-          budgetChecks += 1;
-          return budgetChecks >= 9;
-        }
-      }
-    );
-  assert.strictEqual(paused.status, 'PAUSED');
-  assert.strictEqual(paused.appended_columns, 4);
-  assert.strictEqual(
-    paused.updated_task_rows,
-    sandbox.WorkOsConfig.V2_EXTENSION_CHUNK_ROWS
-  );
-  assert.strictEqual(paused.remaining_task_rows, 1);
-
-  const resumed = sandbox.WorkOsMigrations
-    .ensureV2ExtensionsBeforeValidation(state.environment.spreadsheet);
-  assert.strictEqual(resumed.status, 'UPDATED');
-  assert.strictEqual(resumed.updated_task_rows, 1);
-  const current = sandbox.WorkOsMigrations
-    .ensureV2ExtensionsBeforeValidation(state.environment.spreadsheet);
-  assert.strictEqual(current.status, 'CURRENT');
-  assert.strictEqual(current.changed, false);
-  const snapshotIndex = taskSheet.cells[0].indexOf(
-    'authoritative_snapshot_json'
-  );
   for (let index = 0; index < taskCount; index += 1) {
-    const snapshot = JSON.parse(
-      taskSheet.cells[
-        sandbox.WorkOsConfig.DATA_START_ROW - 1 + index
-      ][snapshotIndex]
-    );
-    assert.strictEqual(snapshot.schema_version, '2.5');
+    const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW + index;
+    assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_generation'), 1);
+    assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_state'), 'COMMITTED');
   }
 });
 
-function assertCurrentTaskSnapshotFailsClosed(mutator) {
-  const state = legacyEnvironment();
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+test('R3-02F_PRE_2_5_TASK_SCHEMA_IS_FAIL_CLOSED_WITHOUT_ANY_LEGACY_SNAPSHOT_UPGRADE', () => {
+  const state = pre25Environment();
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet
+    ),
+    (error) => error.code === 'E_TASK_AUTHORITY_LEGACY_SCHEMA_UNSUPPORTED'
+  );
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
+  );
+});
+
+test('R3-02G_SCHEMA_2_5_LIVE_BUSINESS_DRIFT_IS_QUARANTINED_NOT_REBASELINED', () => {
+  const state = schema25Environment({
+    mutateTask: (sheet, details) => {
+      sheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1][details.legacyIds.indexOf('task_title')] =
+        'live drift must not become authority';
+    }
+  });
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
-  const taskSheet = state.environment.taskSheet;
-  const snapshotIndex = taskSheet.cells[0].indexOf(
-    'authoritative_snapshot_json'
+  assert.strictEqual(result.status, 'UPDATED');
+  assert.strictEqual(result.updated_task_rows, 0);
+  assert.strictEqual(result.quarantined_task_rows, 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'task_title'), 'live drift must not become authority');
+  const record = ledgerRecord(state, taskId);
+  assert.strictEqual(record.control_state, 'QUARANTINED');
+  assert.strictEqual(record.quarantine_reason_code, 'E_TASK_AUTHORITY_LEGACY_LIVE_DRIFT');
+});
+
+test('R3-02I_SCHEMA_2_5_MANAGEMENT_DRIFT_IS_VALIDATED_BY_THE_SAME_ANCHOR', () => {
+  const state = schema25Environment({
+    mutateTask: (sheet, details) => {
+      sheet.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1][details.legacyIds.indexOf('origin_key')] =
+        `org_${'f'.repeat(32)}`;
+    }
+  });
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
   );
-  assert.ok(snapshotIndex >= 0);
-  mutator(taskSheet, snapshotIndex);
-  const beforeCells = state.environment.spreadsheet.getSheets().map((sheet) =>
-    fixture.snapshotCells(sheet)
+  assert.strictEqual(result.status, 'UPDATED');
+  assert.strictEqual(result.quarantined_task_rows, 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_state'), 'QUARANTINED');
+  const record = ledgerRecord(state, taskId);
+  assert.strictEqual(record.quarantine_reason_code, 'E_TASK_AUTHORITY_LEGACY_LIVE_DRIFT');
+});
+
+test('R3-02H_PAUSED_SCHEMA_2_5_RUN_RESUMES_FROM_PERSISTED_ROW_WITHOUT_DUPLICATE_AUTHORITY', () => {
+  const state = schema25Environment({ taskCount: 2 });
+  let checks = 0;
+  const paused = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet,
+    { isExhausted: () => ++checks > 1 }
   );
-  const beforeWrites = totalWrites(state.environment.spreadsheet);
-  assert.throws(
-    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-      state.environment.spreadsheet
-    ),
-    (error) =>
-      error.code === 'E_TASK_SNAPSHOT_INVALID' ||
-      error.code === 'E_V2_EXTENSION_STATE_INVALID'
+  /* The full physical grid is scanned in 50-row chunks, including blank rows. */
+  assert.strictEqual(paused.status, 'PAUSED');
+  assert.strictEqual(paused.updated_task_rows, 2);
+  assert.strictEqual(paused.remaining_from_row, 53);
+  const resumed = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
   );
-  assert.deepStrictEqual(
-    state.environment.spreadsheet.getSheets().map((sheet) =>
-      fixture.snapshotCells(sheet)
-    ),
-    beforeCells
+  assert.strictEqual(resumed.status, 'CURRENT');
+  for (let index = 0; index < 2; index += 1) {
+    const taskId = taskCell(
+      state.taskSheet,
+      sandbox.WorkOsConfig.DATA_START_ROW + index,
+      'task_id'
+    );
+    assert.strictEqual(ledgerRecord(state, taskId).committed_generation, 1);
+  }
+});
+
+test('R5-04_MIGRATION_PAUSES_BEFORE_ORPHAN_RECONCILIATION_AND_RESCANS_SAFELY', () => {
+  const state = schema25Environment({ taskCount: 2 });
+  let checks = 0;
+  const paused = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet,
+    { isExhausted: () => ++checks > 2 }
   );
-  assert.strictEqual(totalWrites(state.environment.spreadsheet), beforeWrites);
+  // The first two checks permit both migration chunks. The third is the
+  // bounded Task-ID observation pass, which must checkpoint before it can
+  // classify an incomplete observation set as orphan evidence.
+  assert.strictEqual(paused.status, 'PAUSED');
+  assert.strictEqual(paused.reconciliation_pending, true);
+  assert.strictEqual(paused.updated_task_rows, 2);
+  const firstTaskId = taskCell(
+    state.taskSheet, sandbox.WorkOsConfig.DATA_START_ROW, 'task_id'
+  );
+  const secondTaskId = taskCell(
+    state.taskSheet, sandbox.WorkOsConfig.DATA_START_ROW + 1, 'task_id'
+  );
+  assert.strictEqual(ledgerRecord(state, firstTaskId).control_state, 'ACTIVE');
+  assert.strictEqual(ledgerRecord(state, secondTaskId).control_state, 'ACTIVE');
+  const resumed = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(resumed.status, 'CURRENT');
+  assert.strictEqual(resumed.changed, false);
+  assert.strictEqual(ledgerRecord(state, firstTaskId).control_state, 'ACTIVE');
+  assert.strictEqual(ledgerRecord(state, secondTaskId).control_state, 'ACTIVE');
+});
+
+test('R3-02A_CURRENT_LIVE_DRIFT_IS_RESTORED_FROM_COMMITTED_LEDGER_NOT_REBASELINED', () => {
+  const state = current26Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const titleBefore = taskCell(state.taskSheet, rowNumber, 'task_title');
+  const generationBefore = ledgerRecord(state, taskId).committed_generation;
+  state.taskSheet.cells[rowNumber - 1][state.taskSheet.cells[0].indexOf('task_title')] =
+    'untrusted current-row drift';
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(result.status, 'UPDATED');
+  assert.strictEqual(result.updated_task_rows, 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'task_title'), titleBefore);
+  assert.strictEqual(ledgerRecord(state, taskId).committed_generation, generationBefore);
+});
+
+test('R3-02B_MISSING_LEDGER_RECORD_QUARANTINES_EVEN_WHEN_EDITABLE_SNAPSHOT_EXISTS', () => {
+  const state = current26Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const ledger = state.environment.spreadsheet.getSheetByName(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+  );
+  ledger.cells[sandbox.WorkOsConfig.DATA_START_ROW - 1].fill('');
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(result.status, 'UPDATED');
+  assert.strictEqual(result.quarantined_task_rows, 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_state'), 'QUARANTINED');
+  const record = ledgerRecord(state, taskId);
+  assert.strictEqual(record.control_state, 'QUARANTINED');
+  assert.strictEqual(record.quarantine_reason_code, 'E_TASK_AUTHORITY_MISSING');
+});
+
+test('R5-01B_CURRENT_2_6_LEGACY_LEDGER_HASH_STAYS_VALID_THROUGH_MIGRATION', () => {
+  const state = current26Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const taskId = taskCell(state.taskSheet, rowNumber, 'task_id');
+  const ledger = state.environment.spreadsheet.getSheetByName(
+    sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+  );
+  const header = ledger.cells[0];
+  const taskIdIndex = header.indexOf('task_id');
+  const recordRow = ledger.cells.findIndex((candidate, index) => index >= 2 &&
+    String(candidate[taskIdIndex] || '') === String(taskId));
+  assert.ok(recordRow >= 2, 'current 2.6 ledger record must exist');
+  const activeSlotIndex = header.indexOf('active_slot');
+  const activeSlot = ledger.cells[recordRow][activeSlotIndex];
+  const suffix = activeSlot === 'A' ? 'a' : 'b';
+  const snapshotIndex = header.indexOf(`slot_${suffix}_snapshot_json`);
+  const slotHashIndex = header.indexOf(`slot_${suffix}_hash`);
+  const committedHashIndex = header.indexOf('committed_hash');
+  const snapshot = JSON.parse(String(ledger.cells[recordRow][snapshotIndex]));
+  const legacyHash = sandbox.WorkOsUtilities.sha256Hex(
+    sandbox.WorkOsUtilities.serializeJson(snapshot, 'object')
+  );
+  const canonicalHash = sandbox.WorkOsUtilities.sha256Hex(
+    sandbox.WorkOsUtilities.canonicalJsonString(snapshot, 'object')
+  );
+  assert.notStrictEqual(legacyHash, canonicalHash,
+    'fixture must retain the historic insertion-order hash distinction');
+  ledger.cells[recordRow][slotHashIndex] = legacyHash;
+  ledger.cells[recordRow][committedHashIndex] = legacyHash;
+  const details = taskSchemaDetails();
+  state.taskSheet.cells[rowNumber - 1][details.map.authority_hash] = legacyHash;
+  resetWriteCounts(state.environment);
+
+  const migration = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(migration.status, 'CURRENT');
+  assert.strictEqual(migration.changed, false);
+  assert.strictEqual(ledgerRecord(state, taskId).control_state, 'ACTIVE');
+  const validated = sandbox.WorkOsTaskRepository.validateAuthority(
+    state.taskSheet.cells[rowNumber - 1],
+    {
+      sheet: state.taskSheet,
+      physical_row: rowNumber,
+      schema: details.schema,
+      column_map: details.map,
+      mode: 'R5_LEGACY_HASH_MIGRATION'
+    }
+  );
+  assert.strictEqual(validated.status, 'VALID');
+
+  const candidate = state.taskSheet.cells[rowNumber - 1].slice();
+  candidate[details.map.task_title] = 'Canonical post-legacy generation';
+  sandbox.WorkOsTaskRepository.commitAuthorityRow(
+    state.taskSheet,
+    rowNumber,
+    candidate,
+    {
+      schema: details.schema,
+      column_map: details.map,
+      mode: 'R5_LEGACY_HASH_PROMOTION'
+    }
+  );
+  const promoted = ledgerRecord(state, taskId);
+  const promotedSuffix = promoted.active_slot === 'A' ? 'a' : 'b';
+  const promotedSnapshot = promoted[`slot_${promotedSuffix}_snapshot_json`];
+  assert.strictEqual(promoted[`slot_${promotedSuffix}_hash`],
+    sandbox.WorkOsUtilities.sha256Hex(
+      sandbox.WorkOsUtilities.canonicalJsonString(promotedSnapshot, 'object')
+    ));
+  assert.strictEqual(sandbox.WorkOsTaskRepository.validateAuthority(
+    state.taskSheet.cells[rowNumber - 1],
+    {
+      sheet: state.taskSheet,
+      physical_row: rowNumber,
+      schema: details.schema,
+      column_map: details.map,
+      mode: 'R5_LEGACY_HASH_POST_PROMOTION'
+    }
+  ).status, 'VALID');
+});
+
+test('R5-03_MIGRATION_DELETE_SHIFT_MARKS_ORPHANED_WITHOUT_SILENT_ROW_RECREATE', () => {
+  const state = schema25Environment({ taskCount: 2 });
+  const initial = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(initial.status, 'UPDATED');
+  const firstRow = sandbox.WorkOsConfig.DATA_START_ROW;
+  const secondRow = firstRow + 1;
+  const firstTaskId = taskCell(state.taskSheet, firstRow, 'task_id');
+  const secondTaskId = taskCell(state.taskSheet, secondRow, 'task_id');
+  const secondRaw = structuredClone(state.taskSheet.cells[secondRow - 1]);
+  // Simulate a real Sheet row delete: the lower row shifts up and the final
+  // physical row is blank. Migration must retain the missing record only as
+  // ORPHANED; it must never rebuild that row from its committed snapshot.
+  state.taskSheet.cells[firstRow - 1] = secondRaw;
+  state.taskSheet.cells[secondRow - 1] =
+    Array.from({ length: state.taskSheet.maxColumns }, () => '');
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(taskCell(state.taskSheet, firstRow, 'task_id'), secondTaskId);
+  assert.strictEqual(taskCell(state.taskSheet, secondRow, 'task_id'), '');
+  assert.strictEqual(ledgerRecord(state, firstTaskId).control_state, 'ORPHANED');
+  assert.strictEqual(
+    ledgerRecord(state, firstTaskId).quarantine_reason_code,
+    'E_TASK_AUTHORITY_ORPHANED'
+  );
+  assert.strictEqual(ledgerRecord(state, firstTaskId).physical_row_hint, '');
+  assert.strictEqual(ledgerRecord(state, secondTaskId).physical_row_hint, firstRow);
+  assert.ok(Number(result.orphaned_task_rows || 0) >= 1);
+  const currentSchema = sandbox.WorkOsSchemas.getSheetSchema(
+    sandbox.WorkOsConfig.SHEETS.TASKS
+  );
+  const currentMap = sandbox.WorkOsSchemas.buildColumnMapFromIds(
+    sandbox.WorkOsSchemas.getInternalIds(sandbox.WorkOsConfig.SHEETS.TASKS)
+  );
+  const beforeRerunValidation = sandbox.WorkOsTaskRepository.validateAuthority(
+    state.taskSheet.cells[firstRow - 1],
+    {
+      sheet: state.taskSheet,
+      physical_row: firstRow,
+      schema: currentSchema,
+      column_map: currentMap,
+      mode: 'R5_MIGRATION_RERUN'
+    }
+  );
+  const mismatches = beforeRerunValidation.authoritative_row
+    ? beforeRerunValidation.authoritative_row.map((value, index) =>
+      JSON.stringify(value) === JSON.stringify(
+        state.taskSheet.cells[firstRow - 1][index]
+      ) ? null : {
+        id: currentSchema[index].id,
+        observed: state.taskSheet.cells[firstRow - 1][index],
+        expected: value
+      }
+    ).filter(Boolean)
+    : [];
+  assert.strictEqual(beforeRerunValidation.status, 'VALID',
+    `${beforeRerunValidation.status}|${beforeRerunValidation.code}|` +
+      JSON.stringify(mismatches));
+  const rerun = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(rerun.status, 'CURRENT', JSON.stringify(rerun));
+  assert.strictEqual(rerun.changed, false);
+  assert.strictEqual(rerun.orphaned_task_rows, 0);
+  assert.strictEqual(ledgerRecord(state, firstTaskId).control_state, 'ORPHANED');
+  assert.strictEqual(taskCell(state.taskSheet, secondRow, 'task_id'), '');
+});
+
+function assertEditableSnapshotProjectionIsRestored(mutator) {
+  const state = current26Environment();
+  const rowNumber = sandbox.WorkOsConfig.DATA_START_ROW;
+  const snapshotIndex = state.taskSheet.cells[0].indexOf('authoritative_snapshot_json');
+  const original = taskCell(state.taskSheet, rowNumber, 'authoritative_snapshot_json');
+  mutator(state.taskSheet, rowNumber, snapshotIndex);
+  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+    state.environment.spreadsheet
+  );
+  assert.strictEqual(result.status, 'UPDATED');
+  assert.strictEqual(result.updated_task_rows, 1);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authoritative_snapshot_json'), original);
+  assert.strictEqual(taskCell(state.taskSheet, rowNumber, 'authority_state'), 'COMMITTED');
 }
 
-test('R3-02A_LIVE_BUSINESS_DRIFT_IS_NOT_SILENTLY_REBASELINED', () => {
-  assertCurrentTaskSnapshotFailsClosed((taskSheet) => {
-    const titleIndex = taskSheet.cells[0].indexOf('task_title');
-    taskSheet.cells[2][titleIndex] = 'Untriggered raw drift';
+test('R3-02C_MALFORMED_EDITABLE_SNAPSHOT_IS_REPAIRED_FROM_LEDGER', () => {
+  assertEditableSnapshotProjectionIsRestored((sheet, rowNumber, index) => {
+    sheet.cells[rowNumber - 1][index] = '{malformed';
   });
 });
 
-test('R3-02B_MISSING_CURRENT_SNAPSHOT_FAILS_CLOSED', () => {
-  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
-    taskSheet.cells[2][snapshotIndex] = '';
+test('R3-02D_EDITABLE_SNAPSHOT_TASK_ID_MISMATCH_IS_REPAIRED_FROM_LEDGER', () => {
+  assertEditableSnapshotProjectionIsRestored((sheet, rowNumber, index) => {
+    const value = JSON.parse(sheet.cells[rowNumber - 1][index]);
+    value.task_id = `tsk_${'f'.repeat(32)}`;
+    sheet.cells[rowNumber - 1][index] = JSON.stringify(value);
   });
 });
 
-test('R3-02C_MALFORMED_CURRENT_SNAPSHOT_FAILS_CLOSED', () => {
-  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
-    taskSheet.cells[2][snapshotIndex] = '{malformed';
-  });
-});
-
-test('R3-02D_SNAPSHOT_TASK_ID_MISMATCH_FAILS_CLOSED', () => {
-  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
-    const snapshot = JSON.parse(taskSheet.cells[2][snapshotIndex]);
-    snapshot.task_id = `tsk_${'f'.repeat(32)}`;
-    taskSheet.cells[2][snapshotIndex] = JSON.stringify(snapshot);
-  });
-});
-
-test('R3-02E_SNAPSHOT_SCHEMA_MISMATCH_FAILS_CLOSED', () => {
-  assertCurrentTaskSnapshotFailsClosed((taskSheet, snapshotIndex) => {
-    const snapshot = JSON.parse(taskSheet.cells[2][snapshotIndex]);
-    snapshot.schema_version = '0.0';
-    taskSheet.cells[2][snapshotIndex] = JSON.stringify(snapshot);
+test('R3-02E_EDITABLE_SNAPSHOT_SCHEMA_MISMATCH_IS_REPAIRED_FROM_LEDGER', () => {
+  assertEditableSnapshotProjectionIsRestored((sheet, rowNumber, index) => {
+    const value = JSON.parse(sheet.cells[rowNumber - 1][index]);
+    value.schema_version = '0.0';
+    sheet.cells[rowNumber - 1][index] = JSON.stringify(value);
   });
 });
 
 const summary = {
   phase: 5,
-  suite: 'v2_schema_extension',
+  suite: 'schema_2_5_to_2_6_authority_migration',
   environment: 'LOCAL_FAKE_APPS_SCRIPT',
   real_google_workspace: 'NOT_EXECUTED',
   passed: tests.filter((item) => item.status === 'PASS').length,

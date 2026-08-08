@@ -85,6 +85,7 @@ function makeScenario(suffix) {
   const taskSheet = harness.taskSheet(spreadsheet);
   const syncSheet = runtime.syncSheet(spreadsheet);
   const clock = runtime.makeClock('2026-07-24T00:20:00.000Z');
+  const taskWrites = [];
 
   sandbox.WorkOsCalendarSync.enqueueTask(task, {
     sheet: syncSheet,
@@ -107,6 +108,7 @@ function makeScenario(suffix) {
       Number(expectedRowVersion || 0),
       'Task writer received a stale row_version'
     );
+    taskWrites.push({ taskId, patch: { ...patch } });
     return sandbox.WorkOsTaskRepository.applyCalendarPatch(
       taskId,
       patch,
@@ -133,8 +135,36 @@ function makeScenario(suffix) {
     syncSheet,
     gateway,
     clock,
+    taskWrites,
     options
   };
+}
+
+function orphanTaskAndMarkLedger(scenario) {
+  const taskContext = sandbox.WorkOsTaskRepository.createContext(
+    scenario.taskSheet
+  );
+  const row = taskContext.byTaskId[scenario.task.task_id];
+  assert.ok(row, 'Task row must exist before authority-loss injection');
+  scenario.taskSheet.getRange(
+    row,
+    1,
+    1,
+    scenario.taskSheet.getMaxColumns()
+  ).setValues([new Array(scenario.taskSheet.getMaxColumns()).fill('')]);
+  const authority = sandbox.WorkOsTaskRepository.validateAllTaskAuthorities(
+    scenario.taskSheet,
+    {
+      mode: 'F016_FAULT_INJECTION',
+      recover_prepared: true,
+      recover_relocated: true,
+      quarantine_invalid: true,
+      mark_orphaned: true
+    }
+  );
+  assert.ok(authority.rows.some((item) => (
+    item.task_id === scenario.task.task_id && item.status === 'ORPHANED'
+  )), 'Task Authority Ledger must record the injected orphan');
 }
 
 function bumpTaskRowVersion(scenario) {
@@ -230,11 +260,44 @@ function excludeTaskAndEnqueueCurrentState(scenario) {
   const outbox = runtime.outboxRecords(scenario.spreadsheet)[0];
   assert.strictEqual(
     outbox.status,
-    current.calendar_event_id ? 'PENDING' : 'DONE'
+    (current.calendar_event_id ||
+      outbox.target_type === 'DEADLINE_CALENDAR_ARMED')
+      ? 'PENDING'
+      : 'DONE'
   );
   assert.strictEqual(
     outbox.desired_action,
     current.calendar_event_id ? 'DELETE' : 'NOOP'
+  );
+}
+
+function markOutboxAsAuthorityCompensation(scenario) {
+  sandbox.WorkOsCalendarSync.withLockedOutboxContext(
+    scenario.syncSheet,
+    (context) => {
+      const row = context.byTaskId[scenario.task.task_id];
+      const record = sandbox.WorkOsCalendarSync.readOutboxRow(context, row);
+      record.target_type = 'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION';
+      record.desired_action = 'DELETE';
+      record.event_id = sandbox.WorkOsCalendarSync.deterministicEventId(
+        scenario.task.task_id
+      );
+      record.status = 'PENDING';
+      record.retry_count = 0;
+      record.next_retry_at = '';
+      record.last_attempt_at = '';
+      record.error_code = 'E_CALENDAR_TASK_AUTHORITY_COMPENSATION';
+      record.updated_at = scenario.clock.now();
+      const output = sandbox.WorkOsCalendarSync.OUTBOX_IDS.map((id) => (
+        record[id] == null ? '' : record[id]
+      ));
+      context.sheet.getRange(
+        row,
+        1,
+        1,
+        sandbox.WorkOsCalendarSync.OUTBOX_IDS.length
+      ).setValues([output]);
+    }
   );
 }
 
@@ -487,6 +550,312 @@ test('F015_CALENDAR_DELETE_THEN_TASK_BECOMES_ELIGIBLE', () => {
     scenario.gateway.events.size,
     1,
     'delete/recreate reconciliation did not converge to one Event'
+  );
+});
+
+test('F016_AUTHORITY_LOST_AFTER_PREPARE_BEFORE_EXECUTE_HAS_NO_EXTERNAL_IO', () => {
+  const scenario = makeScenario('calendar-authority-before-execute');
+  const prepared = sandbox.WorkOsCalendarSync.prepareNextJob(scenario.options);
+  assert.strictEqual(prepared.status, 'READY');
+
+  orphanTaskAndMarkLedger(scenario);
+  const execution = sandbox.WorkOsCalendarSync.executePreparedJob(
+    prepared,
+    scenario.options
+  );
+  assert.strictEqual(execution.status, 'SKIPPED_AUTHORITY_EXCLUDED');
+  assert.strictEqual(scenario.gateway.calls.getCalendar, 0);
+  assert.strictEqual(scenario.gateway.calls.eventGet, 0);
+  assert.strictEqual(scenario.gateway.calls.eventFind, 0);
+  assert.strictEqual(scenario.gateway.calls.eventInsert, 0);
+  assert.strictEqual(scenario.gateway.calls.eventUpdate, 0);
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 0);
+
+  const committed = sandbox.WorkOsCalendarSync.commitPreparedJob(
+    prepared,
+    execution,
+    scenario.options
+  );
+  assert.strictEqual(committed.status, 'CONFLICT');
+  assert.strictEqual(committed.recovery_scheduled, false);
+  assert.strictEqual(committed.recovery_action, '');
+  const outbox = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(outbox.status, 'CANCELLED');
+  assert.strictEqual(
+    outbox.error_code,
+    'E_CALENDAR_TASK_AUTHORITY_EXCLUDED'
+  );
+  assert.strictEqual(scenario.gateway.events.size, 0);
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 0);
+  assert.strictEqual(scenario.taskWrites.length, 0);
+});
+
+test('F016_AUTHORITY_LOST_AFTER_FINAL_REVALIDATION_COMPENSATES_CREATE', () => {
+  const scenario = makeScenario('calendar-authority-after-revalidation');
+  const originalInsert = scenario.gateway.insertEvent.bind(scenario.gateway);
+  let injected = false;
+  scenario.gateway.insertEvent = (calendarId, resource) => {
+    if (!injected) {
+      injected = true;
+      orphanTaskAndMarkLedger(scenario);
+    }
+    return originalInsert(calendarId, resource);
+  };
+
+  const prepared = sandbox.WorkOsCalendarSync.prepareNextJob(scenario.options);
+  const execution = sandbox.WorkOsCalendarSync.executePreparedJob(
+    prepared,
+    scenario.options
+  );
+  assert.strictEqual(execution.status, 'EXECUTED');
+  assert.strictEqual(execution.result.action, 'CREATE');
+  assert.strictEqual(scenario.gateway.calls.eventInsert, 1);
+  assert.strictEqual(scenario.gateway.events.size, 1);
+
+  const committed = sandbox.WorkOsCalendarSync.commitPreparedJob(
+    prepared,
+    execution,
+    scenario.options
+  );
+  assert.strictEqual(committed.status, 'CONFLICT');
+  assert.strictEqual(committed.recovery_scheduled, true);
+  assert.strictEqual(committed.recovery_action, 'DELETE');
+  const pending = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(pending.status, 'PENDING');
+  assert.strictEqual(pending.desired_action, 'DELETE');
+  assert.strictEqual(
+    pending.target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+  assert.strictEqual(
+    pending.event_id,
+    sandbox.WorkOsCalendarSync.deterministicEventId(scenario.task.task_id)
+  );
+
+  const replay = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(replay.processed_count, 1);
+  assert.strictEqual(replay.result.status, 'CANCELLED');
+  assert.strictEqual(scenario.gateway.calls.eventInsert, 1);
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 1);
+  assert.strictEqual(
+    scenario.gateway.events.size,
+    0,
+    'authority-excluded compensation left an orphan Calendar Event'
+  );
+  assert.strictEqual(scenario.taskWrites.length, 0);
+});
+
+test('F016_CRASH_AFTER_CREATE_BEFORE_COMMIT_RECOVERS_FROM_ARMED_OUTBOX', () => {
+  const scenario = makeScenario('calendar-authority-crash-after-create');
+  const originalInsert = scenario.gateway.insertEvent.bind(scenario.gateway);
+  scenario.gateway.insertEvent = (calendarId, resource) => {
+    orphanTaskAndMarkLedger(scenario);
+    return originalInsert(calendarId, resource);
+  };
+
+  const prepared = sandbox.WorkOsCalendarSync.prepareNextJob(scenario.options);
+  const execution = sandbox.WorkOsCalendarSync.executePreparedJob(
+    prepared,
+    scenario.options
+  );
+  assert.strictEqual(execution.status, 'EXECUTED');
+  assert.strictEqual(execution.result.action, 'CREATE');
+  assert.strictEqual(scenario.gateway.events.size, 1);
+  assert.strictEqual(
+    runtime.outboxRecords(scenario.spreadsheet)[0].target_type,
+    'DEADLINE_CALENDAR_ARMED'
+  );
+
+  /* Simulate abrupt termination: no commit is allowed before claim expiry. */
+  scenario.clock.advanceMinutes(11);
+  const replay = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(replay.processed_count, 1);
+  assert.strictEqual(replay.result.status, 'CANCELLED');
+  assert.strictEqual(scenario.gateway.calls.eventInsert, 1);
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 1);
+  assert.strictEqual(scenario.gateway.events.size, 0);
+  assert.strictEqual(scenario.taskWrites.length, 0);
+});
+
+test('F016_ARMED_CONCURRENT_INELIGIBILITY_CRASH_RECONCILES_EVENT', () => {
+  const scenario = makeScenario('calendar-armed-concurrent-ineligibility');
+  const originalInsert = scenario.gateway.insertEvent.bind(scenario.gateway);
+  let injected = false;
+  scenario.gateway.insertEvent = (calendarId, resource) => {
+    const result = originalInsert(calendarId, resource);
+    if (!injected) {
+      injected = true;
+      excludeTaskAndEnqueueCurrentState(scenario);
+    }
+    return result;
+  };
+
+  const prepared = sandbox.WorkOsCalendarSync.prepareNextJob(scenario.options);
+  const execution = sandbox.WorkOsCalendarSync.executePreparedJob(
+    prepared,
+    scenario.options
+  );
+  assert.strictEqual(execution.status, 'EXECUTED');
+  assert.strictEqual(execution.result.action, 'CREATE');
+  const armed = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(armed.status, 'PENDING');
+  assert.strictEqual(armed.desired_action, 'NOOP');
+  assert.strictEqual(armed.target_type, 'DEADLINE_CALENDAR_ARMED');
+  assert.strictEqual(
+    armed.event_id,
+    sandbox.WorkOsCalendarSync.deterministicEventId(scenario.task.task_id)
+  );
+
+  /* Simulate abrupt termination after concurrent re-enqueue, before commit. */
+  scenario.clock.advanceMinutes(11);
+  const replay = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(replay.processed_count, 1);
+  assert.strictEqual(replay.result.status, 'DONE');
+  assert.strictEqual(replay.result.action, 'DELETE');
+  assert.strictEqual(scenario.gateway.calls.eventInsert, 1);
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 1);
+  assert.strictEqual(scenario.gateway.events.size, 0);
+  const completed = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(completed.target_type, 'DEADLINE_CALENDAR');
+  assert.strictEqual(completed.status, 'DONE');
+});
+
+test('F016_COMPENSATION_REFUSES_FOREIGN_EVENT', () => {
+  const scenario = makeScenario('calendar-authority-foreign-event');
+  const originalInsert = scenario.gateway.insertEvent.bind(scenario.gateway);
+  scenario.gateway.insertEvent = (calendarId, resource) => {
+    orphanTaskAndMarkLedger(scenario);
+    return originalInsert(calendarId, resource);
+  };
+
+  const prepared = sandbox.WorkOsCalendarSync.prepareNextJob(scenario.options);
+  const execution = sandbox.WorkOsCalendarSync.executePreparedJob(
+    prepared,
+    scenario.options
+  );
+  sandbox.WorkOsCalendarSync.commitPreparedJob(
+    prepared,
+    execution,
+    scenario.options
+  );
+  scenario.gateway.foreignEvent = true;
+
+  const replay = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(replay.processed_count, 1);
+  assert.strictEqual(replay.result.status, 'DEAD');
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 0);
+  assert.strictEqual(scenario.gateway.events.size, 1);
+  assert.strictEqual(scenario.taskWrites.length, 0);
+  assert.strictEqual(
+    runtime.outboxRecords(scenario.spreadsheet)[0].error_code,
+    'E_CALENDAR_EVENT_FOREIGN'
+  );
+  assert.strictEqual(
+    runtime.outboxRecords(scenario.spreadsheet)[0].target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+});
+
+test('F016_MANUAL_RETRY_PRESERVES_COMPENSATION_TARGET', () => {
+  const scenario = makeScenario('calendar-authority-manual-retry');
+  const originalInsert = scenario.gateway.insertEvent.bind(scenario.gateway);
+  scenario.gateway.insertEvent = (calendarId, resource) => {
+    orphanTaskAndMarkLedger(scenario);
+    return originalInsert(calendarId, resource);
+  };
+
+  const prepared = sandbox.WorkOsCalendarSync.prepareNextJob(scenario.options);
+  const execution = sandbox.WorkOsCalendarSync.executePreparedJob(
+    prepared,
+    scenario.options
+  );
+  sandbox.WorkOsCalendarSync.commitPreparedJob(
+    prepared,
+    execution,
+    scenario.options
+  );
+  scenario.gateway.foreignEvent = true;
+  const failed = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(failed.result.status, 'DEAD');
+
+  sandbox.WorkOsCalendarSync.withLockedOutboxContext(
+    scenario.syncSheet,
+    (context) => sandbox.WorkOsCalendarSync.requestManualRetryInContext(
+      scenario.task.task_id,
+      context,
+      scenario.clock.now()
+    )
+  );
+  const retried = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(retried.status, 'RETRY');
+  assert.strictEqual(
+    retried.target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+  assert.strictEqual(retried.error_code, '');
+});
+
+test('F016_COMPENSATION_SURVIVES_VALID_INELIGIBLE_REENQUEUE', () => {
+  const scenario = makeScenario('calendar-compensation-reenqueue');
+  const initial = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(initial.result.status, 'DONE');
+  assert.strictEqual(initial.result.action, 'CREATE');
+  assert.strictEqual(scenario.gateway.events.size, 1);
+
+  /*
+   * Simulate the durable result of a post-I/O authority-loss conflict, then
+   * let a later authority-valid ineligible Task attempt a forced re-enqueue.
+   * The re-enqueue must not erase the only owned-event cleanup intent.
+   */
+  excludeTaskAndEnqueueCurrentState(scenario);
+  markOutboxAsAuthorityCompensation(scenario);
+  const before = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(
+    before.target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+  assert.strictEqual(before.desired_action, 'DELETE');
+  assert.strictEqual(before.status, 'PENDING');
+  assert.strictEqual(
+    before.event_id,
+    sandbox.WorkOsCalendarSync.deterministicEventId(scenario.task.task_id)
+  );
+
+  const current = sandbox.WorkOsTaskRepository.findByTaskId(
+    sandbox.WorkOsTaskRepository.createContext(scenario.taskSheet),
+    scenario.task.task_id
+  );
+  assert.strictEqual(current.authority_state, 'COMMITTED');
+  assert.strictEqual(current.excluded, true);
+  sandbox.WorkOsCalendarSync.enqueueTask(current, {
+    sheet: scenario.syncSheet,
+    now: new Date(scenario.clock.now().getTime() + 2000),
+    timezone: sandbox.WorkOsConfig.TIMEZONE,
+    force_enqueue: true
+  });
+  const preserved = runtime.outboxRecords(scenario.spreadsheet)[0];
+  assert.strictEqual(
+    preserved.target_type,
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION'
+  );
+  assert.strictEqual(preserved.desired_action, 'DELETE');
+  assert.strictEqual(preserved.status, 'PENDING');
+  assert.strictEqual(
+    preserved.event_id,
+    sandbox.WorkOsCalendarSync.deterministicEventId(scenario.task.task_id)
+  );
+
+  const taskWritesBeforeCompensation = scenario.taskWrites.length;
+  const replay = sandbox.WorkOsCalendarSync.processNextJob(scenario.options);
+  assert.strictEqual(replay.processed_count, 1);
+  assert.strictEqual(replay.result.status, 'CANCELLED');
+  assert.strictEqual(replay.result.action, 'DELETE');
+  assert.strictEqual(scenario.gateway.calls.eventDelete, 1);
+  assert.strictEqual(scenario.gateway.events.size, 0);
+  assert.strictEqual(
+    scenario.taskWrites.length,
+    taskWritesBeforeCompensation,
+    'authority compensation must not patch a reappeared Task'
   );
 });
 

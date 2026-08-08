@@ -11,6 +11,214 @@ var WorkOsDiagnostics = (function () {
     };
   }
 
+  // The acceptance summary is intentionally derived from diagnostic check
+  // metadata only. It never copies safe_message or details to the UI summary,
+  // so a detailed JSON payload may remain redacted/capped without hiding the
+  // closed acceptance facts needed by the operator.
+  function summaryContractId() {
+    return String(
+      WorkOsConfig.DIAGNOSTIC_ACCEPTANCE_SUMMARY_CONTRACT_ID ||
+      'WORK_OS_V2_DIAGNOSTIC_ACCEPTANCE_SUMMARY_V1'
+    );
+  }
+
+  function summaryMaximumCheckIds() {
+    var configured = Number(
+      WorkOsConfig.DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_IDS
+    );
+    if (!isFinite(configured) || configured < 1) {
+      return 1;
+    }
+    return Math.min(96, Math.floor(configured));
+  }
+
+  function summaryMaximumCheckIdLength() {
+    var configured = Number(
+      WorkOsConfig.DIAGNOSTIC_ACCEPTANCE_SUMMARY_MAX_CHECK_ID_LENGTH
+    );
+    if (!isFinite(configured) || configured < 1) {
+      return 1;
+    }
+    return Math.min(48, Math.floor(configured));
+  }
+
+  function normalizedSummaryCheckStatus(item) {
+    return String(item && item.status || 'UNKNOWN');
+  }
+
+  function isBoundedSummaryCheckId(value) {
+    var id = String(value || '');
+    return id.length <= summaryMaximumCheckIdLength() &&
+      /^[A-Za-z][A-Za-z0-9_]*$/.test(id);
+  }
+
+  function isWarningStatus(status) {
+    return status === 'WARN' || status === 'NOT_YET_IMPLEMENTED';
+  }
+
+  function buildBoundedCheckIdList(checks, statusPredicate) {
+    var candidates = [];
+    var seen = {};
+    var malformed = false;
+    var duplicate = false;
+    (checks || []).forEach(function (item) {
+      if (!statusPredicate(normalizedSummaryCheckStatus(item))) {
+        return;
+      }
+      var id = String(item && item.id || '');
+      if (!isBoundedSummaryCheckId(id)) {
+        malformed = true;
+        return;
+      }
+      if (seen[id]) {
+        duplicate = true;
+        return;
+      }
+      seen[id] = true;
+      candidates.push(id);
+    });
+    candidates.sort();
+    var maximum = summaryMaximumCheckIds();
+    return {
+      ids: candidates.slice(0, maximum),
+      complete: !malformed && !duplicate && candidates.length <= maximum
+    };
+  }
+
+  function countChecksWithStatus(checks, statusPredicate) {
+    return (checks || []).filter(function (item) {
+      return statusPredicate(normalizedSummaryCheckStatus(item));
+    }).length;
+  }
+
+  function uniqueCheckForSummary(checks, id) {
+    var matches = (checks || []).filter(function (item) {
+      return String(item && item.id || '') === id;
+    });
+    return matches.length === 1 ? matches[0] : null;
+  }
+
+  function closedCheckState(checks, id) {
+    var item = uniqueCheckForSummary(checks, id);
+    if (!item) {
+      return 'UNKNOWN';
+    }
+    var status = normalizedSummaryCheckStatus(item);
+    return /^(PASS|WARN|FAIL|NOT_EXECUTED|NOT_YET_IMPLEMENTED)$/.test(status)
+      ? status
+      : 'UNKNOWN';
+  }
+
+  function closedColumnCount(checks, id) {
+    var item = uniqueCheckForSummary(checks, id);
+    var value = item && item.details ? Number(item.details.columns) : NaN;
+    if (!isFinite(value) || value < 0 || Math.floor(value) !== value) {
+      return 'UNKNOWN';
+    }
+    return value;
+  }
+
+  function closedBooleanState(checks, id) {
+    var state = closedCheckState(checks, id);
+    if (state === 'PASS') {
+      return true;
+    }
+    if (state === 'FAIL') {
+      return false;
+    }
+    return 'UNKNOWN';
+  }
+
+  function readOnlyExecutionPolicy() {
+    return {
+      external_services_called: false,
+      writes_performed: false,
+      spreadsheet_write_performed: false,
+      properties_write_performed: false,
+      trigger_write_performed: false,
+      flush_performed: false,
+      calendar_api_called: false,
+      gmail_api_called: false,
+      external_ai_request_performed: false,
+      dashboard_repair_performed: false
+    };
+  }
+
+  function buildAcceptanceSummary(checks, diagnosticKind) {
+    var list = Array.isArray(checks) ? checks : [];
+    var warningIds = buildBoundedCheckIdList(list, isWarningStatus);
+    var failureIds = buildBoundedCheckIdList(list, function (status) {
+      return status === 'FAIL';
+    });
+    var policy = readOnlyExecutionPolicy();
+    return {
+      summary_contract_id: summaryContractId(),
+      diagnostic_kind: diagnosticKind === 'DEEP_MANUAL_READ_ONLY'
+        ? 'DEEP_MANUAL_READ_ONLY'
+        : 'QUICK',
+      status: list.some(function (item) {
+        return normalizedSummaryCheckStatus(item) === 'FAIL';
+      }) ? 'FAIL' : (list.some(function (item) {
+        return isWarningStatus(normalizedSummaryCheckStatus(item));
+      }) ? 'WARN' : 'PASS'),
+      pass_count: countChecksWithStatus(list, function (status) {
+        return status === 'PASS';
+      }),
+      warn_count: countChecksWithStatus(list, isWarningStatus),
+      fail_count: countChecksWithStatus(list, function (status) {
+        return status === 'FAIL';
+      }),
+      not_executed_count: countChecksWithStatus(list, function (status) {
+        return status === 'NOT_EXECUTED';
+      }),
+      warn_check_ids: warningIds.ids,
+      fail_check_ids: failureIds.ids,
+      warn_ids_complete: warningIds.complete,
+      fail_ids_complete: failureIds.complete,
+      acceptance_summary_status: warningIds.complete && failureIds.complete
+        ? 'COMPLETE'
+        : 'REVIEW_REQUIRED',
+      external_services_called: policy.external_services_called,
+      writes_performed: policy.writes_performed,
+      spreadsheet_write_performed: policy.spreadsheet_write_performed,
+      properties_write_performed: policy.properties_write_performed,
+      trigger_write_performed: policy.trigger_write_performed,
+      flush_performed: policy.flush_performed,
+      calendar_api_called: policy.calendar_api_called,
+      gmail_api_called: policy.gmail_api_called,
+      external_ai_request_performed: policy.external_ai_request_performed,
+      dashboard_repair_performed: policy.dashboard_repair_performed,
+      task_physical_column_count: closedColumnCount(
+        list,
+        'COLUMNS_ae919285'
+      ),
+      task_schema_ids_state: closedCheckState(list, 'TASK_SCHEMA_IDS'),
+      task_schema_headers_state: closedCheckState(list, 'TASK_SCHEMA_HEADERS'),
+      ledger_physical_column_count: closedColumnCount(
+        list,
+        'COLUMNS_69e0d98c'
+      ),
+      ledger_hidden_state: closedBooleanState(list, 'VISIBILITY_69e0d98c'),
+      ledger_protection_state: closedBooleanState(
+        list,
+        'PROTECTION_69e0d98c'
+      ),
+      ledger_authority_validator_state: closedCheckState(
+        list,
+        'TASK_AUTHORITY_VALIDATOR'
+      )
+    };
+  }
+
+  function attachAcceptanceSummary(result, diagnosticKind) {
+    var value = result || {};
+    value.acceptance_summary = buildAcceptanceSummary(
+      value.checks || [],
+      diagnosticKind
+    );
+    return value;
+  }
+
   function aiReasonPresent(readiness, reason) {
     return readiness &&
       Array.isArray(readiness.reasons) &&
@@ -214,12 +422,56 @@ var WorkOsDiagnostics = (function () {
       checks.push(check('TASK_COLUMN_MAP', 'FAIL', 'Column Mapを構築できません。'));
       return;
     }
+    try {
+      var authority = WorkOsTaskRepository.validateAllTaskAuthorities(sheet, {
+        mode: 'QUICK_DIAGNOSTIC',
+        recover_prepared: false,
+        recover_relocated: false,
+        quarantine_invalid: false,
+        mark_orphaned: false
+      });
+      var authorityFailures = authority.rows.filter(function (item) {
+        return item.status !== 'VALID';
+      });
+      checks.push(check(
+        'TASK_AUTHORITY_VALIDATOR',
+        authorityFailures.length ? 'FAIL' : 'PASS',
+        authorityFailures.length
+          ? 'Task authority requires recovery or quarantine; no snapshot fallback was used.'
+          : '',
+        {
+          counts: authority.counts,
+          invalid_row_count: authorityFailures.length,
+          validator: 'WorkOsTaskRepository.validateAuthority'
+        }
+      ));
+    } catch (authorityError) {
+      checks.push(check(
+        'TASK_AUTHORITY_VALIDATOR',
+        'FAIL',
+        'Task authority validator could not verify the protected ledger.',
+        {
+          error_code: WorkOsUtilities.safeError(
+            authorityError,
+            'DIAGNOSTIC'
+          ).code,
+          validator: 'WorkOsTaskRepository.validateAuthority'
+        }
+      ));
+    }
 
     var dataRowCount = sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1;
-    var checkboxIds = ['needs_review', 'completed', 'excluded', 'waiting_for_reply'];
     var validationFailures = [];
     var formatFailures = [];
-    var validationPlan = WorkOsSchemas.validationPlanForSheet(WorkOsConfig.SHEETS.TASKS);
+    var validationPlan = WorkOsSchemas.validationPlanForSheet(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var checkboxColumnIndexes = validationPlan.filter(function (planItem) {
+      return planItem.validation === 'CHECKBOX';
+    }).map(function (planItem) {
+      return planItem.columnIndex - 1;
+    });
+    var canonicalCheckboxValidationByRow = {};
     for (var chunkOffset = 0;
         chunkOffset < dataRowCount;
         chunkOffset += WorkOsConfig.QUICK_DIAGNOSTIC_CHUNK_ROWS) {
@@ -236,20 +488,28 @@ var WorkOsDiagnostics = (function () {
       );
       var validations = chunkRange.getDataValidations();
       validations.forEach(function (rowRules, rowIndex) {
+        var physicalRow = WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex;
+        canonicalCheckboxValidationByRow[physicalRow] = {};
         schema.forEach(function (item, index) {
           var rule = rowRules[index];
-          if (checkboxIds.indexOf(item.id) !== -1) {
-            if (!criteriaEquals(rule, SpreadsheetApp.DataValidationCriteria.CHECKBOX)) {
+          var planItem = validationPlan[index];
+          if (planItem.validation === 'CHECKBOX') {
+            if (!criteriaEquals(
+              rule,
+              SpreadsheetApp.DataValidationCriteria.CHECKBOX
+            )) {
               validationFailures.push(
                 item.id + '@' +
-                (WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex) +
+                physicalRow +
                 ': checkbox missing'
               );
+            } else {
+              canonicalCheckboxValidationByRow[physicalRow][index] = true;
             }
           } else if (criteriaEquals(rule, SpreadsheetApp.DataValidationCriteria.CHECKBOX)) {
             validationFailures.push(
               item.id + '@' +
-              (WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex) +
+              physicalRow +
               ': unexpected checkbox'
             );
           }
@@ -257,7 +517,7 @@ var WorkOsDiagnostics = (function () {
             if (!criteriaEquals(rule, SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST)) {
               validationFailures.push(
                 item.id + '@' +
-                (WorkOsConfig.DATA_START_ROW + chunkOffset + rowIndex) +
+                physicalRow +
                 ': enum validation missing'
               );
             } else if (JSON.stringify(listCriteriaValues(rule)) !==
@@ -329,7 +589,9 @@ var WorkOsDiagnostics = (function () {
         {
           description: 'WORK_OS_V2_PHASE1_' +
             WorkOsConfig.SHEETS.TASKS + '_HEADER_IDS',
-          geometry: { row: 1, column: 1, rows: 1, columns: schema.length }
+          geometry: WorkOsSchemas.headerProtectionGeometryForSheet(
+            WorkOsConfig.SHEETS.TASKS
+          )
         },
         {
           description: 'WORK_OS_V2_PHASE1_' +
@@ -343,10 +605,12 @@ var WorkOsDiagnostics = (function () {
         }
       ];
       var protectionFailures = requiredProtections.filter(function (expected) {
-        var actual = protections.filter(function (protection) {
+        var actualMatches = protections.filter(function (protection) {
           return protection.getDescription() === expected.description;
-        })[0];
-        return !actual ||
+        });
+        var actual = actualMatches[0];
+        return actualMatches.length !== 1 ||
+          !actual ||
           !protectionAccessIsRestricted(actual) ||
           JSON.stringify(rangeGeometry(actual.getRange())) !==
             JSON.stringify(expected.geometry);
@@ -397,26 +661,51 @@ var WorkOsDiagnostics = (function () {
       ));
     }
 
-    var booleanIndexes = checkboxIds.map(function (id) { return context.columnMap[id]; });
-    var blankBooleanRows = [];
+    var blankRowFailures = [];
     context.values.forEach(function (row, index) {
       var taskId = row[context.columnMap.task_id];
       var originKey = row[context.columnMap.origin_key];
       if (!WorkOsUtilities.isBlank(taskId) || !WorkOsUtilities.isBlank(originKey)) {
         return;
       }
-      var hasBooleanValue = booleanIndexes.some(function (columnIndex) {
-        return row[columnIndex] === true || row[columnIndex] === false;
+      var physicalRow = WorkOsConfig.DATA_START_ROW + index;
+      var canonicalCheckboxes = canonicalCheckboxValidationByRow[physicalRow] || {};
+      schema.forEach(function (item, columnIndex) {
+        var value = row[columnIndex];
+        if (WorkOsUtilities.isBlank(value)) {
+          return;
+        }
+        if (value === false &&
+            checkboxColumnIndexes.indexOf(columnIndex) !== -1 &&
+            canonicalCheckboxes[columnIndex] === true) {
+          return;
+        }
+        blankRowFailures.push({
+          row: physicalRow,
+          column: item.id,
+          reason: value === true
+            ? 'BOOLEAN_TRUE_ON_IDENTITY_EMPTY_ROW'
+            : (value === false
+              ? 'NONCANONICAL_BOOLEAN_FALSE_ON_IDENTITY_EMPTY_ROW'
+              : 'CONTENT_ON_IDENTITY_EMPTY_ROW')
+        });
       });
-      if (hasBooleanValue) {
-        blankBooleanRows.push(WorkOsConfig.DATA_START_ROW + index);
-      }
     });
     checks.push(check(
       'BLANK_ROW_BOOLEAN_VALUES',
-      blankBooleanRows.length ? 'FAIL' : 'PASS',
-      blankBooleanRows.length ? '論理空行にBoolean値があります。' : '',
-      { rows: blankBooleanRows.slice(0, 20) }
+      blankRowFailures.length ? 'FAIL' : 'PASS',
+      blankRowFailures.length
+        ? '論理空行にcanonical checkbox false以外の値があります。'
+        : '',
+      {
+        rows: blankRowFailures.map(function (item) {
+          return item.row;
+        }).filter(function (row, index, rows) {
+          return rows.indexOf(row) === index;
+        }).slice(0, 20),
+        failures: blankRowFailures.slice(0, 50),
+        failure_count: blankRowFailures.length
+      }
     ));
 
     checks.push(check(
@@ -430,10 +719,20 @@ var WorkOsDiagnostics = (function () {
         origin_key_duplicates: context.duplicateOriginKeys
       }
     ));
-    var incompleteKeyRows = context.logicalRows.filter(function (physicalRow) {
-      var row = context.values[physicalRow - WorkOsConfig.DATA_START_ROW];
-      return WorkOsUtilities.isBlank(row[context.columnMap.task_id]) ||
-        WorkOsUtilities.isBlank(row[context.columnMap.origin_key]);
+    // Authority validation intentionally removes untrusted rows from
+    // context.logicalRows.  Completeness is a physical raw-row invariant,
+    // however: a partial identity must remain visible to a read-only
+    // diagnostic even when the authority validator quarantines it.
+    var incompleteKeyRows = context.values.map(function (row, rowIndex) {
+      var taskId = row[context.columnMap.task_id];
+      var originKey = row[context.columnMap.origin_key];
+      var taskIdBlank = WorkOsUtilities.isBlank(taskId);
+      var originKeyBlank = WorkOsUtilities.isBlank(originKey);
+      return taskIdBlank === originKeyBlank
+        ? null
+        : WorkOsConfig.DATA_START_ROW + rowIndex;
+    }).filter(function (physicalRow) {
+      return physicalRow != null;
     });
     checks.push(check(
       'TASK_PRIMARY_KEY_COMPLETENESS',
@@ -709,13 +1008,14 @@ var WorkOsDiagnostics = (function () {
     var target = spreadsheet || SpreadsheetApp.getActiveSpreadsheet();
     var checks = [];
     if (!target) {
-      return {
+      return attachAcceptanceSummary({
         status: 'FAIL',
+        diagnostic_type: 'QUICK',
         code_version: WorkOsConfig.CODE_VERSION,
         schema_version: WorkOsConfig.SCHEMA_VERSION,
         duration_ms: Date.now() - startedAt,
         checks: [check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheetがありません。')]
-      };
+      }, 'QUICK');
     }
 
     for (var sheetIndex = 0; sheetIndex < WorkOsSheetOrder.length; sheetIndex += 1) {
@@ -798,6 +1098,17 @@ var WorkOsDiagnostics = (function () {
                   {
                     layout_status: dashboardLayout.status,
                     writable: dashboardLayout.writable === true,
+                    protection_access_mode: String(
+                      dashboardLayout.protection_access_mode || ''
+                    ),
+                    conflict_reason_code: String(
+                      dashboardLayout.conflict_reason_code || ''
+                    ),
+                    conflict_subreason_code: String(
+                      dashboardLayout.conflict_subreason_code || ''
+                    ),
+                    conflict_counts:
+                      dashboardLayout.conflict_counts || {},
                     external_services_called: false,
                     repair_performed: false
                   }
@@ -812,6 +1123,19 @@ var WorkOsDiagnostics = (function () {
                       dashboardLayoutError,
                       'DIAGNOSTIC'
                     ).code,
+                    conflict_reason_code: String(
+                      dashboardLayoutError &&
+                      dashboardLayoutError.dashboard_conflict_reason ||
+                      'DASHBOARD_SEED_OR_MARKER_CONTRACT'
+                    ),
+                    conflict_subreason_code: String(
+                      dashboardLayoutError &&
+                      dashboardLayoutError.dashboard_conflict_subreason ||
+                      'DASHBOARD_CONTRACT_UNCLASSIFIED'
+                    ),
+                    conflict_counts:
+                      dashboardLayoutError &&
+                      dashboardLayoutError.dashboard_conflict_counts || {},
                     external_services_called: false,
                     repair_performed: false
                   }
@@ -1262,15 +1586,16 @@ var WorkOsDiagnostics = (function () {
       }
     }
 
-    return {
+    return attachAcceptanceSummary({
       status: hasFailure ? 'FAIL' : (hasWarning ? 'WARN' : 'PASS'),
+      diagnostic_type: 'QUICK',
       code_version: WorkOsConfig.CODE_VERSION,
       schema_version: WorkOsConfig.SCHEMA_VERSION,
       migration_version: WorkOsConfig.MIGRATION_VERSION,
       setup_completed_stages: completedStages,
       duration_ms: Date.now() - startedAt,
       checks: checks
-    };
+    }, 'QUICK');
   }
 
   function runDeepDiagnostic(spreadsheet, options) {
@@ -1290,7 +1615,7 @@ var WorkOsDiagnostics = (function () {
     );
     var target = spreadsheet || SpreadsheetApp.getActiveSpreadsheet();
     if (!target) {
-      return {
+      return attachAcceptanceSummary({
         status: 'FAIL',
         diagnostic_type: 'DEEP_MANUAL_READ_ONLY',
         code_version: WorkOsConfig.CODE_VERSION,
@@ -1298,7 +1623,7 @@ var WorkOsDiagnostics = (function () {
         checks: [
           check('BOUND_SPREADSHEET', 'FAIL', 'Bound Spreadsheetがありません。')
         ]
-      };
+      }, 'DEEP_MANUAL_READ_ONLY');
     }
     var checks = [];
     try {
@@ -1317,6 +1642,33 @@ var WorkOsDiagnostics = (function () {
         {
           sample_limit: WorkOsConfig.DEEP_DIAGNOSTIC_SAMPLE_ROWS,
           recovery: recovery
+        }
+      ));
+      var taskSheet = target.getSheetByName(WorkOsConfig.SHEETS.TASKS);
+      var authority = WorkOsTaskRepository.validateAllTaskAuthorities(
+        taskSheet,
+        {
+          mode: 'DEEP_DIAGNOSTIC',
+          recover_prepared: false,
+          recover_relocated: false,
+          quarantine_invalid: false,
+          mark_orphaned: false
+        }
+      );
+      var authorityFailures = authority.rows.filter(function (item) {
+        return item.status !== 'VALID';
+      });
+      checks.push(check(
+        'DEEP_TASK_AUTHORITY_VALIDATOR',
+        authorityFailures.length ? 'FAIL' : 'PASS',
+        authorityFailures.length
+          ? 'Deep Diagnostic found non-operational Task authority rows.'
+          : '',
+        {
+          counts: authority.counts,
+          invalid_row_count: authorityFailures.length,
+          validator: 'WorkOsTaskRepository.validateAuthority',
+          repair: false
         }
       ));
       checks.push(check(
@@ -1350,7 +1702,7 @@ var WorkOsDiagnostics = (function () {
     var warned = checks.some(function (item) {
       return item.status === 'WARN';
     });
-    return {
+    return attachAcceptanceSummary({
       status: failed ? 'FAIL' : (warned ? 'WARN' : 'PASS'),
       diagnostic_type: 'DEEP_MANUAL_READ_ONLY',
       code_version: WorkOsConfig.CODE_VERSION,
@@ -1358,14 +1710,16 @@ var WorkOsDiagnostics = (function () {
       migration_version: WorkOsConfig.MIGRATION_VERSION,
       duration_ms: Date.now() - startedAt,
       checks: checks
-    };
+    }, 'DEEP_MANUAL_READ_ONLY');
   }
 
   return Object.freeze({
     runQuickDiagnostic: runQuickDiagnostic,
     runDeepDiagnostic: runDeepDiagnostic,
     inspectRecoveryState: inspectRecoveryState,
-    buildAiReadinessChecks: buildAiReadinessChecks
+    buildAiReadinessChecks: buildAiReadinessChecks,
+    buildAcceptanceSummary: buildAcceptanceSummary,
+    readOnlyExecutionPolicy: readOnlyExecutionPolicy
   });
 }());
 

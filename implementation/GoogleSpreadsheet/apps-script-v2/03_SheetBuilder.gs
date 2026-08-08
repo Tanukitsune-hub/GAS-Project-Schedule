@@ -147,6 +147,14 @@ var WorkOsSheetBuilder = (function () {
     })) {
       // Safe recovery from interruption between row 1 and row 2.
       sheet.getRange(WorkOsConfig.HEADER_LABEL_ROW, 1, 1, schema.length).setValues([headers]);
+    } else if (sheetName === WorkOsConfig.SHEETS.TASKS &&
+        sheet.getMaxColumns() === schema.length) {
+      // Task headers are canonical control-plane metadata. They are restored
+      // rather than used as evidence for a silent data rebaseline.
+      sheet.getRange(WorkOsConfig.HEADER_ID_ROW, 1, 1, schema.length)
+        .setValues([ids]);
+      sheet.getRange(WorkOsConfig.HEADER_LABEL_ROW, 1, 1, schema.length)
+        .setValues([headers]);
     } else {
       throw new WorkOsAppError(
         'E_SCHEMA_CONFLICT',
@@ -171,7 +179,11 @@ var WorkOsSheetBuilder = (function () {
         sheet.hideColumns(firstHidden + 1, schema.length - firstHidden);
       }
     }
-    ensureSmallProtections(sheet, sheetName, schema);
+    if (sheetName === WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER) {
+      ensureTaskAuthorityLedgerProtection(sheet, schema);
+    } else {
+      ensureSmallProtections(sheet, sheetName, schema);
+    }
 
     return WorkOsSchemas.buildColumnMapFromIds(ids);
   }
@@ -217,7 +229,15 @@ var WorkOsSheetBuilder = (function () {
     var rangeProtections = sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
     var headerDescription = PROTECTION_PREFIX + sheetName + '_HEADER_IDS';
     var headerProtection = findProtectionByDescription(rangeProtections, headerDescription);
-    var headerRange = sheet.getRange(1, 1, 1, schema.length);
+    var headerGeometry = WorkOsSchemas.headerProtectionGeometryForSheet(
+      sheetName
+    );
+    var headerRange = sheet.getRange(
+      headerGeometry.row,
+      headerGeometry.column,
+      headerGeometry.rows,
+      headerGeometry.columns
+    );
     if (!headerProtection) {
       headerProtection = headerRange
         .protect()
@@ -323,6 +343,87 @@ var WorkOsSheetBuilder = (function () {
     }
   }
 
+  /*
+   * The Task Authority Ledger is a Setup-owned control plane.  Unlike the
+   * visible business sheets, it must be both protected and hidden before any
+   * authority read can be attempted.  Keep the write boundary explicit here
+   * so Setup can normalize a native Sheets write failure into a safe,
+   * deterministic stage error without relaxing the repository validator.
+   */
+  function ensureTaskAuthorityLedgerProtection(sheet, schema) {
+    try {
+      ensureSmallProtections(
+        sheet,
+        WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER,
+        schema || WorkOsSchemas.getSheetSchema(
+          WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER
+        )
+      );
+    } catch (error) {
+      if (error instanceof WorkOsAppError) {
+        throw error;
+      }
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_PROTECTION_SETUP_FAILED',
+        'S20_CREATE_SCHEMAS',
+        false,
+        'Task Authority Ledger protection could not be established safely.'
+      );
+    }
+  }
+
+  function ensureTaskAuthorityLedgerControlPlane(spreadsheet) {
+    var sheetName = WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+    var ledger = spreadsheet && spreadsheet.getSheetByName
+      ? spreadsheet.getSheetByName(sheetName)
+      : null;
+    if (!ledger) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_MISSING',
+        'S20_CREATE_SCHEMAS',
+        false,
+        'Task Authority Ledger is missing during Setup control-plane establishment.'
+      );
+    }
+
+    ensureTaskAuthorityLedgerProtection(
+      ledger,
+      WorkOsSchemas.getSheetSchema(sheetName)
+    );
+
+    var visibilityChanged = false;
+    try {
+      if (typeof ledger.isSheetHidden !== 'function' ||
+          typeof ledger.hideSheet !== 'function') {
+        throw new Error('LEDGER_VISIBILITY_API_UNAVAILABLE');
+      }
+      if (!ledger.isSheetHidden()) {
+        ledger.hideSheet();
+        visibilityChanged = true;
+      }
+      if (ledger.isSheetHidden() !== true) {
+        throw new Error('LEDGER_VISIBILITY_POSTCONDITION_FAILED');
+      }
+    } catch (error) {
+      if (error instanceof WorkOsAppError) {
+        throw error;
+      }
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_VISIBILITY_SETUP_FAILED',
+        'S20_CREATE_SCHEMAS',
+        false,
+        'Task Authority Ledger could not be hidden safely during Setup.'
+      );
+    }
+
+    return {
+      sheet: sheetName,
+      hidden: true,
+      protection_reasserted: true,
+      visibility_changed: visibilityChanged
+    };
+  }
+
   function applyAllSchemas(spreadsheet) {
     var columnMaps = {};
     WorkOsSheetOrder.forEach(function (sheetName) {
@@ -339,6 +440,32 @@ var WorkOsSheetBuilder = (function () {
     });
     SpreadsheetApp.flush();
     return columnMaps;
+  }
+
+  function restoreCanonicalTaskHeaders(sheet) {
+    var target = sheet;
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    if (!target || target.getMaxColumns() !== schema.length) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_CONFLICT',
+        'TASK_HEADER_RESTORE',
+        false,
+        'Task header restore requires the canonical physical column count.'
+      );
+    }
+    target.getRange(
+      WorkOsConfig.HEADER_ID_ROW,
+      1,
+      1,
+      schema.length
+    ).setValues([WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)]);
+    target.getRange(
+      WorkOsConfig.HEADER_LABEL_ROW,
+      1,
+      1,
+      schema.length
+    ).setValues([WorkOsSchemas.getHeaders(WorkOsConfig.SHEETS.TASKS)]);
+    return { restored: true, rows: [1, 2] };
   }
 
   function buildValidationRule(planItem) {
@@ -409,11 +536,18 @@ var WorkOsSheetBuilder = (function () {
           'Validation/Protection更新対象Sheetがありません。'
         );
       }
-      ensureSmallProtections(
-        sheet,
-        sheetName,
-        WorkOsSchemas.getSheetSchema(sheetName)
-      );
+      if (sheetName === WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER) {
+        ensureTaskAuthorityLedgerProtection(
+          sheet,
+          WorkOsSchemas.getSheetSchema(sheetName)
+        );
+      } else {
+        ensureSmallProtections(
+          sheet,
+          sheetName,
+          WorkOsSchemas.getSheetSchema(sheetName)
+        );
+      }
       refreshedSheets.push(sheetName);
     });
     return {
@@ -731,23 +865,13 @@ var WorkOsSheetBuilder = (function () {
       spreadsheet.getSheetByName(WorkOsConfig.SHEETS.DASHBOARD),
       WorkOsConfig.SHEETS.DASHBOARD,
       'metric_key',
-      [
-        {
-          metric_key: 'AUTOMATION_STATUS',
-          metric_value: 'OFF',
-          note: '初期停止。明示更新後に現在状態を表示します。'
-        },
-        {
-          metric_key: 'SYSTEM_HEALTH',
-          metric_value: '未更新',
-          note: 'メニューから運用Dashboardを更新してください。'
-        },
-        {
-          metric_key: 'QUICK_DIAGNOSTIC',
-          metric_value: 'NOT_EXECUTED',
-          note: 'Dashboard未更新'
-        }
-      ]
+      WorkOsConfig.DASHBOARD_LEGACY_SEED_ROWS.map(function (row) {
+        return {
+          metric_key: row.metric_key,
+          metric_value: row.metric_value,
+          note: row.note
+        };
+      })
     );
     seedRowsByKey(
       spreadsheet.getSheetByName(WorkOsConfig.SHEETS.SYSTEM_CONFIG),
@@ -919,6 +1043,9 @@ var WorkOsSheetBuilder = (function () {
     isSheetLogicallyEmpty: isSheetLogicallyEmpty,
     ensureSheets: ensureSheets,
     applyAllSchemas: applyAllSchemas,
+    ensureTaskAuthorityLedgerControlPlane:
+      ensureTaskAuthorityLedgerControlPlane,
+    restoreCanonicalTaskHeaders: restoreCanonicalTaskHeaders,
     applyValidationsAndFormats: applyValidationsAndFormats,
     refreshValidationsAndProtections:
       refreshValidationsAndProtections,

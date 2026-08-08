@@ -1,10 +1,13 @@
 'use strict';
 
 /**
- * Phase 7 v2.1 -> v2.2 append-only Error/Dead Letter schema tests.
+ * Historical Error/Dead Letter schema compatibility tests.
  *
- * The suite reuses the established in-memory Spreadsheet fixture. It never
- * contacts Google Workspace or an external provider.
+ * Schema 2.6 deliberately refuses the old pre-2.5 Task migration path.  This
+ * suite keeps the former Error-extension cases as a compatibility firewall:
+ * an older Task plus older Error sheet must be left byte-for-byte intact until
+ * an explicit audited repair package is supplied.  It never contacts Google
+ * Workspace or an external provider.
  */
 const assert = require('assert');
 const fs = require('fs');
@@ -12,7 +15,7 @@ const path = require('path');
 const vm = require('vm');
 
 const phase5Path = path.resolve(__dirname, 'phase5_schema_extension_test.js');
-const source = fs.readFileSync(phase5Path, 'utf8');
+const source = fs.readFileSync(phase5Path, 'utf8').replace(/\r\n/g, '\n');
 const marker = '\nconst tests = [];\n';
 const markerIndex = source.indexOf(marker);
 if (markerIndex < 0) {
@@ -22,7 +25,10 @@ const exposure = `
 globalThis.__phase7SchemaFixture = {
   fixture,
   sandbox,
-  totalWrites
+  totalWrites,
+  pre25Environment,
+  workbookSnapshot,
+  resetWriteCounts
 };
 `;
 const context = {
@@ -39,7 +45,13 @@ vm.runInContext(source.slice(0, markerIndex) + exposure, context, {
   filename: 'phase5_schema_fixture.js'
 });
 
-const { fixture, sandbox, totalWrites } = context.__phase7SchemaFixture;
+const {
+  sandbox,
+  totalWrites,
+  pre25Environment,
+  workbookSnapshot,
+  resetWriteCounts
+} = context.__phase7SchemaFixture;
 const errorName = sandbox.WorkOsConfig.SHEETS.ERRORS;
 const currentErrorIds = Array.from(sandbox.WorkOsSchemas.getInternalIds(errorName));
 const legacyErrorIds = currentErrorIds.slice(0, -11);
@@ -70,29 +82,19 @@ function setLegacyError(sheet, row, overrides = {}) {
   ]);
 }
 
-function legacyEnvironment(options = {}) {
-  const environment = fixture.makeCompletedPhase4Environment();
-  const messageSheet = environment.spreadsheet.getSheetByName(
-    sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE
-  );
-  const errorSheet = environment.spreadsheet.getSheetByName(errorName);
-
-  // The reusable baseline fixture deliberately represents pre-Phase-5
-  // Message State. Complete that recognized v2 extension first so this suite
-  // isolates the Phase 7 Error extension.
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    environment.spreadsheet
-  );
-
+function legacyCompatibilityEnvironment(options = {}) {
+  const state = pre25Environment();
+  const errorSheet = state.environment.spreadsheet.getSheetByName(errorName);
   errorSheet.cells.forEach((row) => row.splice(legacyErrorIds.length, 11));
+  if (errorSheet.notes) {
+    errorSheet.notes.forEach((row) => row.splice(legacyErrorIds.length, 11));
+  }
   errorSheet.maxColumns -= 11;
   if (options.withRow !== false) {
-    setLegacyError(errorSheet, 3, options.record || {});
+    setLegacyError(errorSheet, sandbox.WorkOsConfig.DATA_START_ROW, options.record || {});
   }
-  environment.spreadsheet.getSheets().forEach((sheet) => {
-    sheet.writeCount = 0;
-  });
-  return { environment, messageSheet, errorSheet };
+  resetWriteCounts(state.environment);
+  return { ...state, errorSheet };
 }
 
 function rowRecord(sheet, row) {
@@ -100,8 +102,11 @@ function rowRecord(sheet, row) {
   return Object.fromEntries(ids.map((id, index) => [id, sheet.cells[row - 1][index]]));
 }
 
-function snapshot(spreadsheet) {
-  return spreadsheet.getSheets().map((sheet) => fixture.snapshotCells(sheet));
+function assertLegacyMigrationRejected(spreadsheet) {
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(spreadsheet),
+    (error) => error.code === 'E_TASK_AUTHORITY_LEGACY_SCHEMA_UNSUPPORTED'
+  );
 }
 
 const tests = [];
@@ -122,55 +127,37 @@ function test(id, body) {
   }
 }
 
-test('P7-S01_ERROR_EXTENSION_APPENDS_EXACT_FIELDS_AND_PRESERVES_LEGACY_DATA', () => {
-  const state = legacyEnvironment();
-  const before = rowRecord(state.errorSheet, 3);
-  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
-  );
-  assert.strictEqual(result.status, 'UPDATED');
-  assert.strictEqual(result.appended_columns, 11);
-  assert.strictEqual(result.updated_error_rows, 1);
+test('P7-S01_PRE_2_5_TASK_AND_LEGACY_ERROR_SCHEMA_FAIL_CLOSED_WITHOUT_DATA_LOSS', () => {
+  const state = legacyCompatibilityEnvironment();
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  const errorBefore = rowRecord(state.errorSheet, sandbox.WorkOsConfig.DATA_START_ROW);
+  assertLegacyMigrationRejected(state.environment.spreadsheet);
   assert.strictEqual(
-    JSON.stringify(state.errorSheet.cells[0]),
-    JSON.stringify(currentErrorIds)
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
   );
-  const after = rowRecord(state.errorSheet, 3);
-  legacyErrorIds
-    .filter((id) => id !== 'source_thread_id')
-    .forEach((id) => assert.deepStrictEqual(after[id], before[id]));
-  assert.match(after.source_thread_id, /^thrref_[0-9a-f]{64}$/);
-  assert.notStrictEqual(after.source_thread_id, before.source_thread_id);
-  [
-    'dead_letter_id', 'subsystem', 'error_category', 'safe_reference',
-    'message_state_id', 'resume_stage', 'attempt_count', 'last_attempt_at',
-    'next_action', 'created_at', 'updated_at'
-  ].forEach((id) => assert.notStrictEqual(after[id], undefined));
-  assert.match(after.dead_letter_id, /^dl_[0-9a-f]{32}$/);
-  assert.strictEqual(after.subsystem, 'AI_REQUEST');
-  assert.strictEqual(after.error_category, 'TRANSIENT');
-  assert.strictEqual(after.resume_stage, 'PREPROCESSED');
-  assert.strictEqual(after.attempt_count, 4);
+  assert.strictEqual(
+    JSON.stringify(rowRecord(state.errorSheet, sandbox.WorkOsConfig.DATA_START_ROW)),
+    JSON.stringify(errorBefore)
+  );
+  assert.strictEqual(state.errorSheet.getMaxColumns(), legacyErrorIds.length);
 });
 
-test('P7-S02_SECOND_EXTENSION_RUN_IS_STRICT_NO_OP', () => {
-  const state = legacyEnvironment();
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
-  );
-  const before = snapshot(state.environment.spreadsheet);
+test('P7-S02_REPEATED_LEGACY_ATTEMPTS_ARE_IDEMPOTENT_FAIL_CLOSED', () => {
+  const state = legacyCompatibilityEnvironment();
+  const before = workbookSnapshot(state.environment.spreadsheet);
   const writes = totalWrites(state.environment.spreadsheet);
-  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
+  assertLegacyMigrationRejected(state.environment.spreadsheet);
+  assertLegacyMigrationRejected(state.environment.spreadsheet);
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
   );
-  assert.strictEqual(result.status, 'CURRENT');
-  assert.strictEqual(result.changed, false);
-  assert.deepStrictEqual(snapshot(state.environment.spreadsheet), before);
   assert.strictEqual(totalWrites(state.environment.spreadsheet), writes);
 });
 
-test('P7-S03_OPEN_ERROR_IS_BACKFILLED_WITHOUT_FAKE_DEAD_LETTER_ID', () => {
-  const state = legacyEnvironment({
+test('P7-S03_OPEN_LEGACY_ERROR_IS_NOT_BACKFILLED_WITH_A_FAKE_DEAD_LETTER_ID', () => {
+  const state = legacyCompatibilityEnvironment({
     record: {
       status: 'OPEN',
       stage: 'CALENDAR_CREATE',
@@ -178,86 +165,93 @@ test('P7-S03_OPEN_ERROR_IS_BACKFILLED_WITHOUT_FAKE_DEAD_LETTER_ID', () => {
       retry_count: 1
     }
   });
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
-  );
-  const record = rowRecord(state.errorSheet, 3);
-  assert.strictEqual(record.dead_letter_id, '');
-  assert.strictEqual(record.subsystem, 'CALENDAR_CREATE');
-  assert.strictEqual(record.resume_stage, 'CALENDAR_PENDING');
-  assert.strictEqual(record.next_action, 'WAIT_FOR_AUTOMATIC_RETRY');
+  const before = rowRecord(state.errorSheet, sandbox.WorkOsConfig.DATA_START_ROW);
+  assertLegacyMigrationRejected(state.environment.spreadsheet);
+  const after = rowRecord(state.errorSheet, sandbox.WorkOsConfig.DATA_START_ROW);
+  assert.strictEqual(JSON.stringify(after), JSON.stringify(before));
+  assert.strictEqual(Object.prototype.hasOwnProperty.call(after, 'dead_letter_id'), false);
+  assert.strictEqual(after.status, 'OPEN');
+  assert.strictEqual(after.retry_count, 1);
 });
 
-test('P7-S04_SOFT_BUDGET_PAUSES_BEFORE_ERROR_SCHEMA_MUTATION', () => {
-  const state = legacyEnvironment();
-  const before = snapshot(state.environment.spreadsheet);
-  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet,
-    { isExhausted: () => true }
+test('P7-S04_SOFT_BUDGET_CANNOT_BYPASS_THE_LEGACY_COMPATIBILITY_FIREWALL', () => {
+  const state = legacyCompatibilityEnvironment();
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  assert.throws(
+    () => sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
+      state.environment.spreadsheet,
+      { isExhausted: () => true }
+    ),
+    (error) => error.code === 'E_TASK_AUTHORITY_LEGACY_SCHEMA_UNSUPPORTED'
   );
-  assert.strictEqual(result.status, 'PAUSED');
-  assert.strictEqual(result.changed, false);
-  assert.deepStrictEqual(snapshot(state.environment.spreadsheet), before);
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
+  );
 });
 
-test('P7-S05_UNKNOWN_SCHEMA_IS_NOT_MODIFIED', () => {
-  const state = legacyEnvironment();
+test('P7-S05_UNKNOWN_LEGACY_ERROR_SCHEMA_IS_NOT_MODIFIED', () => {
+  const state = legacyCompatibilityEnvironment();
   state.errorSheet.cells[0][0] = 'unknown_error_id';
-  const before = snapshot(state.environment.spreadsheet);
+  const before = workbookSnapshot(state.environment.spreadsheet);
   const writes = totalWrites(state.environment.spreadsheet);
   const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
     state.environment.spreadsheet
   );
   assert.strictEqual(result.status, 'NOT_APPLICABLE');
   assert.strictEqual(result.changed, false);
-  assert.deepStrictEqual(snapshot(state.environment.spreadsheet), before);
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
+  );
   assert.strictEqual(totalWrites(state.environment.spreadsheet), writes);
 });
 
-test('P7-S06_EMPTY_LEGACY_ERROR_SHEET_EXTENDS_WITHOUT_CREATING_DATA', () => {
-  const state = legacyEnvironment({ withRow: false });
-  const result = sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
-  );
-  assert.strictEqual(result.status, 'UPDATED');
-  assert.strictEqual(result.appended_columns, 11);
-  assert.strictEqual(result.updated_error_rows, 0);
-  assert.strictEqual(
-    JSON.stringify(state.errorSheet.cells[0]),
-    JSON.stringify(currentErrorIds)
-  );
+test('P7-S06_EMPTY_LEGACY_ERROR_SHEET_IS_NOT_EXTENDED_WITHOUT_AUDITED_TASK_REPAIR', () => {
+  const state = legacyCompatibilityEnvironment({ withRow: false });
+  const before = workbookSnapshot(state.environment.spreadsheet);
+  assertLegacyMigrationRejected(state.environment.spreadsheet);
+  assert.strictEqual(state.errorSheet.getMaxColumns(), legacyErrorIds.length);
   assert.strictEqual(
     state.errorSheet.cells.slice(2).some((row) => row.some((value) => value !== '')),
     false
   );
+  assert.strictEqual(
+    JSON.stringify(workbookSnapshot(state.environment.spreadsheet)),
+    JSON.stringify(before)
+  );
 });
 
 test('P7-S07_VERSION_METADATA_IS_INDEPENDENT_AND_CURRENT', () => {
-    const versions = sandbox.WorkOsMigrations.getVersionState();
-    assert.strictEqual(versions.code_version, '2.8.4-prepilot');
-    assert.strictEqual(versions.schema_version, '2.5');
-    assert.strictEqual(versions.migration_version, '2');
+  const versions = sandbox.WorkOsMigrations.getVersionState();
+  assert.strictEqual(versions.code_version, '2.8.12-prepilot');
+  assert.strictEqual(versions.schema_version, '2.6');
+  assert.strictEqual(versions.migration_version, '3');
+  assert.strictEqual(sandbox.WorkOsConfig.AI_SCHEMA_VERSION, '2.0');
+  assert.strictEqual(sandbox.WorkOsConfig.AUTOMATION_ENABLED, false);
 });
 
-test('P7-S08_LEGACY_DEAD_WITHOUT_EXHAUSTED_RETRIES_IS_NOT_MANUALLY_RETRYABLE', () => {
-  const state = legacyEnvironment({
+test('P7-S08_LEGACY_DEAD_ROW_REMAINS_UNTOUCHED_AND_NOT_MANUALLY_RETRYABLE', () => {
+  const state = legacyCompatibilityEnvironment({
     record: {
       status: 'DEAD',
       error_code: 'E_GMAIL_FETCH',
-      retry_count: 0
+      retry_count: 0,
+      retry_requested: false
     }
   });
-  sandbox.WorkOsMigrations.ensureV2ExtensionsBeforeValidation(
-    state.environment.spreadsheet
-  );
-  const record = rowRecord(state.errorSheet, 3);
-  assert.strictEqual(record.error_category, 'TRANSIENT');
-  assert.strictEqual(record.next_action, 'RESOLVE_CONFIGURATION_OR_DATA');
+  const before = rowRecord(state.errorSheet, sandbox.WorkOsConfig.DATA_START_ROW);
+  assertLegacyMigrationRejected(state.environment.spreadsheet);
+  const after = rowRecord(state.errorSheet, sandbox.WorkOsConfig.DATA_START_ROW);
+  assert.strictEqual(JSON.stringify(after), JSON.stringify(before));
+  assert.strictEqual(after.status, 'DEAD');
+  assert.strictEqual(after.retry_requested, false);
+  assert.strictEqual(after.retry_count, 0);
 });
 
 const summary = {
   phase: 7,
-  suite: 'v2_2_error_schema_extension',
+  suite: 'legacy_error_schema_compatibility_firewall',
   environment: 'LOCAL_FAKE_APPS_SCRIPT',
   real_google_workspace: 'NOT_EXECUTED',
   passed: tests.filter((item) => item.status === 'PASS').length,

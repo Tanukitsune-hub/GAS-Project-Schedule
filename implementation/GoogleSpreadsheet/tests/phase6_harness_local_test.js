@@ -80,7 +80,7 @@ const needle =
 let harness = fs.readFileSync(
   path.join(apps, '99_TestHarness.gs'),
   'utf8'
-);
+).replace(/\r\n/g, '\n');
 if (!harness.includes(needle)) {
   throw new Error('PHASE6_HARNESS_EXPOSURE_POINT_NOT_FOUND');
 }

@@ -1,0 +1,18 @@
+# Project-local Node tooling and generated verification evidence
+**/node_modules/
+**/.local-validation/
+
+# Local clasp bindings, credentials, staging, and pull-back workspaces
+**/.clasp.json
+**/.clasprc.json
+**/.clasp-dev/
+**/.clasp-pull-verify/
+**/creds.json
+**/credentials*.json
+**/client_secret*.json
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example

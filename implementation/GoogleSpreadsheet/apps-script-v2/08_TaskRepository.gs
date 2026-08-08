@@ -65,6 +65,14 @@ var WorkOsTaskRepository = (function () {
   var LOCK_MARKER = {};
   var SNAPSHOT_FIELD = 'authoritative_snapshot_json';
   var SNAPSHOT_MIRROR_PREFIX = 'WORK_OS_TASK_AUTHORITY_V2:';
+  var AUTHORITY_GENERATION_FIELD = 'authority_generation';
+  var AUTHORITY_HASH_FIELD = 'authority_hash';
+  var AUTHORITY_STATE_FIELD = 'authority_state';
+  var AUTHORITY_LEDGER_SHEET = WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+  var AUTHORITY_SNAPSHOT_FORMAT = 'TASK_AUTHORITY_V1';
+  var AUTHORITY_ACTIVE_STATE = 'COMMITTED';
+  var AUTHORITY_QUARANTINED_STATE = 'QUARANTINED';
+  var AUTHORITY_UNRECOVERABLE_STATE = 'UNRECOVERABLE';
   var BUSINESS_GUARD_FIELDS = Object.freeze({
     needs_review: true,
     decision: true,
@@ -357,14 +365,21 @@ var WorkOsTaskRepository = (function () {
     return rowsToAppend;
   }
 
-  function findLogicalEmptyRow(taskIdValues, originKeyValues, startRow) {
+  function findLogicalEmptyRow(
+    taskIdValues,
+    originKeyValues,
+    startRow,
+    blockedPhysicalRows
+  ) {
     var firstDataRow = startRow || WorkOsConfig.DATA_START_ROW;
     var length = Math.max(taskIdValues.length, originKeyValues.length);
     for (var index = 0; index < length; index += 1) {
       var taskId = taskIdValues[index] && taskIdValues[index][0];
       var originKey = originKeyValues[index] && originKeyValues[index][0];
-      if (WorkOsUtilities.isBlank(taskId) && WorkOsUtilities.isBlank(originKey)) {
-        return firstDataRow + index;
+      var physicalRow = firstDataRow + index;
+      if (WorkOsUtilities.isBlank(taskId) && WorkOsUtilities.isBlank(originKey) &&
+          !(blockedPhysicalRows && blockedPhysicalRows[physicalRow])) {
+        return physicalRow;
       }
     }
     return firstDataRow + length;
@@ -387,7 +402,9 @@ var WorkOsTaskRepository = (function () {
     var values = rowCount
       ? sheet.getRange(WorkOsConfig.DATA_START_ROW, 1, rowCount, schema.length).getValues()
       : [];
-    var context = buildContextFromValues(sheet, columnMap, values);
+    var context = applyAuthorityValidatedIndexes(
+      buildContextFromValues(sheet, columnMap, values)
+    );
     if (lockMarker === LOCK_MARKER) {
       Object.defineProperty(context, '_workOsLockMarker', {
         value: LOCK_MARKER,
@@ -400,49 +417,22 @@ var WorkOsTaskRepository = (function () {
   }
 
   function buildContextFromValues(sheet, columnMap, values) {
-    var byTaskId = {};
-    var byOriginKey = {};
-    var byStableThreadKey = {};
-    var duplicateTaskIds = [];
-    var duplicateOriginKeys = [];
     var logicalRows = [];
     var taskIdValues = [];
     var originKeyValues = [];
     var taskIdIndex = columnMap.task_id;
     var originKeyIndex = columnMap.origin_key;
-    var stableThreadKeyIndex = columnMap.stable_thread_key;
 
     values.forEach(function (row, index) {
       var physicalRow = WorkOsConfig.DATA_START_ROW + index;
       var taskId = String(row[taskIdIndex] || '').trim();
       var originKey = String(row[originKeyIndex] || '').trim();
-      var stableThreadKey = String(row[stableThreadKeyIndex] || '').trim();
       taskIdValues.push([taskId]);
       originKeyValues.push([originKey]);
       if (!taskId && !originKey) {
         return;
       }
       logicalRows.push(physicalRow);
-      if (taskId) {
-        if (byTaskId[taskId]) {
-          duplicateTaskIds.push(taskId);
-        } else {
-          byTaskId[taskId] = physicalRow;
-        }
-      }
-      if (originKey) {
-        if (byOriginKey[originKey]) {
-          duplicateOriginKeys.push(originKey);
-        } else {
-          byOriginKey[originKey] = physicalRow;
-        }
-      }
-      if (stableThreadKey) {
-        if (!byStableThreadKey[stableThreadKey]) {
-          byStableThreadKey[stableThreadKey] = [];
-        }
-        byStableThreadKey[stableThreadKey].push(physicalRow);
-      }
     });
 
     return {
@@ -451,16 +441,159 @@ var WorkOsTaskRepository = (function () {
       values: values,
       taskIdValues: taskIdValues,
       originKeyValues: originKeyValues,
-      byTaskId: byTaskId,
-      byOriginKey: byOriginKey,
-      byStableThreadKey: byStableThreadKey,
-      duplicateTaskIds: duplicateTaskIds,
-      duplicateOriginKeys: duplicateOriginKeys,
+      // These resolution indexes are intentionally populated only by
+      // applyAuthorityValidatedIndexes().
+      byTaskId: {},
+      byOriginKey: {},
+      byStableThreadKey: {},
+      duplicateTaskIds: [],
+      duplicateOriginKeys: [],
       logicalRows: logicalRows
     };
   }
 
   var FORMULA_GUARD = '\u200B';
+
+  /*
+   * Raw Task cells are retained only for physical-row restoration and empty-row
+   * detection. They are never allowed to populate resolution indexes until the
+   * shared ledger validator accepts the row. This prevents copied or untrusted
+   * task_id/origin_key values from winning target resolution before authority
+   * is decided.
+   */
+  function applyAuthorityValidatedIndexes(context, options) {
+    var settings = options || {};
+    var decisionRows = settings.decision_rows || {};
+    var rawLogicalRows = (context.logicalRows || []).slice();
+    var ledgerContext = readAuthorityLedgerContext(context.sheet);
+    var map = context.columnMap;
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    context.raw_logical_rows = rawLogicalRows;
+    context.authority_by_physical_row = {};
+    context.blockedPhysicalRows = {};
+    Object.keys(ledgerContext.by_physical_row || {}).forEach(function (row) {
+      context.blockedPhysicalRows[Number(row)] = true;
+    });
+    context.byTaskId = {};
+    context.byOriginKey = {};
+    context.byStableThreadKey = {};
+    context.duplicateTaskIds = [];
+    context.duplicateOriginKeys = [];
+    context.logicalRows = [];
+    rawLogicalRows.forEach(function (physicalRow) {
+      var raw = rowForPhysicalRow(context, physicalRow);
+      var validation = validateAuthority(raw, {
+        sheet: context.sheet,
+        physical_row: physicalRow,
+        schema: schema,
+        column_map: map,
+        ledger_context: ledgerContext,
+        mode: 'CONTEXT_INDEX'
+      });
+      context.authority_by_physical_row[physicalRow] = {
+        status: validation.status,
+        code: validation.code || ''
+      };
+      /*
+       * A decision edit arrives after Sheets has changed the visible decision
+       * cell.  That makes the otherwise committed row RESTORABLE, but it does
+       * not make the raw row authoritative.  The dedicated decision path may
+       * resolve only its explicitly selected row from the ledger projection;
+       * the caller captures the raw decision value before this replacement and
+       * subsequently commits a single ledger-backed output row.  Every other
+       * context remains strictly VALID-only.
+       */
+      var useAuthoritativeProjection = validation.status === 'VALID' ||
+        (validation.status === 'RESTORABLE' &&
+         decisionRows[physicalRow] === true);
+      if (!useAuthoritativeProjection) {
+        context.blockedPhysicalRows[physicalRow] = true;
+        return;
+      }
+      var authoritative = validation.authoritative_row;
+      context.values[physicalRow - WorkOsConfig.DATA_START_ROW] =
+        authoritative.slice();
+      var taskId = String(authoritative[map.task_id] || '').trim();
+      var originKey = String(authoritative[map.origin_key] || '').trim();
+      var stableThreadKey = String(
+        authoritative[map.stable_thread_key] || ''
+      ).trim();
+      if (!taskId || !originKey || context.byTaskId[taskId] ||
+          context.byOriginKey[originKey]) {
+        if (context.byTaskId[taskId]) {
+          delete context.byTaskId[taskId];
+          context.duplicateTaskIds.push(taskId);
+        }
+        if (context.byOriginKey[originKey]) {
+          delete context.byOriginKey[originKey];
+          context.duplicateOriginKeys.push(originKey);
+        }
+        context.blockedPhysicalRows[physicalRow] = true;
+        return;
+      }
+      context.byTaskId[taskId] = physicalRow;
+      context.byOriginKey[originKey] = physicalRow;
+      if (stableThreadKey) {
+        if (!context.byStableThreadKey[stableThreadKey]) {
+          context.byStableThreadKey[stableThreadKey] = [];
+        }
+        context.byStableThreadKey[stableThreadKey].push(physicalRow);
+      }
+      context.logicalRows.push(physicalRow);
+    });
+    return context;
+  }
+
+  /*
+   * Build a no-trust decision context after the edit handler has captured the
+   * one user-input cell.  A selected decision row may be RESTORABLE solely
+   * because that cell was changed; all index data is still reconstructed from
+   * the committed authority slot.  This avoids both a raw-ID index and an
+   * unnecessary restore-then-commit double Task write.
+   */
+  function createDecisionEditContextForHeldLock(sheet, selectedRows) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var ids = sheet.getRange(1, 1, 1, schema.length).getValues()[0];
+    var columnMap = WorkOsSchemas.buildColumnMapFromIds(ids);
+    var expected = WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS);
+    if (JSON.stringify(ids) !== JSON.stringify(expected)) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MISSING_COLUMN',
+        'TASK_REPOSITORY',
+        false,
+        'タスク一覧の内部列IDが仕様と一致しません。'
+      );
+    }
+    var rowCount = Math.max(
+      0,
+      sheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1
+    );
+    var values = rowCount ? sheet.getRange(
+      WorkOsConfig.DATA_START_ROW,
+      1,
+      rowCount,
+      schema.length
+    ).getValues() : [];
+    var decisionRows = {};
+    (selectedRows || []).forEach(function (row) {
+      var rowNumber = Number(row);
+      if (Number.isInteger(rowNumber) &&
+          rowNumber >= WorkOsConfig.DATA_START_ROW) {
+        decisionRows[rowNumber] = true;
+      }
+    });
+    var context = applyAuthorityValidatedIndexes(
+      buildContextFromValues(sheet, columnMap, values),
+      { decision_rows: decisionRows }
+    );
+    Object.defineProperty(context, '_workOsLockMarker', {
+      value: LOCK_MARKER,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
+    return context;
+  }
 
   function neutralizeFormulaText(value) {
     if (typeof value !== 'string') {
@@ -623,6 +756,9 @@ var WorkOsTaskRepository = (function () {
       business_version: 1,
       calendar_reconcile_required: false,
       calendar_intent_version: 0,
+      authority_generation: 0,
+      authority_hash: '',
+      authority_state: '',
       pending_action_type: '',
       pending_changes_json: {},
       created_at: nowValue,
@@ -842,7 +978,7 @@ var WorkOsTaskRepository = (function () {
     }
     if (value && typeof value === 'object') {
       var output = {};
-      Object.keys(value).forEach(function (key) {
+      Object.keys(value).sort().forEach(function (key) {
         output[key] = snapshotSafeValue(value[key]);
       });
       return output;
@@ -850,15 +986,28 @@ var WorkOsTaskRepository = (function () {
     return value;
   }
 
+  /*
+   * Hash/snapshot input is based on the canonical Sheet representation, not
+   * the caller's raw JavaScript value. In particular, formula-like text is
+   * guarded before it becomes integrity input, so a first commit and a later
+   * read-back of the same business state hash identically.
+   */
+  function canonicalSnapshotFieldValue(columnDefinition, rawValue) {
+    var parsed = valueFromCell(columnDefinition, rawValue);
+    var canonicalCell = valueForCell(columnDefinition, parsed);
+    return snapshotSafeValue(valueFromCell(columnDefinition, canonicalCell));
+  }
+
   function buildAuthoritativeSnapshot(row, schema, columnMap) {
     var values = {};
     schema.forEach(function (item, index) {
-      if (item.id === SNAPSHOT_FIELD) {
+      if (item.id === SNAPSHOT_FIELD ||
+          item.id === AUTHORITY_GENERATION_FIELD ||
+          item.id === AUTHORITY_HASH_FIELD ||
+          item.id === AUTHORITY_STATE_FIELD) {
         return;
       }
-      values[item.id] = snapshotSafeValue(
-        valueFromCell(item, row[index])
-      );
+      values[item.id] = canonicalSnapshotFieldValue(item, row[index]);
     });
     return {
       format: 'FULL_ROW_V1',
@@ -870,7 +1019,10 @@ var WorkOsTaskRepository = (function () {
 
   function snapshotFieldIds(schema) {
     return schema.filter(function (item) {
-      return item.id !== SNAPSHOT_FIELD;
+      return item.id !== SNAPSHOT_FIELD &&
+        item.id !== AUTHORITY_GENERATION_FIELD &&
+        item.id !== AUTHORITY_HASH_FIELD &&
+        item.id !== AUTHORITY_STATE_FIELD;
     }).map(function (item) {
       return item.id;
     });
@@ -939,56 +1091,1853 @@ var WorkOsTaskRepository = (function () {
     return output;
   }
 
-  function authoritativeRowFromSnapshot(row, schema, columnMap) {
-    var snapshotIndex = columnMap[SNAPSHOT_FIELD];
-    var snapshot;
-    try {
-      snapshot = valueFromCell(schema[snapshotIndex], row[snapshotIndex]);
-    } catch (error) {
-      snapshot = null;
+  /*
+   * Schema 2.6 authority protocol
+   * -----------------------------
+   * The hidden, protected ledger is the sole trust source.  The Task-row
+   * snapshot cell remains an observable projection only: it is never used as
+   * a fallback when the ledger is absent or corrupt.  A ledger record contains
+   * two versioned slots.  The inactive slot is PREPARED before a Task-row
+   * write; a matching row then promotes that slot to COMMITTED.  This makes a
+   * failure at either write boundary deterministically recoverable or
+   * quarantinable without creating authority from live cells.
+   */
+  function authoritySnapshotFieldIds(schema) {
+    return schema.filter(function (item) {
+      return item.id !== SNAPSHOT_FIELD &&
+        item.id !== AUTHORITY_GENERATION_FIELD &&
+        item.id !== AUTHORITY_HASH_FIELD &&
+        item.id !== AUTHORITY_STATE_FIELD;
+    }).map(function (item) { return item.id; });
+  }
+
+  function buildAuthoritySnapshot(row, schema, columnMap) {
+    var values = {};
+    authoritySnapshotFieldIds(schema).forEach(function (field) {
+      var index = columnMap[field];
+      values[field] = canonicalSnapshotFieldValue(schema[index], row[index]);
+    });
+    return {
+      format: AUTHORITY_SNAPSHOT_FORMAT,
+      schema_version: WorkOsConfig.SCHEMA_VERSION,
+      task_id: String(row[columnMap.task_id] || ''),
+      values: values
+    };
+  }
+
+  function authoritySnapshotSerializedHash(serialized) {
+    if (serialized.length > WorkOsConfig.AUTHORITY_LEDGER_MAX_SNAPSHOT_CHARS) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_SNAPSHOT_TOO_LARGE',
+        'TASK_AUTHORITY',
+        false,
+        'Task authority snapshot exceeds the bounded ledger cell budget.'
+      );
     }
+    return WorkOsUtilities.sha256Hex(serialized);
+  }
+
+  function authoritySnapshotHash(snapshot) {
+    return authoritySnapshotSerializedHash(
+      WorkOsUtilities.canonicalJsonString(snapshot, 'object')
+    );
+  }
+
+  /*
+   * Schema 2.6 was first published with insertion-order JSON hashes.  Those
+   * hashes remain independently verifiable from the protected ledger slot,
+   * not from the visible Task row or snapshot cell.  Migration 3 therefore
+   * accepts the historical representation only when its exact ledger payload
+   * and stored hash agree; every newly prepared generation uses the canonical
+   * representation above.
+   */
+  function legacyAuthoritySnapshotHash(snapshot) {
+    return authoritySnapshotSerializedHash(
+      WorkOsUtilities.serializeJson(snapshot, 'object')
+    );
+  }
+
+  function isAuthorityControlField(field) {
+    return field === AUTHORITY_GENERATION_FIELD ||
+      field === AUTHORITY_HASH_FIELD ||
+      field === AUTHORITY_STATE_FIELD;
+  }
+
+  function validateLedgerAuthoritySnapshot(snapshot, expectedTaskId, hash) {
     if (!isPlainObject(snapshot) ||
-        snapshot.format !== 'FULL_ROW_V1' ||
+        snapshot.format !== AUTHORITY_SNAPSHOT_FORMAT ||
         snapshot.schema_version !== WorkOsConfig.SCHEMA_VERSION ||
-        !isPlainObject(snapshot.values)) {
+        !isPlainObject(snapshot.values) ||
+        String(snapshot.task_id || '') !== String(expectedTaskId || '')) {
       throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_INVALID',
-        'EDIT_HANDLER',
+        'E_TASK_AUTHORITY_LEDGER_INVALID',
+        'TASK_AUTHORITY',
         false,
-        '編集前のTask snapshotを確認できないため反映を停止しました。'
+        'Task authority ledger snapshot is invalid.'
       );
     }
-    if (String(row[columnMap.task_id] || '') !==
-        String(snapshot.task_id || '')) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var expectedFields = authoritySnapshotFieldIds(schema).sort();
+    var actualFields = Object.keys(snapshot.values).sort();
+    var suppliedHash = String(hash || '');
+    var matchesCanonicalHash = authoritySnapshotHash(snapshot) === suppliedHash;
+    var matchesLegacyHash = !matchesCanonicalHash &&
+      legacyAuthoritySnapshotHash(snapshot) === suppliedHash;
+    if (JSON.stringify(expectedFields) !== JSON.stringify(actualFields) ||
+        String(snapshot.values.task_id || '') !== String(expectedTaskId || '') ||
+        (!matchesCanonicalHash && !matchesLegacyHash)) {
       throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_INVALID',
-        'EDIT_HANDLER',
+        'E_TASK_AUTHORITY_LEDGER_INVALID',
+        'TASK_AUTHORITY',
         false,
-        'Task snapshotのTask IDが一致しません。'
+        'Task authority ledger slot does not match its immutable hash.'
       );
     }
-    var restored = schema.map(function (item, index) {
+    return snapshot;
+  }
+
+  function rowFromAuthoritySnapshot(
+    snapshot,
+    generation,
+    hash,
+    controlState,
+    schema,
+    columnMap
+  ) {
+    var targetSchema = schema || WorkOsSchemas.getSheetSchema(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var targetMap = columnMap || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    validateLedgerAuthoritySnapshot(snapshot, snapshot.task_id, hash);
+    var output = targetSchema.map(function (item) {
       if (item.id === SNAPSHOT_FIELD) {
-        return valueForCell(item, snapshot);
+        return '';
       }
-      if (!Object.prototype.hasOwnProperty.call(
-        snapshot.values,
-        item.id
-      )) {
+      if (item.id === AUTHORITY_GENERATION_FIELD) {
+        return valueForCell(item, generation);
+      }
+      if (item.id === AUTHORITY_HASH_FIELD) {
+        return valueForCell(item, hash);
+      }
+      if (item.id === AUTHORITY_STATE_FIELD) {
+        return valueForCell(item, controlState || AUTHORITY_ACTIVE_STATE);
+      }
+      if (!Object.prototype.hasOwnProperty.call(snapshot.values, item.id)) {
         throw new WorkOsAppError(
-          'E_TASK_SNAPSHOT_INVALID',
-          'EDIT_HANDLER',
+          'E_TASK_AUTHORITY_LEDGER_INVALID',
+          'TASK_AUTHORITY',
           false,
-          'Task snapshotの必須fieldが不足しています。'
+          'Task authority ledger snapshot is missing a canonical field.'
         );
       }
       return valueForCell(item, snapshot.values[item.id]);
     });
-    restored[snapshotIndex] = valueForCell(
-      schema[snapshotIndex],
-      snapshot
+    return attachAuthoritativeSnapshot(output, targetSchema, targetMap);
+  }
+
+  function taskParentSpreadsheet(taskSheet) {
+    var parent = taskSheet && typeof taskSheet.getParent === 'function'
+      ? taskSheet.getParent()
+      : null;
+    return parent || SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  function authorityLedgerSchemaAndMap() {
+    var schema = WorkOsSchemas.getSheetSchema(AUTHORITY_LEDGER_SHEET);
+    return {
+      schema: schema,
+      ids: WorkOsSchemas.getInternalIds(AUTHORITY_LEDGER_SHEET),
+      map: WorkOsSchemas.buildColumnMapFromIds(
+        WorkOsSchemas.getInternalIds(AUTHORITY_LEDGER_SHEET)
+      )
+    };
+  }
+
+  function getAuthorityLedgerSheet(taskSheet) {
+    var spreadsheet = taskParentSpreadsheet(taskSheet);
+    var ledger = spreadsheet && spreadsheet.getSheetByName
+      ? spreadsheet.getSheetByName(AUTHORITY_LEDGER_SHEET)
+      : null;
+    if (!ledger) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_MISSING',
+        'TASK_AUTHORITY',
+        false,
+        'Task authority ledger is missing; no Task snapshot fallback is allowed.'
+      );
+    }
+    var definition = authorityLedgerSchemaAndMap();
+    var expectedLabels = WorkOsSchemas.getHeaders(AUTHORITY_LEDGER_SHEET);
+    if (ledger.getMaxColumns() !== definition.ids.length ||
+        JSON.stringify(ledger.getRange(
+          WorkOsConfig.HEADER_ID_ROW,
+          1,
+          1,
+          definition.ids.length
+        ).getValues()[0]) !== JSON.stringify(definition.ids) ||
+        JSON.stringify(ledger.getRange(
+          WorkOsConfig.HEADER_LABEL_ROW,
+          1,
+          1,
+          definition.ids.length
+        ).getValues()[0]) !== JSON.stringify(expectedLabels)) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_SCHEMA',
+        'TASK_AUTHORITY',
+        false,
+        'Task authority ledger schema is not canonical.'
+      );
+    }
+    assertAuthorityLedgerRuntimeContract(ledger);
+    return ledger;
+  }
+
+  /*
+   * Production Apps Script exposes both methods.  Narrow local fixtures may
+   * intentionally omit them, in which case their real-Workspace verification
+   * remains NOT EXECUTED rather than being simulated as a pass.  When the
+   * runtime can report either property, a false/missing protection is
+   * fail-closed for all authority reads and writes.
+   */
+  function assertAuthorityLedgerRuntimeContract(ledger) {
+    if (typeof ledger.isSheetHidden === 'function' &&
+        ledger.isSheetHidden() !== true) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN',
+        'TASK_AUTHORITY',
+        false,
+        'Task Authority Ledger must remain hidden.'
+      );
+    }
+    if (typeof ledger.getProtections === 'function') {
+      var protectionType = typeof SpreadsheetApp !== 'undefined' &&
+        SpreadsheetApp.ProtectionType
+        ? SpreadsheetApp.ProtectionType.SHEET
+        : undefined;
+      var protections = protectionType === undefined
+        ? ledger.getProtections()
+        : ledger.getProtections(protectionType);
+      var expectedDescription = 'WORK_OS_V2_PHASE1_' +
+        AUTHORITY_LEDGER_SHEET + '_MANAGEMENT_SHEET';
+      var protectedSheet = (protections || []).some(function (protection) {
+        if (!protection ||
+            (typeof protection.isWarningOnly === 'function' &&
+             protection.isWarningOnly() !== false)) {
+          return false;
+        }
+        // A Sheet-level protection for another purpose is not the authority
+        // protection.  Where the runtime exposes these details, enforce the
+        // canonical policy rather than accepting a superficially protected
+        // but editable ledger.
+        if (typeof protection.getDescription === 'function' &&
+            protection.getDescription() !== expectedDescription) {
+          return false;
+        }
+        if (typeof protection.canDomainEdit === 'function' &&
+            protection.canDomainEdit() === true) {
+          return false;
+        }
+        if (typeof protection.getUnprotectedRanges === 'function' &&
+            protection.getUnprotectedRanges().length !== 0) {
+          return false;
+        }
+        if (typeof protection.getEditors === 'function') {
+          if (typeof Session === 'undefined' || !Session ||
+              typeof Session.getEffectiveUser !== 'function') {
+            return false;
+          }
+          var effectiveUser = Session.getEffectiveUser();
+          var effectiveEmail = effectiveUser &&
+            typeof effectiveUser.getEmail === 'function'
+            ? String(effectiveUser.getEmail() || '')
+            : '';
+          if (!effectiveEmail) {
+            return false;
+          }
+          var editors = protection.getEditors();
+          if (!Array.isArray(editors) || !editors.length ||
+              !editors.every(function (editor) {
+                return editor && typeof editor.getEmail === 'function' &&
+                  String(editor.getEmail() || '') === effectiveEmail;
+              })) {
+            return false;
+          }
+        }
+        return true;
+      });
+      if (!protectedSheet) {
+        throw new WorkOsAppError(
+          'E_TASK_AUTHORITY_LEDGER_UNPROTECTED',
+          'TASK_AUTHORITY',
+          false,
+          'Task Authority Ledger must retain a non-warning-only Sheet protection.'
+        );
+      }
+    }
+  }
+
+  function ledgerRecordFromRow(row, schema) {
+    var record = {};
+    schema.forEach(function (item, index) {
+      record[item.id] = valueFromCell(item, row[index]);
+    });
+    return record;
+  }
+
+  function ledgerRowFromRecord(record, schema) {
+    return schema.map(function (item) {
+      return valueForCell(
+        item,
+        Object.prototype.hasOwnProperty.call(record, item.id)
+          ? record[item.id]
+          : ''
+      );
+    });
+  }
+
+  function copyAuthorityLedgerRecord(record) {
+    var output = {};
+    Object.keys(record || {}).forEach(function (key) {
+      output[key] = record[key];
+    });
+    return output;
+  }
+
+  function readAuthorityLedgerContext(taskSheet) {
+    var ledgerSheet = getAuthorityLedgerSheet(taskSheet);
+    var definition = authorityLedgerSchemaAndMap();
+    var maxDataRows = Number(WorkOsConfig.AUTHORITY_LEDGER_MAX_DATA_ROWS);
+    var maximumRow = ledgerSheet.getMaxRows();
+    var lastUsedRow = typeof ledgerSheet.getLastRow === 'function'
+      ? Math.max(WorkOsConfig.HEADER_LABEL_ROW, Number(ledgerSheet.getLastRow()))
+      : maximumRow;
+    var rowCount = Math.max(
+      0,
+      lastUsedRow - WorkOsConfig.DATA_START_ROW + 1
     );
-    return restored;
+    var chunkRows = Number(WorkOsConfig.AUTHORITY_LEDGER_CHUNK_ROWS);
+    if (!Number.isInteger(maxDataRows) || maxDataRows <= 0 ||
+        !Number.isInteger(chunkRows) || chunkRows <= 0 ||
+        rowCount > maxDataRows) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_CAPACITY',
+        'TASK_AUTHORITY',
+        false,
+        'Task Authority Ledger exceeds the bounded runtime read budget.'
+      );
+    }
+    var byTaskId = {};
+    var byPhysicalRow = {};
+    var duplicateTaskIds = {};
+    var emptyRows = [];
+    function indexLedgerRow(row, physicalLedgerRow) {
+      var taskId = String(row[definition.map.task_id] || '').trim();
+      if (!taskId) {
+        emptyRows.push(physicalLedgerRow);
+        return;
+      }
+      var record = ledgerRecordFromRow(row, definition.schema);
+      record._row = physicalLedgerRow;
+      if (byTaskId[taskId]) {
+        duplicateTaskIds[taskId] = true;
+      } else {
+        byTaskId[taskId] = record;
+      }
+      var physicalRow = Number(record.physical_row_hint);
+      if (Number.isInteger(physicalRow) && physicalRow >=
+          WorkOsConfig.DATA_START_ROW) {
+        if (byPhysicalRow[physicalRow]) {
+          duplicateTaskIds[taskId] = true;
+        } else {
+          byPhysicalRow[physicalRow] = record;
+        }
+      }
+    }
+    /*
+     * Do not turn a malformed or heavily formatted ledger into one enormous
+     * Sheets read.  `getLastRow` gives the bounded high-water mark, and this
+     * loop keeps every individual read within the configured chunk budget.
+     */
+    for (var offset = 0; offset < rowCount; offset += chunkRows) {
+      var count = Math.min(chunkRows, rowCount - offset);
+      var rows = ledgerSheet.getRange(
+        WorkOsConfig.DATA_START_ROW + offset,
+        1,
+        count,
+        definition.schema.length
+      ).getValues();
+      rows.forEach(function (row, index) {
+        indexLedgerRow(
+          row,
+          WorkOsConfig.DATA_START_ROW + offset + index
+        );
+      });
+    }
+    var nextAppendRow = WorkOsConfig.DATA_START_ROW + rowCount;
+    return {
+      sheet: ledgerSheet,
+      schema: definition.schema,
+      map: definition.map,
+      by_task_id: byTaskId,
+      by_physical_row: byPhysicalRow,
+      duplicate_task_ids: duplicateTaskIds,
+      empty_rows: emptyRows,
+      next_append_row: nextAppendRow,
+      maximum_row: maximumRow,
+      maximum_data_rows: maxDataRows
+    };
+  }
+
+  function ledgerRecordForTask(
+    ledgerContext,
+    observedTaskId,
+    physicalRow
+  ) {
+    var taskId = String(observedTaskId || '').trim();
+    var byTask = taskId ? ledgerContext.by_task_id[taskId] : null;
+    var byPhysical = ledgerContext.by_physical_row[Number(physicalRow)] || null;
+    if (taskId && ledgerContext.duplicate_task_ids[taskId]) {
+      return { duplicate: true, record: byPhysical || byTask || null };
+    }
+    if (byTask && byPhysical && byTask._row !== byPhysical._row) {
+      if (String(byPhysical.task_id || '') === taskId) {
+        return { duplicate: true, record: byPhysical };
+      }
+      // A Sheet row deletion can shift several valid Task rows at once. Use
+      // the matching task_id ledger record and classify its stale physical
+      // hint below instead of quarantining the unrelated row now occupying it.
+      return {
+        duplicate: false,
+        record: byTask,
+        physical_mismatch: true
+      };
+    }
+    var record = byPhysical || byTask || null;
+    return {
+      duplicate: false,
+      record: record,
+      physical_mismatch: Boolean(
+        record && byTask && !byPhysical &&
+        Number(record.physical_row_hint) !== Number(physicalRow)
+      )
+    };
+  }
+
+  function firstEmptyLedgerRow(ledgerContext) {
+    if (ledgerContext.empty_rows && ledgerContext.empty_rows.length) {
+      return ledgerContext.empty_rows.shift();
+    }
+    if (Number(ledgerContext.next_append_row) <=
+        Math.min(
+          Number(ledgerContext.maximum_row || ledgerContext.sheet.getMaxRows()),
+          WorkOsConfig.DATA_START_ROW +
+            Number(ledgerContext.maximum_data_rows) - 1
+        )) {
+      var available = Number(ledgerContext.next_append_row);
+      ledgerContext.next_append_row = available + 1;
+      return available;
+    }
+    var priorRows = ledgerContext.sheet.getMaxRows();
+    var maximumRow = WorkOsConfig.DATA_START_ROW +
+      Number(ledgerContext.maximum_data_rows) - 1;
+    var rowsToAppend = Math.min(
+      WorkOsConfig.ROW_EXPANSION_UNIT,
+      maximumRow - priorRows
+    );
+    if (!Number.isInteger(rowsToAppend) || rowsToAppend <= 0) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEDGER_CAPACITY',
+        'TASK_AUTHORITY',
+        false,
+        'Task Authority Ledger has reached its bounded data-row capacity.'
+      );
+    }
+    ledgerContext.sheet.insertRowsAfter(
+      priorRows,
+      rowsToAppend
+    );
+    ledgerContext.maximum_row = priorRows + rowsToAppend;
+    ledgerContext.empty_rows = ledgerContext.empty_rows || [];
+    for (var offset = 1; offset < rowsToAppend; offset += 1) {
+      ledgerContext.empty_rows.push(priorRows + 1 + offset);
+    }
+    return priorRows + 1;
+  }
+
+  function writeAuthorityLedgerRecord(ledgerContext, record) {
+    var target = record;
+    var row = Number(target._row);
+    if (!Number.isInteger(row) || row < WorkOsConfig.DATA_START_ROW) {
+      row = firstEmptyLedgerRow(ledgerContext);
+      target._row = row;
+    }
+    target.updated_at = WorkOsUtilities.now();
+    ledgerContext.sheet.getRange(
+      row,
+      1,
+      1,
+      ledgerContext.schema.length
+    ).setValues([ledgerRowFromRecord(target, ledgerContext.schema)]);
+    ledgerContext.by_task_id[String(target.task_id)] = target;
+    Object.keys(ledgerContext.by_physical_row).forEach(function (hint) {
+      var existing = ledgerContext.by_physical_row[hint];
+      if (existing && (Number(existing._row) === Number(target._row) ||
+          String(existing.task_id || '') === String(target.task_id || ''))) {
+        delete ledgerContext.by_physical_row[hint];
+      }
+    });
+    if (Number.isInteger(Number(target.physical_row_hint))) {
+      ledgerContext.by_physical_row[Number(target.physical_row_hint)] = target;
+    }
+    return target;
+  }
+
+  function discardUncommittedAuthorityRecord(ledgerContext, record) {
+    // A failed first insert can leave a PREPARED record without any committed
+    // slot.  It is safe to discard only that empty authority transaction: the
+    // Task row has already been proved blank by recoverPreparedAuthority.  Do
+    // not use this path for a record that ever had a committed generation.
+    var row = Number(record && record._row);
+    if (Number.isInteger(row) && row >= WorkOsConfig.DATA_START_ROW) {
+      ledgerContext.sheet.getRange(
+        row,
+        1,
+        1,
+        ledgerContext.schema.length
+      ).setValues([new Array(ledgerContext.schema.length).fill('')]);
+      ledgerContext.empty_rows = ledgerContext.empty_rows || [];
+      ledgerContext.empty_rows.push(row);
+      ledgerContext.empty_rows.sort(function (left, right) {
+        return left - right;
+      });
+    }
+    Object.keys(ledgerContext.by_task_id).forEach(function (taskId) {
+      if (ledgerContext.by_task_id[taskId] === record) {
+        delete ledgerContext.by_task_id[taskId];
+      }
+    });
+    Object.keys(ledgerContext.by_physical_row).forEach(function (physicalRow) {
+      if (ledgerContext.by_physical_row[physicalRow] === record) {
+        delete ledgerContext.by_physical_row[physicalRow];
+      }
+    });
+    return null;
+  }
+
+  function newAuthorityLedgerRecord(taskId, physicalRow) {
+    return {
+      task_id: String(taskId || ''),
+      control_state: 'ACTIVE',
+      active_slot: '',
+      committed_generation: 0,
+      committed_hash: '',
+      slot_a_generation: '',
+      slot_a_hash: '',
+      slot_a_snapshot_json: '',
+      slot_b_generation: '',
+      slot_b_hash: '',
+      slot_b_snapshot_json: '',
+      transaction_state: 'IDLE',
+      prepared_slot: '',
+      prepared_generation: '',
+      prepared_hash: '',
+      base_generation: '',
+      base_hash: '',
+      operation_id: '',
+      physical_row_hint: Number(physicalRow),
+      quarantine_reason_code: '',
+      updated_at: WorkOsUtilities.now()
+    };
+  }
+
+  function ledgerSlotSnapshot(record, slot) {
+    var normalized = String(slot || '');
+    if (normalized !== 'A' && normalized !== 'B') {
+      return null;
+    }
+    var suffix = normalized === 'A' ? 'a' : 'b';
+    var snapshot = record['slot_' + suffix + '_snapshot_json'];
+    var hash = record['slot_' + suffix + '_hash'];
+    var generation = Number(record['slot_' + suffix + '_generation']);
+    if (!Number.isInteger(generation) || generation <= 0 || !snapshot || !hash) {
+      return null;
+    }
+    return {
+      slot: normalized,
+      generation: generation,
+      hash: String(hash),
+      snapshot: snapshot
+    };
+  }
+
+  function committedLedgerSlot(record) {
+    if (!record || String(record.control_state || '') !== 'ACTIVE') {
+      return null;
+    }
+    var result = ledgerSlotSnapshot(record, record.active_slot);
+    if (!result ||
+        result.generation !== Number(record.committed_generation) ||
+        result.hash !== String(record.committed_hash || '')) {
+      return null;
+    }
+    return result;
+  }
+
+  function preparedLedgerSlot(record) {
+    if (!record || String(record.transaction_state || '') !== 'PREPARED') {
+      return null;
+    }
+    var result = ledgerSlotSnapshot(record, record.prepared_slot);
+    if (!result ||
+        result.generation !== Number(record.prepared_generation) ||
+        result.hash !== String(record.prepared_hash || '')) {
+      return null;
+    }
+    return result;
+  }
+
+  function authorityValidationResult(status, code, record, details) {
+    var result = {
+      status: status,
+      code: code || '',
+      record: record || null
+    };
+    Object.keys(details || {}).forEach(function (key) {
+      result[key] = details[key];
+    });
+    return result;
+  }
+
+  /**
+   * Shared, fail-closed authority validator used by Setup, diagnostics,
+   * migration, Task writes and edit restoration.  It deliberately does not
+   * inspect authoritative_snapshot_json or a cell note as a trust source.
+   */
+  function validateAuthority(row, options) {
+    var settings = options || {};
+    var schema = settings.schema || WorkOsSchemas.getSheetSchema(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var map = settings.column_map || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var physicalRow = Number(settings.physical_row);
+    var taskSheet = settings.sheet;
+    var observedTaskId = String(row && row[map.task_id] || '').trim();
+    var observedOriginKey = String(row && row[map.origin_key] || '').trim();
+    var ledgerContext;
+    try {
+      ledgerContext = settings.ledger_context || readAuthorityLedgerContext(
+        taskSheet
+      );
+    } catch (error) {
+      return authorityValidationResult(
+        'QUARANTINED',
+        error && error.code || 'E_TASK_AUTHORITY_LEDGER_MISSING',
+        null,
+        { safe_message: 'Authority ledger is unavailable.' }
+      );
+    }
+    if (!observedTaskId && !observedOriginKey &&
+        !ledgerContext.by_physical_row[physicalRow]) {
+      return authorityValidationResult('EMPTY', '', null, {
+        ledger_context: ledgerContext
+      });
+    }
+    var located = ledgerRecordForTask(
+      ledgerContext,
+      observedTaskId,
+      physicalRow
+    );
+    if (located.duplicate) {
+      return authorityValidationResult(
+        'UNRECOVERABLE',
+        'E_TASK_AUTHORITY_DUPLICATE',
+        located.record,
+        { ledger_context: ledgerContext }
+      );
+    }
+    var record = located.record;
+    if (!record) {
+      return authorityValidationResult(
+        'QUARANTINED',
+        'E_TASK_AUTHORITY_MISSING',
+        null,
+        { ledger_context: ledgerContext }
+      );
+    }
+    if (String(record.control_state || '') === 'QUARANTINED') {
+      return authorityValidationResult(
+        'QUARANTINED',
+        String(record.quarantine_reason_code || 'E_TASK_AUTHORITY_QUARANTINED'),
+        record,
+        { ledger_context: ledgerContext }
+      );
+    }
+    if (String(record.control_state || '') === 'UNRECOVERABLE') {
+      return authorityValidationResult(
+        'UNRECOVERABLE',
+        String(record.quarantine_reason_code || 'E_TASK_AUTHORITY_UNRECOVERABLE'),
+        record,
+        { ledger_context: ledgerContext }
+      );
+    }
+    if (String(record.control_state || '') === 'ORPHANED') {
+      return authorityValidationResult(
+        'ORPHANED',
+        String(record.quarantine_reason_code || 'E_TASK_AUTHORITY_ORPHANED'),
+        record,
+        { ledger_context: ledgerContext }
+      );
+    }
+    var relocated = false;
+    if (located.physical_mismatch) {
+      var hintedRow = Number(record.physical_row_hint);
+      if (Number.isInteger(hintedRow) &&
+          hintedRow >= WorkOsConfig.DATA_START_ROW &&
+          hintedRow !== physicalRow) {
+        var hintedRaw = taskSheet.getRange(
+          hintedRow,
+          1,
+          1,
+          schema.length
+        ).getValues()[0];
+        if (String(hintedRaw[map.task_id] || '') ===
+            String(record.task_id || '')) {
+          return authorityValidationResult(
+            'UNRECOVERABLE',
+            'E_TASK_AUTHORITY_DUPLICATE_ROW',
+            record,
+            { ledger_context: ledgerContext }
+          );
+        }
+      }
+      relocated = true;
+    }
+    var prepared = preparedLedgerSlot(record);
+    if (String(record.transaction_state || '') === 'PREPARED') {
+      if (!prepared) {
+        return authorityValidationResult(
+          'UNRECOVERABLE',
+          'E_TASK_AUTHORITY_PREPARED_INVALID',
+          record,
+          { ledger_context: ledgerContext }
+        );
+      }
+      return authorityValidationResult(
+        'PREPARED_RECOVERABLE',
+        'E_TASK_AUTHORITY_PREPARED',
+        record,
+        { ledger_context: ledgerContext, prepared_slot: prepared }
+      );
+    }
+    if (String(record.transaction_state || '') !== 'IDLE') {
+      return authorityValidationResult(
+        'UNRECOVERABLE',
+        'E_TASK_AUTHORITY_TRANSACTION_INVALID',
+        record,
+        { ledger_context: ledgerContext }
+      );
+    }
+    var committed = committedLedgerSlot(record);
+    if (!committed) {
+      return authorityValidationResult(
+        'UNRECOVERABLE',
+        'E_TASK_AUTHORITY_COMMIT_INVALID',
+        record,
+        { ledger_context: ledgerContext }
+      );
+    }
+    try {
+      var expected = rowFromAuthoritySnapshot(
+        validateLedgerAuthoritySnapshot(
+          committed.snapshot,
+          record.task_id,
+          committed.hash
+        ),
+        committed.generation,
+        committed.hash,
+        AUTHORITY_ACTIVE_STATE,
+        schema,
+        map
+      );
+      var matchesCommitted = rowsEqual(row, expected);
+      return authorityValidationResult(
+        relocated && matchesCommitted
+          ? 'RELOCATABLE'
+          : (matchesCommitted ? 'VALID' : 'RESTORABLE'),
+        relocated && matchesCommitted
+          ? 'E_TASK_AUTHORITY_ROW_RELOCATED'
+          : (matchesCommitted ? '' : 'E_TASK_AUTHORITY_DRIFT'),
+        record,
+        {
+          ledger_context: ledgerContext,
+          committed_slot: committed,
+          authoritative_row: expected,
+          mode: String(settings.mode || 'NORMAL'),
+          relocation_required: relocated
+        }
+      );
+    } catch (error) {
+      return authorityValidationResult(
+        'UNRECOVERABLE',
+        error && error.code || 'E_TASK_AUTHORITY_LEDGER_INVALID',
+        record,
+        { ledger_context: ledgerContext }
+      );
+    }
+  }
+
+  function writeAuthorityStateMarker(sheet, physicalRow, state, map) {
+    if (!sheet || !Number.isInteger(Number(physicalRow))) {
+      return;
+    }
+    var columnMap = map || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    if (!Object.prototype.hasOwnProperty.call(columnMap, AUTHORITY_STATE_FIELD)) {
+      return;
+    }
+    sheet.getRange(
+      Number(physicalRow),
+      columnMap[AUTHORITY_STATE_FIELD] + 1,
+      1,
+      1
+    ).setValues([[state]]);
+  }
+
+  /**
+   * Records only a one-way, non-content-bearing authority isolation event.
+   * The visible Task ID is transformed before it reaches the Errors schema;
+   * raw Task cells, snapshots and user input are never passed to logging.
+   * Logging is best-effort so an unavailable Errors sheet cannot undo the
+   * fail-closed quarantine that has already been durably written to the
+   * authority ledger.
+   */
+  function recordAuthorityIsolation(
+    taskSheet,
+    taskId,
+    physicalRow,
+    reasonCode,
+    controlState
+  ) {
+    var safeTaskRef = 'taskref_' + WorkOsUtilities.sha256Hex(
+      'v2|task-authority-isolation|' + String(taskId || '') + '|' +
+        String(physicalRow || '')
+    );
+    var code = String(reasonCode || 'E_TASK_AUTHORITY_QUARANTINED')
+      .replace(/[^A-Z0-9_]/g, '_')
+      .slice(0, 80) || 'E_TASK_AUTHORITY_QUARANTINED';
+    if (typeof WorkOsLogAndDeadLetter === 'undefined' ||
+        !WorkOsLogAndDeadLetter ||
+        typeof WorkOsLogAndDeadLetter.recordOperationalError !== 'function') {
+      return {
+        recorded: false,
+        safe_task_reference: safeTaskRef,
+        reason_code: code
+      };
+    }
+    try {
+      WorkOsLogAndDeadLetter.recordOperationalError(
+        new WorkOsAppError(
+          code,
+          'TASK_AUTHORITY',
+          false,
+          'Task authority was isolated; inspect the safe reason code.'
+        ),
+        {
+          subsystem: 'TASK_UPSERT',
+          fallback_stage: 'TASK_AUTHORITY',
+          task_id: safeTaskRef,
+          status: 'DEAD',
+          processing_status: 'DEAD'
+        },
+        '',
+        taskParentSpreadsheet(taskSheet)
+      );
+      return {
+        recorded: true,
+        safe_task_reference: safeTaskRef,
+        reason_code: code,
+        control_state: String(controlState || 'QUARANTINED')
+      };
+    } catch (error) {
+      return {
+        recorded: false,
+        safe_task_reference: safeTaskRef,
+        reason_code: code,
+        control_state: String(controlState || 'QUARANTINED')
+      };
+    }
+  }
+
+  function quarantineAuthorityRow(sheet, physicalRow, rawRow, reasonCode, options) {
+    var settings = options || {};
+    var schema = settings.schema || WorkOsSchemas.getSheetSchema(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var map = settings.column_map || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var ledgerContext = settings.ledger_context || readAuthorityLedgerContext(sheet);
+    var observedTaskId = String(rawRow && rawRow[map.task_id] || '').trim();
+    var located = ledgerRecordForTask(ledgerContext, observedTaskId, physicalRow);
+    // A copied row can share a valid Task ID with its original.  Never turn
+    // the original record into QUARANTINED just to isolate the copy; attach a
+    // detached control record to the copied physical row instead.
+    var detachFromExistingAuthority = located.duplicate ||
+      (located.physical_mismatch && located.record &&
+       Number(located.record.physical_row_hint) !== Number(physicalRow));
+    var detachedTaskId = 'qrow_' + WorkOsUtilities.sha256Hex(
+      String(physicalRow) + '|' + String(reasonCode || '')
+    ).slice(0, 24);
+    var existingPhysicalRecord = ledgerContext.by_physical_row[
+      Number(physicalRow)
+    ] || null;
+    var reusableDetachedRecord = existingPhysicalRecord &&
+      /^qrow_[0-9a-f]{24}$/.test(String(existingPhysicalRecord.task_id || '')) &&
+      (String(existingPhysicalRecord.control_state || '') === 'QUARANTINED' ||
+       String(existingPhysicalRecord.control_state || '') === 'UNRECOVERABLE');
+    var baseRecord = reusableDetachedRecord
+      ? existingPhysicalRecord
+      : (detachFromExistingAuthority
+      ? newAuthorityLedgerRecord(detachedTaskId, physicalRow)
+      : (located.record || newAuthorityLedgerRecord(
+        observedTaskId || detachedTaskId,
+        physicalRow
+      )));
+    var record = copyAuthorityLedgerRecord(baseRecord);
+    record.control_state = settings.unrecoverable === true
+      ? 'UNRECOVERABLE'
+      : 'QUARANTINED';
+    record.transaction_state = 'IDLE';
+    record.prepared_slot = '';
+    record.prepared_generation = '';
+    record.prepared_hash = '';
+    record.base_generation = '';
+    record.base_hash = '';
+    record.operation_id = '';
+    record.physical_row_hint = Number(physicalRow);
+    record.quarantine_reason_code = String(
+      reasonCode || 'E_TASK_AUTHORITY_QUARANTINED'
+    );
+    writeAuthorityLedgerRecord(ledgerContext, record);
+    writeAuthorityStateMarker(
+      sheet,
+      physicalRow,
+      record.control_state === 'UNRECOVERABLE'
+        ? AUTHORITY_UNRECOVERABLE_STATE
+        : AUTHORITY_QUARANTINED_STATE,
+      map
+    );
+    var isolationAudit = recordAuthorityIsolation(
+      sheet,
+      observedTaskId || record.task_id,
+      physicalRow,
+      record.quarantine_reason_code,
+      record.control_state
+    );
+    return authorityValidationResult(
+      record.control_state === 'UNRECOVERABLE'
+        ? 'UNRECOVERABLE'
+        : 'QUARANTINED',
+      record.quarantine_reason_code,
+      record,
+      {
+        ledger_context: ledgerContext,
+        safe_task_reference: isolationAudit.safe_task_reference,
+        isolation_logged: isolationAudit.recorded
+      }
+    );
+  }
+
+  function promotePreparedLedgerRecord(ledgerContext, record) {
+    var output = copyAuthorityLedgerRecord(record);
+    var prepared = preparedLedgerSlot(output);
+    if (!prepared) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_PREPARED_INVALID',
+        'TASK_AUTHORITY',
+        false,
+        'Prepared authority slot is not valid.'
+      );
+    }
+    var committed = committedLedgerSlot(output);
+    if (Number(output.base_generation || 0) !==
+          Number(committed && committed.generation || 0) ||
+        String(output.base_hash || '') !==
+          String(committed && committed.hash || '')) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_BASE_MISMATCH',
+        'TASK_AUTHORITY',
+        false,
+        'Prepared authority record does not match its declared committed base.'
+      );
+    }
+    output.active_slot = prepared.slot;
+    output.committed_generation = prepared.generation;
+    output.committed_hash = prepared.hash;
+    output.transaction_state = 'IDLE';
+    output.prepared_slot = '';
+    output.prepared_generation = '';
+    output.prepared_hash = '';
+    output.base_generation = '';
+    output.base_hash = '';
+    output.operation_id = '';
+    output.quarantine_reason_code = '';
+    output.control_state = 'ACTIVE';
+    return writeAuthorityLedgerRecord(ledgerContext, output);
+  }
+
+  function rollbackPreparedLedgerRecord(ledgerContext, record) {
+    if (!committedLedgerSlot(record) &&
+        Number(record.committed_generation || 0) === 0 &&
+        !String(record.committed_hash || '')) {
+      return discardUncommittedAuthorityRecord(ledgerContext, record);
+    }
+    var output = copyAuthorityLedgerRecord(record);
+    output.transaction_state = 'IDLE';
+    output.prepared_slot = '';
+    output.prepared_generation = '';
+    output.prepared_hash = '';
+    output.base_generation = '';
+    output.base_hash = '';
+    output.operation_id = '';
+    return writeAuthorityLedgerRecord(ledgerContext, output);
+  }
+
+  function rebindRelocatedAuthorityRecord(ledgerContext, record, physicalRow) {
+    var output = copyAuthorityLedgerRecord(record);
+    output.physical_row_hint = Number(physicalRow);
+    return writeAuthorityLedgerRecord(ledgerContext, output);
+  }
+
+  /*
+   * A missing physical Task row is never silently recreated from a ledger
+   * snapshot. Keep the last valid generation for audited recovery, but remove
+   * the record from normal authority/worker/calendar selection until an
+   * explicit operator-led repair establishes a new physical row.
+   */
+  function markAuthorityRecordOrphaned(ledgerContext, record) {
+    var output = copyAuthorityLedgerRecord(record);
+    output.control_state = 'ORPHANED';
+    output.transaction_state = 'IDLE';
+    output.prepared_slot = '';
+    output.prepared_generation = '';
+    output.prepared_hash = '';
+    output.base_generation = '';
+    output.base_hash = '';
+    output.operation_id = '';
+    // The old physical hint may now belong to a different Task after a row
+    // delete/sort. Keeping it would make an orphan shadow that healthy Task
+    // on a later scan, so retain no live physical resolution hint.
+    output.physical_row_hint = '';
+    output.quarantine_reason_code = 'E_TASK_AUTHORITY_ORPHANED';
+    return writeAuthorityLedgerRecord(ledgerContext, output);
+  }
+
+  /**
+   * Settle the ledger side of an already-durable PREPARED transaction.
+   * A Sheets write can throw either before or after persistence, so each
+   * attempt re-reads and validates the durable record before deciding whether
+   * to retry the deterministic promote/rollback operation.  Two attempts are
+   * sufficient for a single interrupted operation; any remaining ambiguous
+   * state is returned to the caller for fail-closed quarantine.
+   */
+  function settlePreparedLedgerTransition(
+    taskSheet,
+    physicalRow,
+    raw,
+    schema,
+    map,
+    transition,
+    allowEmptyAfterRollback
+  ) {
+    var lastError = null;
+    var validation;
+    for (var attempt = 0; attempt < 2; attempt += 1) {
+      validation = validateAuthority(raw, {
+        sheet: taskSheet,
+        physical_row: physicalRow,
+        schema: schema,
+        column_map: map,
+        mode: 'RECOVERY'
+      });
+      if (validation.status === 'VALID' ||
+          (transition === 'ROLLBACK' &&
+            allowEmptyAfterRollback === true &&
+            validation.status === 'EMPTY')) {
+        return {
+          validation: validation,
+          error: lastError
+        };
+      }
+      if (validation.status !== 'PREPARED_RECOVERABLE') {
+        return {
+          validation: validation,
+          error: lastError
+        };
+      }
+      try {
+        if (transition === 'PROMOTE') {
+          promotePreparedLedgerRecord(
+            validation.ledger_context,
+            validation.record
+          );
+        } else {
+          rollbackPreparedLedgerRecord(
+            validation.ledger_context,
+            validation.record
+          );
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    validation = validateAuthority(raw, {
+      sheet: taskSheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: map,
+      mode: 'RECOVERY'
+    });
+    return {
+      validation: validation,
+      error: lastError
+    };
+  }
+
+  function recoveredAuthorityValidation(validation, recoveryAction) {
+    var output = {};
+    Object.keys(validation || {}).forEach(function (key) {
+      output[key] = validation[key];
+    });
+    output.recovery_action = recoveryAction;
+    return output;
+  }
+
+  function recoverPreparedAuthority(taskSheet, physicalRow, options) {
+    var settings = options || {};
+    var schema = settings.schema || WorkOsSchemas.getSheetSchema(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var map = settings.column_map || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var raw = settings.raw_row || taskSheet.getRange(
+      physicalRow,
+      1,
+      1,
+      schema.length
+    ).getValues()[0];
+    var validation = validateAuthority(raw, {
+      sheet: taskSheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: map,
+      ledger_context: settings.ledger_context,
+      mode: 'RECOVERY'
+    });
+    if (validation.status !== 'PREPARED_RECOVERABLE') {
+      return validation;
+    }
+    var record = validation.record;
+    var prepared = validation.prepared_slot;
+    var committed = committedLedgerSlot(record);
+    var preparedRow;
+    var committedRow;
+    try {
+      preparedRow = rowFromAuthoritySnapshot(
+        validateLedgerAuthoritySnapshot(
+          prepared.snapshot,
+          record.task_id,
+          prepared.hash
+        ),
+        prepared.generation,
+        prepared.hash,
+        AUTHORITY_ACTIVE_STATE,
+        schema,
+        map
+      );
+      committedRow = committed
+        ? rowFromAuthoritySnapshot(
+          validateLedgerAuthoritySnapshot(
+            committed.snapshot,
+            record.task_id,
+            committed.hash
+          ),
+          committed.generation,
+          committed.hash,
+          AUTHORITY_ACTIVE_STATE,
+          schema,
+          map
+        )
+        : new Array(schema.length).fill('');
+    } catch (error) {
+      return quarantineAuthorityRow(
+        taskSheet,
+        physicalRow,
+        raw,
+        error && error.code || 'E_TASK_AUTHORITY_PREPARED_INVALID',
+        {
+          schema: schema,
+          column_map: map,
+          ledger_context: validation.ledger_context,
+          unrecoverable: true
+        }
+      );
+    }
+    if (rowsEqual(raw, preparedRow)) {
+      var promotion = settlePreparedLedgerTransition(
+        taskSheet,
+        physicalRow,
+        raw,
+        schema,
+        map,
+        'PROMOTE'
+      );
+      if (promotion.validation.status === 'VALID') {
+        return recoveredAuthorityValidation(
+          promotion.validation,
+          'PROMOTED'
+        );
+      }
+      return quarantineAuthorityRow(
+        taskSheet,
+        physicalRow,
+        raw,
+        promotion.error && promotion.error.code ||
+          promotion.validation.code ||
+          'E_TASK_AUTHORITY_PREPARED_COMMIT_FAILED',
+        {
+          schema: schema,
+          column_map: map,
+          ledger_context: promotion.validation.ledger_context ||
+            validation.ledger_context,
+          unrecoverable: true
+        }
+      );
+    }
+    if (rowsEqual(raw, committedRow)) {
+      // A failed first insert has no committed slot and its durable Task row is
+      // still blank.  Rolling that PREPARED record back deliberately removes
+      // the ledger row, so the only correct postcondition is EMPTY rather than
+      // VALID.  Treat that as a completed rollback, never as a reason to
+      // quarantine an otherwise retryable insert.
+      var allowEmptyAfterRollback = !committed;
+      var rollback = settlePreparedLedgerTransition(
+        taskSheet,
+        physicalRow,
+        raw,
+        schema,
+        map,
+        'ROLLBACK',
+        allowEmptyAfterRollback
+      );
+      if (rollback.validation.status === 'VALID') {
+        return recoveredAuthorityValidation(
+          rollback.validation,
+          'ROLLED_BACK'
+        );
+      }
+      if (allowEmptyAfterRollback && rollback.validation.status === 'EMPTY') {
+        return recoveredAuthorityValidation(
+          rollback.validation,
+          'ROLLED_BACK_EMPTY'
+        );
+      }
+      return quarantineAuthorityRow(
+        taskSheet,
+        physicalRow,
+        raw,
+        rollback.error && rollback.error.code ||
+          rollback.validation.code ||
+          'E_TASK_AUTHORITY_PREPARED_ROLLBACK_FAILED',
+        {
+          schema: schema,
+          column_map: map,
+          ledger_context: rollback.validation.ledger_context ||
+            validation.ledger_context,
+          unrecoverable: true
+        }
+      );
+    }
+    return quarantineAuthorityRow(
+      taskSheet,
+      physicalRow,
+      raw,
+      'E_TASK_AUTHORITY_PREPARED_ROW_AMBIGUOUS',
+      {
+        schema: schema,
+        column_map: map,
+        ledger_context: validation.ledger_context,
+        unrecoverable: true
+      }
+    );
+  }
+
+  function prepareAuthorityLedgerCommit(
+    ledgerContext,
+    record,
+    snapshot,
+    physicalRow
+  ) {
+    var base = copyAuthorityLedgerRecord(record ||
+      newAuthorityLedgerRecord(snapshot.task_id, physicalRow));
+    if (record && String(record.control_state || '') !== 'ACTIVE') {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_QUARANTINED',
+        'TASK_AUTHORITY',
+        false,
+        'A quarantined Task cannot be written by normal processing.'
+      );
+    }
+    var committed = committedLedgerSlot(base);
+    if (record && !committed) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_COMMIT_INVALID',
+        'TASK_AUTHORITY',
+        false,
+        'Existing authority record has no valid committed slot.'
+      );
+    }
+    var nextSlot = committed && committed.slot === 'A' ? 'B' : 'A';
+    var suffix = nextSlot === 'A' ? 'a' : 'b';
+    var nextGeneration = committed ? committed.generation + 1 : 1;
+    var nextHash = authoritySnapshotHash(snapshot);
+    base['slot_' + suffix + '_generation'] = nextGeneration;
+    base['slot_' + suffix + '_hash'] = nextHash;
+    base['slot_' + suffix + '_snapshot_json'] = snapshot;
+    base.control_state = 'ACTIVE';
+    base.transaction_state = 'PREPARED';
+    base.prepared_slot = nextSlot;
+    base.prepared_generation = nextGeneration;
+    base.prepared_hash = nextHash;
+    base.base_generation = committed ? committed.generation : 0;
+    base.base_hash = committed ? committed.hash : '';
+    base.operation_id = WorkOsUtilities.makeId('op_');
+    base.physical_row_hint = Number(physicalRow);
+    base.quarantine_reason_code = '';
+    writeAuthorityLedgerRecord(ledgerContext, base);
+    return {
+      record: base,
+      generation: nextGeneration,
+      hash: nextHash,
+      snapshot: snapshot
+    };
+  }
+
+  function commitAuthorityRow(taskSheet, physicalRow, candidateRow, options) {
+    var settings = options || {};
+    var schema = settings.schema || WorkOsSchemas.getSheetSchema(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var map = settings.column_map || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var raw = taskSheet.getRange(
+      physicalRow,
+      1,
+      1,
+      schema.length
+    ).getValues()[0];
+    var validation = validateAuthority(raw, {
+      sheet: taskSheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: map,
+      ledger_context: settings.ledger_context,
+      mode: settings.mode || 'WRITE'
+    });
+    if (validation.status === 'PREPARED_RECOVERABLE') {
+      validation = recoverPreparedAuthority(taskSheet, physicalRow, {
+        schema: schema,
+        column_map: map,
+        raw_row: raw,
+        ledger_context: validation.ledger_context
+      });
+      raw = taskSheet.getRange(
+        physicalRow,
+        1,
+        1,
+        schema.length
+      ).getValues()[0];
+    }
+    if (settings.allow_authority_seed === true &&
+        validation.status === 'QUARANTINED' &&
+        validation.code === 'E_TASK_AUTHORITY_MISSING') {
+      validation = authorityValidationResult('EMPTY', '', null, {
+        ledger_context: validation.ledger_context ||
+          readAuthorityLedgerContext(taskSheet)
+      });
+    }
+    if (validation.status === 'QUARANTINED' ||
+        validation.status === 'UNRECOVERABLE') {
+      throw new WorkOsAppError(
+        validation.code || 'E_TASK_AUTHORITY_QUARANTINED',
+        'TASK_AUTHORITY',
+        false,
+        'Task authority is quarantined and cannot be updated.'
+      );
+    }
+    if (validation.status !== 'EMPTY' && validation.status !== 'VALID' &&
+        validation.status !== 'RELOCATABLE' &&
+        !(settings.allow_raw_drift === true &&
+          validation.status === 'RESTORABLE')) {
+      throw new WorkOsAppError(
+        validation.code || 'E_TASK_AUTHORITY_DRIFT',
+        'TASK_AUTHORITY',
+        false,
+        'Task row does not match the committed authority record.'
+      );
+    }
+    var candidate = candidateRow.slice();
+    var snapshot = buildAuthoritySnapshot(candidate, schema, map);
+    if (!String(snapshot.task_id || '')) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_ID',
+        'TASK_AUTHORITY',
+        false,
+        'Task authority commit requires a stable task_id.'
+      );
+    }
+    var prepared = prepareAuthorityLedgerCommit(
+      validation.ledger_context || readAuthorityLedgerContext(taskSheet),
+      validation.record,
+      snapshot,
+      physicalRow
+    );
+    var output = rowFromAuthoritySnapshot(
+      prepared.snapshot,
+      prepared.generation,
+      prepared.hash,
+      AUTHORITY_ACTIVE_STATE,
+      schema,
+      map
+    );
+    try {
+      taskSheet.getRange(
+        physicalRow,
+        1,
+        1,
+        schema.length
+      ).setValues([output]);
+    } catch (writeError) {
+      var writeRecovery = recoverPreparedAuthority(taskSheet, physicalRow, {
+        schema: schema,
+        column_map: map,
+        // Re-read durable state. The preceding write can throw after either
+        // the Task row or ledger mutation, so a mutable cached record is not
+        // authoritative for recovery.
+        ledger_context: readAuthorityLedgerContext(taskSheet)
+      });
+      // A rollback proves only that the old committed row survived; it does
+      // not prove this caller's candidate write happened.  Propagation of the
+      // original error preserves retry semantics and prevents an unpersisted
+      // Task update from being reported as success.
+      if (writeRecovery.status === 'VALID' &&
+          writeRecovery.recovery_action === 'PROMOTED') {
+        return {
+          row: physicalRow,
+          output_row: output,
+          authority_generation: prepared.generation,
+          authority_hash: prepared.hash,
+          recovered: true
+        };
+      }
+      throw writeError;
+    }
+    try {
+      promotePreparedLedgerRecord(
+        validation.ledger_context || readAuthorityLedgerContext(taskSheet),
+        prepared.record
+      );
+    } catch (commitError) {
+      var commitRecovery = recoverPreparedAuthority(taskSheet, physicalRow, {
+        schema: schema,
+        column_map: map,
+        ledger_context: readAuthorityLedgerContext(taskSheet)
+      });
+      if (commitRecovery.status !== 'VALID') {
+        throw commitError;
+      }
+    }
+    return {
+      row: physicalRow,
+      output_row: output,
+      authority_generation: prepared.generation,
+      authority_hash: prepared.hash,
+      recovered: false
+    };
+  }
+
+  function restoreAuthorityRow(taskSheet, physicalRow, rawRow, options) {
+    var settings = options || {};
+    var schema = settings.schema || WorkOsSchemas.getSheetSchema(
+      WorkOsConfig.SHEETS.TASKS
+    );
+    var map = settings.column_map || WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var validation = validateAuthority(rawRow, {
+      sheet: taskSheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: map,
+      ledger_context: settings.ledger_context,
+      mode: settings.mode || 'RESTORE'
+    });
+    if (validation.status === 'PREPARED_RECOVERABLE') {
+      validation = recoverPreparedAuthority(taskSheet, physicalRow, {
+        schema: schema,
+        column_map: map,
+        raw_row: rawRow,
+        ledger_context: validation.ledger_context
+      });
+    }
+    if (validation.status === 'RELOCATABLE') {
+      // A moved row already equals its committed authority. Rebind the ledger
+      // hint only; a full Task-row rewrite would turn an innocent sort/move
+      // into an unnecessary second physical mutation.
+      rebindRelocatedAuthorityRecord(
+        validation.ledger_context,
+        validation.record,
+        physicalRow
+      );
+      return authorityValidationResult(
+        'RESTORED',
+        validation.code,
+        validation.record,
+        {
+          ledger_context: validation.ledger_context,
+          authoritative_row: validation.authoritative_row,
+          recovery_action: 'REBOUND'
+        }
+      );
+    }
+    if (validation.status === 'VALID' ||
+        validation.status === 'RESTORABLE') {
+      taskSheet.getRange(
+        physicalRow,
+        1,
+        1,
+        schema.length
+      ).setValues([validation.authoritative_row]);
+      return authorityValidationResult(
+        'RESTORED',
+        validation.code,
+        validation.record,
+        {
+          ledger_context: validation.ledger_context,
+          authoritative_row: validation.authoritative_row
+        }
+      );
+    }
+    if (validation.status === 'EMPTY' &&
+        validation.recovery_action === 'ROLLED_BACK_EMPTY') {
+      // The original row was blank and the failed initial insert was safely
+      // discarded.  There is no Task to restore or isolate.
+      return validation;
+    }
+    return quarantineAuthorityRow(
+      taskSheet,
+      physicalRow,
+      rawRow,
+      validation.code || 'E_TASK_AUTHORITY_UNRECOVERABLE',
+      {
+        schema: schema,
+        column_map: map,
+        ledger_context: validation.ledger_context,
+        unrecoverable: validation.status === 'UNRECOVERABLE'
+      }
+    );
+  }
+
+  /*
+   * Ledger-oriented reconciliation complements row-oriented validation. A
+   * deleted Task has no raw row to validate, so the only safe action is to
+   * classify its ACTIVE record as ORPHANED.  Both Setup/diagnostics and
+   * Migration use this one helper; it never recreates a Task from a snapshot.
+   */
+  function reconcileMissingAuthorityRecords(
+    taskSheet,
+    ledgerContext,
+    observedTaskRowsById,
+    options
+  ) {
+    var settings = options || {};
+    var results = [];
+    var mutations = { orphaned: 0 };
+    Object.keys(ledgerContext.by_task_id).forEach(function (taskId) {
+      var record = ledgerContext.by_task_id[taskId];
+      var knownRows = observedTaskRowsById[String(taskId || '')];
+      if (knownRows && (Array.isArray(knownRows) ? knownRows.length : true)) {
+        return;
+      }
+      var hintedRow = Number(record && record.physical_row_hint);
+      var safeHintedRow = Number.isInteger(hintedRow) &&
+        hintedRow >= WorkOsConfig.DATA_START_ROW ? hintedRow : null;
+      var controlState = String(record && record.control_state || '');
+      if (controlState !== 'ACTIVE' && controlState !== 'ORPHANED') {
+        return;
+      }
+      if (settings.mark_orphaned === true &&
+          controlState === 'ACTIVE') {
+        record = markAuthorityRecordOrphaned(ledgerContext, record);
+        mutations.orphaned += 1;
+        recordAuthorityIsolation(
+          taskSheet,
+          String(record.task_id || ''),
+          safeHintedRow,
+          'E_TASK_AUTHORITY_ORPHANED',
+          'ORPHANED'
+        );
+      }
+      results.push({
+        row: safeHintedRow,
+        task_id: String(record.task_id || ''),
+        status: 'ORPHANED',
+        code: 'E_TASK_AUTHORITY_ORPHANED'
+      });
+    });
+    return { rows: results, mutations: mutations };
+  }
+
+  function validateAllTaskAuthorities(taskSheet, options) {
+    var settings = options || {};
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var map = WorkOsSchemas.buildColumnMapFromIds(
+      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    );
+    var ledgerContext = readAuthorityLedgerContext(taskSheet);
+    var rowCount = Math.max(
+      0,
+      taskSheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1
+    );
+    var rows = rowCount ? taskSheet.getRange(
+      WorkOsConfig.DATA_START_ROW,
+      1,
+      rowCount,
+      schema.length
+    ).getValues() : [];
+    var results = [];
+    var mutations = { orphaned: 0 };
+    var rawTaskRowsById = {};
+    rows.forEach(function (row, index) {
+      var rawTaskId = String(row[map.task_id] || '').trim();
+      if (!rawTaskId) {
+        return;
+      }
+      if (!rawTaskRowsById[rawTaskId]) {
+        rawTaskRowsById[rawTaskId] = [];
+      }
+      rawTaskRowsById[rawTaskId].push(
+        WorkOsConfig.DATA_START_ROW + index
+      );
+    });
+    rows.forEach(function (row, index) {
+      var physicalRow = WorkOsConfig.DATA_START_ROW + index;
+      var rawTaskId = String(row[map.task_id] || '').trim();
+      var rawOriginKey = String(row[map.origin_key] || '').trim();
+      var hintedRecord = ledgerContext.by_physical_row[physicalRow] || null;
+      /*
+       * A blank row with a previously committed ledger hint is a deletion
+       * candidate, not a RESTORABLE live row. Leave it for the ledger-oriented
+       * orphan pass below. A first-insert PREPARED record is the only blank-row
+       * exception because it has an explicit rollback state machine.
+       */
+      if (!rawTaskId && !rawOriginKey &&
+          !(hintedRecord &&
+            String(hintedRecord.transaction_state || '') === 'PREPARED')) {
+        return;
+      }
+      var validation = validateAuthority(row, {
+        sheet: taskSheet,
+        physical_row: physicalRow,
+        schema: schema,
+        column_map: map,
+        ledger_context: ledgerContext,
+        mode: settings.mode || 'DIAGNOSTIC'
+      });
+      if (validation.status === 'EMPTY') {
+        return;
+      }
+      if (validation.status === 'PREPARED_RECOVERABLE' &&
+          settings.recover_prepared === true) {
+        validation = recoverPreparedAuthority(taskSheet, physicalRow, {
+          schema: schema,
+          column_map: map,
+          raw_row: row,
+          ledger_context: ledgerContext
+        });
+      }
+      if (validation.status === 'RELOCATABLE' &&
+          settings.recover_relocated === true) {
+        rebindRelocatedAuthorityRecord(
+          ledgerContext,
+          validation.record,
+          physicalRow
+        );
+        validation = validateAuthority(row, {
+          sheet: taskSheet,
+          physical_row: physicalRow,
+          schema: schema,
+          column_map: map,
+          ledger_context: ledgerContext,
+          mode: settings.mode || 'DIAGNOSTIC'
+        });
+      }
+      if ((validation.status === 'QUARANTINED' ||
+           validation.status === 'UNRECOVERABLE') &&
+          settings.quarantine_invalid === true) {
+        validation = quarantineAuthorityRow(
+          taskSheet,
+          physicalRow,
+          row,
+          validation.code,
+          {
+            schema: schema,
+            column_map: map,
+            ledger_context: ledgerContext,
+            unrecoverable: validation.status === 'UNRECOVERABLE'
+          }
+        );
+      }
+      results.push({
+        row: physicalRow,
+        task_id: String(row[map.task_id] || ''),
+        status: validation.status,
+        code: validation.code || ''
+      });
+    });
+    var orphanReconciliation = reconcileMissingAuthorityRecords(
+      taskSheet,
+      ledgerContext,
+      rawTaskRowsById,
+      settings
+    );
+    orphanReconciliation.rows.forEach(function (item) {
+      results.push(item);
+    });
+    mutations.orphaned += Number(
+      orphanReconciliation.mutations.orphaned || 0
+    );
+    var counts = {};
+    results.forEach(function (item) {
+      counts[item.status] = Number(counts[item.status] || 0) + 1;
+    });
+    return { rows: results, counts: counts, mutations: mutations };
+  }
+
+  function parseSchema25LegacyAuthorityNote(noteText) {
+    var text = String(noteText || '');
+    if (text.indexOf(SNAPSHOT_MIRROR_PREFIX) !== 0) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEGACY_NOTE_MISSING',
+        'MIGRATION_25_TO_26',
+        false,
+        'Schema 2.5 authority note is required; the editable snapshot cell is not a fallback.'
+      );
+    }
+    var snapshot;
+    try {
+      snapshot = JSON.parse(text.slice(SNAPSHOT_MIRROR_PREFIX.length));
+    } catch (error) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEGACY_NOTE_INVALID',
+        'MIGRATION_25_TO_26',
+        false,
+        'Schema 2.5 authority note cannot be parsed.'
+      );
+    }
+    var currentIds = WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS);
+    var legacyIds = currentIds.slice(0, -3);
+    var expectedFields = legacyIds.filter(function (id) {
+      return id !== SNAPSHOT_FIELD;
+    }).sort();
+    if (!isPlainObject(snapshot) ||
+        snapshot.format !== 'FULL_ROW_V1' ||
+        snapshot.schema_version !== '2.5' ||
+        !isPlainObject(snapshot.values) ||
+        String(snapshot.task_id || '') !== String(snapshot.values.task_id || '') ||
+        JSON.stringify(Object.keys(snapshot.values).sort()) !==
+          JSON.stringify(expectedFields)) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEGACY_NOTE_INVALID',
+        'MIGRATION_25_TO_26',
+        false,
+        'Schema 2.5 authority note is not a complete canonical snapshot.'
+      );
+    }
+    return snapshot;
+  }
+
+  /**
+   * Build a Schema 2.6 candidate only from the independently stored Schema
+   * 2.5 note anchor.  The live row is compared, never used as a baseline.
+   */
+  function prepareSchema25AuthorityCandidate(sourceRow, noteText) {
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var currentIds = WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS);
+    var legacyIds = currentIds.slice(0, -3);
+    if (!Array.isArray(sourceRow) || sourceRow.length !== legacyIds.length) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEGACY_SCHEMA',
+        'MIGRATION_25_TO_26',
+        false,
+        'Schema 2.5 Task row does not have the expected physical width.'
+      );
+    }
+    var legacyMap = WorkOsSchemas.buildColumnMapFromIds(legacyIds);
+    var currentMap = WorkOsSchemas.buildColumnMapFromIds(currentIds);
+    var snapshot = parseSchema25LegacyAuthorityNote(noteText);
+    if (String(sourceRow[legacyMap.task_id] || '') !==
+        String(snapshot.task_id || '')) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_LEGACY_ID_MISMATCH',
+        'MIGRATION_25_TO_26',
+        false,
+        'Schema 2.5 Task identity does not match the legacy authority note.'
+      );
+    }
+    legacyIds.forEach(function (field) {
+      if (field === SNAPSHOT_FIELD) {
+        return;
+      }
+      var canonical = valueForCell(
+        schema[currentMap[field]],
+        snapshot.values[field]
+      );
+      if (!cellsEqual(sourceRow[legacyMap[field]], canonical)) {
+        throw new WorkOsAppError(
+          'E_TASK_AUTHORITY_LEGACY_LIVE_DRIFT',
+          'MIGRATION_25_TO_26',
+          false,
+          'Schema 2.5 live Task values do not match the legacy authority note.'
+        );
+      }
+    });
+    var output = sourceRow.concat([0, '', '']);
+    output[currentMap[SNAPSHOT_FIELD]] = '';
+    output[currentMap[AUTHORITY_GENERATION_FIELD]] = 0;
+    output[currentMap[AUTHORITY_HASH_FIELD]] = '';
+    output[currentMap[AUTHORITY_STATE_FIELD]] = '';
+    output = attachAuthoritativeSnapshot(output, schema, currentMap);
+    validateCandidateRow(output, schema, 'MIGRATION_25_TO_26');
+    return output;
+  }
+
+  function authoritativeRowFromSnapshot(row, schema, columnMap) {
+    // Kept only as a fail-closed compatibility boundary for pre-2.6 callers.
+    // An editable Task cell is an observable projection, never authority.
+    throw new WorkOsAppError(
+      'E_TASK_AUTHORITY_SNAPSHOT_FALLBACK_FORBIDDEN',
+      'TASK_AUTHORITY',
+      false,
+      'Editable Task snapshot cells cannot be used as an authority fallback.'
+    );
   }
 
   function trustedSnapshotForRow(
@@ -998,39 +2947,32 @@ var WorkOsTaskRepository = (function () {
     sheet,
     physicalRow
   ) {
-    var snapshotIndex = columnMap[SNAPSHOT_FIELD];
-    var mirrorText = '';
-    if (sheet && Number.isInteger(Number(physicalRow))) {
-      var mirrorRange = sheet.getRange(
-        Number(physicalRow),
-        snapshotIndex + 1,
-        1,
-        1
-      );
-      if (mirrorRange && typeof mirrorRange.getNote === 'function') {
-        var note = String(mirrorRange.getNote() || '');
-        if (note.indexOf(SNAPSHOT_MIRROR_PREFIX) === 0) {
-          mirrorText = note.slice(SNAPSHOT_MIRROR_PREFIX.length);
-        } else if (note) {
-          throw new WorkOsAppError(
-            'E_TASK_SNAPSHOT_INVALID',
-            'TASK_AUTHORITY',
-            false,
-            'Task trusted mirrorの形式が一致しません。'
-          );
-        }
-      }
+    var validation = validateAuthority(row, {
+      sheet: sheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: columnMap,
+      mode: 'RESTORE'
+    });
+    if (validation.status === 'PREPARED_RECOVERABLE') {
+      validation = recoverPreparedAuthority(sheet, physicalRow, {
+        schema: schema,
+        column_map: columnMap,
+        raw_row: row,
+        ledger_context: validation.ledger_context
+      });
     }
-    var source = mirrorText || row[snapshotIndex];
-    if (!source) {
+    if (validation.status !== 'VALID' &&
+        validation.status !== 'RESTORABLE' &&
+        validation.status !== 'RELOCATABLE') {
       throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_INVALID',
+        validation.code || 'E_TASK_AUTHORITY_MISSING',
         'TASK_AUTHORITY',
         false,
-        'Task authoritative snapshotがありません。'
+        'Task authority is unavailable; snapshot cells and notes are not fallbacks.'
       );
     }
-    return parseAuthoritativeSnapshotText(source, schema);
+    return validation.committed_slot.snapshot;
   }
 
   function authoritativeRowFromTrustedState(
@@ -1040,31 +2982,32 @@ var WorkOsTaskRepository = (function () {
     sheet,
     physicalRow
   ) {
-    var snapshotIndex = columnMap[SNAPSHOT_FIELD];
-    var snapshot = trustedSnapshotForRow(
-      row,
-      schema,
-      columnMap,
-      sheet,
-      physicalRow
-    );
-    return schema.map(function (item) {
-      if (item.id === SNAPSHOT_FIELD) {
-        return valueForCell(item, snapshot);
-      }
-      if (!Object.prototype.hasOwnProperty.call(
-        snapshot.values,
-        item.id
-      )) {
-        throw new WorkOsAppError(
-          'E_TASK_SNAPSHOT_INVALID',
-          'TASK_AUTHORITY',
-          false,
-          'Task authoritative snapshotの必須fieldがありません。'
-        );
-      }
-      return valueForCell(item, snapshot.values[item.id]);
+    var validation = validateAuthority(row, {
+      sheet: sheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: columnMap,
+      mode: 'RESTORE'
     });
+    if (validation.status === 'PREPARED_RECOVERABLE') {
+      validation = recoverPreparedAuthority(sheet, physicalRow, {
+        schema: schema,
+        column_map: columnMap,
+        raw_row: row,
+        ledger_context: validation.ledger_context
+      });
+    }
+    if (validation.status !== 'VALID' &&
+        validation.status !== 'RESTORABLE' &&
+        validation.status !== 'RELOCATABLE') {
+      throw new WorkOsAppError(
+        validation.code || 'E_TASK_AUTHORITY_MISSING',
+        'TASK_AUTHORITY',
+        false,
+        'Task authority is unavailable; no editable snapshot fallback is allowed.'
+      );
+    }
+    return validation.authoritative_row;
   }
 
   function syncAuthoritativeMirror(
@@ -1074,52 +3017,23 @@ var WorkOsTaskRepository = (function () {
     schema,
     columnMap
   ) {
-    var map = columnMap || WorkOsSchemas.buildColumnMapFromIds(
-      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
-    );
-    var snapshotIndex = map[SNAPSHOT_FIELD];
-    var range = sheet.getRange(
-      physicalRow,
-      snapshotIndex + 1,
-      1,
-      1
-    );
-    if (range && typeof range.setNote === 'function') {
-      var snapshotText = String(row[snapshotIndex] || '');
-      range.setNote(
-        snapshotText ? SNAPSHOT_MIRROR_PREFIX + snapshotText : ''
-      );
-    }
+    // Deprecated in Schema 2.6. Notes are no longer an authority write
+    // boundary; the hidden two-slot ledger is committed around the single
+    // Task-row write. This compatibility stub performs no Sheet mutation.
+    return {
+      deprecated: true,
+      authority_source: AUTHORITY_LEDGER_SHEET,
+      row: Number(physicalRow || 0)
+    };
   }
 
   function migrateLegacyRowToSnapshot(sourceRow) {
-    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
-    if (!Array.isArray(sourceRow) ||
-        sourceRow.length !== schema.length - 4 ||
-        schema[schema.length - 4].id !== SNAPSHOT_FIELD ||
-        schema[schema.length - 3].id !== 'business_version' ||
-        schema[schema.length - 2].id !==
-          'calendar_reconcile_required' ||
-        schema[schema.length - 1].id !== 'calendar_intent_version') {
-      throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_SCHEMA',
-        'V2_SCHEMA_EXTENSION',
-        false,
-        'Task snapshot追加前のv2 Schemaを確認できません。'
-      );
-    }
-    var row = sourceRow.slice();
-    row.push('', 1, false, 0);
-    var map = WorkOsSchemas.buildColumnMapFromIds(
-      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    throw new WorkOsAppError(
+      'E_TASK_AUTHORITY_LEGACY_SCHEMA_UNSUPPORTED',
+      'MIGRATION_25_TO_26',
+      false,
+      'Schema 2.3 live rows cannot be promoted to authority without independent evidence.'
     );
-    row = initializeMigratedBusinessGuard(row, schema, map);
-    row = attachAuthoritativeSnapshot(
-      row,
-      schema,
-      map
-    );
-    return row;
   }
 
   function taskIdentity(task) {
@@ -1158,96 +3072,21 @@ var WorkOsTaskRepository = (function () {
   }
 
   function migrateSchema24RowTo25(sourceRow) {
-    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
-    var currentIds = WorkOsSchemas.getInternalIds(
-      WorkOsConfig.SHEETS.TASKS
+    throw new WorkOsAppError(
+      'E_TASK_AUTHORITY_LEGACY_SCHEMA_UNSUPPORTED',
+      'MIGRATION_25_TO_26',
+      false,
+      'Schema 2.4 snapshot cells cannot be promoted to authority without independent evidence.'
     );
-    var sourceIds = currentIds.slice(0, -3);
-    if (!Array.isArray(sourceRow) ||
-        sourceRow.length !== sourceIds.length ||
-        sourceIds[sourceIds.length - 1] !== SNAPSHOT_FIELD) {
-      throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_SCHEMA',
-        'V2_SCHEMA_EXTENSION',
-        false,
-        'Schema 2.4 Task rowの列構造が一致しません。'
-      );
-    }
-    var sourceMap = WorkOsSchemas.buildColumnMapFromIds(sourceIds);
-    var currentMap = WorkOsSchemas.buildColumnMapFromIds(currentIds);
-    var snapshot;
-    try {
-      snapshot = valueFromCell(
-        schema[currentMap[SNAPSHOT_FIELD]],
-        sourceRow[sourceMap[SNAPSHOT_FIELD]]
-      );
-    } catch (error) {
-      snapshot = null;
-    }
-    if (!isPlainObject(snapshot) ||
-        snapshot.schema_version !== '2.4' ||
-        !isPlainObject(snapshot.values) ||
-        String(snapshot.task_id || '') !==
-          String(sourceRow[sourceMap.task_id] || '') ||
-        JSON.stringify(Object.keys(snapshot.values).sort()) !==
-          JSON.stringify(SCHEMA_24_SNAPSHOT_FIELDS.slice().sort())) {
-      throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_INVALID',
-        'V2_SCHEMA_EXTENSION',
-        false,
-        'Schema 2.4 Task snapshotのtrust anchorが不正です。'
-      );
-    }
-    SCHEMA_24_SNAPSHOT_FIELDS.forEach(function (field) {
-      var index = sourceMap[field];
-      var canonical = valueForCell(
-        schema[currentMap[field]],
-        snapshot.values[field]
-      );
-      if (!cellsEqual(sourceRow[index], canonical)) {
-        throw new WorkOsAppError(
-          'E_TASK_SNAPSHOT_INVALID',
-          'V2_SCHEMA_EXTENSION',
-          false,
-          'Schema 2.4 Task snapshotとlive business値が一致しません。'
-        );
-      }
-    });
-    var output = sourceRow.concat([1, false, 0]);
-    output = initializeMigratedBusinessGuard(
-      output,
-      schema,
-      currentMap
-    );
-    output = attachAuthoritativeSnapshot(
-      output,
-      schema,
-      currentMap
-    );
-    validateCandidateRow(output, schema, 'V2_SCHEMA_EXTENSION');
-    return output;
   }
 
   function assertCurrentAuthoritativeRow(row) {
-    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
-    var map = WorkOsSchemas.buildColumnMapFromIds(
-      WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+    throw new WorkOsAppError(
+      'E_TASK_AUTHORITY_SNAPSHOT_FALLBACK_FORBIDDEN',
+      'MIGRATION_25_TO_26',
+      false,
+      'Schema 2.6 accepts only the independent Schema 2.5 authority note anchor.'
     );
-    var authoritative = authoritativeRowFromSnapshot(
-      row,
-      schema,
-      map
-    );
-    if (!rowsEqual(row, authoritative)) {
-      throw new WorkOsAppError(
-        'E_TASK_SNAPSHOT_INVALID',
-        'V2_SCHEMA_EXTENSION',
-        false,
-        'Task live rowがauthoritative snapshotと一致しません。'
-      );
-    }
-    validateCandidateRow(row, schema, 'V2_SCHEMA_EXTENSION');
-    return true;
   }
 
   function rowForPhysicalRow(context, physicalRow) {
@@ -1372,11 +3211,11 @@ var WorkOsTaskRepository = (function () {
           schema.length
         ).getValues()[0];
     });
-    var context = buildContextFromValues(
+    var context = applyAuthorityValidatedIndexes(buildContextFromValues(
       sheet,
       WorkOsSchemas.buildColumnMapFromIds(ids),
       values
-    );
+    ));
     Object.defineProperty(context, '_workOsLockMarker', {
       value: LOCK_MARKER,
       enumerable: false,
@@ -1428,7 +3267,24 @@ var WorkOsTaskRepository = (function () {
       1,
       schema.length
     ).getValues()[0];
-    if (!rowsEqual(cached, current)) {
+    var expectedDecisionInputs = context._workOsDecisionInputByRow || {};
+    var hasExpectedDecisionInput = Object.prototype.hasOwnProperty.call(
+      expectedDecisionInputs,
+      physicalRow
+    );
+    var decisionIndex = context.columnMap.decision;
+    var rawDifferenceIndexes = [];
+    schema.forEach(function (_item, index) {
+      if (!cellsEqual(cached[index], current[index])) {
+        rawDifferenceIndexes.push(index);
+      }
+    });
+    var controlledDecisionDrift = hasExpectedDecisionInput &&
+      rawDifferenceIndexes.length === 1 &&
+      rawDifferenceIndexes[0] === decisionIndex &&
+      cellsEqual(current[decisionIndex],
+        expectedDecisionInputs[physicalRow]);
+    if (!rowsEqual(cached, current) && !controlledDecisionDrift) {
       throw new WorkOsAppError(
         'E_TASK_CONFLICT',
         'TASK_REPOSITORY',
@@ -1449,6 +3305,9 @@ var WorkOsTaskRepository = (function () {
       }).map(function (item) {
         return item.id;
       });
+      if (!controlledDecisionDrift ||
+          authorityDriftFields.length !== 1 ||
+          authorityDriftFields[0] !== 'decision') {
       throw new WorkOsAppError(
         'E_TASK_AUTHORITY_DRIFT',
         'TASK_REPOSITORY',
@@ -1456,8 +3315,10 @@ var WorkOsTaskRepository = (function () {
         'Task rowがtrusted authoritative stateと一致しません: ' +
           authorityDriftFields.join(',')
       );
+      }
     }
-    var updated = current.slice();
+    var baseRow = controlledDecisionDrift ? trustedCurrent : current;
+    var updated = baseRow.slice();
     var changedFields = [];
     Object.keys(patch || {}).forEach(function (field) {
       if (!allowedFields[field] ||
@@ -1493,43 +3354,41 @@ var WorkOsTaskRepository = (function () {
     });
     if (businessChanged) {
       updated[businessVersionIndex] =
-        Number(current[businessVersionIndex] || 0) + 1;
+        Number(baseRow[businessVersionIndex] || 0) + 1;
       changedFields.push('business_version');
     }
     if (calendarReconcileChanged) {
       updated[intentRequiredIndex] = true;
       updated[intentVersionIndex] =
-        Number(current[intentVersionIndex] || 0) + 1;
+        Number(baseRow[intentVersionIndex] || 0) + 1;
       changedFields.push(
         'calendar_reconcile_required',
         'calendar_intent_version'
       );
     }
-    updated[versionIndex] = Number(current[versionIndex] || 0) + 1;
+    updated[versionIndex] = Number(baseRow[versionIndex] || 0) + 1;
     updated[updatedAtIndex] = nowValue || WorkOsUtilities.now();
     updated = attachAuthoritativeSnapshot(
       updated,
       schema,
       context.columnMap
     );
-    var previousTask = directTaskFromRow(current, schema);
+    var previousTask = directTaskFromRow(baseRow, schema);
     var candidateTask = validateCandidateRow(
       updated,
       schema,
       'TASK_REPOSITORY'
     );
-    context.sheet.getRange(
-      physicalRow,
-      1,
-      1,
-      schema.length
-    ).setValues([updated]);
-    syncAuthoritativeMirror(
+    var authorityCommit = commitAuthorityRow(
       context.sheet,
       physicalRow,
       updated,
-      schema,
-      context.columnMap
+      {
+        schema: schema,
+        column_map: context.columnMap,
+        mode: 'TASK_PATCH',
+        allow_raw_drift: controlledDecisionDrift
+      }
     );
     syncReviewNote(
       context.sheet,
@@ -1537,11 +3396,17 @@ var WorkOsTaskRepository = (function () {
       candidateTask,
       previousTask
     );
-    context.values[physicalRow - WorkOsConfig.DATA_START_ROW] = updated;
+    context.values[physicalRow - WorkOsConfig.DATA_START_ROW] =
+      authorityCommit.output_row;
     return {
       operation: 'UPDATE',
       row: physicalRow,
-      changed_fields: changedFields.concat(['row_version', 'updated_at'])
+      changed_fields: changedFields.concat([
+        'row_version',
+        'updated_at',
+        AUTHORITY_GENERATION_FIELD,
+        AUTHORITY_HASH_FIELD
+      ])
     };
   }
 
@@ -1878,20 +3743,27 @@ var WorkOsTaskRepository = (function () {
 
   function revertDecisionCell(context, physicalRow, priorDecision) {
     var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
-    var decisionIndex = context.columnMap.decision;
-    var cellValue = valueForCell(
-      schema[decisionIndex],
-      priorDecision || 'NONE'
-    );
-    context.sheet.getRange(
+    var raw = context.sheet.getRange(
       physicalRow,
-      decisionIndex + 1,
       1,
-      1
-    ).setValues([[cellValue]]);
-    context.values[
-      physicalRow - WorkOsConfig.DATA_START_ROW
-    ][decisionIndex] = cellValue;
+      1,
+      schema.length
+    ).getValues()[0];
+    var restored = restoreAuthorityRow(context.sheet, physicalRow, raw, {
+      schema: schema,
+      column_map: context.columnMap,
+      mode: 'REVIEW_DECISION_REVERT'
+    });
+    if (restored.status !== 'RESTORED') {
+      throw new WorkOsAppError(
+        restored.code || 'E_TASK_AUTHORITY_QUARANTINED',
+        'TASK_AUTHORITY',
+        false,
+        'Review decision could not be reverted because authority is invalid.'
+      );
+    }
+    context.values[physicalRow - WorkOsConfig.DATA_START_ROW] =
+      restored.authoritative_row;
   }
 
   function rejectedReviewResult(
@@ -2395,41 +4267,94 @@ var WorkOsTaskRepository = (function () {
     var ordered = (plans || []).slice().sort(function (left, right) {
       return left.row - right.row;
     });
-    var groups = [];
-    ordered.forEach(function (plan) {
-      var current = groups.length ? groups[groups.length - 1] : null;
-      if (!current || plan.row !== current.last_row + 1) {
-        current = {
-          first_row: plan.row,
-          last_row: plan.row,
-          values: [plan.output_row]
-        };
-        groups.push(current);
-      } else {
-        current.last_row = plan.row;
-        current.values.push(plan.output_row);
-      }
-    });
-    groups.forEach(function (group) {
-      sheet.getRange(
-        group.first_row,
-        1,
-        group.values.length,
-        schema.length
-      ).setValues(group.values);
-    });
     var map = WorkOsSchemas.buildColumnMapFromIds(
       WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
     );
+    var ledgerContext = readAuthorityLedgerContext(sheet);
+    var results = [];
     ordered.forEach(function (plan) {
-      syncAuthoritativeMirror(
-        sheet,
+      var raw = sheet.getRange(
         plan.row,
-        plan.output_row,
-        schema,
-        map
-      );
+        1,
+        1,
+        schema.length
+      ).getValues()[0];
+      if (plan.authority_invalid === true) {
+        results.push(quarantineAuthorityRow(
+          sheet,
+          plan.row,
+          raw,
+          plan.authority_error_code || 'E_TASK_AUTHORITY_INVALID',
+          {
+            schema: schema,
+            column_map: map,
+            ledger_context: ledgerContext,
+            unrecoverable: plan.authority_unrecoverable === true
+          }
+        ));
+        return;
+      }
+      var validation = validateAuthority(raw, {
+        sheet: sheet,
+        physical_row: plan.row,
+        schema: schema,
+        column_map: map,
+        ledger_context: ledgerContext,
+        mode: plan.mode || 'EDIT_PLAN'
+      });
+      if (validation.status === 'EMPTY') {
+        var blankOutput = plan.output_row || new Array(schema.length).fill('');
+        sheet.getRange(plan.row, 1, 1, schema.length).setValues([blankOutput]);
+        results.push(authorityValidationResult('RESTORED', '', null, {
+          authoritative_row: blankOutput
+        }));
+        return;
+      }
+      if (validation.status !== 'VALID' &&
+          validation.status !== 'RESTORABLE' &&
+          validation.status !== 'PREPARED_RECOVERABLE' &&
+          validation.status !== 'RELOCATABLE') {
+        results.push(quarantineAuthorityRow(
+          sheet,
+          plan.row,
+          raw,
+          validation.code || 'E_TASK_AUTHORITY_INVALID',
+          {
+            schema: schema,
+            column_map: map,
+            ledger_context: ledgerContext,
+            unrecoverable: validation.status === 'UNRECOVERABLE'
+          }
+        ));
+        return;
+      }
+      var target = plan.output_row || validation.authoritative_row;
+      var differsFromCommitted = validation.authoritative_row &&
+        !rowsEqual(target, validation.authoritative_row);
+      if (differsFromCommitted) {
+        var committed = commitAuthorityRow(sheet, plan.row, target, {
+          schema: schema,
+          column_map: map,
+          ledger_context: ledgerContext,
+          mode: plan.mode || 'EDIT_PLAN',
+          allow_raw_drift: true
+        });
+        plan.output_row = committed.output_row;
+        results.push(authorityValidationResult('COMMITTED', '', null, {
+          authoritative_row: committed.output_row
+        }));
+      } else {
+        var restored = restoreAuthorityRow(sheet, plan.row, raw, {
+          schema: schema,
+          column_map: map,
+          ledger_context: ledgerContext,
+          mode: plan.mode || 'EDIT_PLAN'
+        });
+        plan.output_row = restored.authoritative_row || target;
+        results.push(restored);
+      }
     });
+    return results;
   }
 
   function restoreUserEditRows(sheet, rowEdits) {
@@ -2461,6 +4386,7 @@ var WorkOsTaskRepository = (function () {
         );
       }
       var map = WorkOsSchemas.buildColumnMapFromIds(ids);
+      var ledgerContext = readAuthorityLedgerContext(sheet);
       var byRow = {};
       (rowEdits || []).forEach(function (edit) {
         var row = Number(edit && edit.row);
@@ -2494,16 +4420,15 @@ var WorkOsTaskRepository = (function () {
           1,
           schema.length
         ).getValues()[0];
-        var restored;
-        try {
-          restored = authoritativeRowFromTrustedState(
-            raw,
-            schema,
-            map,
-            sheet,
-            row
-          );
-        } catch (authorityError) {
+        var validation = validateAuthority(raw, {
+          sheet: sheet,
+          physical_row: row,
+          schema: schema,
+          column_map: map,
+          ledger_context: ledgerContext,
+          mode: 'EDIT_RESTORE'
+        });
+        if (validation.status === 'EMPTY') {
           var cleared = raw.slice();
           Object.keys(byRow[row].column_ids).forEach(function (fieldId) {
             cleared[map[fieldId]] = '';
@@ -2511,23 +4436,47 @@ var WorkOsTaskRepository = (function () {
           var wasBlankBeforeEvent = cleared.every(function (value) {
             return WorkOsUtilities.isBlank(value);
           });
-          if (!wasBlankBeforeEvent) {
-            throw authorityError;
-          }
-          restored = new Array(schema.length).fill('');
+          return wasBlankBeforeEvent
+            ? { row: row, output_row: new Array(schema.length).fill('') }
+            : {
+              row: row,
+              output_row: raw,
+              authority_invalid: true,
+              authority_error_code: 'E_TASK_AUTHORITY_MISSING'
+            };
+        }
+        if (validation.status === 'VALID' ||
+            validation.status === 'RESTORABLE' ||
+            validation.status === 'PREPARED_RECOVERABLE' ||
+            validation.status === 'RELOCATABLE') {
+          return {
+            row: row,
+            output_row: validation.authoritative_row || raw,
+            mode: 'EDIT_RESTORE'
+          };
         }
         return {
           row: row,
-          output_row: restored
+          output_row: raw,
+          authority_invalid: true,
+          authority_unrecoverable: validation.status === 'UNRECOVERABLE',
+          authority_error_code: validation.code || 'E_TASK_AUTHORITY_INVALID'
         };
       }).sort(function (left, right) {
         return left.row - right.row;
       });
-      // Parse every snapshot before the first write. A corrupt row therefore
-      // cannot leave a multi-row rejection only partially restored.
-      writeRowPlans(sheet, plans, schema);
+      // Every row is classified independently. A corrupt authority record is
+      // quarantined, while every valid peer is restored from its own committed
+      // ledger slot; no peer raw edit is left behind.
+      var results = writeRowPlans(sheet, plans, schema);
       return {
-        restored_count: plans.length,
+        restored_count: results.filter(function (result) {
+          return result.status === 'RESTORED' || result.status === 'COMMITTED';
+        }).length,
+        quarantined_count: results.filter(function (result) {
+          return result.status === 'QUARANTINED' ||
+            result.status === 'UNRECOVERABLE';
+        }).length,
         rows: plans.map(function (plan) { return plan.row; })
       };
     }, WorkOsConfig.LOCK_WAIT_MS);
@@ -2844,9 +4793,34 @@ var WorkOsTaskRepository = (function () {
       var containsDecision = normalizedRowEdits.some(function (edit) {
         return (edit.column_ids || []).indexOf('decision') !== -1;
       });
+      var decisionInputValues = {};
+      if (containsDecision) {
+        var canonicalMap = WorkOsSchemas.buildColumnMapFromIds(
+          WorkOsSchemas.getInternalIds(WorkOsConfig.SHEETS.TASKS)
+        );
+        normalizedRowEdits.forEach(function (edit) {
+          if ((edit.column_ids || []).indexOf('decision') === -1) {
+            return;
+          }
+          decisionInputValues[Number(edit.row)] = sheet.getRange(
+            Number(edit.row),
+            canonicalMap.decision + 1,
+            1,
+            1
+          ).getValues()[0][0];
+        });
+      }
       var lockedContext = containsDecision
-        ? createContext(sheet, LOCK_MARKER)
+        ? createDecisionEditContextForHeldLock(sheet, selectedRows)
         : createScopedContextForHeldLock(sheet, selectedRows, lock);
+      if (containsDecision) {
+        Object.defineProperty(lockedContext, '_workOsDecisionInputByRow', {
+          value: decisionInputValues,
+          enumerable: false,
+          writable: false,
+          configurable: true
+        });
+      }
       var map = lockedContext.columnMap;
       try {
         if (containsDecision) {
@@ -2859,13 +4833,31 @@ var WorkOsTaskRepository = (function () {
               return;
             }
             var rawRow = rowForPhysicalRow(lockedContext, rowNumber);
-            var authoritative = authoritativeRowFromTrustedState(
-              rawRow,
-              schema,
-              map,
-              sheet,
-              rowNumber
-            );
+            var authoritative;
+            try {
+              authoritative = authoritativeRowFromTrustedState(
+                rawRow,
+                schema,
+                map,
+                sheet,
+                rowNumber
+              );
+            } catch (authorityError) {
+              decisionPlans.push({
+                row: rowNumber,
+                task_id: '',
+                output_row: rawRow,
+                authority_invalid: true,
+                authority_error_code: authorityError.code ||
+                  'E_TASK_AUTHORITY_INVALID',
+                authority_unrecoverable: /UNRECOVERABLE|DUPLICATE/.test(
+                  String(authorityError.code || '')
+                ),
+                error: authorityError
+              });
+              decisionError = decisionError || authorityError;
+              return;
+            }
             var task = directTaskFromRow(authoritative, schema);
             var fields = edit.column_ids || [];
             var plan = {
@@ -2887,7 +4879,7 @@ var WorkOsTaskRepository = (function () {
               }
               plan.decision = valueFromCell(
                 schema[map.decision],
-                rawRow[map.decision]
+                decisionInputValues[rowNumber]
               );
             } catch (error) {
               plan.error = error;
@@ -2895,13 +4887,15 @@ var WorkOsTaskRepository = (function () {
             }
             decisionPlans.push(plan);
           });
-          writeRowPlans(sheet, decisionPlans, schema);
-          decisionPlans.forEach(function (plan) {
-            lockedContext.values[
-              plan.row - WorkOsConfig.DATA_START_ROW
-            ] = plan.authoritative_row;
-          });
           if (decisionError) {
+            writeRowPlans(sheet, decisionPlans, schema);
+            decisionPlans.forEach(function (plan) {
+              if (plan.authoritative_row) {
+                lockedContext.values[
+                  plan.row - WorkOsConfig.DATA_START_ROW
+                ] = plan.authoritative_row;
+              }
+            });
             return decisionPlans.map(function (plan) {
               return rejectedManualEditResult(
                 plan,
@@ -2946,33 +4940,52 @@ var WorkOsTaskRepository = (function () {
           } catch (error) {
             firstError = firstError || error;
             var rawRow = rowForPhysicalRow(lockedContext, rowNumber);
-            var authoritative = authoritativeRowFromTrustedState(
-              rawRow,
-              schema,
-              lockedContext.columnMap,
-              sheet,
-              rowNumber
-            );
-            var priorTask = directTaskFromRow(authoritative, schema);
-            plans.push({
-              row: rowNumber,
-              task_id: priorTask.task_id,
-              authoritative_row: authoritative,
-              output_row: authoritative,
-              prior_task: priorTask,
-              error: error
-            });
+            try {
+              var authoritative = authoritativeRowFromTrustedState(
+                rawRow,
+                schema,
+                lockedContext.columnMap,
+                sheet,
+                rowNumber
+              );
+              var priorTask = directTaskFromRow(authoritative, schema);
+              plans.push({
+                row: rowNumber,
+                task_id: priorTask.task_id,
+                authoritative_row: authoritative,
+                output_row: authoritative,
+                prior_task: priorTask,
+                error: error
+              });
+            } catch (authorityError) {
+              plans.push({
+                row: rowNumber,
+                task_id: '',
+                output_row: rawRow,
+                authority_invalid: true,
+                authority_error_code: authorityError.code ||
+                  'E_TASK_AUTHORITY_INVALID',
+                authority_unrecoverable: /UNRECOVERABLE|DUPLICATE/.test(
+                  String(authorityError.code || '')
+                ),
+                error: authorityError
+              });
+            }
           }
         });
         if (firstError) {
           plans.forEach(function (plan) {
-            plan.output_row = plan.authoritative_row;
+            if (plan.authoritative_row) {
+              plan.output_row = plan.authoritative_row;
+            }
           });
           writeRowPlans(sheet, plans, schema);
           plans.forEach(function (plan) {
-            lockedContext.values[
-              plan.row - WorkOsConfig.DATA_START_ROW
-            ] = plan.authoritative_row;
+            if (plan.authoritative_row) {
+              lockedContext.values[
+                plan.row - WorkOsConfig.DATA_START_ROW
+              ] = plan.authoritative_row;
+            }
             if (plan.prior_task) {
               syncReviewNote(
                 sheet,
@@ -3169,21 +5182,24 @@ var WorkOsTaskRepository = (function () {
       schema,
       'TASK_REPOSITORY'
     );
-    context.sheet.getRange(
-      physicalRow,
-      1,
-      1,
-      schema.length
-    ).setValues([updated]);
-    syncAuthoritativeMirror(
+    var authorityCommit = commitAuthorityRow(
       context.sheet,
       physicalRow,
       updated,
-      schema,
-      context.columnMap
+      {
+        schema: schema,
+        column_map: context.columnMap,
+        mode: 'TASK_UPSERT'
+      }
     );
-    context.values[physicalRow - WorkOsConfig.DATA_START_ROW] = updated;
-    changedFields.push('row_version', 'updated_at');
+    context.values[physicalRow - WorkOsConfig.DATA_START_ROW] =
+      authorityCommit.output_row;
+    changedFields.push(
+      'row_version',
+      'updated_at',
+      AUTHORITY_GENERATION_FIELD,
+      AUTHORITY_HASH_FIELD
+    );
     return {
       operation: 'UPDATE',
       row: physicalRow,
@@ -3222,7 +5238,8 @@ var WorkOsTaskRepository = (function () {
     var physicalRow = findLogicalEmptyRow(
       context.taskIdValues,
       context.originKeyValues,
-      WorkOsConfig.DATA_START_ROW
+      WorkOsConfig.DATA_START_ROW,
+      context.blockedPhysicalRows
     );
     var rowsAdded = ensureCapacityForRow(context.sheet, physicalRow);
     while (context.values.length < physicalRow - WorkOsConfig.DATA_START_ROW + 1) {
@@ -3231,14 +5248,17 @@ var WorkOsTaskRepository = (function () {
       context.originKeyValues.push(['']);
     }
     var output = makeRow(prepared);
-    context.sheet.getRange(physicalRow, 1, 1, output.length).setValues([output]);
-    syncAuthoritativeMirror(
+    var authorityCommit = commitAuthorityRow(
       context.sheet,
       physicalRow,
       output,
-      WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS),
-      context.columnMap
+      {
+        schema: WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS),
+        column_map: context.columnMap,
+        mode: 'TASK_INSERT'
+      }
     );
+    output = authorityCommit.output_row;
     syncReviewNote(context.sheet, physicalRow, prepared, null);
     var valueIndex = physicalRow - WorkOsConfig.DATA_START_ROW;
     context.values[valueIndex] = output;
@@ -3263,8 +5283,49 @@ var WorkOsTaskRepository = (function () {
     };
   }
 
-  function readTaskAtRow(context, physicalRow) {
+  function authoritativeRowForOperationalRead(
+    context,
+    physicalRow,
+    authorityLedgerContext
+  ) {
     var row = rowForPhysicalRow(context, physicalRow);
+    var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var validation = validateAuthority(row, {
+      sheet: context.sheet,
+      physical_row: physicalRow,
+      schema: schema,
+      column_map: context.columnMap,
+      ledger_context: authorityLedgerContext,
+      mode: 'OPERATIONAL_READ'
+    });
+    if (validation.status === 'PREPARED_RECOVERABLE') {
+      validation = recoverPreparedAuthority(context.sheet, physicalRow, {
+        schema: schema,
+        column_map: context.columnMap,
+        raw_row: row,
+        ledger_context: validation.ledger_context || authorityLedgerContext
+      });
+    }
+    return validation.status === 'VALID' ||
+      validation.status === 'RELOCATABLE'
+      ? validation.authoritative_row
+      : null;
+  }
+
+  function readTaskAtRow(context, physicalRow, authorityLedgerContext) {
+    var row = authoritativeRowForOperationalRead(
+      context,
+      physicalRow,
+      authorityLedgerContext
+    );
+    if (!row) {
+      throw new WorkOsAppError(
+        'E_TASK_AUTHORITY_EXCLUDED',
+        'TASK_AUTHORITY',
+        false,
+        'Task is not operational because its authority is not committed and valid.'
+      );
+    }
     var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
     var task = {};
     schema.forEach(function (item, index) {
@@ -3292,19 +5353,58 @@ var WorkOsTaskRepository = (function () {
 
   function findByTaskId(context, taskId) {
     var row = context.byTaskId[String(taskId || '')];
-    return row ? readTaskAtRow(context, row) : null;
+    if (!row) {
+      return null;
+    }
+    try {
+      return readTaskAtRow(context, row);
+    } catch (error) {
+      return error && /^E_TASK_AUTHORITY_/.test(String(error.code || ''))
+        ? null
+        : (function () { throw error; }());
+    }
   }
 
   function findByOriginKey(context, originKey) {
     var row = context.byOriginKey[String(originKey || '')];
-    return row ? readTaskAtRow(context, row) : null;
+    if (!row) {
+      return null;
+    }
+    try {
+      return readTaskAtRow(context, row);
+    } catch (error) {
+      return error && /^E_TASK_AUTHORITY_/.test(String(error.code || ''))
+        ? null
+        : (function () { throw error; }());
+    }
   }
 
   function findByStableThreadKey(context, stableThreadKey) {
     var rows = context.byStableThreadKey[String(stableThreadKey || '')] || [];
     return rows.map(function (row) {
-      return readTaskAtRow(context, row);
-    });
+      try {
+        return readTaskAtRow(context, row);
+      } catch (error) {
+        if (error && /^E_TASK_AUTHORITY_/.test(String(error.code || ''))) {
+          return null;
+        }
+        throw error;
+      }
+    }).filter(function (task) { return task != null; });
+  }
+
+  function operationalTasks(context) {
+    var authorityLedgerContext = readAuthorityLedgerContext(context.sheet);
+    return (context.logicalRows || []).map(function (row) {
+      try {
+        return readTaskAtRow(context, row, authorityLedgerContext);
+      } catch (error) {
+        if (error && /^E_TASK_AUTHORITY_/.test(String(error.code || ''))) {
+          return null;
+        }
+        throw error;
+      }
+    }).filter(function (task) { return task != null; });
   }
 
   /**
@@ -3472,6 +5572,15 @@ var WorkOsTaskRepository = (function () {
     migrateLegacyRowToSnapshot: migrateLegacyRowToSnapshot,
     migrateSchema24RowTo25: migrateSchema24RowTo25,
     assertCurrentAuthoritativeRow: assertCurrentAuthoritativeRow,
+    validateAuthority: validateAuthority,
+    validateAllTaskAuthorities: validateAllTaskAuthorities,
+    reconcileMissingAuthorityRecords: reconcileMissingAuthorityRecords,
+    recoverPreparedAuthority: recoverPreparedAuthority,
+    quarantineAuthorityRow: quarantineAuthorityRow,
+    restoreAuthorityRow: restoreAuthorityRow,
+    commitAuthorityRow: commitAuthorityRow,
+    prepareSchema25AuthorityCandidate: prepareSchema25AuthorityCandidate,
+    operationalTasks: operationalTasks,
     syncAuthoritativeMirror: syncAuthoritativeMirror,
     applyCalendarPatch: applyCalendarPatch,
     acknowledgeCalendarIntent: acknowledgeCalendarIntent,

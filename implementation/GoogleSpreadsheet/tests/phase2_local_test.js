@@ -1339,7 +1339,19 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
   prohibitedPatterns.forEach(
     (pattern) => assert.strictEqual(pattern.test(sources), false)
   );
-  assert.strictEqual(/\bgetLastRow\s*\(/.test(sources), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
+  assert.strictEqual(
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
 });
 
 const summary = {

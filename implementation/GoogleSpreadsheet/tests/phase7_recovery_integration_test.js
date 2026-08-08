@@ -12,7 +12,7 @@ const path = require('path');
 const vm = require('vm');
 
 const phase6Path = path.resolve(__dirname, 'phase6_worker_integration_test.js');
-const source = fs.readFileSync(phase6Path, 'utf8');
+const source = fs.readFileSync(phase6Path, 'utf8').replace(/\r\n/g, '\n');
 const marker = '\nconst tests = [];\n';
 const markerIndex = source.indexOf(marker);
 if (markerIndex < 0) {

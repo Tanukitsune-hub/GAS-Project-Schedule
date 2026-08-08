@@ -13,7 +13,8 @@ const path = require('path');
 const vm = require('vm');
 
 const phase3Path = path.resolve(__dirname, 'phase3_local_test.js');
-const phase3Source = fs.readFileSync(phase3Path, 'utf8');
+const phase3Source = fs.readFileSync(phase3Path, 'utf8')
+  .replace(/\r\n/g, '\n');
 const reportMarker = '\nconst summary = {\n';
 const markerIndex = phase3Source.lastIndexOf(reportMarker);
 if (markerIndex < 0) {
@@ -275,11 +276,11 @@ test('PREP-CAS-03_TASK_ROW_VERSION_CHANGE_REJECTS_AI_RESULT', () => {
   const task = fixture.insertExistingTask(taskSheet, {
     stable_thread_key: message.stable_thread_key
   });
+  const taskPhysicalRow = fixture.taskRow(taskSheet, task.task_id);
   const adapter = productionAdapter(() => {
-    const row = fixture.taskRow(taskSheet, task.task_id);
     fixture.setTaskCell(
       taskSheet,
-      row,
+      taskPhysicalRow,
       'row_version',
       Number(task.row_version) + 1
     );
@@ -291,10 +292,12 @@ test('PREP-CAS-03_TASK_ROW_VERSION_CHANGE_REJECTS_AI_RESULT', () => {
     'E_AI_INPUT_CONFLICT'
   );
   assertNoClassification(spreadsheet, message.message_id);
+  assert.strictEqual(fixture.taskRow(taskSheet, task.task_id), undefined,
+    'raw row-version drift must be excluded from the authority index');
   assert.strictEqual(
     Number(
       taskSheet.cells[
-        fixture.taskRow(taskSheet, task.task_id) - 1
+        taskPhysicalRow - 1
       ][fixture.columnMap(Config.SHEETS.TASKS).row_version]
     ),
     Number(task.row_version) + 1

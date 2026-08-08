@@ -46,7 +46,8 @@ var WorkOsEditHandler = (function () {
       remaining_intent_count: 0,
       pending_count: 0,
       delete_pending_count: 0,
-      noop_count: 0
+      noop_count: 0,
+      acknowledgement_failure_count: 0
     };
   }
 
@@ -94,25 +95,34 @@ var WorkOsEditHandler = (function () {
       var syncStatus = desiredAction === 'DELETE'
         ? 'DELETE_PENDING'
         : (desiredAction === 'NOOP' ? 'NOT_REQUIRED' : 'PENDING');
-      var acknowledgement =
-        WorkOsTaskRepository.acknowledgeCalendarIntent(
-          taskId,
-          expectedIntentVersion,
-          syncStatus,
-          taskContext,
-          nowValue
-        );
       summary.inspected_count += 1;
-      if (acknowledgement.operation === 'STALE_INTENT') {
-        summary.remaining_intent_count += 1;
-        return;
-      }
       if (syncStatus === 'DELETE_PENDING') {
         summary.delete_pending_count += 1;
       } else if (syncStatus === 'PENDING') {
         summary.pending_count += 1;
       } else {
         summary.noop_count += 1;
+      }
+      try {
+        var acknowledgement =
+          WorkOsTaskRepository.acknowledgeCalendarIntent(
+            taskId,
+            expectedIntentVersion,
+            syncStatus,
+            taskContext,
+            nowValue
+          );
+        if (acknowledgement.operation === 'STALE_INTENT') {
+          summary.remaining_intent_count += 1;
+        }
+      } catch (acknowledgementError) {
+        // The Outbox entry is durable before the acknowledgement is attempted.
+        // Do not turn a successful enqueue into a failed user edit merely
+        // because clearing the exact Task intent was interrupted.  Preserve
+        // the intent for bounded recovery, while exposing the condition in the
+        // local summary rather than reporting a false acknowledgement.
+        summary.remaining_intent_count += 1;
+        summary.acknowledgement_failure_count += 1;
       }
     });
     return summary;
@@ -187,12 +197,11 @@ var WorkOsEditHandler = (function () {
     return WorkOsUtilities.withScriptLock(function (lock) {
       var taskContext =
         WorkOsTaskRepository.createContextForHeldLock(taskSheet, lock);
-      var pendingIds = taskContext.logicalRows.map(function (physicalRow) {
-        return WorkOsTaskRepository.readTaskAtRow(
-          taskContext,
-          physicalRow
-        );
-      }).filter(function (task) {
+      // R4: operationalTasks applies the common authority validator and
+      // excludes QUARANTINED/UNRECOVERABLE rows.  Do not allow one isolated
+      // row to abort recovery of a valid Task's durable Calendar intent.
+      var pendingIds = WorkOsTaskRepository.operationalTasks(taskContext)
+        .filter(function (task) {
         return task && task.calendar_reconcile_required === true;
       }).map(function (task) {
         return String(task.task_id);
@@ -379,6 +388,13 @@ var WorkOsEditHandler = (function () {
     });
     var fieldMap = {};
     var versionPairs = [];
+    var rejectionCodes = {};
+    rejected.forEach(function (result) {
+      var code = String(result.error_code || 'EDIT_VALIDATION_REJECTED');
+      if (/^[A-Z0-9_]{1,80}$/.test(code)) {
+        rejectionCodes[code] = true;
+      }
+    });
     updated.forEach(function (result) {
       var audit = result.audit || {};
       (audit.edited_fields || []).forEach(function (fieldId) {
@@ -399,6 +415,7 @@ var WorkOsEditHandler = (function () {
       'UPDATED=' + updated.length,
       'REJECTED=' + rejected.length,
       'NOOP=' + noop.length,
+      'REJECTION_CODES=' + Object.keys(rejectionCodes).sort().join(','),
       'FIELDS=' + Object.keys(fieldMap).sort().join(','),
       'VERSIONS=' + versionPairs.join(',')
     ].join(';');
@@ -487,6 +504,10 @@ var WorkOsEditHandler = (function () {
       };
     }
     var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
+    var eventTouchesHeader = range.getRow() <= WorkOsConfig.HEADER_LABEL_ROW;
+    if (eventTouchesHeader) {
+      var headerRestore = WorkOsSheetBuilder.restoreCanonicalTaskHeaders(sheet);
+    }
     var ids = sheet.getRange(1, 1, 1, schema.length).getValues()[0];
     if (JSON.stringify(ids) !==
         JSON.stringify(WorkOsSchemas.getInternalIds(
@@ -506,9 +527,12 @@ var WorkOsEditHandler = (function () {
     var lastRow = range.getRow() + range.getNumRows() - 1;
     if (lastRow < WorkOsConfig.DATA_START_ROW) {
       return {
-        status: 'IGNORED',
-        reason: 'HEADER_EDIT',
-        processed_rows: 0
+        status: 'REJECTED',
+        reason: 'HEADER_EDIT_RESTORED',
+        processed_rows: 0,
+        restored_header_rows: eventTouchesHeader && headerRestore
+          ? headerRestore.rows
+          : []
       };
     }
     var exceedsRowLimit =
@@ -540,6 +564,38 @@ var WorkOsEditHandler = (function () {
       });
     }
     var nowValue = WorkOsUtilities.now();
+    if (eventTouchesHeader) {
+      // A paste spanning rows 1/2 and data rows is never interpreted as a
+      // normal Task edit. Restore every touched data row from its own ledger
+      // (or quarantine it) after restoring the canonical headers.
+      var headerDataRestoration = WorkOsTaskRepository.restoreUserEditRows(
+        sheet,
+        rowEdits
+      );
+      var headerDataResults = rowEdits.map(function (edit) {
+        return {
+          row: edit.row,
+          operation: 'REJECTED',
+          error_code: 'HEADER_EDIT_RESTORED',
+          calendar_reconcile: false
+        };
+      });
+      return {
+        status: 'REJECTED',
+        reason: 'HEADER_EDIT_RESTORED',
+        processed_rows: 0,
+        rejected_rows: rowEdits.length,
+        restored_rows: headerDataRestoration.restored_count,
+        quarantined_rows: headerDataRestoration.quarantined_count,
+        restored_header_rows: headerRestore.rows,
+        manual_edit_audit: recordManualEditAudit(
+          sheet,
+          headerDataResults,
+          nowValue
+        ),
+        calendar_outbox: emptyCalendarSummary()
+      };
+    }
     var noManagementWarning = {
       detected: false,
       recorded: false

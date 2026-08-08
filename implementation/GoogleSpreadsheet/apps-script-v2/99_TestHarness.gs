@@ -100,21 +100,10 @@ var WorkOsTestHarness = (function () {
     tests.push(runTest('P1-A02_TASK_HEADERS', function () {
       var sheet = spreadsheet.getSheetByName(WorkOsConfig.SHEETS.TASKS);
       var schema = WorkOsSchemas.getSheetSchema(WorkOsConfig.SHEETS.TASKS);
-      var expectedIds = [
-        'needs_review', 'decision', 'status', 'completed', 'excluded',
-        'task_title', 'due_date', 'suggested_due_date', 'deadline_basis',
-        'priority', 'waiting_for_reply', 'calendar_sync_mode', 'comment',
-        'sender', 'subject', 'received_at', 'source_email', 'review_state',
-        'review_type', 'task_id', 'origin_key', 'source_message_id',
-        'source_thread_id', 'stable_thread_key', 'source_action_index',
-        'ai_action_type', 'ai_reason', 'ai_confidence', 'ai_provider',
-        'ai_model', 'ai_prompt_version', 'calendar_category',
-        'calendar_importance', 'calendar_event_id', 'calendar_sync_status',
-        'schedule_state', 'manual_fields', 'row_version',
-        'pending_action_type', 'pending_changes_json', 'created_at',
-        'updated_at', 'last_calendar_sync_at',
-        'authoritative_snapshot_json'
-      ];
+      var expectedIds = WorkOsSchemas.getInternalIds(
+        WorkOsConfig.SHEETS.TASKS
+      );
+      assertEqual(50, expectedIds.length, 'Task canonical column count differs');
       assertEqual(
         expectedIds,
         sheet.getRange(1, 1, 1, schema.length).getValues()[0],
@@ -172,7 +161,13 @@ var WorkOsTestHarness = (function () {
         }
       });
       assertEqual(
-        ['needs_review', 'completed', 'excluded', 'waiting_for_reply'],
+        WorkOsSchemas.validationPlanForSheet(
+          WorkOsConfig.SHEETS.TASKS
+        ).filter(function (planItem) {
+          return planItem.validation === 'CHECKBOX';
+        }).map(function (planItem) {
+          return planItem.id;
+        }),
         checkboxIds,
         'checkbox validation columns differ'
       );

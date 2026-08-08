@@ -8,6 +8,14 @@
  */
 var WorkOsCalendarSync = (function () {
   var TARGET_TYPE = 'DEADLINE_CALENDAR';
+  var TARGET_TYPE_ARMED = 'DEADLINE_CALENDAR_ARMED';
+  var TARGET_TYPE_AUTHORITY_COMPENSATION =
+    'DEADLINE_CALENDAR_AUTHORITY_COMPENSATION';
+  var CALENDAR_TARGET_TYPES = Object.freeze([
+    TARGET_TYPE,
+    TARGET_TYPE_ARMED,
+    TARGET_TYPE_AUTHORITY_COMPENSATION
+  ]);
   var EVENT_TYPE = 'DEADLINE';
   var DESIRED_ACTIONS = Object.freeze([
     'CREATE',
@@ -19,7 +27,8 @@ var WorkOsCalendarSync = (function () {
     'PENDING',
     'RETRY',
     'DONE',
-    'DEAD'
+    'DEAD',
+    'CANCELLED'
   ]);
   var AUTO_CATEGORIES = Object.freeze([
     'EXTERNAL_SUBMISSION',
@@ -57,6 +66,12 @@ var WorkOsCalendarSync = (function () {
     'WORK_OS_V2_CALENDAR_RESOLUTION_CLAIM';
   var CALENDAR_CLAIM_TTL_MS = 10 * 60 * 1000;
   var MAX_CLAIM_PROPERTY_CHARS = 2048;
+  /*
+   * A Calendar action is not transactional with the Sheet.  Before crossing
+   * the external boundary, retain the deterministic Event target in the
+   * Outbox so an authority loss or an interrupted execution can be cleaned up
+   * without trusting a stale Task snapshot.
+   */
 
   function calendarIdPropertyKey() {
     return WorkOsConfig.PROPERTIES.DEADLINE_CALENDAR_ID ||
@@ -134,6 +149,32 @@ var WorkOsCalendarSync = (function () {
       output[key] = record[key];
     });
     return output;
+  }
+
+  function isCommittedAuthorityTask(task) {
+    return Boolean(task) &&
+      (!Object.prototype.hasOwnProperty.call(task, 'authority_state') ||
+       String(task.authority_state || '') === 'COMMITTED');
+  }
+
+  function expectedManagedEventId(taskId) {
+    return deterministicEventId(String(taskId || ''));
+  }
+
+  function isCalendarTargetType(value) {
+    return CALENDAR_TARGET_TYPES.indexOf(String(value || '')) !== -1;
+  }
+
+  function isExternalIoArmedRecord(record) {
+    return Boolean(record) &&
+      String(record.target_type || '') === TARGET_TYPE_ARMED;
+  }
+
+  function isAuthorityCompensationRecord(record) {
+    return Boolean(record) &&
+      String(record && record.desired_action || '') === 'DELETE' &&
+      String(record.target_type || '') ===
+        TARGET_TYPE_AUTHORITY_COMPENSATION;
   }
 
   function claimPropertyStore(settings) {
@@ -1216,7 +1257,7 @@ var WorkOsCalendarSync = (function () {
       }
       if (!/^syn_[0-9a-f]{32}$/.test(syncId) ||
           !/^tsk_[0-9a-f]{32}$/.test(taskId) ||
-          String(row[2] || '') !== TARGET_TYPE ||
+          !isCalendarTargetType(row[2]) ||
           DESIRED_ACTIONS.indexOf(String(row[3] || '')) === -1 ||
           JOB_STATUSES.indexOf(String(row[5] || '')) === -1 ||
           !Number.isInteger(Number(row[6])) ||
@@ -1457,6 +1498,25 @@ var WorkOsCalendarSync = (function () {
     var existingRow = context.byTaskId[taskId];
     if (existingRow) {
       var existing = readOutboxRow(context, existingRow);
+      /*
+       * Authority compensation is a higher-priority owned-event cleanup
+       * intent. A later Task edit, including force_enqueue, must not turn it
+       * into normal NOOP/DONE work or clear its deterministic Event ID. Only
+       * the compensation worker may consume it after ownership verification.
+       */
+      if (isAuthorityCompensationRecord(existing)) {
+        return {
+          operation: 'NOOP',
+          desired_action: existing.desired_action,
+          status: existing.status
+        };
+      }
+      /*
+       * A concurrent Task edit may update normal outbox fields, but an armed
+       * row retains its separate target_type marker until the pending external
+       * effect has been reconciled.  Do not use error_code as that marker.
+       */
+      var retainExternalIoArm = isExternalIoArmedRecord(existing);
       var same = String(existing.desired_action) === desiredAction &&
         String(existing.event_id || '') === eventId;
       if (existing.status === 'DEAD' &&
@@ -1480,8 +1540,21 @@ var WorkOsCalendarSync = (function () {
         };
       }
       existing.desired_action = desiredAction;
-      existing.event_id = eventId;
-      existing.status = desiredAction === 'NOOP' ? 'DONE' : 'PENDING';
+      existing.event_id = retainExternalIoArm
+        ? expectedManagedEventId(taskId)
+        : eventId;
+      existing.target_type = retainExternalIoArm
+        ? TARGET_TYPE_ARMED
+        : TARGET_TYPE;
+      /*
+       * An armed external call may have completed before this concurrent Task
+       * edit. Keep it due even when the current Task has no ordinary Calendar
+       * work, so a crash before commit can still locate/delete the deterministic
+       * Event instead of stranding an ARMED+DONE row.
+       */
+      existing.status = retainExternalIoArm || desiredAction !== 'NOOP'
+        ? 'PENDING'
+        : 'DONE';
       existing.retry_count = 0;
       existing.next_retry_at = '';
       existing.last_attempt_at = '';
@@ -1561,12 +1634,8 @@ var WorkOsCalendarSync = (function () {
       updated_count: 0,
       noop_count: 0
     };
-    (taskContext && taskContext.logicalRows || []).forEach(
-      function (physicalRow) {
-        var task = WorkOsTaskRepository.readTaskAtRow(
-          taskContext,
-          physicalRow
-        );
+    WorkOsTaskRepository.operationalTasks(taskContext || { logicalRows: [] })
+      .forEach(function (task) {
         var syncStatus = String(task.calendar_sync_status || '');
         var existingRow = outboxContext.byTaskId[
           String(task.task_id || '')
@@ -1593,8 +1662,7 @@ var WorkOsCalendarSync = (function () {
         } else {
           counts.noop_count += 1;
         }
-      }
-    );
+      });
     return counts;
   }
 
@@ -1626,7 +1694,7 @@ var WorkOsCalendarSync = (function () {
         context.logicalRows[index]
       );
       if (record &&
-          record.target_type === TARGET_TYPE &&
+          isCalendarTargetType(record.target_type) &&
           (!allowed || allowed[String(record.task_id || '')]) &&
           isDueForAttempt(record, nowValue)) {
         return {
@@ -1636,6 +1704,66 @@ var WorkOsCalendarSync = (function () {
       }
     }
     return null;
+  }
+
+  /*
+   * An Outbox row is derivative state. If its Task can no longer be resolved
+   * through the authority-aware reader, it must not repeatedly occupy the
+   * first Calendar job or cross the external I/O boundary. A later explicit
+   * repair/Task commit may deterministically enqueue a fresh row.
+   */
+  function cancelAuthorityExcludedJob(context, selected, nowValue) {
+    var record = cloneRecord(selected.record);
+    record.target_type = TARGET_TYPE;
+    record.status = 'CANCELLED';
+    record.retry_count = 0;
+    record.next_retry_at = '';
+    record.last_attempt_at = nowValue;
+    record.error_code = 'E_CALENDAR_TASK_AUTHORITY_EXCLUDED';
+    record.updated_at = nowValue;
+    writeOutboxRecord(context, selected.row, record);
+    return record;
+  }
+
+  function armOutboxRecordForExternalIo(context, selected, nowValue) {
+    var record = cloneRecord(selected.record);
+    var expectedEventId = expectedManagedEventId(record.task_id);
+    var storedEventId = String(record.event_id || '').trim();
+    if (storedEventId && storedEventId !== expectedEventId) {
+      throw appError(
+        'E_CALENDAR_EVENT_ID_MISMATCH',
+        false,
+        'Calendar outbox Event IDがTask由来の決定的IDと一致しません。'
+      );
+    }
+    record.event_id = expectedEventId;
+    record.target_type = TARGET_TYPE_ARMED;
+    record.updated_at = nowValue;
+    writeOutboxRecord(context, selected.row, record);
+    return record;
+  }
+
+  function scheduleAuthorityExcludedCompensation(
+    context,
+    row,
+    currentRecord,
+    nowValue
+  ) {
+    if (!row || !currentRecord || !isExternalIoArmedRecord(currentRecord)) {
+      return { scheduled: false, action: '' };
+    }
+    var record = cloneRecord(currentRecord);
+    record.desired_action = 'DELETE';
+    record.event_id = expectedManagedEventId(record.task_id);
+    record.target_type = TARGET_TYPE_AUTHORITY_COMPENSATION;
+    record.status = 'PENDING';
+    record.retry_count = 0;
+    record.next_retry_at = '';
+    record.last_attempt_at = '';
+    record.error_code = 'E_CALENDAR_TASK_AUTHORITY_COMPENSATION';
+    record.updated_at = nowValue;
+    writeOutboxRecord(context, row, record);
+    return { scheduled: true, action: 'DELETE', record: record };
   }
 
   function outboxSheetForSettings(settings) {
@@ -1664,6 +1792,17 @@ var WorkOsCalendarSync = (function () {
       false,
       'Calendar同期用Task readerがありません。'
     );
+  }
+
+  function readAuthorityTaskForHeldLock(settings, taskId, lock) {
+    try {
+      return readTaskForHeldLock(settings, taskId, lock);
+    } catch (error) {
+      if (error && /^E_TASK_AUTHORITY_/.test(String(error.code || ''))) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   function taskWriterForHeldLock(settings, lock, expectedRowVersion) {
@@ -1784,14 +1923,6 @@ var WorkOsCalendarSync = (function () {
         return { status: 'PAUSED', processed_count: 0 };
       }
       var context = createOutboxContextForHeldLock(sheet, lock);
-      var selected = selectNextJob(
-        context,
-        nowValue,
-        settings.allowed_task_ids
-      );
-      if (!selected) {
-        return { status: 'IDLE', processed_count: 0 };
-      }
       if (typeof settings.task_reader !== 'function' &&
           typeof settings.task_reader_in_context !== 'function') {
         throw appError(
@@ -1808,31 +1939,84 @@ var WorkOsCalendarSync = (function () {
           'Calendar同期用Task writerがありません。'
         );
       }
-      var task = readTaskForHeldLock(
-        settings,
-        selected.record.task_id,
-        lock
-      );
-      var claim = acquireCalendarJobClaim(
-        properties,
-        selected,
-        task,
-        nowValue
-      );
-      if (!claim) {
-        return { status: 'BUSY', processed_count: 0 };
+      var authorityExcludedCount = 0;
+      while (true) {
+        var selected = selectNextJob(
+          context,
+          nowValue,
+          settings.allowed_task_ids
+        );
+        if (!selected) {
+          return {
+            status: 'IDLE',
+            processed_count: 0,
+            authority_excluded_count: authorityExcludedCount
+          };
+        }
+        var task = readAuthorityTaskForHeldLock(
+          settings,
+          selected.record.task_id,
+          lock
+        );
+        var authorityCompensation = isAuthorityCompensationRecord(
+          selected.record
+        );
+        if (!isCommittedAuthorityTask(task)) {
+          authorityExcludedCount += 1;
+          if (authorityCompensation) {
+            /* Retain the pre-existing owned-event-only cleanup intent. */
+          } else if (isExternalIoArmedRecord(selected.record)) {
+            var scheduled = scheduleAuthorityExcludedCompensation(
+              context,
+              selected.row,
+              selected.record,
+              nowValue
+            );
+            if (!scheduled.scheduled) {
+              cancelAuthorityExcludedJob(context, selected, nowValue);
+              continue;
+            }
+            selected = { row: selected.row, record: scheduled.record };
+            authorityCompensation = true;
+          } else {
+            cancelAuthorityExcludedJob(context, selected, nowValue);
+            continue;
+          }
+        }
+
+        /*
+         * Claim first.  The normal path is armed only after execute performs
+         * its final Task-authority revalidation below, immediately before
+         * Calendar I/O.  This prevents a prepare-time arm from turning a
+         * known pre-I/O authority exclusion into an unnecessary GET/DELETE.
+         */
+        var claim = acquireCalendarJobClaim(
+          properties,
+          selected,
+          authorityCompensation ? null : task,
+          nowValue
+        );
+        if (!claim) {
+          return {
+            status: 'BUSY',
+            processed_count: 0,
+            authority_excluded_count: authorityExcludedCount
+          };
+        }
+        return {
+          status: 'READY',
+          claim_token: claim.token,
+          sync_id: claim.sync_id,
+          task_id: claim.task_id,
+          outbox_fingerprint: claim.outbox_fingerprint,
+          task_fingerprint: claim.task_fingerprint,
+          task_row_version: claim.task_row_version,
+          outbox_record: cloneRecord(selected.record),
+          task: authorityCompensation ? null : cloneRecord(task),
+          authority_compensation: authorityCompensation,
+          authority_excluded_count: authorityExcludedCount
+        };
       }
-      return {
-        status: 'READY',
-        claim_token: claim.token,
-        sync_id: claim.sync_id,
-        task_id: claim.task_id,
-        outbox_fingerprint: claim.outbox_fingerprint,
-        task_fingerprint: claim.task_fingerprint,
-        task_row_version: claim.task_row_version,
-        outbox_record: cloneRecord(selected.record),
-        task: task ? cloneRecord(task) : null
-      };
     }, WorkOsConfig.LOCK_WAIT_MS);
   }
 
@@ -2029,6 +2213,7 @@ var WorkOsCalendarSync = (function () {
       ? 'UPDATE'
       : 'NOOP';
     record.event_id = result.event_id;
+    record.target_type = TARGET_TYPE;
     record.status = 'DONE';
     record.next_retry_at = '';
     record.last_attempt_at = nowValue;
@@ -2104,11 +2289,147 @@ var WorkOsCalendarSync = (function () {
     };
   }
 
+  function markAuthorityCompensationSuccess(
+    context,
+    selected,
+    result,
+    nowValue
+  ) {
+    var record = selected.record;
+    if (!isAuthorityCompensationRecord(record) ||
+        !result ||
+        result.calendar_sync_status !== 'NOT_REQUIRED') {
+      throw appError(
+        'E_CALENDAR_COMPENSATION_STATE',
+        false,
+        'Authority除外後のCalendar補償状態が不正です。'
+      );
+    }
+    record.target_type = TARGET_TYPE;
+    record.status = 'CANCELLED';
+    record.retry_count = 0;
+    record.next_retry_at = '';
+    record.last_attempt_at = nowValue;
+    record.last_success_at = nowValue;
+    record.error_code = 'E_CALENDAR_TASK_AUTHORITY_EXCLUDED';
+    record.updated_at = nowValue;
+    writeOutboxRecord(context, selected.row, record);
+    return {
+      status: 'CANCELLED',
+      action: result.action,
+      retry_count: record.retry_count
+    };
+  }
+
+  function revalidatePreparedExecution(prepared, settings) {
+    var sheet = outboxSheetForSettings(settings);
+    var properties = claimPropertyStore(settings);
+    return WorkOsUtilities.withScriptLock(function (lock) {
+      var nowValue = nowFromSettings(settings);
+      var claim = assertOwnedCalendarJobClaim(
+        properties,
+        prepared,
+        nowValue
+      );
+      var context = createOutboxContextForHeldLock(sheet, lock);
+      var row = context.bySyncId[String(prepared.sync_id || '')];
+      var record = row ? readOutboxRow(context, row) : null;
+      if (!record ||
+          String(record.task_id || '') !== String(prepared.task_id || '') ||
+          outboxFingerprint(record) !==
+            String(prepared.outbox_fingerprint || '')) {
+        return { status: 'SKIPPED_STALE' };
+      }
+      var task = readAuthorityTaskForHeldLock(
+        settings,
+        prepared.task_id,
+        lock
+      );
+      if (prepared.authority_compensation === true) {
+        if (!isAuthorityCompensationRecord(record)) {
+          return { status: 'SKIPPED_STALE' };
+        }
+        return {
+          status: 'AUTHORITY_COMPENSATION',
+          record: record
+        };
+      }
+      if (!isCommittedAuthorityTask(task)) {
+        return { status: 'SKIPPED_AUTHORITY_EXCLUDED' };
+      }
+      /*
+       * This is the last lock-held point before Calendar I/O.  Persist the
+       * deterministic cleanup target and update the claim atomically with
+       * that arm, then release the lock before calling Calendar.
+       */
+      var armedRecord = armOutboxRecordForExternalIo(
+        context,
+        { row: row, record: record },
+        nowValue
+      );
+      claim.outbox_fingerprint = outboxFingerprint(armedRecord);
+      delete claim.active;
+      persistClaimProperty(
+        properties,
+        CALENDAR_JOB_CLAIM_PROPERTY,
+        claim
+      );
+      prepared.outbox_fingerprint = claim.outbox_fingerprint;
+      prepared.outbox_record = cloneRecord(armedRecord);
+      return {
+        status: 'AUTHORIZED',
+        task: task,
+        record: armedRecord
+      };
+    }, WorkOsConfig.LOCK_WAIT_MS);
+  }
+
+  function executeAuthorityCompensation(
+    gateway,
+    calendarId,
+    record,
+    instanceId,
+    options
+  ) {
+    if (!isAuthorityCompensationRecord(record)) {
+      throw appError(
+        'E_CALENDAR_COMPENSATION_STATE',
+        false,
+        'Authority除外後のCalendar補償対象が不正です。'
+      );
+    }
+    var taskId = String(record.task_id || '');
+    var eventId = expectedManagedEventId(taskId);
+    assertCalendarBudget(options);
+    var existing = gateway.getEvent(calendarId, eventId);
+    if (!existing) {
+      return {
+        action: 'NOOP',
+        event_id: '',
+        calendar_sync_status: 'NOT_REQUIRED'
+      };
+    }
+    if (!isOwnedEvent(existing, taskId, instanceId)) {
+      throw appError(
+        'E_CALENDAR_EVENT_FOREIGN',
+        false,
+        'Authority除外後の補償対象Eventの所有markerが一致しません。'
+      );
+    }
+    assertCalendarBudget(options);
+    gateway.deleteEvent(calendarId, eventId);
+    return {
+      action: 'DELETE',
+      event_id: '',
+      calendar_sync_status: 'NOT_REQUIRED'
+    };
+  }
+
   /**
    * Execute only the Calendar-facing portion of a prepared job.
    *
-   * No Sheet mutation is performed here. A short claim-ownership check occurs
-   * before the external boundary; the Lock is released before any Calendar
+   * A short lock-held preflight revalidates Task authority and arms the Outbox
+   * before the external boundary. The Lock is released before any Calendar
    * list/get/find/create/update/delete call.
    */
   function executePreparedJob(prepared, options) {
@@ -2121,13 +2442,14 @@ var WorkOsCalendarSync = (function () {
       );
     }
     var properties = claimPropertyStore(settings);
-    WorkOsUtilities.withScriptLock(function () {
-      assertOwnedCalendarJobClaim(
-        properties,
-        prepared,
-        nowFromSettings(settings)
-      );
-    }, WorkOsConfig.LOCK_WAIT_MS);
+    var preflight = revalidatePreparedExecution(prepared, settings);
+    if (preflight.status === 'SKIPPED_AUTHORITY_EXCLUDED' ||
+        preflight.status === 'SKIPPED_STALE') {
+      return {
+        status: preflight.status,
+        external_io_performed: false
+      };
+    }
     if (settings.budget &&
         settings.budget.isExhausted(
           settings.reserve_ms == null
@@ -2143,8 +2465,9 @@ var WorkOsCalendarSync = (function () {
         )
       };
     }
-    if (!prepared.task ||
-        String(prepared.task.task_id || '') !== prepared.task_id) {
+    if (preflight.status !== 'AUTHORITY_COMPENSATION' &&
+        (!preflight.task ||
+         String(preflight.task.task_id || '') !== prepared.task_id)) {
       return {
         status: 'FAILED',
         error: appError(
@@ -2175,18 +2498,29 @@ var WorkOsCalendarSync = (function () {
       ).trim();
       return {
         status: 'EXECUTED',
-        result: executeCalendarAction(
-          settings.gateway || new AdvancedCalendarGateway(),
-          resolved._calendarId,
-          prepared.task,
-          prepared.outbox_record,
-          instanceId,
-          settings.timezone || WorkOsConfig.TIMEZONE,
-          {
-            budget: settings.budget,
-            reserve_ms: settings.reserve_ms
-          }
-        )
+        result: preflight.status === 'AUTHORITY_COMPENSATION'
+          ? executeAuthorityCompensation(
+            settings.gateway || new AdvancedCalendarGateway(),
+            resolved._calendarId,
+            preflight.record,
+            instanceId,
+            {
+              budget: settings.budget,
+              reserve_ms: settings.reserve_ms
+            }
+          )
+          : executeCalendarAction(
+            settings.gateway || new AdvancedCalendarGateway(),
+            resolved._calendarId,
+            preflight.task,
+            preflight.record,
+            instanceId,
+            settings.timezone || WorkOsConfig.TIMEZONE,
+            {
+              budget: settings.budget,
+              reserve_ms: settings.reserve_ms
+            }
+          )
       };
     } catch (error) {
       return {
@@ -2288,6 +2622,7 @@ var WorkOsCalendarSync = (function () {
         : 'PENDING');
 
     currentRecord.event_id = observedEventId;
+    currentRecord.target_type = TARGET_TYPE;
     currentRecord.desired_action = desiredAction;
     currentRecord.status = desiredAction === 'NOOP'
       ? 'DONE'
@@ -2336,7 +2671,7 @@ var WorkOsCalendarSync = (function () {
       var context = createOutboxContextForHeldLock(sheet, lock);
       var row = context.bySyncId[String(prepared.sync_id || '')];
       var currentRecord = row ? readOutboxRow(context, row) : null;
-      var currentTask = readTaskForHeldLock(
+      var currentTask = readAuthorityTaskForHeldLock(
         settings,
         prepared.task_id,
         lock
@@ -2349,29 +2684,83 @@ var WorkOsCalendarSync = (function () {
       var currentTaskVersion = Number(
         currentTask && currentTask.row_version || 0
       );
-      var snapshotsMatch = currentRecord &&
+      var outboxSnapshotMatches = currentRecord &&
         String(currentRecord.task_id || '') === prepared.task_id &&
         outboxFingerprint(currentRecord) ===
-          String(prepared.outbox_fingerprint || '') &&
-        taskFingerprint(currentTask) ===
-          String(prepared.task_fingerprint || '') &&
-        currentTaskVersion === Number(prepared.task_row_version || 0);
+          String(prepared.outbox_fingerprint || '');
+      /*
+       * Compensation is a bounded, owned-event-only cleanup operation and
+       * deliberately has no Task patch. A Task that reappears or changes
+       * after authority loss cannot invalidate the durable cleanup claim.
+       */
+      var snapshotsMatch = outboxSnapshotMatches &&
+        (prepared.authority_compensation === true
+          ? isAuthorityCompensationRecord(currentRecord)
+          : (taskFingerprint(currentTask) ===
+              String(prepared.task_fingerprint || '') &&
+             currentTaskVersion === Number(prepared.task_row_version || 0)));
       if (!snapshotsMatch) {
         var recoveryWriter = taskWriterForHeldLock(
           settings,
           lock,
           currentTaskVersion
         );
-        var recovery = schedulePostConflictReconciliation(
-          context,
-          row,
-          currentRecord,
-          currentTask,
-          execution,
-          recoveryWriter,
-          nowValue,
-          settings.timezone || WorkOsConfig.TIMEZONE
-        );
+        var recovery;
+        if (!currentTask && currentRecord && execution &&
+            execution.status === 'SKIPPED_AUTHORITY_EXCLUDED') {
+          /*
+           * Revalidation stopped before Calendar I/O.  There is no possible
+           * external side effect to compensate, so cancel directly instead
+           * of scheduling a GET/DELETE pass.
+           */
+          cancelAuthorityExcludedJob(
+            context,
+            { row: row, record: currentRecord },
+            nowValue
+          );
+          recovery = { scheduled: false, action: '' };
+        } else if (!currentTask && currentRecord &&
+            (isExternalIoArmedRecord(currentRecord) ||
+             isAuthorityCompensationRecord(currentRecord))) {
+          recovery = scheduleAuthorityExcludedCompensation(
+            context,
+            row,
+            currentRecord,
+            nowValue
+          );
+          if (!recovery.scheduled &&
+              isAuthorityCompensationRecord(currentRecord)) {
+            recovery = {
+              scheduled: true,
+              action: 'DELETE'
+            };
+          }
+        } else if (prepared.authority_compensation === true &&
+                   currentTask &&
+                   execution &&
+                   execution.status === 'SKIPPED_STALE') {
+          var requeued = enqueueTaskInContext(currentTask, context, {
+            now: nowValue,
+            timezone: settings.timezone || WorkOsConfig.TIMEZONE,
+            force_enqueue: true
+          });
+          recovery = {
+            scheduled: requeued.status === 'PENDING' ||
+              requeued.status === 'RETRY',
+            action: String(requeued.desired_action || '')
+          };
+        } else {
+          recovery = schedulePostConflictReconciliation(
+            context,
+            row,
+            currentRecord,
+            currentTask,
+            execution,
+            recoveryWriter,
+            nowValue,
+            settings.timezone || WorkOsConfig.TIMEZONE
+          );
+        }
         clearOwnedClaimProperty(
           properties,
           CALENDAR_JOB_CLAIM_PROPERTY,
@@ -2408,7 +2797,30 @@ var WorkOsCalendarSync = (function () {
         record: currentRecord
       };
       var result;
-      if (!execution || execution.status !== 'EXECUTED') {
+      if (prepared.authority_compensation === true) {
+        if (!execution || execution.status !== 'EXECUTED') {
+          result = markJobFailure(
+            context,
+            selected,
+            execution && execution.error ||
+              appError(
+                'E_CALENDAR_SYNC',
+                true,
+                'Calendar補償処理が完了しませんでした。'
+              ),
+            taskWriter,
+            nowValue,
+            { skip_task_patch: true }
+          );
+        } else {
+          result = markAuthorityCompensationSuccess(
+            context,
+            selected,
+            execution.result,
+            nowValue
+          );
+        }
+      } else if (!execution || execution.status !== 'EXECUTED') {
         result = markJobFailure(
           context,
           selected,

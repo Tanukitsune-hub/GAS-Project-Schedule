@@ -885,12 +885,7 @@ var WorkOsWorker = (function () {
   }
 
   function allTasksInContext(taskContext) {
-    return taskContext.logicalRows.map(function (physicalRow) {
-      return WorkOsTaskRepository.readTaskAtRow(
-        taskContext,
-        physicalRow
-      );
-    });
+    return WorkOsTaskRepository.operationalTasks(taskContext);
   }
 
   function pendingStatusForAction(action) {
