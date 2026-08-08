@@ -139,23 +139,52 @@ function checkUnexpectedGeneratedFiles() {
   return { command: 'git ls-files --others --exclude-standard', untracked_file_count: 0 };
 }
 
-function checkRepositoryScope() {
-  const branch = git(['branch', '--show-current']);
-  if (branch && branch !== expectedBranch) {
+function checkRepositoryScope(options = {}) {
+  const gitCommand = options.git || git;
+  const spawnGitCommand = options.spawnGit || spawnGit;
+  const scopeStartingMain = options.startingMain || startingMain;
+  const scopeExpectedBranch = options.expectedBranch || expectedBranch;
+  const environment = options.environment || process.env;
+  const branch = gitCommand(['branch', '--show-current']);
+  if (branch && branch !== scopeExpectedBranch) {
     throw new Error('UNEXPECTED_BRANCH');
   }
-  const ancestry = spawnGit(['merge-base', '--is-ancestor', startingMain, 'HEAD']);
+  let scopeHead = 'HEAD';
+  let checkout = branch || 'DETACHED';
+  if (!branch && environment.GITHUB_EVENT_NAME === 'pull_request') {
+    if (environment.GITHUB_ACTIONS !== 'true' ||
+        !/^refs\/pull\/\d+\/merge$/.test(String(environment.GITHUB_REF || ''))) {
+      throw new Error('UNEXPECTED_GITHUB_PULL_REQUEST_CONTEXT');
+    }
+    if (environment.GITHUB_HEAD_REF !== scopeExpectedBranch) {
+      throw new Error('UNEXPECTED_GITHUB_HEAD_REF');
+    }
+    const parents = gitCommand(['show', '-s', '--format=%P', 'HEAD'])
+      .split(/\s+/).filter(Boolean);
+    if (parents.length !== 2) throw new Error('PULL_REQUEST_MERGE_REF_INVALID');
+    const baseAncestry = spawnGitCommand([
+      'merge-base', '--is-ancestor', scopeStartingMain, parents[0]
+    ]);
+    if (baseAncestry.status !== 0) throw new Error('PULL_REQUEST_MERGE_BASE_INVALID');
+    scopeHead = parents[1];
+    checkout = 'GITHUB_PULL_REQUEST_MERGE';
+  } else if (!branch) {
+    const parents = gitCommand(['show', '-s', '--format=%P', 'HEAD'])
+      .split(/\s+/).filter(Boolean);
+    if (parents.length > 1) throw new Error('UNEXPECTED_DETACHED_MERGE');
+  }
+  const ancestry = spawnGitCommand(['merge-base', '--is-ancestor', scopeStartingMain, scopeHead]);
   if (ancestry.status !== 0) throw new Error('STARTING_MAIN_NOT_ANCESTOR');
-  const governance = git([
-    'diff', '--name-only', startingMain, 'HEAD', '--', 'AGENTS.md', '.codex'
+  const governance = gitCommand([
+    'diff', '--name-only', scopeStartingMain, scopeHead, '--', 'AGENTS.md', '.codex'
   ]);
   if (governance) throw new Error('MAIN_GOVERNANCE_CHANGED');
-  const merges = git(['rev-list', '--merges', `${startingMain}..HEAD`]);
+  const merges = gitCommand(['rev-list', '--merges', `${scopeStartingMain}..${scopeHead}`]);
   if (merges) throw new Error('DONOR_MERGE_COMMIT_PRESENT');
   return {
-    command: 'starting-main ancestry, governance identity, and no-merge scope',
-    checkout: branch || 'DETACHED',
-    starting_main: startingMain,
+    command: 'starting-main ancestry, governance identity, and no-merge PR-head scope',
+    checkout,
+    starting_main: scopeStartingMain,
     governance_changed_file_count: 0,
     donor_merge_commit_count: 0
   };
@@ -391,4 +420,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { contentHasSensitivePattern, isForbiddenCredentialPath };
+module.exports = { checkRepositoryScope, contentHasSensitivePattern, isForbiddenCredentialPath };
