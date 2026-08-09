@@ -126,7 +126,7 @@ function assertSafeGeneratedPayloadDirectory() {
   }
   const allowed = new Set([
     'payload', '.clasp.json', '.claspignore', 'target.json',
-    'payload-inventory.json', 'last-operation.json'
+    'payload-inventory.json', 'last-operation.json', 'creation-state.json'
   ]);
   for (const entry of fs.readdirSync(devRoot, { withFileTypes: true })) {
     if (!allowed.has(entry.name)) {

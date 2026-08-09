@@ -19,6 +19,8 @@
     "verify:lineage": "node tools/local_validation_gate.js --section lineage",
     "verify:secret-scan": "node tools/local_validation_gate.js --section secret-scan",
     "gas:stage:dev": "node tools/local_clasp_dev.js stage",
+    "gas:create-synthetic:dev": "node tools/work_0003_target_bootstrap.js create-synthetic",
+    "gas:inspect-synthetic:dev": "node tools/work_0003_target_bootstrap.js inspect-synthetic",
     "gas:status:dev": "node tools/local_clasp_dev.js status",
     "gas:push:dev": "node tools/local_clasp_dev.js push",
     "gas:pull-verify:dev": "node tools/local_clasp_dev.js pull-verify",
