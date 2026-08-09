@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * Deterministic non-Google verification gate for Work 0002.
+ * Deterministic non-Google verification gate for the Work 0002 candidate and
+ * its explicitly authorized validation descendants.
  *
  * Output is limited to command identifiers, closed statuses, counts, Git SHAs,
  * and SHA-256 fingerprints. The gate never reads clasp configuration and never
@@ -23,6 +24,10 @@ const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const startingMain = 'e2a7c683a7c0f7f1a865aec89a9e24ec56f830da';
 const expectedBranch = 'codex/0002-clean-integration-candidate';
+const allowedScopeBranches = Object.freeze([
+  expectedBranch,
+  'codex/0003-controlled-remote-placement'
+]);
 const phase8bPath =
   'implementation/GoogleSpreadsheet/release/v2.8.12-prepilot';
 const phase8cPath =
@@ -143,10 +148,11 @@ function checkRepositoryScope(options = {}) {
   const gitCommand = options.git || git;
   const spawnGitCommand = options.spawnGit || spawnGit;
   const scopeStartingMain = options.startingMain || startingMain;
-  const scopeExpectedBranch = options.expectedBranch || expectedBranch;
+  const scopeAllowedBranches = options.allowedBranches ||
+    (options.expectedBranch ? [options.expectedBranch] : allowedScopeBranches);
   const environment = options.environment || process.env;
   const branch = gitCommand(['branch', '--show-current']);
-  if (branch && branch !== scopeExpectedBranch) {
+  if (branch && !scopeAllowedBranches.includes(branch)) {
     throw new Error('UNEXPECTED_BRANCH');
   }
   let scopeHead = 'HEAD';
@@ -156,7 +162,7 @@ function checkRepositoryScope(options = {}) {
         !/^refs\/pull\/\d+\/merge$/.test(String(environment.GITHUB_REF || ''))) {
       throw new Error('UNEXPECTED_GITHUB_PULL_REQUEST_CONTEXT');
     }
-    if (environment.GITHUB_HEAD_REF !== scopeExpectedBranch) {
+    if (!scopeAllowedBranches.includes(environment.GITHUB_HEAD_REF)) {
       throw new Error('UNEXPECTED_GITHUB_HEAD_REF');
     }
     const parents = gitCommand(['show', '-s', '--format=%P', 'HEAD'])

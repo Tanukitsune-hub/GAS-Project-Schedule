@@ -8,6 +8,7 @@ const path = require('node:path');
 const { checkRepositoryScope } = require('../tools/local_validation_gate');
 
 const expectedBranch = 'codex/0002-clean-integration-candidate';
+const work0003Branch = 'codex/0003-controlled-remote-placement';
 
 function spawnGit(repositoryRoot, args) {
   return childProcess.spawnSync('git', ['-C', repositoryRoot].concat(args), {
@@ -74,6 +75,14 @@ try {
   );
   assert.strictEqual(allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
 
+  const work0003Allowed = checkRepositoryScope(Object.assign(
+    scopeOptions(repositoryRoot, startingMain, Object.assign(
+      pullRequestEnvironment(), { GITHUB_HEAD_REF: work0003Branch }
+    )),
+    { allowedBranches: [expectedBranch, work0003Branch] }
+  ));
+  assert.strictEqual(work0003Allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
+
   assert.throws(
     () => checkRepositoryScope(scopeOptions(repositoryRoot, startingMain, Object.assign(
       pullRequestEnvironment(), { GITHUB_HEAD_REF: 'unexpected-branch' }
@@ -114,7 +123,7 @@ try {
 process.stdout.write(`${JSON.stringify({
   suite: 'local_validation_gate_pr_merge_scope',
   environment: 'LOCAL_NON_GOOGLE',
-  passed: 3,
+  passed: 4,
   failed: 0,
   github_actions: 'SYNTHETIC_ONLY'
 }, null, 2)}\n`);
