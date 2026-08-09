@@ -31,13 +31,12 @@ These rules govern Codex/local implementation agents. ChatGPT may finish GitHub-
 
 ## Subagent selection
 
-- Use only the Luna custom subagents for delegated work unless the user explicitly instructs otherwise.
-- Use `luna_explorer` for targeted repository exploration, dependency tracing, evidence gathering, and implementation planning.
-- Use `luna_executor` for bounded implementation work with explicit scope and acceptance criteria.
-- Use `luna_auditor` for independent validation of implementation claims, tests, documentation, and repository evidence.
-- When independent work can safely proceed in parallel, proactively launch the corresponding Luna subagents instead of keeping all work in the main agent or one subagent.
-- Do not select or invoke Terra custom subagents unless the user explicitly requests them.
-- If the appropriate Luna role is unclear, use `luna_explorer` first.
+- Use the standard Codex subagent capabilities available in the current runtime when work can be safely divided into independent, non-overlapping workstreams.
+- Prefer parallel subagents for repository exploration, focused implementation support, testing, independent review, and adversarial validation when this materially improves speed or confidence.
+- Do not select or invoke repository-defined custom agents unless the user explicitly requests them.
+- The main agent remains responsible for the primary outcome, architectural decisions, integration, conflict resolution, and final verification.
+- Avoid overlapping edits between subagents unless coordination is explicitly necessary.
+- Do not spawn subagents merely to increase activity; use them only when parallelism, independent reasoning, or context separation is useful.
 
 ## Implementation and checks
 
