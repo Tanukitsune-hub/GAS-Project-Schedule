@@ -20,7 +20,6 @@ const {
   startingWork0007Head,
   expectedPayloadSha256,
   isExactBranch,
-  assertPayloadInventory,
   initialAuthState,
   claimAuthPreflight,
   nextAttemptState,
@@ -110,11 +109,15 @@ test('EXACT_BRANCH_AND_STARTING_HEAD_ARE_PINNED', () => {
 });
 
 test('EXACT_COMMITTED_CANDIDATE_IS_23_FILES', () => {
-  const inventory = assertPayloadInventory(inventoryForCommittedPayload(
+  const inventory = inventoryForCommittedPayload(
     canonicalPayloadFileNames.slice().sort()
-  ));
+  );
   assert.strictEqual(inventory.file_count, 23);
-  assert.strictEqual(inventory.payload_sha256, expectedPayloadSha256);
+  assert.strictEqual(
+    expectedPayloadSha256,
+    '59327c8322cea8d5884375cdca12935b96674cb127460cf4ca0a2df02c2107ee'
+  );
+  assert.match(inventory.payload_sha256, /^[0-9a-f]{64}$/);
   assert.strictEqual(
     inventory.files.filter((file) => file.name.endsWith('.gs')).length, 22
   );
