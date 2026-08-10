@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Execute exactly one user-assisted `初期セットアップ` invocation against the exact personal-synthetic Spreadsheet used in Work 0010-0012, allowing only the repository's existing staged Setup workflow and its documented bounded side effects.
+Execute one user-assisted preflight cleanup followed by exactly one `初期セットアップ` invocation against the exact personal-synthetic Spreadsheet used in Work 0010-0012, allowing only the repository's existing staged Setup workflow and its documented bounded side effects.
 
 This Work is intentionally user-assisted and GitHub-recorded. No Codex implementation is required unless the runtime exposes a product defect that cannot be resolved by inspection alone.
 
@@ -21,9 +21,27 @@ This Work is intentionally user-assisted and GitHub-recorded. No Codex implement
 
 Work 0012 proved the native `Quick Diagnostic` executes normally and has zero external-service/write side effects, while its FAIL/WARN inventory is consistent with the intentionally uninitialized workbook. The next required boundary is the repository's staged Setup path.
 
+The personal Google account may already contain account-global artifacts created by an older Work OS test version. Existing formal Gmail labels are safe to reuse because Setup S50 creates only missing canonical labels. An older secondary Calendar with the exact name `自動期日管理` is different: the current candidate intentionally refuses to adopt a same-name Calendar unless current-app manageability is proven. To avoid an expected same-name adoption stop while preserving reversibility, this Work authorizes one preflight rename of the known old test-only Calendar before Setup.
+
 `executeSetup()` processes the ordered Setup stages until it completes or reaches its soft runtime budget. A `PAUSED` result is an intended safe checkpoint; this Work does not authorize a second invocation after `PAUSED`.
 
-## Exactly one authorized user action
+## Authorized preflight cleanup
+
+Before clicking Setup, exactly one account-global cleanup action is permitted if and only if the operator can unambiguously identify the old test-only secondary Calendar previously created by an older Work OS setup:
+
+1. Confirm it is a secondary Calendar, not the primary Calendar.
+2. Confirm it is the old Work OS test Calendar and contains no needed production/personal events.
+3. Rename it from exactly `自動期日管理` to a non-conflicting archival name such as `自動期日管理_旧テスト`.
+4. Do not delete Calendar events and do not delete the Calendar in this Work.
+5. Do not rename or delete any other Calendar.
+
+If the old same-name Calendar cannot be identified unambiguously, stop before Setup and report the ambiguity.
+
+Existing canonical Gmail labels must be left unchanged in this Work. Setup S50 may reuse them and create only any missing canonical labels. No Gmail message/thread labels are to be added, removed, or otherwise processed manually as preflight cleanup.
+
+## Exactly one authorized Setup user action
+
+After the preflight condition above is satisfied or no old same-name Calendar exists:
 
 1. Open the exact same personal-synthetic Spreadsheet using the same personal Google principal.
 2. Open `業務OS v2`.
@@ -43,7 +61,7 @@ Only the existing Setup stages are authorized:
 - `S20_CREATE_SCHEMAS`: create column/schema headers and required protections.
 - `S30_APPLY_SMALL_VALIDATIONS`: apply bounded validations, formats, and visibility state.
 - `S40_SEED_SAFE_SETTINGS`: seed safe initial settings/guide state with Automation OFF and real AI disabled.
-- `S50_CREATE_GMAIL_LABELS`: create only missing formal Work OS Gmail labels, up to the canonical seven names.
+- `S50_CREATE_GMAIL_LABELS`: create only missing formal Work OS Gmail labels, up to the canonical seven names; existing canonical labels are reused.
 - `S60_CREATE_DEADLINE_CALENDAR`: confirm or create only the dedicated secondary Calendar named `自動期日管理`.
 - `S70_STORE_PROPERTIES`: store only the designed non-secret version/instance/setup state.
 - `S80_CREATE_EDIT_TRIGGER`: confirm or create only one owner installable edit Trigger for the Work OS edit handler.
@@ -59,8 +77,9 @@ The invocation may process multiple stages automatically before returning becaus
 - no 5-minute `runScheduledWorker` trigger;
 - no Automation enablement;
 - no normal Inbox processing;
-- no Gmail message/thread search/read/write/label processing other than creation/inspection of the seven formal Setup labels;
-- no Calendar event creation/update/deletion; only the dedicated secondary Calendar container may be confirmed/created;
+- no Gmail message/thread search/read/write/label processing other than Setup inspection/creation of the seven formal labels;
+- no Calendar event creation/update/deletion; only the dedicated secondary Calendar container may be confirmed/created, plus the single preflight rename of the known old test-only Calendar described above;
+- no deletion of the old test Calendar in this Work;
 - no external AI request or Provider configuration;
 - no Dashboard refresh/repair menu action;
 - no manual import, worker, Calendar outbox sync, dead-letter retry, or Review restage;
@@ -73,6 +92,7 @@ The invocation may process multiple stages automatically before returning becaus
 
 Stop without workaround if any of the following occurs:
 
+- the old same-name Calendar exists but cannot be identified as the old test-only secondary Calendar with confidence;
 - the target or account is ambiguous;
 - Setup classifies the Spreadsheet as non-empty unsafe, v1, unknown, or schema-conflicted;
 - a new OAuth flow requests a company/Workspace account or unrelated application/service family;
