@@ -429,6 +429,21 @@ function assertClaspNativePayloadSelection(workspaceRoot) {
   return status;
 }
 
+function prepareWork0004PushAttempt(
+  workspaceRoot,
+  config,
+  target,
+  operations = {}
+) {
+  const assertNative = operations.assertClaspNativePayloadSelection ||
+    assertClaspNativePayloadSelection;
+  const beginRemoteAttempt = operations.beginWork0004RemoteAttempt ||
+    beginWork0004RemoteAttempt;
+  const status = assertNative(workspaceRoot);
+  beginRemoteAttempt('push', config, target);
+  return status;
+}
+
 function assertCleanWorktree() {
   const result = childProcess.spawnSync('git', [
     '-C', repositoryRoot, 'status', '--porcelain=v1', '--untracked-files=normal'
@@ -782,8 +797,7 @@ function main() {
       assertCleanWorktree();
       runLocalVerifyBeforePush();
       const target = assertTargetGuard(true);
-      assertClaspNativePayloadSelection(devRoot);
-      beginWork0004RemoteAttempt(command, target.config, target.target);
+      prepareWork0004PushAttempt(devRoot, target.config, target.target);
       googleOperation = 'CLASP_PUSH_ATTEMPT_STARTED';
       const result = runClasp(['push'], devRoot);
       if (result.exit_code !== 0) fail('CLASP_PUSH_FAILED', 'CLASP_PUSH_FAILED');
@@ -877,6 +891,7 @@ module.exports = {
   claspEntrypoint,
   runClaspNativeFileStatus,
   assertClaspNativePayloadSelection,
+  prepareWork0004PushAttempt,
   inventoryFor,
   inventoryForCommittedPayload,
   assertTargetObjects,

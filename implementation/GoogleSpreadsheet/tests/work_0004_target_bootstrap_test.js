@@ -6,6 +6,7 @@ const {
   canonicalPayloadFileNames,
   claspProjectConfig,
   inventoryForCommittedPayload,
+  prepareWork0004PushAttempt,
   nextWork0004RemoteAttemptState
 } = require('../tools/local_clasp_dev');
 const {
@@ -132,6 +133,36 @@ test('PUSH_ATTEMPT_IS_RECORDED_BEFORE_REMOTE_CALL', () => {
   assert.strictEqual(next.pull_attempt_count, 0);
   assert.strictEqual(next.phase, 'PUSH_ATTEMPT_STARTED');
   assert.strictEqual(baseState.push_attempt_count, 0);
+});
+
+test('NATIVE_INVENTORY_FAILURE_PREVENTS_PUSH_ATTEMPT_RECORD', () => {
+  const calls = [];
+  assert.throws(() => prepareWork0004PushAttempt(
+    'synthetic-workspace', config, target, {
+      assertClaspNativePayloadSelection: () => {
+        calls.push('native-inventory');
+        throw new GateError('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+      },
+      beginWork0004RemoteAttempt: () => calls.push('begin-attempt')
+    }
+  ), (error) => error instanceof GateError &&
+    error.code === 'CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+  assert.deepStrictEqual(calls, ['native-inventory']);
+});
+
+test('NATIVE_INVENTORY_PASSES_BEFORE_PUSH_ATTEMPT_RECORD', () => {
+  const calls = [];
+  const status = prepareWork0004PushAttempt(
+    'synthetic-workspace', config, target, {
+      assertClaspNativePayloadSelection: () => {
+        calls.push('native-inventory');
+        return { file_count: 23 };
+      },
+      beginWork0004RemoteAttempt: () => calls.push('begin-attempt')
+    }
+  );
+  assert.deepStrictEqual(calls, ['native-inventory', 'begin-attempt']);
+  assert.strictEqual(status.file_count, 23);
 });
 
 test('SECOND_PUSH_ATTEMPT_IS_REFUSED', () => {
