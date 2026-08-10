@@ -73,14 +73,14 @@ test('ARBITRARY_COMMAND_IS_REDUCED_TO_CLOSED_ENUM', () => {
   assert.strictEqual(normalizeWork0004Command('account@example.invalid'), 'UNKNOWN');
 });
 
-test('STAGING_USES_EXACT_COMMITTED_WORK_0002_0003_PAYLOAD_BYTES', () => {
+test('STAGING_USES_EXACT_COMMITTED_CURRENT_PAYLOAD_BYTES', () => {
   const inventory = inventoryForCommittedPayload(
     canonicalPayloadFileNames.slice().sort()
   );
   assert.strictEqual(inventory.file_count, 23);
   assert.strictEqual(
     inventory.payload_sha256,
-    '59327c8322cea8d5884375cdca12935b96674cb127460cf4ca0a2df02c2107ee'
+    'bcb93bd2d8c362374d2cf663d8b4a349ddf1170b6cd83341970eb8217e2f911b'
   );
 });
 
