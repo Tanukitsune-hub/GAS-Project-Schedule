@@ -42,6 +42,9 @@ const exactWork0006Branch = 'codex/0006-fresh-controlled-remote-placement';
 const allowedTargetKind = 'PERSONAL_SYNTHETIC_DEV';
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const claspScriptExtensions = Object.freeze(['.gs', '.js']);
+const claspSemanticPushArguments = Object.freeze([
+  '--json', 'push', '--force'
+]);
 const canonicalPayloadFileNames = Object.freeze([
   '00_Config.gs',
   '01_TypesAndSchemas.gs',
@@ -345,7 +348,46 @@ function runClasp(args, cwd) {
   return {
     exit_code: Number.isInteger(result.status) ? result.status : -1,
     output_sha256: sha256(raw),
+    stdout: String(result.stdout || ''),
     raw
+  };
+}
+
+function assertClaspPushSemanticEvidence(result, workspaceRoot) {
+  if (!result || result.exit_code !== 0) {
+    fail('CLASP_PUSH_FAILED', 'CLASP_PUSH_FAILED');
+  }
+  let pushedPaths;
+  try {
+    pushedPaths = JSON.parse(String(result.stdout || '').trim());
+  } catch (_) {
+    fail('CLASP_PUSH_SEMANTIC_EVIDENCE_INVALID',
+      'CLASP_PUSH_SEMANTIC_EVIDENCE_INVALID');
+  }
+  if (!Array.isArray(pushedPaths) || pushedPaths.length === 0) {
+    fail('CLASP_PUSH_SEMANTIC_NO_OP', 'CLASP_PUSH_SEMANTIC_NO_OP');
+  }
+  const names = pushedPaths.map((localPath) => {
+    const relative = path.relative(
+      workspaceRoot,
+      path.resolve(workspaceRoot, String(localPath))
+    );
+    const parts = relative.split(path.sep);
+    if (parts.length !== 2 || parts[0] !== 'payload' || !parts[1]) {
+      fail('CLASP_PUSH_SEMANTIC_EVIDENCE_INVALID',
+        'CLASP_PUSH_SEMANTIC_EVIDENCE_INVALID');
+    }
+    return parts[1];
+  });
+  assertExactPayloadNames(names, 'CLASP_PUSH_SEMANTIC_INVENTORY_INVALID');
+  return {
+    file_count: names.length,
+    gs_file_count: names.filter((name) => name.endsWith('.gs')).length,
+    manifest_file_count: names.filter((name) =>
+      name === 'appsscript.json').length,
+    missing_file_count: 0,
+    extra_file_count: 0,
+    update_content_evidenced: true
   };
 }
 
@@ -980,17 +1022,18 @@ function main() {
         devRoot, target.config, target.target
       );
       googleOperation = 'CLASP_PUSH_ATTEMPT_STARTED';
-      const result = runClasp(['push'], devRoot);
-      if (result.exit_code !== 0) fail('CLASP_PUSH_FAILED', 'CLASP_PUSH_FAILED');
+      const result = runClasp(claspSemanticPushArguments, devRoot);
+      const semanticEvidence = assertClaspPushSemanticEvidence(result, devRoot);
       completeWork0006RemoteAttempt(command);
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS',
-        file_count: nativeStatus.file_count,
-        gs_file_count: nativeStatus.names.filter((name) =>
-          name.endsWith('.gs')).length,
-        manifest_file_count: nativeStatus.names.filter((name) =>
-          name === 'appsscript.json').length,
-        missing_file_count: 0, extra_file_count: 0,
+        file_count: semanticEvidence.file_count,
+        gs_file_count: semanticEvidence.gs_file_count,
+        manifest_file_count: semanticEvidence.manifest_file_count,
+        missing_file_count: semanticEvidence.missing_file_count,
+        extra_file_count: semanticEvidence.extra_file_count,
+        update_content_evidenced: semanticEvidence.update_content_evidenced,
+        native_eligible_file_count: nativeStatus.file_count,
         payload_sha256: inventory.payload_sha256,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256
       };
@@ -1076,6 +1119,7 @@ module.exports = {
   canonicalPayloadNames,
   canonicalPayloadFileNames,
   claspScriptExtensions,
+  claspSemanticPushArguments,
   claspProjectConfig,
   claspIgnoreContents,
   assertExactPayloadNames,
@@ -1083,6 +1127,7 @@ module.exports = {
   claspEntrypoint,
   runClaspNativeFileStatus,
   assertClaspNativePayloadSelection,
+  assertClaspPushSemanticEvidence,
   prepareWork0004PushAttempt,
   runIsolatedStagedClaspNativeSelection,
   prepareWork0006PushAttempt,

@@ -19,6 +19,7 @@
     "verify:lineage": "node tools/local_validation_gate.js --section lineage",
     "verify:secret-scan": "node tools/local_validation_gate.js --section secret-scan",
     "verify:clasp-contract": "node tests/clasp_native_inventory_contract_test.js",
+    "verify:clasp-push-contract": "node tests/clasp_push_update_content_contract_test.js",
     "gas:stage:dev": "node tools/local_clasp_dev.js stage",
     "gas:inventory:dev": "node tools/local_clasp_dev.js inventory-check",
     "gas:auth-preflight:dev": "node tools/work_0006_target_bootstrap.js auth-preflight",
@@ -26,7 +27,9 @@
     "gas:inspect-synthetic:dev": "node tools/work_0006_target_bootstrap.js inspect-synthetic",
     "gas:push:dev": "node tools/local_clasp_dev.js push",
     "gas:pull-verify:dev": "node tools/local_clasp_dev.js pull-verify",
-    "gas:evidence:dev": "node tools/work_0006_target_bootstrap.js evidence"
+    "gas:evidence:dev": "node tools/work_0006_target_bootstrap.js evidence",
+    "gas:inspect-content:work-0007": "node tools/work_0007_remote_content_inspector.js inspect-content",
+    "gas:evidence:work-0007": "node tools/work_0007_remote_content_inspector.js evidence"
   },
   "devDependencies": {
     "@google/clasp": "3.3.0",

@@ -25,13 +25,8 @@ const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const startingMain = 'e2a7c683a7c0f7f1a865aec89a9e24ec56f830da';
 const expectedBranch = 'codex/0002-clean-integration-candidate';
-const allowedScopeBranches = Object.freeze([
-  expectedBranch,
-  'codex/0003-controlled-remote-placement',
-  'codex/0004-controlled-synthetic-placement',
-  'codex/0005-clasp-inventory-contract-repair',
-  'codex/0006-fresh-controlled-remote-placement'
-]);
+const numberedWorkBranchPattern =
+  /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
   'implementation/GoogleSpreadsheet/release/v2.8.12-prepilot';
 const phase8cPath =
@@ -151,15 +146,18 @@ function checkUnexpectedGeneratedFiles() {
   return { command: 'git ls-files --others --exclude-standard', untracked_file_count: 0 };
 }
 
+function isAllowedScopeBranch(branch) {
+  return branch === expectedBranch || numberedWorkBranchPattern.test(branch);
+}
+
 function checkRepositoryScope(options = {}) {
   const gitCommand = options.git || git;
   const spawnGitCommand = options.spawnGit || spawnGit;
   const scopeStartingMain = options.startingMain || startingMain;
-  const scopeAllowedBranches = options.allowedBranches ||
-    (options.expectedBranch ? [options.expectedBranch] : allowedScopeBranches);
+  const branchPolicy = options.branchPolicy || isAllowedScopeBranch;
   const environment = options.environment || process.env;
   const branch = gitCommand(['branch', '--show-current']);
-  if (branch && !scopeAllowedBranches.includes(branch)) {
+  if (branch && !branchPolicy(branch)) {
     throw new Error('UNEXPECTED_BRANCH');
   }
   let scopeHead = 'HEAD';
@@ -169,7 +167,7 @@ function checkRepositoryScope(options = {}) {
         !/^refs\/pull\/\d+\/merge$/.test(String(environment.GITHUB_REF || ''))) {
       throw new Error('UNEXPECTED_GITHUB_PULL_REQUEST_CONTEXT');
     }
-    if (!scopeAllowedBranches.includes(environment.GITHUB_HEAD_REF)) {
+    if (!branchPolicy(String(environment.GITHUB_HEAD_REF || ''))) {
       throw new Error('UNEXPECTED_GITHUB_HEAD_REF');
     }
     const parents = gitCommand(['show', '-s', '--format=%P', 'HEAD'])
@@ -364,7 +362,8 @@ function isForbiddenCredentialPath(file) {
   const base = segments[segments.length - 1];
   if (segments.some((segment) => [
     '.clasp-dev', '.clasp-pull-verify', '.clasp-work-0006',
-    '.clasp-pull-verify-work-0006', '.local-validation'
+    '.clasp-pull-verify-work-0006', '.work-0007-read-state',
+    '.local-validation'
   ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) return true;
   if (/^(?:creds|credentials|client_secret)(?:[._-][A-Za-z0-9_-]+)?\.json$/i.test(base)) return true;
@@ -473,4 +472,9 @@ if (require.main === module) {
   }
 }
 
-module.exports = { checkRepositoryScope, contentHasSensitivePattern, isForbiddenCredentialPath };
+module.exports = {
+  checkRepositoryScope,
+  isAllowedScopeBranch,
+  contentHasSensitivePattern,
+  isForbiddenCredentialPath
+};

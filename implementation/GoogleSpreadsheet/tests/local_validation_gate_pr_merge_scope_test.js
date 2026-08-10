@@ -5,13 +5,13 @@ const childProcess = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { checkRepositoryScope } = require('../tools/local_validation_gate');
+const {
+  checkRepositoryScope,
+  isAllowedScopeBranch
+} = require('../tools/local_validation_gate');
 
 const expectedBranch = 'codex/0002-clean-integration-candidate';
-const work0003Branch = 'codex/0003-controlled-remote-placement';
-const work0004Branch = 'codex/0004-controlled-synthetic-placement';
-const work0005Branch = 'codex/0005-clasp-inventory-contract-repair';
-const work0006Branch = 'codex/0006-fresh-controlled-remote-placement';
+const futureWorkBranch = 'codex/4321-future-numbered-work';
 
 function spawnGit(repositoryRoot, args) {
   return childProcess.spawnSync('git', ['-C', repositoryRoot].concat(args), {
@@ -78,46 +78,26 @@ try {
   );
   assert.strictEqual(allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
 
-  const work0003Allowed = checkRepositoryScope(Object.assign(
+  const futureWorkAllowed = checkRepositoryScope(Object.assign(
     scopeOptions(repositoryRoot, startingMain, Object.assign(
-      pullRequestEnvironment(), { GITHUB_HEAD_REF: work0003Branch }
-    )),
-    { allowedBranches: [expectedBranch, work0003Branch] }
+      pullRequestEnvironment(), { GITHUB_HEAD_REF: futureWorkBranch }
+    ))
   ));
-  assert.strictEqual(work0003Allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
+  assert.strictEqual(futureWorkAllowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
 
-  const work0004Allowed = checkRepositoryScope(Object.assign(
-    scopeOptions(repositoryRoot, startingMain, Object.assign(
-      pullRequestEnvironment(), { GITHUB_HEAD_REF: work0004Branch }
-    )),
-    { allowedBranches: [expectedBranch, work0003Branch, work0004Branch] }
-  ));
-  assert.strictEqual(work0004Allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
+  for (const branch of [
+    expectedBranch,
+    'codex/0007-remote-content-diagnosis-ci-scope',
+    futureWorkBranch,
+    'codex/9999-a1-b2'
+  ]) assert.strictEqual(isAllowedScopeBranch(branch), true, branch);
 
-  const work0005Allowed = checkRepositoryScope(Object.assign(
-    scopeOptions(repositoryRoot, startingMain, Object.assign(
-      pullRequestEnvironment(), { GITHUB_HEAD_REF: work0005Branch }
-    )),
-    {
-      allowedBranches: [
-        expectedBranch, work0003Branch, work0004Branch, work0005Branch
-      ]
-    }
-  ));
-  assert.strictEqual(work0005Allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
-
-  const work0006Allowed = checkRepositoryScope(Object.assign(
-    scopeOptions(repositoryRoot, startingMain, Object.assign(
-      pullRequestEnvironment(), { GITHUB_HEAD_REF: work0006Branch }
-    )),
-    {
-      allowedBranches: [
-        expectedBranch, work0003Branch, work0004Branch, work0005Branch,
-        work0006Branch
-      ]
-    }
-  ));
-  assert.strictEqual(work0006Allowed.checkout, 'GITHUB_PULL_REQUEST_MERGE');
+  for (const branch of [
+    'feature/arbitrary', 'codex/r4-feature', 'codex/instruction-0007',
+    'codex/007-too-short', 'codex/00007-too-long', 'codex/0007',
+    'codex/0007-', 'codex/0007-Uppercase', 'codex/0007-two--hyphens',
+    'codex/0007-underscore_slug'
+  ]) assert.strictEqual(isAllowedScopeBranch(branch), false, branch);
 
   assert.throws(
     () => checkRepositoryScope(scopeOptions(repositoryRoot, startingMain, Object.assign(
@@ -159,7 +139,7 @@ try {
 process.stdout.write(`${JSON.stringify({
   suite: 'local_validation_gate_pr_merge_scope',
   environment: 'LOCAL_NON_GOOGLE',
-  passed: 7,
+  passed: 19,
   failed: 0,
   github_actions: 'SYNTHETIC_ONLY'
 }, null, 2)}\n`);

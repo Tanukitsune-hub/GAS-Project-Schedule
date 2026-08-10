@@ -22,6 +22,11 @@ assert.strictEqual(
     'nested/.clasp-pull-verify-work-0006/payload/appsscript.json'
   ), true
 );
+assert.strictEqual(
+  isForbiddenCredentialPath(
+    'nested/.work-0007-read-state/work-0007-content-read-state.json'
+  ), true
+);
 assert.strictEqual(isForbiddenCredentialPath('nested/credentials.local.json'), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/.env.example'), false);
 assert.strictEqual(isForbiddenCredentialPath('nested/.clasp.example.json'), false);
