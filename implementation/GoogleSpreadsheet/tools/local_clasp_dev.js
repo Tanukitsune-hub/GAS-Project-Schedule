@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * Guarded local clasp lane for a personal synthetic Apps Script project.
+ * Guarded Work 0006 clasp lane for a personal synthetic Apps Script project.
  *
  * This tool never discovers, prints, or stores a script ID. Its only accepted
- * binding is an ignored `.clasp-dev/.clasp.json` paired with an ignored
- * `.clasp-dev/target.json`. GitHub Actions must not invoke this tool.
+ * binding is an ignored Work 0006 workspace. Historical Work 0004 local state
+ * is never read or reused by this lane. GitHub Actions must not invoke it.
  */
 const assert = require('node:assert');
 const childProcess = require('node:child_process');
@@ -19,16 +19,22 @@ const repositoryRoot = path.resolve(moduleRoot, '..', '..');
 const sourceRoot = path.join(moduleRoot, 'apps-script-v2');
 const sourceRootFromRepository = path.relative(repositoryRoot, sourceRoot)
   .split(path.sep).join('/');
-const devRoot = path.join(moduleRoot, '.clasp-dev');
+const devRoot = path.join(moduleRoot, '.clasp-work-0006');
 const payloadRoot = path.join(devRoot, 'payload');
-const pullRoot = path.join(moduleRoot, '.clasp-pull-verify');
+const pullRoot = path.join(moduleRoot, '.clasp-pull-verify-work-0006');
 const configPath = path.join(devRoot, '.clasp.json');
 const targetPath = path.join(devRoot, 'target.json');
 const inventoryPath = path.join(devRoot, 'payload-inventory.json');
+const work0004DevRoot = path.join(moduleRoot, '.clasp-dev');
 const work0004CreationStatePath = path.join(
-  devRoot, 'work-0004-creation-state.json'
+  work0004DevRoot, 'work-0004-creation-state.json'
+);
+const work0006ExecutionStateFileName = 'work-0006-execution-state.json';
+const work0006ExecutionStatePath = path.join(
+  devRoot, work0006ExecutionStateFileName
 );
 const exactWork0004Branch = 'codex/0004-controlled-synthetic-placement';
+const exactWork0006Branch = 'codex/0006-fresh-controlled-remote-placement';
 const allowedTargetKind = 'PERSONAL_SYNTHETIC_DEV';
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const claspScriptExtensions = Object.freeze(['.gs', '.js']);
@@ -177,8 +183,8 @@ function assertSafeGeneratedPayloadDirectory() {
   }
   const allowed = new Set([
     'payload', '.clasp.json', '.claspignore', 'target.json',
-    'payload-inventory.json', 'last-operation.json', 'creation-state.json',
-    'work-0004-creation-state.json'
+    'payload-inventory.json', 'last-operation.json',
+    work0006ExecutionStateFileName
   ]);
   for (const entry of fs.readdirSync(devRoot, { withFileTypes: true })) {
     if (!allowed.has(entry.name)) {
@@ -203,6 +209,11 @@ function assertPayloadMayBeReplaced(names) {
 function stagePayload() {
   const names = canonicalPayloadNames();
   assertSafeGeneratedPayloadDirectory();
+  if (fs.existsSync(configPath) || fs.existsSync(targetPath) ||
+      fs.existsSync(work0006ExecutionStatePath)) {
+    fail('WORK_0006_EXECUTION_ALREADY_STARTED',
+      'WORK_0006_EXECUTION_ALREADY_STARTED');
+  }
   assertPayloadMayBeReplaced(names);
   if (fs.existsSync(payloadRoot)) {
     fs.rmSync(payloadRoot, { recursive: true, force: true });
@@ -429,6 +440,39 @@ function assertClaspNativePayloadSelection(workspaceRoot) {
   return status;
 }
 
+function runIsolatedStagedClaspNativeSelection() {
+  const inventory = assertStagedPayload();
+  const isolatedRoot = fs.mkdtempSync(path.join(
+    os.tmpdir(), 'work-0006-staged-clasp-selection-'
+  ));
+  try {
+    const isolatedPayload = path.join(isolatedRoot, 'payload');
+    fs.mkdirSync(isolatedPayload, { recursive: true });
+    for (const name of canonicalPayloadFileNames) {
+      fs.copyFileSync(path.join(payloadRoot, name), path.join(isolatedPayload, name));
+    }
+    fs.writeFileSync(path.join(isolatedRoot, '.clasp.json'),
+      `${JSON.stringify(claspProjectConfig(
+        'REPLACE_WITH_SYNTHETIC_SCRIPT_ID'
+      ), null, 2)}\n`, 'utf8');
+    fs.writeFileSync(path.join(isolatedRoot, '.claspignore'),
+      claspIgnoreContents(), 'utf8');
+    const status = assertClaspNativePayloadSelection(isolatedRoot);
+    return {
+      file_count: status.file_count,
+      gs_file_count: status.names.filter((name) => name.endsWith('.gs')).length,
+      manifest_file_count: status.names.filter((name) =>
+        name === 'appsscript.json').length,
+      missing_file_count: 0,
+      extra_file_count: 0,
+      payload_sha256: inventory.payload_sha256,
+      preferred_pull_script_extension: claspScriptExtensions[0]
+    };
+  } finally {
+    fs.rmSync(isolatedRoot, { recursive: true, force: true });
+  }
+}
+
 function prepareWork0004PushAttempt(
   workspaceRoot,
   config,
@@ -439,6 +483,21 @@ function prepareWork0004PushAttempt(
     assertClaspNativePayloadSelection;
   const beginRemoteAttempt = operations.beginWork0004RemoteAttempt ||
     beginWork0004RemoteAttempt;
+  const status = assertNative(workspaceRoot);
+  beginRemoteAttempt('push', config, target);
+  return status;
+}
+
+function prepareWork0006PushAttempt(
+  workspaceRoot,
+  config,
+  target,
+  operations = {}
+) {
+  const assertNative = operations.assertClaspNativePayloadSelection ||
+    assertClaspNativePayloadSelection;
+  const beginRemoteAttempt = operations.beginWork0006RemoteAttempt ||
+    beginWork0006RemoteAttempt;
   const status = assertNative(workspaceRoot);
   beginRemoteAttempt('push', config, target);
   return status;
@@ -463,6 +522,17 @@ function assertExactWork0004Branch() {
       String(result.stdout || '').trim() !== exactWork0004Branch) {
     fail('WORK_0004_EXACT_BRANCH_REQUIRED',
       'WORK_0004_EXACT_BRANCH_REQUIRED');
+  }
+}
+
+function assertExactWork0006Branch() {
+  const result = childProcess.spawnSync('git', [
+    '-C', repositoryRoot, 'branch', '--show-current'
+  ], { encoding: 'utf8', windowsHide: true });
+  if (result.status !== 0 ||
+      String(result.stdout || '').trim() !== exactWork0006Branch) {
+    fail('WORK_0006_EXACT_BRANCH_REQUIRED',
+      'WORK_0006_EXACT_BRANCH_REQUIRED');
   }
 }
 
@@ -554,6 +624,79 @@ function completeWork0004RemoteAttempt(command) {
   writeJsonAtomic(work0004CreationStatePath, state);
 }
 
+function nextWork0006RemoteAttemptState(state, config, target, command) {
+  const commonValid = state &&
+    state.schema === 'WORK_OS_SYNTHETIC_TARGET_CREATION_V3' &&
+    state.work_id === '0006' &&
+    state.create_attempt_count === 1 &&
+    Number.isInteger(state.inspection_attempt_count) &&
+    state.inspection_attempt_count >= 1 &&
+    state.inspection_attempt_count <= 2 &&
+    Number.isInteger(state.push_attempt_count) &&
+    Number.isInteger(state.pull_attempt_count) &&
+    state.script_id === config.scriptId &&
+    state.parent_id === target.expected_parent_id &&
+    state.principal_fingerprint === target.principal_fingerprint &&
+    state.target_fingerprint === target.target_fingerprint &&
+    target.work_id === '0006' &&
+    target.target_disposition === 'FRESH_SYNTHETIC_CREATED';
+  if (!commonValid) {
+    fail('WORK_0006_REMOTE_STATE_INVALID', 'WORK_0006_REMOTE_STATE_INVALID');
+  }
+
+  const next = Object.assign({}, state);
+  if (command === 'push') {
+    if (state.phase !== 'INSPECTION_PASS' ||
+        state.push_attempt_count !== 0 || state.pull_attempt_count !== 0) {
+      fail('WORK_0006_PUSH_ALREADY_ATTEMPTED',
+        'WORK_0006_PUSH_ALREADY_ATTEMPTED');
+    }
+    next.push_attempt_count = 1;
+    next.phase = 'PUSH_ATTEMPT_STARTED';
+    return next;
+  }
+  if (command === 'pull-verify') {
+    if (state.phase !== 'PUSH_PASS' ||
+        state.push_attempt_count !== 1 || state.pull_attempt_count !== 0) {
+      fail('WORK_0006_PULL_ALREADY_ATTEMPTED_OR_PUSH_NOT_PASSED',
+        'WORK_0006_PULL_ALREADY_ATTEMPTED_OR_PUSH_NOT_PASSED');
+    }
+    next.pull_attempt_count = 1;
+    next.phase = 'PULL_ATTEMPT_STARTED';
+    return next;
+  }
+  fail('WORK_0006_REMOTE_COMMAND_INVALID', 'WORK_0006_REMOTE_COMMAND_INVALID');
+}
+
+function beginWork0006RemoteAttempt(command, config, target) {
+  const state = readJson(
+    work0006ExecutionStatePath,
+    'WORK_0006_EXECUTION_STATE_MISSING'
+  );
+  const next = nextWork0006RemoteAttemptState(state, config, target, command);
+  writeJsonAtomic(work0006ExecutionStatePath, next);
+  return next;
+}
+
+function completeWork0006RemoteAttempt(command) {
+  const state = readJson(
+    work0006ExecutionStatePath,
+    'WORK_0006_EXECUTION_STATE_MISSING'
+  );
+  if (command === 'push' && state.phase === 'PUSH_ATTEMPT_STARTED' &&
+      state.push_attempt_count === 1 && state.pull_attempt_count === 0) {
+    state.phase = 'PUSH_PASS';
+  } else if (command === 'pull-verify' &&
+      state.phase === 'PULL_ATTEMPT_STARTED' &&
+      state.push_attempt_count === 1 && state.pull_attempt_count === 1) {
+    state.phase = 'PULL_PARITY_PASS';
+  } else {
+    fail('WORK_0006_REMOTE_STATE_COMPLETION_INVALID',
+      'WORK_0006_REMOTE_STATE_COMPLETION_INVALID');
+  }
+  writeJsonAtomic(work0006ExecutionStatePath, state);
+}
+
 function runLocalVerifyBeforePush() {
   const result = childProcess.spawnSync(process.execPath, [
     path.join(moduleRoot, 'tools', 'local_validation_gate.js'), '--mode', 'local'
@@ -636,7 +779,7 @@ function prepareEmptyPullWorkspace() {
   const resolvedPullRoot = path.resolve(pullRoot);
   const resolvedModuleRoot = `${path.resolve(moduleRoot)}${path.sep}`;
   if (!resolvedPullRoot.startsWith(resolvedModuleRoot) ||
-      path.basename(resolvedPullRoot) !== '.clasp-pull-verify') {
+      path.basename(resolvedPullRoot) !== '.clasp-pull-verify-work-0006') {
     fail('PULL_VERIFY_WORKSPACE_PATH_REJECTED',
       'PULL_VERIFY_WORKSPACE_PATH_REJECTED');
   }
@@ -656,7 +799,7 @@ function parseRuntimeCommand(command) {
   if (!command) {
     fail('UNKNOWN_GAS_DEV_COMMAND', 'UNKNOWN_GAS_DEV_COMMAND');
   }
-  if (!['stage', 'push', 'pull-verify', 'self-test']
+  if (!['stage', 'inventory-check', 'push', 'pull-verify', 'self-test']
     .includes(command)) {
     fail('UNKNOWN_GAS_DEV_COMMAND', 'UNKNOWN_GAS_DEV_COMMAND');
   }
@@ -769,6 +912,7 @@ function main() {
     command = parseRuntimeCommand(process.argv[2]);
     if (command === 'self-test') return selfTest();
     if (command === 'stage') {
+      assertExactWork0006Branch();
       const inventory = stagePayload();
       writeSafeResult({
         lane: 'local_clasp_dev', command, status: 'PASS',
@@ -779,16 +923,21 @@ function main() {
       return;
     }
 
-    assertExactWork0004Branch();
+    assertExactWork0006Branch();
     const inventory = assertStagedPayload();
-    if (command === 'status') {
-      assertTargetGuard(false);
-      const result = runClasp(['status'], devRoot);
-      if (result.exit_code !== 0) fail('BLOCKED_BY_AUTH', 'BLOCKED_BY_AUTH');
+    if (command === 'inventory-check') {
+      const selection = runIsolatedStagedClaspNativeSelection();
       writeSafeResult({
         lane: 'local_clasp_dev', command, status: 'PASS',
-        file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
-        clasp_version: claspVersion(), command_output_sha256: result.output_sha256
+        file_count: selection.file_count,
+        gs_file_count: selection.gs_file_count,
+        manifest_file_count: selection.manifest_file_count,
+        missing_file_count: selection.missing_file_count,
+        extra_file_count: selection.extra_file_count,
+        payload_sha256: selection.payload_sha256,
+        preferred_pull_script_extension:
+          selection.preferred_pull_script_extension,
+        clasp_version: claspVersion(), google_operation: 'NOT_EXECUTED'
       });
       return;
     }
@@ -797,14 +946,22 @@ function main() {
       assertCleanWorktree();
       runLocalVerifyBeforePush();
       const target = assertTargetGuard(true);
-      prepareWork0004PushAttempt(devRoot, target.config, target.target);
+      const nativeStatus = prepareWork0006PushAttempt(
+        devRoot, target.config, target.target
+      );
       googleOperation = 'CLASP_PUSH_ATTEMPT_STARTED';
       const result = runClasp(['push'], devRoot);
       if (result.exit_code !== 0) fail('CLASP_PUSH_FAILED', 'CLASP_PUSH_FAILED');
-      completeWork0004RemoteAttempt(command);
+      completeWork0006RemoteAttempt(command);
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS',
-        file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
+        file_count: nativeStatus.file_count,
+        gs_file_count: nativeStatus.names.filter((name) =>
+          name.endsWith('.gs')).length,
+        manifest_file_count: nativeStatus.names.filter((name) =>
+          name === 'appsscript.json').length,
+        missing_file_count: 0, extra_file_count: 0,
+        payload_sha256: inventory.payload_sha256,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256
       };
       writeLastOperation(safe);
@@ -814,7 +971,7 @@ function main() {
 
     if (command === 'pull-verify') {
       const target = assertTargetGuard(true);
-      beginWork0004RemoteAttempt(command, target.config, target.target);
+      beginWork0006RemoteAttempt(command, target.config, target.target);
       googleOperation = 'CLASP_PULL_ATTEMPT_STARTED';
       prepareEmptyPullWorkspace();
       writePullConfig(target.config);
@@ -829,10 +986,12 @@ function main() {
       if (pulled.payload_sha256 !== inventory.payload_sha256) {
         fail('REMOTE_PULLBACK_PARITY_FAILED', 'REMOTE_PULLBACK_PARITY_FAILED');
       }
-      completeWork0004RemoteAttempt(command);
+      completeWork0006RemoteAttempt(command);
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS', parity: 'PASS',
-        file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
+        file_count: inventory.file_count, gs_file_count: 22,
+        manifest_file_count: 1, missing_file_count: 0, extra_file_count: 0,
+        payload_sha256: inventory.payload_sha256,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256
       };
       writeLastOperation(safe);
@@ -892,9 +1051,15 @@ module.exports = {
   runClaspNativeFileStatus,
   assertClaspNativePayloadSelection,
   prepareWork0004PushAttempt,
+  runIsolatedStagedClaspNativeSelection,
+  prepareWork0006PushAttempt,
   inventoryFor,
   inventoryForCommittedPayload,
   assertTargetObjects,
   nextWork0004RemoteAttemptState,
+  nextWork0006RemoteAttemptState,
+  beginWork0006RemoteAttempt,
+  completeWork0006RemoteAttempt,
+  work0006ExecutionStateFileName,
   GateError
 };
