@@ -26,7 +26,8 @@ const startingMain = 'e2a7c683a7c0f7f1a865aec89a9e24ec56f830da';
 const expectedBranch = 'codex/0002-clean-integration-candidate';
 const allowedScopeBranches = Object.freeze([
   expectedBranch,
-  'codex/0003-controlled-remote-placement'
+  'codex/0003-controlled-remote-placement',
+  'codex/0004-controlled-synthetic-placement'
 ]);
 const phase8bPath =
   'implementation/GoogleSpreadsheet/release/v2.8.12-prepilot';

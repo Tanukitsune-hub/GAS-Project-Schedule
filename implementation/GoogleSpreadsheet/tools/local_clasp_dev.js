@@ -17,12 +17,18 @@ const path = require('node:path');
 const moduleRoot = path.resolve(__dirname, '..');
 const repositoryRoot = path.resolve(moduleRoot, '..', '..');
 const sourceRoot = path.join(moduleRoot, 'apps-script-v2');
+const sourceRootFromRepository = path.relative(repositoryRoot, sourceRoot)
+  .split(path.sep).join('/');
 const devRoot = path.join(moduleRoot, '.clasp-dev');
 const payloadRoot = path.join(devRoot, 'payload');
 const pullRoot = path.join(moduleRoot, '.clasp-pull-verify');
 const configPath = path.join(devRoot, '.clasp.json');
 const targetPath = path.join(devRoot, 'target.json');
 const inventoryPath = path.join(devRoot, 'payload-inventory.json');
+const work0004CreationStatePath = path.join(
+  devRoot, 'work-0004-creation-state.json'
+);
+const exactWork0004Branch = 'codex/0004-controlled-synthetic-placement';
 const allowedTargetKind = 'PERSONAL_SYNTHETIC_DEV';
 const allowedRuntimeFunction = 'runQuickDiagnostic';
 const canonicalPayloadFileNames = Object.freeze([
@@ -119,6 +125,35 @@ function inventoryFor(root, names) {
   };
 }
 
+function committedPayloadBuffer(name) {
+  const spec = `HEAD:${sourceRootFromRepository}/${name}`;
+  const result = childProcess.spawnSync('git', [
+    '-C', repositoryRoot, 'show', spec
+  ], {
+    encoding: null,
+    windowsHide: true,
+    maxBuffer: 64 * 1024 * 1024
+  });
+  if (result.error || result.status !== 0) {
+    fail('COMMITTED_PAYLOAD_READ_FAILED', 'COMMITTED_PAYLOAD_READ_FAILED');
+  }
+  return result.stdout;
+}
+
+function inventoryForCommittedPayload(names) {
+  const files = names.map((name) => ({
+    name,
+    sha256: sha256(committedPayloadBuffer(name))
+  }));
+  return {
+    schema: 'WORK_OS_LOCAL_CLASP_PAYLOAD_V1',
+    file_count: files.length,
+    files,
+    payload_sha256: sha256(files.map((item) =>
+      `${item.name}:${item.sha256}`).join('\n'))
+  };
+}
+
 function assertSafeGeneratedPayloadDirectory() {
   if (!fs.existsSync(devRoot)) {
     fs.mkdirSync(devRoot, { recursive: true });
@@ -126,7 +161,8 @@ function assertSafeGeneratedPayloadDirectory() {
   }
   const allowed = new Set([
     'payload', '.clasp.json', '.claspignore', 'target.json',
-    'payload-inventory.json', 'last-operation.json', 'creation-state.json'
+    'payload-inventory.json', 'last-operation.json', 'creation-state.json',
+    'work-0004-creation-state.json'
   ]);
   for (const entry of fs.readdirSync(devRoot, { withFileTypes: true })) {
     if (!allowed.has(entry.name)) {
@@ -157,7 +193,7 @@ function stagePayload() {
   }
   fs.mkdirSync(payloadRoot, { recursive: true });
   for (const name of names) {
-    fs.copyFileSync(path.join(sourceRoot, name), path.join(payloadRoot, name));
+    fs.writeFileSync(path.join(payloadRoot, name), committedPayloadBuffer(name));
   }
   assertExactPayloadDirectory(payloadRoot, 'STAGED_PAYLOAD_UNEXPECTED_CONTENT');
   fs.writeFileSync(path.join(devRoot, '.claspignore'),
@@ -184,7 +220,7 @@ function assertStagedPayload() {
   if (JSON.stringify(saved) !== JSON.stringify(current)) {
     fail('STAGED_PAYLOAD_MISMATCH', 'STAGED_PAYLOAD_MISMATCH');
   }
-  const source = inventoryFor(sourceRoot, names);
+  const source = inventoryForCommittedPayload(names);
   if (source.payload_sha256 !== current.payload_sha256) {
     fail('STAGED_PAYLOAD_SOURCE_SKEW', 'STAGED_PAYLOAD_SOURCE_SKEW');
   }
@@ -295,10 +331,103 @@ function assertCleanWorktree() {
   }
 }
 
+function assertExactWork0004Branch() {
+  const result = childProcess.spawnSync('git', [
+    '-C', repositoryRoot, 'branch', '--show-current'
+  ], { encoding: 'utf8', windowsHide: true });
+  if (result.status !== 0 ||
+      String(result.stdout || '').trim() !== exactWork0004Branch) {
+    fail('WORK_0004_EXACT_BRANCH_REQUIRED',
+      'WORK_0004_EXACT_BRANCH_REQUIRED');
+  }
+}
+
 function writeLastOperation(operation) {
   assertSafeGeneratedPayloadDirectory();
   fs.writeFileSync(path.join(devRoot, 'last-operation.json'),
     `${JSON.stringify(operation, null, 2)}\n`, 'utf8');
+}
+
+function writeJsonAtomic(file, value) {
+  const temporary = `${file}.tmp`;
+  fs.writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+  fs.renameSync(temporary, file);
+}
+
+function nextWork0004RemoteAttemptState(state, config, target, command) {
+  const commonValid = state &&
+    state.schema === 'WORK_OS_SYNTHETIC_TARGET_CREATION_V2' &&
+    state.work_id === '0004' &&
+    state.create_attempt_count === 1 &&
+    Number.isInteger(state.inspection_attempt_count) &&
+    state.inspection_attempt_count >= 1 &&
+    state.inspection_attempt_count <= 2 &&
+    Number.isInteger(state.push_attempt_count) &&
+    Number.isInteger(state.pull_attempt_count) &&
+    state.script_id === config.scriptId &&
+    state.parent_id === target.expected_parent_id &&
+    state.principal_fingerprint === target.principal_fingerprint &&
+    state.target_fingerprint === target.target_fingerprint &&
+    target.work_id === '0004' &&
+    target.target_disposition === 'FRESH_SYNTHETIC_CREATED';
+  if (!commonValid) {
+    fail('WORK_0004_REMOTE_STATE_INVALID', 'WORK_0004_REMOTE_STATE_INVALID');
+  }
+
+  const next = Object.assign({}, state);
+  if (command === 'push') {
+    if (state.phase !== 'INSPECTION_PASS' ||
+        state.push_attempt_count !== 0 || state.pull_attempt_count !== 0) {
+      fail('WORK_0004_PUSH_ALREADY_ATTEMPTED',
+        'WORK_0004_PUSH_ALREADY_ATTEMPTED');
+    }
+    next.push_attempt_count = 1;
+    next.phase = 'PUSH_ATTEMPT_STARTED';
+    return next;
+  }
+  if (command === 'pull-verify') {
+    if (state.phase !== 'PUSH_PASS' ||
+        state.push_attempt_count !== 1 || state.pull_attempt_count !== 0) {
+      fail('WORK_0004_PULL_ALREADY_ATTEMPTED_OR_PUSH_NOT_PASSED',
+        'WORK_0004_PULL_ALREADY_ATTEMPTED_OR_PUSH_NOT_PASSED');
+    }
+    next.pull_attempt_count = 1;
+    next.phase = 'PULL_ATTEMPT_STARTED';
+    return next;
+  }
+  fail('WORK_0004_REMOTE_COMMAND_INVALID', 'WORK_0004_REMOTE_COMMAND_INVALID');
+}
+
+function beginWork0004RemoteAttempt(command, config, target) {
+  if (fs.existsSync(path.join(devRoot, 'creation-state.json'))) {
+    fail('WORK_0003_STATE_REUSE_REFUSED', 'WORK_0003_STATE_REUSE_REFUSED');
+  }
+  const state = readJson(
+    work0004CreationStatePath,
+    'WORK_0004_CREATION_STATE_MISSING'
+  );
+  const next = nextWork0004RemoteAttemptState(state, config, target, command);
+  writeJsonAtomic(work0004CreationStatePath, next);
+  return next;
+}
+
+function completeWork0004RemoteAttempt(command) {
+  const state = readJson(
+    work0004CreationStatePath,
+    'WORK_0004_CREATION_STATE_MISSING'
+  );
+  if (command === 'push' && state.phase === 'PUSH_ATTEMPT_STARTED' &&
+      state.push_attempt_count === 1 && state.pull_attempt_count === 0) {
+    state.phase = 'PUSH_PASS';
+  } else if (command === 'pull-verify' &&
+      state.phase === 'PULL_ATTEMPT_STARTED' &&
+      state.push_attempt_count === 1 && state.pull_attempt_count === 1) {
+    state.phase = 'PULL_PARITY_PASS';
+  } else {
+    fail('WORK_0004_REMOTE_STATE_COMPLETION_INVALID',
+      'WORK_0004_REMOTE_STATE_COMPLETION_INVALID');
+  }
+  writeJsonAtomic(work0004CreationStatePath, state);
 }
 
 function runLocalVerifyBeforePush() {
@@ -400,8 +529,10 @@ function writePullConfig(config) {
 }
 
 function parseRuntimeCommand(command) {
-  if (!command) return 'status';
-  if (!['stage', 'status', 'push', 'pull-verify', 'test', 'open', 'self-test']
+  if (!command) {
+    fail('UNKNOWN_GAS_DEV_COMMAND', 'UNKNOWN_GAS_DEV_COMMAND');
+  }
+  if (!['stage', 'push', 'pull-verify', 'self-test']
     .includes(command)) {
     fail('UNKNOWN_GAS_DEV_COMMAND', 'UNKNOWN_GAS_DEV_COMMAND');
   }
@@ -484,9 +615,11 @@ function selfTest() {
 }
 
 function main() {
-  const command = parseRuntimeCommand(process.argv[2]);
-  if (command === 'self-test') return selfTest();
+  let command = 'UNKNOWN';
+  let googleOperation = 'NOT_EXECUTED';
   try {
+    command = parseRuntimeCommand(process.argv[2]);
+    if (command === 'self-test') return selfTest();
     if (command === 'stage') {
       const inventory = stagePayload();
       writeSafeResult({
@@ -498,6 +631,7 @@ function main() {
       return;
     }
 
+    assertExactWork0004Branch();
     const inventory = assertStagedPayload();
     if (command === 'status') {
       assertTargetGuard(false);
@@ -514,9 +648,12 @@ function main() {
     if (command === 'push') {
       assertCleanWorktree();
       runLocalVerifyBeforePush();
-      assertTargetGuard(true);
+      const target = assertTargetGuard(true);
+      beginWork0004RemoteAttempt(command, target.config, target.target);
+      googleOperation = 'CLASP_PUSH_ATTEMPT_STARTED';
       const result = runClasp(['push'], devRoot);
       if (result.exit_code !== 0) fail('CLASP_PUSH_FAILED', 'CLASP_PUSH_FAILED');
+      completeWork0004RemoteAttempt(command);
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS',
         file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
@@ -529,6 +666,8 @@ function main() {
 
     if (command === 'pull-verify') {
       const target = assertTargetGuard(true);
+      beginWork0004RemoteAttempt(command, target.config, target.target);
+      googleOperation = 'CLASP_PULL_ATTEMPT_STARTED';
       prepareEmptyPullWorkspace();
       writePullConfig(target.config);
       const result = runClasp(['pull'], pullRoot);
@@ -542,6 +681,7 @@ function main() {
       if (pulled.payload_sha256 !== inventory.payload_sha256) {
         fail('REMOTE_PULLBACK_PARITY_FAILED', 'REMOTE_PULLBACK_PARITY_FAILED');
       }
+      completeWork0004RemoteAttempt(command);
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS', parity: 'PASS',
         file_count: inventory.file_count, payload_sha256: inventory.payload_sha256,
@@ -583,7 +723,7 @@ function main() {
     const code = error && error.code || 'LOCAL_CLASP_UNEXPECTED_FAILURE';
     writeSafeResult({
       lane: 'local_clasp_dev', command, status: code,
-      google_operation: 'NOT_EXECUTED',
+      google_operation: googleOperation,
       message: code
     });
     process.exitCode = 2;
@@ -599,6 +739,8 @@ module.exports = {
   assertExactPayloadDirectory,
   claspEntrypoint,
   inventoryFor,
+  inventoryForCommittedPayload,
   assertTargetObjects,
+  nextWork0004RemoteAttemptState,
   GateError
 };
