@@ -4,6 +4,7 @@ const assert = require('node:assert');
 const {
   GateError,
   canonicalPayloadFileNames,
+  claspProjectConfig,
   inventoryForCommittedPayload,
   nextWork0004RemoteAttemptState
 } = require('../tools/local_clasp_dev');
@@ -40,7 +41,7 @@ const baseState = Object.assign(safeStateBase(salt, syntheticUser), {
   script_id: scriptId,
   target_fingerprint: 'f'.repeat(64)
 });
-const config = { scriptId, rootDir: 'payload' };
+const config = claspProjectConfig(scriptId);
 const target = {
   work_id: '0004',
   target_kind: 'PERSONAL_SYNTHETIC_DEV',
@@ -80,6 +81,11 @@ test('STAGING_USES_EXACT_COMMITTED_WORK_0002_0003_PAYLOAD_BYTES', () => {
     inventory.payload_sha256,
     '59327c8322cea8d5884375cdca12935b96674cb127460cf4ca0a2df02c2107ee'
   );
+});
+
+test('WORK_0004_CONFIG_PRESERVES_GS_PULL_FILENAMES', () => {
+  assert.deepStrictEqual(config.scriptExtensions, ['.gs', '.js']);
+  assert.strictEqual(config.scriptExtensions[0], '.gs');
 });
 
 test('FRESH_WORKSPACE_ACCEPTS_ONLY_STAGING_ARTIFACTS', () => {

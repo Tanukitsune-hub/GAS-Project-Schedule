@@ -18,6 +18,7 @@
     "verify:release": "node tools/local_validation_gate.js --section release",
     "verify:lineage": "node tools/local_validation_gate.js --section lineage",
     "verify:secret-scan": "node tools/local_validation_gate.js --section secret-scan",
+    "verify:clasp-contract": "node tests/clasp_native_inventory_contract_test.js",
     "gas:stage:dev": "node tools/local_clasp_dev.js stage",
     "gas:auth-preflight:dev": "node tools/work_0004_target_bootstrap.js auth-preflight",
     "gas:create-synthetic:dev": "node tools/work_0004_target_bootstrap.js create-synthetic",

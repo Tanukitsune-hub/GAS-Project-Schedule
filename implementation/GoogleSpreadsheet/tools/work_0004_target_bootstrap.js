@@ -19,7 +19,8 @@ const {
   assertExactPayloadDirectory,
   inventoryFor,
   inventoryForCommittedPayload,
-  assertTargetObjects
+  assertTargetObjects,
+  claspProjectConfig
 } = require('./local_clasp_dev');
 const {
   isPersonalEmail,
@@ -255,7 +256,7 @@ async function createSynthetic() {
   state.phase = 'BOUND_SCRIPT_CREATED';
   writeJson(creationStatePath, state);
 
-  writeJson(configPath, { scriptId, rootDir: 'payload' });
+  writeJson(configPath, claspProjectConfig(scriptId));
   writeJson(targetPath, {
     schema: 'WORK_OS_PERSONAL_SYNTHETIC_TARGET_V1',
     work_id: '0004',

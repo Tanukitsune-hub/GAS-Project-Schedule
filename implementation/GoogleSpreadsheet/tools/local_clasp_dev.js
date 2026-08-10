@@ -31,6 +31,7 @@ const work0004CreationStatePath = path.join(
 const exactWork0004Branch = 'codex/0004-controlled-synthetic-placement';
 const allowedTargetKind = 'PERSONAL_SYNTHETIC_DEV';
 const allowedRuntimeFunction = 'runQuickDiagnostic';
+const claspScriptExtensions = Object.freeze(['.gs', '.js']);
 const canonicalPayloadFileNames = Object.freeze([
   '00_Config.gs',
   '01_TypesAndSchemas.gs',
@@ -102,6 +103,21 @@ function canonicalPayloadNames(root = sourceRoot) {
     .filter((name) => name.endsWith('.gs') || name === 'appsscript.json')
     .sort();
   return assertExactPayloadNames(names, 'CANONICAL_PAYLOAD_INVENTORY_INVALID');
+}
+
+function claspProjectConfig(scriptId) {
+  return {
+    scriptId,
+    rootDir: 'payload',
+    scriptExtensions: claspScriptExtensions.slice()
+  };
+}
+
+function claspIgnoreContents() {
+  return ['**/**'].concat(
+    canonicalPayloadFileNames.map((name) => `!${name}`),
+    ''
+  ).join('\n');
 }
 
 function assertExactPayloadDirectory(root, failureCode) {
@@ -197,7 +213,7 @@ function stagePayload() {
   }
   assertExactPayloadDirectory(payloadRoot, 'STAGED_PAYLOAD_UNEXPECTED_CONTENT');
   fs.writeFileSync(path.join(devRoot, '.claspignore'),
-    '**/**\n!*.gs\n!appsscript.json\n', 'utf8');
+    claspIgnoreContents(), 'utf8');
   const inventory = inventoryFor(payloadRoot, names);
   fs.writeFileSync(inventoryPath, `${JSON.stringify(inventory, null, 2)}\n`,
     'utf8');
@@ -242,6 +258,13 @@ function assertTargetObjects(config, target, environment) {
   }
   if (config.rootDir !== 'payload') {
     fail('DEV_TARGET_ROOTDIR_REJECTED', 'DEV_TARGET_ROOTDIR_REJECTED');
+  }
+  if (!Array.isArray(config.scriptExtensions) ||
+      config.scriptExtensions.length !== claspScriptExtensions.length ||
+      config.scriptExtensions.some((extension, index) =>
+        extension !== claspScriptExtensions[index])) {
+    fail('DEV_TARGET_SCRIPT_EXTENSIONS_REJECTED',
+      'DEV_TARGET_SCRIPT_EXTENSIONS_REJECTED');
   }
   if (scriptId !== expectedId) {
     fail('DEV_TARGET_ID_MISMATCH', 'DEV_TARGET_ID_MISMATCH');
@@ -318,6 +341,92 @@ function claspVersion() {
   }
   const match = result.raw.match(/\b\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?\b/);
   return match ? match[0] : 'UNKNOWN';
+}
+
+function runClaspNativeFileStatus(workspaceRoot) {
+  const isolatedRoot = fs.mkdtempSync(path.join(
+    os.tmpdir(), 'work-os-clasp-native-status-'
+  ));
+  try {
+    const isolatedHome = path.join(isolatedRoot, 'home');
+    const isolatedAuth = path.join(isolatedRoot, 'missing-auth.json');
+    fs.mkdirSync(isolatedHome, { recursive: true });
+    const environment = Object.assign({}, process.env, {
+      HOME: isolatedHome,
+      USERPROFILE: isolatedHome,
+      APPDATA: path.join(isolatedHome, 'appdata'),
+      NO_UPDATE_NOTIFIER: '1'
+    });
+    for (const key of [
+      'GOOGLE_APPLICATION_CREDENTIALS',
+      'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE',
+      'clasp_config_auth',
+      'clasp_config_project',
+      'clasp_config_ignore'
+    ]) delete environment[key];
+
+    const result = childProcess.spawnSync(process.execPath, [
+      claspEntrypoint(),
+      '--json',
+      '--auth', isolatedAuth,
+      '--project', workspaceRoot,
+      '--ignore', workspaceRoot,
+      'show-file-status'
+    ], {
+      cwd: workspaceRoot,
+      encoding: 'utf8',
+      windowsHide: true,
+      env: environment
+    });
+    if (result.error || result.status !== 0) {
+      fail('CLASP_NATIVE_FILE_STATUS_FAILED',
+        'CLASP_NATIVE_FILE_STATUS_FAILED');
+    }
+    const jsonLine = String(result.stdout || '').split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => line.startsWith('{') && line.includes('"filesToPush"'));
+    let report;
+    try {
+      report = JSON.parse(jsonLine || '');
+    } catch (_) {
+      fail('CLASP_NATIVE_FILE_STATUS_UNPARSEABLE',
+        'CLASP_NATIVE_FILE_STATUS_UNPARSEABLE');
+    }
+    if (!Array.isArray(report.filesToPush) ||
+        !Array.isArray(report.untrackedFiles) || fs.existsSync(isolatedAuth)) {
+      fail('CLASP_NATIVE_FILE_STATUS_INVALID',
+        'CLASP_NATIVE_FILE_STATUS_INVALID');
+    }
+    const names = report.filesToPush.map((localPath) => {
+      const relative = path.relative(
+        workspaceRoot,
+        path.resolve(workspaceRoot, String(localPath))
+      );
+      const parts = relative.split(path.sep);
+      if (parts.length !== 2 || parts[0] !== 'payload' || !parts[1]) {
+        fail('CLASP_NATIVE_ROOTDIR_CONTRACT_INVALID',
+          'CLASP_NATIVE_ROOTDIR_CONTRACT_INVALID');
+      }
+      return parts[1];
+    }).sort();
+    return {
+      names,
+      file_count: names.length,
+      untracked_count: report.untrackedFiles.length,
+      authentication: 'NOT_EXECUTED'
+    };
+  } finally {
+    fs.rmSync(isolatedRoot, { recursive: true, force: true });
+  }
+}
+
+function assertClaspNativePayloadSelection(workspaceRoot) {
+  const status = runClaspNativeFileStatus(workspaceRoot);
+  assertExactPayloadNames(
+    status.names,
+    'CLASP_NATIVE_PAYLOAD_SELECTION_INVALID'
+  );
+  return status;
 }
 
 function assertCleanWorktree() {
@@ -522,10 +631,10 @@ function prepareEmptyPullWorkspace() {
 
 function writePullConfig(config) {
   fs.writeFileSync(path.join(pullRoot, '.clasp.json'),
-    `${JSON.stringify({ scriptId: config.scriptId, rootDir: 'payload' }, null, 2)}\n`,
+    `${JSON.stringify(claspProjectConfig(config.scriptId), null, 2)}\n`,
     'utf8');
   fs.writeFileSync(path.join(pullRoot, '.claspignore'),
-    '**/**\n!*.gs\n!appsscript.json\n', 'utf8');
+    claspIgnoreContents(), 'utf8');
 }
 
 function parseRuntimeCommand(command) {
@@ -580,21 +689,45 @@ function selfTest() {
     assert.ok(entrypoint.startsWith(moduleRoot));
     assert.ok(entrypoint.endsWith(path.join('build', 'src', 'index.js')));
   });
+  test('CLASP_CONFIG_PINS_GS_AS_PREFERRED_PULL_EXTENSION', () => {
+    const config = claspProjectConfig('SYNTHETIC');
+    assert.deepStrictEqual(config.scriptExtensions, ['.gs', '.js']);
+    assert.strictEqual(config.scriptExtensions[0], '.gs');
+  });
+  test('CLASP_IGNORE_IS_AN_EXACT_CANONICAL_NAME_ALLOWLIST', () => {
+    const lines = claspIgnoreContents().trim().split('\n');
+    assert.strictEqual(lines[0], '**/**');
+    assert.deepStrictEqual(
+      lines.slice(1).sort(),
+      canonicalPayloadFileNames.map((name) => `!${name}`).sort()
+    );
+  });
   test('TARGET_GUARD_REJECTS_PLACEHOLDER', () => {
     assert.throws(() => assertTargetObjects(
-      { scriptId: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID', rootDir: 'payload' },
+      claspProjectConfig('REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID'),
       { target_kind: allowedTargetKind, expected_script_id: 'REPLACE_WITH_PERSONAL_SYNTHETIC_DEV_SCRIPT_ID' }
     ), (error) => error && error.code === 'DEV_TARGET_NOT_CONFIGURED');
   });
   test('TARGET_GUARD_REJECTS_MISMATCH', () => {
     assert.throws(() => assertTargetObjects(
-      { scriptId: 'a'.repeat(24), rootDir: 'payload' },
+      claspProjectConfig('a'.repeat(24)),
       { target_kind: allowedTargetKind, expected_script_id: 'b'.repeat(24) }
     ), (error) => error && error.code === 'DEV_TARGET_ID_MISMATCH');
   });
+  test('TARGET_GUARD_REJECTS_JS_FIRST_EXTENSION_ORDER', () => {
+    assert.throws(() => assertTargetObjects(
+      {
+        scriptId: 'a'.repeat(24),
+        rootDir: 'payload',
+        scriptExtensions: ['.js', '.gs']
+      },
+      { target_kind: allowedTargetKind, expected_script_id: 'a'.repeat(24) }
+    ), (error) => error &&
+      error.code === 'DEV_TARGET_SCRIPT_EXTENSIONS_REJECTED');
+  });
   test('TARGET_GUARD_REQUIRES_EXPLICIT_PUSH_OPT_IN', () => {
     assert.throws(() => assertTargetObjects(
-      { scriptId: 'a'.repeat(24), rootDir: 'payload' },
+      claspProjectConfig('a'.repeat(24)),
       { target_kind: allowedTargetKind, expected_script_id: 'a'.repeat(24) }, {}
     ), (error) => error && error.code === 'GAS_DEV_CLASP_ALLOWED_REQUIRED');
   });
@@ -649,6 +782,7 @@ function main() {
       assertCleanWorktree();
       runLocalVerifyBeforePush();
       const target = assertTargetGuard(true);
+      assertClaspNativePayloadSelection(devRoot);
       beginWork0004RemoteAttempt(command, target.config, target.target);
       googleOperation = 'CLASP_PUSH_ATTEMPT_STARTED';
       const result = runClasp(['push'], devRoot);
@@ -735,9 +869,14 @@ if (require.main === module) main();
 module.exports = {
   canonicalPayloadNames,
   canonicalPayloadFileNames,
+  claspScriptExtensions,
+  claspProjectConfig,
+  claspIgnoreContents,
   assertExactPayloadNames,
   assertExactPayloadDirectory,
   claspEntrypoint,
+  runClaspNativeFileStatus,
+  assertClaspNativePayloadSelection,
   inventoryFor,
   inventoryForCommittedPayload,
   assertTargetObjects,
