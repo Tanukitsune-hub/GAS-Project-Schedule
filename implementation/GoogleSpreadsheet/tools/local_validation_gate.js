@@ -11,6 +11,7 @@
 const childProcess = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const YAML = require('yaml');
 const { canonicalPayloadFileNames } = require('./local_clasp_dev');
@@ -76,11 +77,14 @@ function powershellCommand() {
   return process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
 }
 
-function runPowerShell(scriptName, args) {
+function runPowerShell(scriptName, args, executionModuleRoot = moduleRoot) {
   return run(powershellCommand(), [
     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-    path.join(toolsRoot, scriptName)
-  ].concat(args), { failureCode: 'POWERSHELL_VERIFIER_FAILED' });
+    path.join(executionModuleRoot, 'tools', scriptName)
+  ].concat(args), {
+    cwd: executionModuleRoot,
+    failureCode: 'POWERSHELL_VERIFIER_FAILED'
+  });
 }
 
 function statusFrom(fn) {
@@ -259,15 +263,52 @@ function checkNodeSuites() {
 
 function checkRelease() {
   const contract = readContract();
-  const outputs = [
-    runPowerShell('verify_v2_8_12_release.ps1', ['-SourceCommit', contract.source_commit]),
-    runPowerShell('verify_v2_8_12_phase8c_release.ps1', ['-SourceCommit', contract.source_commit])
-  ];
-  return {
-    command: 'v2.8.12 Phase 8B/8C package verifiers',
-    verifier_count: outputs.length,
-    output_sha256: sha256(outputs.map((item) => item.output_sha256).join('\n'))
-  };
+  const temporaryCheckout = fs.mkdtempSync(path.join(
+    os.tmpdir(), 'work-os-release-verify-'
+  ));
+  const resolvedTemporaryCheckout = path.resolve(temporaryCheckout);
+  const resolvedTemporaryRoot = `${path.resolve(os.tmpdir())}${path.sep}`;
+  const safeTemporaryCheckout =
+    resolvedTemporaryCheckout.startsWith(resolvedTemporaryRoot) &&
+    path.basename(resolvedTemporaryCheckout).startsWith(
+      'work-os-release-verify-'
+    );
+  if (!safeTemporaryCheckout) throw new Error('TEMP_CHECKOUT_PATH_REJECTED');
+  try {
+    const head = git(['rev-parse', 'HEAD']);
+    run('git', [
+      'clone', '--no-checkout', '--no-hardlinks',
+      repositoryRoot, resolvedTemporaryCheckout
+    ], {
+      cwd: os.tmpdir(),
+      failureCode: 'TEMP_LF_CLONE_FAILED'
+    });
+    run('git', [
+      '-C', resolvedTemporaryCheckout, 'config', 'core.autocrlf', 'false'
+    ], { failureCode: 'TEMP_LF_CONFIG_FAILED' });
+    run('git', [
+      '-C', resolvedTemporaryCheckout, 'checkout', '--detach', head
+    ], { failureCode: 'TEMP_LF_CHECKOUT_FAILED' });
+    const verificationModuleRoot = path.join(
+      resolvedTemporaryCheckout, 'implementation', 'GoogleSpreadsheet'
+    );
+    const outputs = [
+      runPowerShell('verify_v2_8_12_release.ps1', [
+        '-SourceCommit', contract.source_commit
+      ], verificationModuleRoot),
+      runPowerShell('verify_v2_8_12_phase8c_release.ps1', [
+        '-SourceCommit', contract.source_commit
+      ], verificationModuleRoot)
+    ];
+    return {
+      command: 'v2.8.12 Phase 8B/8C package verifiers in committed LF checkout',
+      verifier_count: outputs.length,
+      checkout: 'TEMP_LF_COMMITTED_HEAD',
+      output_sha256: sha256(outputs.map((item) => item.output_sha256).join('\n'))
+    };
+  } finally {
+    fs.rmSync(resolvedTemporaryCheckout, { recursive: true, force: true });
+  }
 }
 
 function gitObjectExists(spec) {
