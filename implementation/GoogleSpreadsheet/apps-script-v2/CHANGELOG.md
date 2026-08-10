@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.8.13-prepilot - 2026-08-10 Gmail body decode compatibility repair
+
+- Normalize valid padded or unpadded Gmail API base64url body data to the
+  explicit padding required by Apps Script `Utilities.base64DecodeWebSafe()`.
+- Reject malformed alphabets, lengths, and padding with the existing fixed
+  `E_GMAIL_BODY_DECODE` fail-closed boundary and no body or identifier leakage.
+- Add strict local coverage for UTF-8 Japanese text, both padding widths,
+  URL-safe alphabet bytes, malformed data, truncation, and attachment exclusion.
+- Preserve Schema `2.6`, AI Schema `2.0`, Migration `3`, `TEST_MODE=true`, and
+  Automation `OFF`.
+
 ## 2.8.12-prepilot - 2026-08-08 clean integration candidate
 
 - Selectively integrated the final Code 2.8.11 product source on the exact

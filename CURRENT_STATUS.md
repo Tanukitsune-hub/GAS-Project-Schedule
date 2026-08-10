@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
-Candidate version: Code `2.8.12-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.13-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -10,12 +10,12 @@ Automation: `OFF`
 
 ## Outcome boundary
 
-Work 0002 creates a clean integration candidate from exact starting main
-`e2a7c683a7c0f7f1a865aec89a9e24ec56f830da`. It selectively carries forward
-the final reviewed Code 2.8.11 product behavior and the locked non-Google
-validation/CI path. It does not merge the stacked donor branches.
+Work 0016 creates the smallest successor candidate needed to repair the Gmail
+Advanced Service base64url body-decode boundary. It preserves the Work 0002
+clean integration behavior, Schema `2.6`, AI Schema `2.0`, Migration `3`,
+`TEST_MODE=true`, and Automation OFF.
 
-The candidate contains one current source tree and, after B12 generation, one
+The candidate contains one current source tree and, after B13 generation, one
 current Phase 8B package plus one Phase 8C candidate package. There is no
 active company transfer, deployment target, runtime marker, or operator action
 selected by this status.
@@ -33,24 +33,20 @@ selected by this status.
 - Gmail exact-message ordering/idempotency, Review/CAS, retry/dead-letter,
   privacy/redaction, and Automation-OFF guards remain intact.
 
-## Evidence status
+## Evidence boundary
 
 ```text
-A12 source/static/focused validation: PASS (50 suites / 710 assertions; validator 11/11)
-B12 release reproducibility/parity: PASS
-Complete local verification gate at Codex completion head: PASS (11/11; 51 suites)
-Fresh-clone verification: PASS (11/11; release verifier PASS; secret scan 0 hits; clean worktree)
-GitHub Actions at Codex completion head d02af1bc8154143bcb3b4fb9c9c8553a0bb7854a: PASS (push + pull_request)
-Live Google Workspace validation: NOT_EXECUTED
+Base candidate and historical Work 0002 evidence: docs/handoffs/0002-report.md
+Work 0016 exact validation/CI/placement evidence: docs/handoffs/0016-report.md
+Gmail body decode runtime retest: NOT_AUTHORIZED_IN_WORK_0016
 Real AI Provider validation: NOT_EXECUTED
 Company handoff: NOT_AUTHORIZED
 ```
 
-Exact completed results and immutable SHAs are recorded in
-`docs/handoffs/0002-report.md`; source/release identity is machine-checked by
-`CURRENT_CONTRACT.json` and the release verifiers. The 2026-08-09 status-only
-consistency update records already-completed evidence and changes no product,
-release, runtime, deployment, or authorization boundary.
+Source/release identity is machine-checked by `CURRENT_CONTRACT.json`, the
+release verifiers, and the A13/B13 direct-child gate. Local or CI success does
+not prove the repaired Gmail runtime boundary; Work 0016 explicitly prohibits
+reprocessing the failed synthetic message.
 
 ## Remaining project-level blockers
 
@@ -59,8 +55,9 @@ runtime/end-to-end acceptance:
 
 - No approved production AI Provider transport or credential boundary exists.
 - Real Apps Script runtime and native Sheets behavior are not accepted.
-- Real Gmail, Calendar, trigger, LockService, quota, and end-to-end flows are
-  not accepted.
+- The repaired Gmail body decode path awaits a separately authorized controlled
+  runtime retest; Calendar, trigger, LockService, quota, and end-to-end flows
+  remain unaccepted.
 - No deployment, pilot, production, or company handoff is authorized.
 
 No local, release, fresh-clone, or CI result may raise this candidate above

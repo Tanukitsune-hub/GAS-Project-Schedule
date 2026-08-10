@@ -1,10 +1,10 @@
 # Master Plan
 
-Last updated: 2026-08-08
+Last updated: 2026-08-10
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.12-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.13-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Current gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -17,6 +17,18 @@ Current gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 5. Run the complete local gate and release verifiers.
 6. Verify a fresh detached HTTPS clone at the pushed final head.
 7. Require GitHub Actions success for Draft PR #16.
+
+## Work 0016 — Gmail body decode runtime compatibility repair
+
+1. Normalize strict padded/unpadded Gmail base64url before Apps Script decode.
+2. Prove UTF-8, padding, URL-safe, malformed, truncation, attachment, and
+   privacy behavior with a strict local Utilities shim.
+3. Generate the `2.8.13-prepilot` packages from exact A13 and commit them as
+   direct-child B13.
+4. Require full local validation and exact repair-head CI before any Google
+   mutation.
+5. Reuse only the existing personal-synthetic target for at most one guarded
+   push and one optional independent parity pull; perform no Gmail runtime.
 
 Completion of these steps justifies only
 `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`.

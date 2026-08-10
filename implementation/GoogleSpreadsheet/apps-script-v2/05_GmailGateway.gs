@@ -794,19 +794,40 @@ var WorkOsGmailGateway = (function () {
     };
   }
 
+  function normalizeBodyDataEncoding(data) {
+    var value = String(data || '');
+    if (!/^[A-Za-z0-9_-]+={0,2}$/.test(value)) {
+      throw new Error('INVALID_BASE64URL_STRUCTURE');
+    }
+    var paddingIndex = value.indexOf('=');
+    var unpadded = paddingIndex < 0 ? value : value.slice(0, paddingIndex);
+    var suppliedPadding = value.length - unpadded.length;
+    var remainder = unpadded.length % 4;
+    if (remainder === 1) {
+      throw new Error('INVALID_BASE64URL_LENGTH');
+    }
+    var requiredPadding = (4 - remainder) % 4;
+    if (suppliedPadding && suppliedPadding !== requiredPadding) {
+      throw new Error('INVALID_BASE64URL_PADDING');
+    }
+    return unpadded + new Array(requiredPadding + 1).join('=');
+  }
+
   function decodeBodyData(data, byteLimit) {
     var source = String(data || '');
     if (!source) {
       return { text: '', transport_truncated: false };
     }
-    var encodedLimit = Math.max(4, Math.floor(Number(byteLimit) * 4 / 3));
-    encodedLimit -= encodedLimit % 4;
-    var truncated = source.length > encodedLimit;
-    var selected = truncated ? source.slice(0, encodedLimit) : source;
     try {
+      normalizeBodyDataEncoding(source);
+      var encodedLimit = Math.max(4, Math.floor(Number(byteLimit) * 4 / 3));
+      encodedLimit -= encodedLimit % 4;
+      var truncated = source.length > encodedLimit;
+      var selected = truncated ? source.slice(0, encodedLimit) : source;
+      var normalized = normalizeBodyDataEncoding(selected);
       return {
         text: Utilities.newBlob(
-          Utilities.base64DecodeWebSafe(selected)
+          Utilities.base64DecodeWebSafe(normalized)
         ).getDataAsString('UTF-8'),
         transport_truncated: truncated
       };

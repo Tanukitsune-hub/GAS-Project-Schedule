@@ -7,7 +7,7 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.12-prepilot` |
+| Code | `2.8.13-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
@@ -18,12 +18,12 @@ Workspace Personal Work OS.
 | Active deployment target | `NONE` |
 
 `CURRENT_CONTRACT.json` is the machine-checkable source/release contract once
-the A12 source commit and direct-child B12 release commit have been created.
+the A13 source commit and direct-child B13 release commit have been created.
 The two current packages are:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.12-prepilot/` —
+- `implementation/GoogleSpreadsheet/release/v2.8.13-prepilot/` —
   `TEST_MODE=true`, Automation OFF, test harness included.
-- `implementation/GoogleSpreadsheet/release/v2.8.12-prepilot-phase8c/` — the
+- `implementation/GoogleSpreadsheet/release/v2.8.13-prepilot-phase8c/` — the
   audited `TEST_MODE=false` transformation only, with the test harness omitted.
 
 Neither package is a deployment authorization. There is no active transfer
@@ -59,7 +59,7 @@ pnpm run verify:local
 
 The gate parses tracked JSON/YAML, validates the Apps Script payload and V8
 syntax, executes every current `*_test.js` suite against the real `.gs`
-source, verifies the two current release packages and A12/B12 ancestry, scans
+source, verifies the two current release packages and A13/B13 ancestry, scans
 for secrets and local state, and rejects untracked generated residue.
 
 CI performs the same non-Google gate from a fresh checkout with read-only

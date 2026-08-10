@@ -1,23 +1,23 @@
 # Decisions
 
-Last updated: 2026-08-08
+Last updated: 2026-08-10
 
-This file contains the active decisions for the 2.8.12 clean integration
+This file contains the active decisions for the 2.8.13 clean integration
 candidate. Superseded decisions remain available in Git history and in their
 historical audit, instruction, release, transfer, and evidence records; those
 records are not reinterpreted as active operator instructions.
 
 ## D-048 — One clean current candidate replaces the stacked active path
 
-**Decision.** Code `2.8.12-prepilot`, Schema `2.6`, AI Schema `2.0`, Migration
+**Decision.** Code `2.8.13-prepilot`, Schema `2.6`, AI Schema `2.0`, Migration
 `3`, and `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` form the only active
 contract. PR #8/#10/#11 refs are read-only donors, not merge or deployment
 targets.
 
 **Consequence.** Current source, tests, tools, CI, documentation, and the two
-generated packages are reviewed as one linear A12→B12 chain. Historical
-release and transfer trees remain immutable and inactive. Work 0002 creates no
-company-transfer target.
+generated packages are reviewed as one linear A13→B13 chain. Historical
+release and transfer trees remain immutable and inactive. Work 0016 creates no
+new Google target, company-transfer target, or deployment.
 
 ## D-049 — The Task ledger is the only trust anchor
 
@@ -63,14 +63,25 @@ Google, OAuth, deployment, trigger, or Workspace operations.
 
 ## D-053 — Release packages are deterministic and non-authorizing
 
-**Decision.** B12 is a direct child of A12. The Phase 8B package retains
+**Decision.** B13 is a direct child of A13. The Phase 8B package retains
 `TEST_MODE=true` and the harness; the Phase 8C candidate applies only the
 accepted `TEST_MODE=false` transform and excludes the harness.
 
-**Consequence.** Both packages bind the exact A12 source commit, use
+**Consequence.** Both packages bind the exact A13 source commit, use
 deterministic manifests/checksums, and pass byte/parity verification. Neither
 package declares runtime, Phase 8B overall, Phase 8C GO, pilot, production, or
 company-handoff acceptance.
+
+## D-054 — Gmail base64url compatibility is normalized before Utilities decode
+
+**Decision.** The Gmail Advanced Service body representation must be strict
+base64url with valid optional terminal padding. Valid unpadded data is padded
+to a four-character quantum before `Utilities.base64DecodeWebSafe()`;
+malformed alphabet, length, or padding remains `E_GMAIL_BODY_DECODE`.
+
+**Consequence.** Node's permissive `Buffer` decoder is not accepted as the
+runtime contract. Tests use a strict Apps Script-compatible shim, and failures
+retain fixed privacy-safe error evidence without body or identifier content.
 
 ## Stable product decisions retained
 

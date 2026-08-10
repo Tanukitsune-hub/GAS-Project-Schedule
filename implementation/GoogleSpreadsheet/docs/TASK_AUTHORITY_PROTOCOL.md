@@ -2,7 +2,7 @@
 
 The current authoritative protocol is
 `../../../docs/TASK_AUTHORITY_PROTOCOL.md` and is bound to Code
-`2.8.12-prepilot`, Schema `2.6`, and Migration `3`.
+`2.8.13-prepilot`, Schema `2.6`, and Migration `3`.
 
 This implementation copy is intentionally a pointer so the active authority
 contract cannot diverge. Historical protocol evidence remains in Git history

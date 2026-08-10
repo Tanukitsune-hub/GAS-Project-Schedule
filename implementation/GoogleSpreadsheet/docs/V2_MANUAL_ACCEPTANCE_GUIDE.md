@@ -1,6 +1,6 @@
-# Controlled Sandbox Trial Guide — 2.8.12-prepilot
+# Controlled Sandbox Trial Guide — 2.8.13-prepilot
 
-Code Version: `2.8.12-prepilot`
+Code Version: `2.8.13-prepilot`
 
 Schema Version: `2.6`
 

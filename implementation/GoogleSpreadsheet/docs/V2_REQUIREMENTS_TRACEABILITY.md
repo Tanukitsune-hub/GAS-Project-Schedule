@@ -1,10 +1,15 @@
-# Requirements Traceability — 2.8.12 Clean Integration Candidate
+# Requirements Traceability — 2.8.12 Clean Integration Baseline
 
 Last updated: 2026-08-08
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 Specification: `docs/handoffs/0002-instruction.md`
-Version contract: Code `2.8.12-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Baseline version contract: Code `2.8.12-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 Current publication gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`. There is no active transfer or deployment target. Local and CI checks are non-Google only; standalone functional acceptance remains `NOT_EXECUTED`.
+
+The current Work 0016 successor is Code `2.8.13-prepilot`; it changes only the
+Gmail body base64url decode compatibility boundary and associated validation,
+release, and placement tooling. The Work 0002 requirements below remain the
+preserved baseline and are not reinterpreted.
 
 Rows that name earlier versions, fixed transfers, or historical validation are
 retained as historical traceability only. They are not current target selectors

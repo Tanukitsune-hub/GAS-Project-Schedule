@@ -37,13 +37,23 @@ assert.strictEqual(
     'nested/.clasp-pull-verify-work-0010/payload/appsscript.json'
   ), true
 );
+assert.strictEqual(
+  isForbiddenCredentialPath(
+    'nested/.clasp-work-0016/work-0016-execution-state.json'
+  ), true
+);
+assert.strictEqual(
+  isForbiddenCredentialPath(
+    'nested/.clasp-pull-verify-work-0016/payload/appsscript.json'
+  ), true
+);
 assert.strictEqual(isForbiddenCredentialPath('nested/credentials.local.json'), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/.env.example'), false);
 assert.strictEqual(isForbiddenCredentialPath('nested/.clasp.example.json'), false);
 
 process.stdout.write(`${JSON.stringify({
   suite: 'local_validation_secret_scan',
-  passed: 7,
+  passed: 9,
   failed: 0,
   policy: 'changed_content_and_tracked_path_guards'
 }, null, 2)}\n`);
