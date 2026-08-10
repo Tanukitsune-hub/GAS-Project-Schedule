@@ -28,11 +28,11 @@ const expectedBranch = 'codex/0002-clean-integration-candidate';
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.13-prepilot';
+  'implementation/GoogleSpreadsheet/release/v2.8.14-prepilot';
 const phase8cPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.13-prepilot-phase8c';
+  'implementation/GoogleSpreadsheet/release/v2.8.14-prepilot-phase8c';
 const releaseReportPath =
-  'implementation/GoogleSpreadsheet/WORK_0016_RELEASE_IMPLEMENTATION_REPORT.md';
+  'implementation/GoogleSpreadsheet/WORK_0018_RELEASE_IMPLEMENTATION_REPORT.md';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -106,7 +106,7 @@ function readContract() {
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
     starting_main: startingMain,
     branch: expectedBranch,
-    code_version: '2.8.13-prepilot',
+    code_version: '2.8.14-prepilot',
     schema_version: '2.6',
     ai_schema_version: '2.0',
     migration_version: '3',
@@ -293,15 +293,15 @@ function checkRelease() {
       resolvedTemporaryCheckout, 'implementation', 'GoogleSpreadsheet'
     );
     const outputs = [
-      runPowerShell('verify_v2_8_13_release.ps1', [
+      runPowerShell('verify_v2_8_14_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot),
-      runPowerShell('verify_v2_8_13_phase8c_release.ps1', [
+      runPowerShell('verify_v2_8_14_phase8c_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot)
     ];
     return {
-      command: 'v2.8.13 Phase 8B/8C package verifiers in committed LF checkout',
+      command: 'v2.8.14 Phase 8B/8C package verifiers in committed LF checkout',
       verifier_count: outputs.length,
       checkout: 'TEMP_LF_COMMITTED_HEAD',
       output_sha256: sha256(outputs.map((item) => item.output_sha256).join('\n'))
@@ -321,34 +321,34 @@ function checkReleaseLineage() {
   const releaseCommit = git(['log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json']);
   if (!/^[0-9a-f]{40}$/.test(releaseCommit)) throw new Error('RELEASE_COMMIT_NOT_FOUND');
   if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
-    throw new Error('B13_NOT_DIRECT_CHILD_OF_A13');
+    throw new Error('B14_NOT_DIRECT_CHILD_OF_A14');
   }
   if (!gitObjectExists(`${contract.source_commit}^{commit}`) ||
       !gitObjectExists(`${releaseCommit}^{commit}`)) {
-    throw new Error('A13_OR_B13_COMMIT_MISSING');
+    throw new Error('A14_OR_B14_COMMIT_MISSING');
   }
   const ancestor = spawnGit(['merge-base', '--is-ancestor', releaseCommit, 'HEAD']);
-  if (ancestor.status !== 0) throw new Error('B13_NOT_ANCESTOR_OF_HEAD');
+  if (ancestor.status !== 0) throw new Error('B14_NOT_ANCESTOR_OF_HEAD');
   if (gitObjectExists(`${contract.source_commit}:${phase8bPath}`) ||
       gitObjectExists(`${contract.source_commit}:${phase8cPath}`)) {
-    throw new Error('A13_CONTAINS_GENERATED_RELEASE');
+    throw new Error('A14_CONTAINS_GENERATED_RELEASE');
   }
   const changed = git(['diff-tree', '--no-commit-id', '--name-only', '-r', releaseCommit])
     .split(/\r?\n/).filter(Boolean).sort();
   const invalid = changed.filter((file) => file !== 'CURRENT_CONTRACT.json' &&
     file !== releaseReportPath && !file.startsWith(`${phase8bPath}/`) &&
     !file.startsWith(`${phase8cPath}/`));
-  if (invalid.length) throw new Error('B13_SCOPE_INVALID');
+  if (invalid.length) throw new Error('B14_SCOPE_INVALID');
   if (!changed.includes('CURRENT_CONTRACT.json') || !changed.includes(releaseReportPath) ||
       !changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
       !changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
-    throw new Error('B13_REQUIRED_SCOPE_MISSING');
+    throw new Error('B14_REQUIRED_SCOPE_MISSING');
   }
   return {
-    command: 'A13/B13 ancestry, release-only B13 scope, and source-stage absence',
+    command: 'A14/B14 ancestry, release-only B14 scope, and source-stage absence',
     source_commit: contract.source_commit,
     release_commit: releaseCommit,
-    b13_changed_file_count: changed.length
+    b14_changed_file_count: changed.length
   };
 }
 
@@ -365,6 +365,7 @@ function isForbiddenCredentialPath(file) {
     '.clasp-pull-verify-work-0006', '.work-0007-read-state',
     '.clasp-work-0010', '.clasp-pull-verify-work-0010',
     '.clasp-work-0016', '.clasp-pull-verify-work-0016',
+    '.clasp-work-0018', '.clasp-pull-verify-work-0018',
     '.local-validation'
   ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) return true;

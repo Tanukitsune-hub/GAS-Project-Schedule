@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.8.14-prepilot - 2026-08-10 Advanced Gmail byte-body decode repair
+
+- Inspect Advanced Gmail body data before any String coercion and preserve the
+  strict padded/unpadded base64url decoder for explicit String input.
+- Accept only dense, bounded Array, Int8Array, Uint8Array, or Uint8ClampedArray
+  byte input; validate every element, normalize unsigned bytes, and decode
+  directly through `Utilities.newBlob(bytes).getDataAsString('UTF-8')`.
+- Reject unsupported, sparse, fractional, non-finite, or out-of-range input as
+  fixed privacy-safe, non-retryable `E_GMAIL_BODY_DECODE` failures.
+- Preserve byte truncation, attachment exclusion, worker PREPROCESSED and
+  idempotency boundaries, Schema `2.6`, AI Schema `2.0`, Migration `3`,
+  `TEST_MODE=true`, and Automation `OFF`.
+
 ## 2.8.13-prepilot - 2026-08-10 Gmail body decode compatibility repair
 
 - Normalize valid padded or unpadded Gmail API base64url body data to the

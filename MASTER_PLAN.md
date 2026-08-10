@@ -4,7 +4,7 @@ Last updated: 2026-08-10
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.13-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.14-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Current gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -32,6 +32,20 @@ Current gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
 Completion of these steps justifies only
 `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`.
+
+## Work 0018 — Advanced Gmail byte-body decode repair
+
+1. Inspect body data before String coercion and distinguish explicit base64url
+   String input from narrowly recognized signed/unsigned byte sequences.
+2. Validate byte-sequence length, density, integer values, and range before
+   direct Apps Script Blob UTF-8 decoding; retain fixed privacy-safe failures.
+3. Prove representation-accurate decode, malformed input, truncation,
+   attachment exclusion, PREPROCESSED, idempotency, and privacy behavior.
+4. Generate the `2.8.14-prepilot` packages from exact A14 and commit them as
+   direct-child B14.
+5. Require full local and exact-head CI before reusing the existing synthetic
+   target for at most one guarded push and one optional parity pull.
+6. Perform no Gmail runtime access or retest in Work 0018.
 
 ## Next controlled Sandbox Work ID
 

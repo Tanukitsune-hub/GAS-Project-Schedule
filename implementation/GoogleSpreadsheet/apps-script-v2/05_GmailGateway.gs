@@ -795,7 +795,7 @@ var WorkOsGmailGateway = (function () {
   }
 
   function normalizeBodyDataEncoding(data) {
-    var value = String(data || '');
+    var value = data;
     if (!/^[A-Za-z0-9_-]+={0,2}$/.test(value)) {
       throw new Error('INVALID_BASE64URL_STRUCTURE');
     }
@@ -813,14 +813,85 @@ var WorkOsGmailGateway = (function () {
     return unpadded + new Array(requiredPadding + 1).join('=');
   }
 
+  function bodyDataByteSequenceKind(data) {
+    if (Array.isArray(data)) {
+      return 'ARRAY';
+    }
+    if (typeof ArrayBuffer === 'undefined' ||
+        !ArrayBuffer.isView(data)) {
+      return '';
+    }
+    var tag = Object.prototype.toString.call(data);
+    if (tag === '[object Int8Array]' ||
+        tag === '[object Uint8Array]' ||
+        tag === '[object Uint8ClampedArray]') {
+      return 'TYPED_ARRAY';
+    }
+    return '';
+  }
+
+  function decodeBodyByteSequence(data, byteLimit, sequenceKind) {
+    var length = data.length;
+    var maximumSequenceLength = byteLimit * 4;
+    if (typeof length !== 'number' ||
+        !Number.isFinite(length) ||
+        Math.floor(length) !== length ||
+        length < 0 ||
+        length > maximumSequenceLength) {
+      throw new Error('INVALID_BODY_BYTE_SEQUENCE_LENGTH');
+    }
+    var selected = [];
+    for (var index = 0; index < length; index += 1) {
+      if (sequenceKind === 'ARRAY' &&
+          !Object.prototype.hasOwnProperty.call(data, index)) {
+        throw new Error('SPARSE_BODY_BYTE_SEQUENCE');
+      }
+      var byte = data[index];
+      if (typeof byte !== 'number' ||
+          !Number.isFinite(byte) ||
+          Math.floor(byte) !== byte ||
+          byte < -128 ||
+          byte > 255) {
+        throw new Error('INVALID_BODY_BYTE');
+      }
+      if (index < byteLimit) {
+        selected.push(byte > 127 ? byte - 256 : byte);
+      }
+    }
+    return {
+      text: Utilities.newBlob(selected).getDataAsString('UTF-8'),
+      transport_truncated: length > byteLimit
+    };
+  }
+
   function decodeBodyData(data, byteLimit) {
-    var source = String(data || '');
-    if (!source) {
+    if (data === null || data === undefined || data === '') {
       return { text: '', transport_truncated: false };
     }
     try {
+      var normalizedByteLimit = Number(byteLimit);
+      if (!Number.isFinite(normalizedByteLimit) ||
+          Math.floor(normalizedByteLimit) !== normalizedByteLimit ||
+          normalizedByteLimit < 1) {
+        throw new Error('INVALID_BODY_BYTE_LIMIT');
+      }
+      var sequenceKind = bodyDataByteSequenceKind(data);
+      if (sequenceKind) {
+        return decodeBodyByteSequence(
+          data,
+          normalizedByteLimit,
+          sequenceKind
+        );
+      }
+      if (typeof data !== 'string') {
+        throw new Error('UNSUPPORTED_BODY_DATA_REPRESENTATION');
+      }
+      var source = data;
       normalizeBodyDataEncoding(source);
-      var encodedLimit = Math.max(4, Math.floor(Number(byteLimit) * 4 / 3));
+      var encodedLimit = Math.max(
+        4,
+        Math.floor(normalizedByteLimit * 4 / 3)
+      );
       encodedLimit -= encodedLimit % 4;
       var truncated = source.length > encodedLimit;
       var selected = truncated ? source.slice(0, encodedLimit) : source;
@@ -851,7 +922,10 @@ var WorkOsGmailGateway = (function () {
     if (filename || body.attachmentId) {
       return;
     }
-    if (mimeType === 'text/plain' && body.data && state.text.length < byteLimit) {
+    if (mimeType === 'text/plain' &&
+        body.data !== null &&
+        body.data !== undefined &&
+        state.text.length < byteLimit) {
       var decoded = decodeBodyData(
         body.data,
         Math.max(1, byteLimit - state.text.length)

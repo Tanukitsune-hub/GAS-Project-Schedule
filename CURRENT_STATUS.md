@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-10
 
-Candidate version: Code `2.8.13-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.14-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -10,12 +10,15 @@ Automation: `OFF`
 
 ## Outcome boundary
 
-Work 0016 creates the smallest successor candidate needed to repair the Gmail
-Advanced Service base64url body-decode boundary. It preserves the Work 0002
+Work 0018 creates the smallest successor candidate needed to repair the Gmail
+Advanced Service dual-representation body-decode boundary. Explicit String
+input remains strict base64url; narrowly recognized signed or unsigned byte
+sequences are validated and decoded directly through an Apps Script Blob. It
+preserves the Work 0002
 clean integration behavior, Schema `2.6`, AI Schema `2.0`, Migration `3`,
 `TEST_MODE=true`, and Automation OFF.
 
-The candidate contains one current source tree and, after B13 generation, one
+The candidate contains one current source tree and, after B14 generation, one
 current Phase 8B package plus one Phase 8C candidate package. There is no
 active company transfer, deployment target, runtime marker, or operator action
 selected by this status.
@@ -37,16 +40,16 @@ selected by this status.
 
 ```text
 Base candidate and historical Work 0002 evidence: docs/handoffs/0002-report.md
-Work 0016 exact validation/CI/placement evidence: docs/handoffs/0016-report.md
-Gmail body decode runtime retest: NOT_AUTHORIZED_IN_WORK_0016
+Work 0018 exact validation/CI/placement evidence: docs/handoffs/0018-report.md
+Gmail body decode runtime retest: NOT_AUTHORIZED_IN_WORK_0018
 Real AI Provider validation: NOT_EXECUTED
 Company handoff: NOT_AUTHORIZED
 ```
 
 Source/release identity is machine-checked by `CURRENT_CONTRACT.json`, the
-release verifiers, and the A13/B13 direct-child gate. Local or CI success does
-not prove the repaired Gmail runtime boundary; Work 0016 explicitly prohibits
-reprocessing the failed synthetic message.
+release verifiers, and the A14/B14 direct-child gate. Local or CI success does
+not prove the repaired Gmail runtime boundary; Work 0018 explicitly prohibits
+all Gmail runtime access and retesting.
 
 ## Remaining project-level blockers
 

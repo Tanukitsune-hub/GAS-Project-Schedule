@@ -1,12 +1,12 @@
-# Google Workspace Personal Work OS v2 — 2.8.13-prepilot
+# Google Workspace Personal Work OS v2 — 2.8.14-prepilot
 
-This directory is the canonical Apps Script source for the Work 0016 successor
+This directory is the canonical Apps Script source for the Work 0018 successor
 to the Work 0002 clean integration candidate in
 `Tanukitsune-hub/GAS-Project-Schedule`.
 
 ## Active contract
 
-- Code: `2.8.13-prepilot`
+- Code: `2.8.14-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
@@ -23,7 +23,7 @@ The candidate consolidates the final Code 2.8.11 authority, Calendar outbox,
 Dashboard, diagnostic-summary, Setup, and fail-closed behavior on the exact
 Work 0002 starting main. The S90 module contract identifier remains
 `WORK_OS_V2_S90_CONTRACT_2_8_11` because its three-module runtime contract is
-unchanged; the candidate Code version is independently `2.8.13-prepilot`.
+unchanged; the candidate Code version is independently `2.8.14-prepilot`.
 
 ## Local validation
 
@@ -36,7 +36,7 @@ pnpm run verify:local
 
 The gate validates tracked JSON/YAML, the canonical Apps Script inventory,
 static policy, every current `*_test.js` suite, both deterministic release
-packages, A13/B13 lineage, governance identity, and secret/local-state
+packages, A14/B14 lineage, governance identity, and secret/local-state
 exclusions. It performs no Google, OAuth, deployment, clasp, Gmail, Calendar,
 Sheets, trigger, or Provider operation.
 

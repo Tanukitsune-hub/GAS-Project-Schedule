@@ -1,12 +1,12 @@
 # Project Context
 
-Last updated: 2026-08-08
+Last updated: 2026-08-10
 
 Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.13-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.14-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Highest gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -53,14 +53,14 @@ Calendar, deployment, or real Provider behavior.
 
 ## Current release model
 
-The current release has two packages generated from exact A13 source:
+The current release has two packages generated from exact A14 source:
 
-1. `v2.8.13-prepilot`: `TEST_MODE=true`, Automation OFF, harness included.
-2. `v2.8.13-prepilot-phase8c`: only `TEST_MODE=false` changes and the harness
+1. `v2.8.14-prepilot`: `TEST_MODE=true`, Automation OFF, harness included.
+2. `v2.8.14-prepilot-phase8c`: only `TEST_MODE=false` changes and the harness
    is excluded.
 
-B13 must be A13's direct child. `CURRENT_CONTRACT.json`, manifests, checksums,
-and verifiers bind the source/release roles. Work 0002 creates no transfer or
+B14 must be A14's direct child. `CURRENT_CONTRACT.json`, manifests, checksums,
+and verifiers bind the source/release roles. Work 0018 creates no transfer or
 deployment target.
 
 ## Historical boundary
