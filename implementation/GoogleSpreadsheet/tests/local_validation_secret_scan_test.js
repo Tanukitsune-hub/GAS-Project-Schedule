@@ -14,6 +14,14 @@ assert.strictEqual(contentHasSensitivePattern(constructedCredentialLikeValue), t
 assert.strictEqual(contentHasSensitivePattern(constructedWorkspaceUrl), true);
 assert.strictEqual(contentHasSensitivePattern(constructedLocalPath), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/.clasp.json'), true);
+assert.strictEqual(
+  isForbiddenCredentialPath('nested/.clasp-work-0006/target.json'), true
+);
+assert.strictEqual(
+  isForbiddenCredentialPath(
+    'nested/.clasp-pull-verify-work-0006/payload/appsscript.json'
+  ), true
+);
 assert.strictEqual(isForbiddenCredentialPath('nested/credentials.local.json'), true);
 assert.strictEqual(isForbiddenCredentialPath('nested/.env.example'), false);
 assert.strictEqual(isForbiddenCredentialPath('nested/.clasp.example.json'), false);

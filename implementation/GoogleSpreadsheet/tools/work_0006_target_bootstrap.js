@@ -16,7 +16,9 @@ const {
   inventoryFor,
   inventoryForCommittedPayload,
   assertTargetObjects,
-  claspProjectConfig
+  claspProjectConfig,
+  work0006OperationLockFileName,
+  acquireWork0006OperationLock
 } = require('./local_clasp_dev');
 const {
   isPersonalEmail,
@@ -120,7 +122,10 @@ function assertStagedPayload() {
 }
 
 function assertInitialWorkspaceEntries(entries) {
-  const allowed = new Set(['payload', '.claspignore', 'payload-inventory.json']);
+  const allowed = new Set([
+    'payload', '.claspignore', 'payload-inventory.json',
+    work0006OperationLockFileName
+  ]);
   if (entries.some((name) => !allowed.has(name))) {
     fail('WORK_0006_SYNTHETIC_TARGET_CREATE_ALREADY_ATTEMPTED');
   }
@@ -384,7 +389,11 @@ function safeAttemptEvidence() {
 
 async function main() {
   const command = normalizeWork0006Command(process.argv[2]);
+  let releaseOperationLock = null;
   try {
+    if (command !== 'evidence' && command !== 'UNKNOWN') {
+      releaseOperationLock = acquireWork0006OperationLock(command);
+    }
     if (command === 'auth-preflight') safeWrite(await authPreflight());
     else if (command === 'create-synthetic') safeWrite(await createSynthetic());
     else if (command === 'inspect-synthetic') safeWrite(await inspectSynthetic());
@@ -401,6 +410,8 @@ async function main() {
       attempts: safeAttemptEvidence(), message: code
     });
     process.exitCode = 2;
+  } finally {
+    if (releaseOperationLock) releaseOperationLock();
   }
 }
 

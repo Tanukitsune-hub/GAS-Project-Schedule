@@ -1,13 +1,17 @@
 'use strict';
 
 const assert = require('node:assert');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const {
   GateError,
   canonicalPayloadFileNames,
   claspProjectConfig,
   inventoryForCommittedPayload,
   prepareWork0006PushAttempt,
-  nextWork0006RemoteAttemptState
+  nextWork0006RemoteAttemptState,
+  acquireWork0006OperationLock
 } = require('../tools/local_clasp_dev');
 const {
   workspaceName,
@@ -97,6 +101,31 @@ test('FRESH_WORKSPACE_ACCEPTS_ONLY_STAGING_ARTIFACTS', () => {
   assert.doesNotThrow(() => assertInitialWorkspaceEntries([
     'payload', '.claspignore', 'payload-inventory.json'
   ]));
+});
+
+test('CURRENT_OPERATION_LOCK_IS_THE_ONLY_EXTRA_INITIAL_ENTRY', () => {
+  assert.doesNotThrow(() => assertInitialWorkspaceEntries([
+    'payload', '.claspignore', 'payload-inventory.json',
+    'work-0006-operation.lock'
+  ]));
+});
+
+test('OPERATION_LOCK_ATOMICALLY_REFUSES_CONCURRENT_PROCESS', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0006-lock-test-'));
+  const lockPath = path.join(root, 'operation.lock');
+  try {
+    const releaseFirst = acquireWork0006OperationLock('create-synthetic', lockPath);
+    assert.throws(
+      () => acquireWork0006OperationLock('create-synthetic', lockPath),
+      (error) => error instanceof GateError &&
+        error.code === 'WORK_0006_OPERATION_ALREADY_RUNNING'
+    );
+    releaseFirst();
+    const releaseSecond = acquireWork0006OperationLock('create-synthetic', lockPath);
+    releaseSecond();
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('FRESH_WORKSPACE_REJECTS_WORK_0004_STATE', () => {

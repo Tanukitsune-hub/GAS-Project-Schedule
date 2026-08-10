@@ -362,7 +362,10 @@ function contentHasSensitivePattern(content) {
 function isForbiddenCredentialPath(file) {
   const segments = String(file).split('/');
   const base = segments[segments.length - 1];
-  if (segments.some((segment) => ['.clasp-dev', '.clasp-pull-verify', '.local-validation'].includes(segment))) return true;
+  if (segments.some((segment) => [
+    '.clasp-dev', '.clasp-pull-verify', '.clasp-work-0006',
+    '.clasp-pull-verify-work-0006', '.local-validation'
+  ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) return true;
   if (/^(?:creds|credentials|client_secret)(?:[._-][A-Za-z0-9_-]+)?\.json$/i.test(base)) return true;
   if (/^\.env(?:\.[A-Za-z0-9_-]+)?$/i.test(base) && !/\.example$/i.test(base)) return true;

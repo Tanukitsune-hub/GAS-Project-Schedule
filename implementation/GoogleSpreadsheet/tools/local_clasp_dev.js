@@ -33,6 +33,10 @@ const work0006ExecutionStateFileName = 'work-0006-execution-state.json';
 const work0006ExecutionStatePath = path.join(
   devRoot, work0006ExecutionStateFileName
 );
+const work0006OperationLockFileName = 'work-0006-operation.lock';
+const work0006OperationLockPath = path.join(
+  devRoot, work0006OperationLockFileName
+);
 const exactWork0004Branch = 'codex/0004-controlled-synthetic-placement';
 const exactWork0006Branch = 'codex/0006-fresh-controlled-remote-placement';
 const allowedTargetKind = 'PERSONAL_SYNTHETIC_DEV';
@@ -184,7 +188,7 @@ function assertSafeGeneratedPayloadDirectory() {
   const allowed = new Set([
     'payload', '.clasp.json', '.claspignore', 'target.json',
     'payload-inventory.json', 'last-operation.json',
-    work0006ExecutionStateFileName
+    work0006ExecutionStateFileName, work0006OperationLockFileName
   ]);
   for (const entry of fs.readdirSync(devRoot, { withFileTypes: true })) {
     if (!allowed.has(entry.name)) {
@@ -548,6 +552,30 @@ function writeJsonAtomic(file, value) {
   fs.renameSync(temporary, file);
 }
 
+function acquireWork0006OperationLock(
+  command,
+  lockPath = work0006OperationLockPath
+) {
+  let descriptor;
+  try {
+    descriptor = fs.openSync(lockPath, 'wx', 0o600);
+    fs.writeFileSync(descriptor, `${JSON.stringify({
+      schema: 'WORK_OS_OPERATION_LOCK_V1', work_id: '0006', command
+    })}\n`, 'utf8');
+  } catch (_) {
+    if (Number.isInteger(descriptor)) fs.closeSync(descriptor);
+    fail('WORK_0006_OPERATION_ALREADY_RUNNING',
+      'WORK_0006_OPERATION_ALREADY_RUNNING');
+  }
+  let released = false;
+  return function releaseWork0006OperationLock() {
+    if (released) return;
+    released = true;
+    fs.closeSync(descriptor);
+    fs.unlinkSync(lockPath);
+  };
+}
+
 function nextWork0004RemoteAttemptState(state, config, target, command) {
   const commonValid = state &&
     state.schema === 'WORK_OS_SYNTHETIC_TARGET_CREATION_V2' &&
@@ -908,6 +936,7 @@ function selfTest() {
 function main() {
   let command = 'UNKNOWN';
   let googleOperation = 'NOT_EXECUTED';
+  let releaseOperationLock = null;
   try {
     command = parseRuntimeCommand(process.argv[2]);
     if (command === 'self-test') return selfTest();
@@ -943,6 +972,7 @@ function main() {
     }
 
     if (command === 'push') {
+      releaseOperationLock = acquireWork0006OperationLock(command);
       assertCleanWorktree();
       runLocalVerifyBeforePush();
       const target = assertTargetGuard(true);
@@ -970,6 +1000,7 @@ function main() {
     }
 
     if (command === 'pull-verify') {
+      releaseOperationLock = acquireWork0006OperationLock(command);
       const target = assertTargetGuard(true);
       beginWork0006RemoteAttempt(command, target.config, target.target);
       googleOperation = 'CLASP_PULL_ATTEMPT_STARTED';
@@ -1034,6 +1065,8 @@ function main() {
       message: code
     });
     process.exitCode = 2;
+  } finally {
+    if (releaseOperationLock) releaseOperationLock();
   }
 }
 
@@ -1061,5 +1094,7 @@ module.exports = {
   beginWork0006RemoteAttempt,
   completeWork0006RemoteAttempt,
   work0006ExecutionStateFileName,
+  work0006OperationLockFileName,
+  acquireWork0006OperationLock,
   GateError
 };
