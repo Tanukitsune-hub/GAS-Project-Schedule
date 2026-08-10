@@ -29,7 +29,17 @@
     "gas:pull-verify:dev": "node tools/local_clasp_dev.js pull-verify",
     "gas:evidence:dev": "node tools/work_0006_target_bootstrap.js evidence",
     "gas:inspect-content:work-0007": "node tools/work_0007_remote_content_inspector.js inspect-content",
-    "gas:evidence:work-0007": "node tools/work_0007_remote_content_inspector.js evidence"
+    "gas:evidence:work-0007": "node tools/work_0007_remote_content_inspector.js evidence",
+    "verify:work-0010": "node tests/work_0010_remote_placement_test.js",
+    "gas:stage:work-0010": "node tools/work_0010_remote_placement.js stage",
+    "gas:inventory:work-0010": "node tools/work_0010_remote_placement.js inventory-check",
+    "gas:auth-preflight:work-0010": "node tools/work_0010_remote_placement.js auth-preflight",
+    "gas:create-synthetic:work-0010": "node tools/work_0010_remote_placement.js create-synthetic",
+    "gas:inspect-synthetic:work-0010": "node tools/work_0010_remote_placement.js inspect-synthetic",
+    "gas:push:work-0010": "node tools/work_0010_remote_placement.js push",
+    "gas:inspect-content:work-0010": "node tools/work_0010_remote_placement.js inspect-content",
+    "gas:pull-verify:work-0010": "node tools/work_0010_remote_placement.js pull-verify",
+    "gas:evidence:work-0010": "node tools/work_0010_remote_placement.js evidence"
   },
   "devDependencies": {
     "@google/clasp": "3.3.0",

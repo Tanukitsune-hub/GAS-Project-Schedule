@@ -363,6 +363,7 @@ function isForbiddenCredentialPath(file) {
   if (segments.some((segment) => [
     '.clasp-dev', '.clasp-pull-verify', '.clasp-work-0006',
     '.clasp-pull-verify-work-0006', '.work-0007-read-state',
+    '.clasp-work-0010', '.clasp-pull-verify-work-0010',
     '.local-validation'
   ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) return true;

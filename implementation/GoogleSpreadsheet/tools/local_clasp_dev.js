@@ -1125,6 +1125,7 @@ module.exports = {
   assertExactPayloadNames,
   assertExactPayloadDirectory,
   claspEntrypoint,
+  runClasp,
   runClaspNativeFileStatus,
   assertClaspNativePayloadSelection,
   assertClaspPushSemanticEvidence,
