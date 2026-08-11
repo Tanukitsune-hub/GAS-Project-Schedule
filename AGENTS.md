@@ -1,6 +1,6 @@
 # Codex Repository Instructions
 
-Policy baseline: 2026-08-07
+Policy baseline: 2026-08-11
 
 These rules govern Codex/local implementation agents. ChatGPT may finish GitHub-only work without invoking Codex. Route B means ChatGPT edits and Codex verifies/fixes; Route C means Codex implements.
 
@@ -52,6 +52,15 @@ These rules govern Codex/local implementation agents. ChatGPT may finish GitHub-
 - Do not force-push, rewrite history, merge, release, deploy, delete data, rotate secrets, or operate external systems unless explicitly authorized in the handoff.
 - Never commit secrets, credentials, personal/private production data, or machine-specific paths.
 - Use repository-specific CI proportionately; do not copy tooling mechanically from another repo.
+
+## GitHub Actions and CI budget
+
+- Local executable validation is the primary development loop. Keep implementation PRs in Draft while iterating; do not spend GitHub Actions minutes on routine pushes or Draft PR updates.
+- Standard CI should run only for the final candidate when the PR is non-Draft / ready for review, and rerun when that ready PR's head changes. Keep manual dispatch for an explicit final rerun, and cancel superseded in-progress runs where supported.
+- Historical, attestation, and archival checks should be manual unless the exact task requires them. Post-merge deployment or release workflows may run on `main` when required to deliver the product; they are not development CI.
+- Exhausted Actions minutes, billing restrictions, GitHub-hosted-runner unavailability, or quota-related startup failures are not BLOCKERs and must not stop implementation. Complete equivalent local validation, commit, push, and update the PR/report. Record GitHub CI as unavailable or skipped for an external quota reason and do not describe it as a code or test failure.
+- A task may be completed with `BLOCKER: NONE` when all required local validation passes and the only missing evidence is GitHub Actions unavailable for quota, billing, or hosted-runner reasons. Clearly record the missing CI evidence.
+- Do not repeatedly rerun a job that cannot start because of quota or billing. When Actions becomes available, the final candidate may be validated then. If repository settings physically prevent merge, report that as an external merge constraint; do not treat the implementation itself as failed or rework unrelated code merely to obtain CI.
 
 ## Report and completion
 
