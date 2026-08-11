@@ -15,6 +15,8 @@
 | Task canonical columns | `50` |
 | Authority store | protected hidden Task Authority Ledger |
 | Authority ledger columns | `21` |
+| Authority protocol | `versioned two-slot PREPARED/COMMITTED` |
+| Snapshot-cell fallback | `FORBIDDEN` |
 | TEST_MODE | `true` |
 | Automation default | `OFF` |
 | Package prepared at | `{{PREPARED_AT}}` |
@@ -28,6 +30,25 @@ unexecuted.
 
 ## Payload
 
-The generated manifest records the exact payload file hashes and canonical
-payload-list SHA-256. No credentials, identifiers, private URLs, raw provider
-responses, or real data are included.
+| Field | Value |
+|---|---|
+| Payload files | `{{PAYLOAD_COUNT}}` |
+| `.gs` files | `{{GS_COUNT}}` |
+| Canonical payload-list SHA-256 | `{{PAYLOAD_BUNDLE_SHA256}}` |
+
+| Relative path | SHA-256 |
+|---|---|
+{{PAYLOAD_TABLE}}
+
+## Services and safety
+
+### OAuth scopes
+
+{{OAUTH_SCOPES}}
+
+### Advanced Services
+
+{{ADVANCED_SERVICES}}
+
+No credentials, identifiers, private URLs, raw Provider responses, or real
+data are included.
