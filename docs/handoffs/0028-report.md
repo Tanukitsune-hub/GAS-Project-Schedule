@@ -85,6 +85,12 @@ Spreadsheet, account, auth profile, or deployment was created.
 - Sensitive command output, target identifiers, account identity, credentials,
   and private Google responses were suppressed and are not recorded here.
 
+## Git and PR
+
+- Branch: `codex/0028-gemini-provider-integration`
+- Final commit: `SELF` (the commit containing this report)
+- Draft PR: `#42`, Open and Unmerged
+
 ## Deferred boundary
 
 The next separately authorized Work may configure a real Gemini credential and
