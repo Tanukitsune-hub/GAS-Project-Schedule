@@ -1,6 +1,6 @@
 # Work 0029 Release Implementation Record
 
-- Source A16: `fb7e701a5a799da6c1daf5fc83993e2ea107177e` (the final source-stage commit before release regeneration)
+- Source A16: `7c9d632b8df59785719bd230f083fbb04db196dd` (the final source-stage commit before release regeneration)
 - Release B16: the direct child commit containing this record, the generated
   packages, and `CURRENT_CONTRACT.json`
 - Code / Schema / AI Schema / Migration: `2.8.16-prepilot` / `2.6` / `2.0` / `3`
