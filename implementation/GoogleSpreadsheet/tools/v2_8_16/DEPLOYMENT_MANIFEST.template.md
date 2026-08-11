@@ -13,7 +13,7 @@
 | AI Schema Version | `2.0` |
 | Migration Version | `3` |
 | Task canonical columns | `50` |
-| Authority store | protected hidden Task Authority Ledger |
+| Authority store | `protected hidden Task Authority Ledger` |
 | Authority ledger columns | `21` |
 | Authority protocol | `versioned two-slot PREPARED/COMMITTED` |
 | Snapshot-cell fallback | `FORBIDDEN` |
