@@ -914,6 +914,10 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     .filter((name) => name.endsWith('.gs'))
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
+  const nonProviderGs = fs.readdirSync(appsScriptRoot)
+    .filter((name) => name.endsWith('.gs') && name !== '20_GeminiProvider.gs')
+    .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
+    .join('\n');
   const manifest = JSON.parse(fs.readFileSync(
     path.join(appsScriptRoot, 'appsscript.json'),
     'utf8'
@@ -943,8 +947,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     'https://www.googleapis.com/auth/calendar',
     'https://www.googleapis.com/auth/calendar.events',
     'https://www.googleapis.com/auth/calendar.events.owned',
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/script.external_request'
+    'https://www.googleapis.com/auth/drive'
   ].forEach((scope) => {
     assert.strictEqual(manifest.oauthScopes.includes(scope), false, scope);
   });
@@ -980,7 +983,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     /CALENDAR_REMOTE_VERIFICATION[\s\S]*'WARN'[\s\S]*NOT_EXECUTED/
   );
   assert.strictEqual(/ScriptApp\.newTrigger/.test(triggerSource), false);
-  assert.strictEqual(/\bUrlFetchApp\b/.test(allGs), false);
+  assert.strictEqual(/\bUrlFetchApp\b/.test(nonProviderGs), false);
   assert.match(
     triggerSource,
     /EDIT_HANDLER_FUNCTION[\s\S]*forSpreadsheet\(spreadsheet\)\.onEdit\(\)/
@@ -999,7 +1002,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     true
   );
   assert.strictEqual(
-    /GeminiAdapter|GoogleGenAI|generativelanguage\.googleapis/.test(allGs),
+    /GeminiAdapter|GoogleGenAI|generativelanguage\.googleapis/.test(nonProviderGs),
     false
   );
 });

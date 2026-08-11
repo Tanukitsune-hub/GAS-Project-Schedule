@@ -205,9 +205,11 @@ function committedPayloadBuffer(name) {
 
 function assertPayloadInventory(inventory) {
   if (!inventory || inventory.schema !== 'WORK_OS_LOCAL_CLASP_PAYLOAD_V1' ||
-      inventory.file_count !== 23 || !Array.isArray(inventory.files) ||
-      inventory.files.length !== 23 ||
-      inventory.files.filter((file) => file.name.endsWith('.gs')).length !== 22 ||
+      inventory.file_count !== canonicalPayloadFileNames.length ||
+      !Array.isArray(inventory.files) ||
+      inventory.files.length !== canonicalPayloadFileNames.length ||
+      inventory.files.filter((file) => file.name.endsWith('.gs')).length !==
+        canonicalPayloadFileNames.filter((file) => file.endsWith('.gs')).length ||
       inventory.files.filter((file) => file.name === 'appsscript.json').length !== 1 ||
       typeof inventory.payload_sha256 !== 'string' ||
       !/^[0-9a-f]{64}$/.test(inventory.payload_sha256)) {
@@ -346,7 +348,9 @@ function isolatedNativeSelection() {
     ));
     fs.writeFileSync(path.join(root, '.claspignore'), claspIgnoreContents(), 'utf8');
     const native = assertClaspNativePayloadSelection(root);
-    if (native.file_count !== 23) fail('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+    if (native.file_count !== canonicalPayloadFileNames.length) {
+      fail('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+    }
     return {
       file_count: native.file_count,
       gs_file_count: native.names.filter((name) => name.endsWith('.gs')).length,
@@ -393,7 +397,9 @@ function pushPayload() {
   }
   const staged = assertStagedPayload();
   const native = assertClaspNativePayloadSelection(workspaceRoot);
-  if (native.file_count !== 23) fail('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+  if (native.file_count !== canonicalPayloadFileNames.length) {
+    fail('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+  }
   const started = nextAttemptState(staged.state, 'push');
   writeJsonAtomic(executionStatePath, started);
   const result = runClasp(claspSemanticPushArguments, workspaceRoot);

@@ -84,7 +84,7 @@ function stagedState() {
 function pushedState() {
   return Object.assign(nextAttemptState(stagedState(), 'push'), {
     phase: 'PUSH_PASS',
-    push_semantic_file_count: 23
+    push_semantic_file_count: 24
   });
 }
 
@@ -103,11 +103,11 @@ test('EXACT_BRANCH_AND_INSTRUCTION_HEAD_ARE_PINNED', () => {
   assert.strictEqual(isExactBranch('codex/0015-synthetic-gmail-mock-task-e2e'), false);
 });
 
-test('EXACT_COMMITTED_CANDIDATE_IS_22_GS_PLUS_MANIFEST', () => {
-  assert.strictEqual(inventory.file_count, 23);
+test('EXACT_COMMITTED_CANDIDATE_IS_23_GS_PLUS_MANIFEST', () => {
+  assert.strictEqual(inventory.file_count, 24);
   assert.strictEqual(
     inventory.files.filter((file) => file.name.endsWith('.gs')).length,
-    22
+    23
   );
   assert.strictEqual(
     inventory.files.filter((file) => file.name === 'appsscript.json').length,

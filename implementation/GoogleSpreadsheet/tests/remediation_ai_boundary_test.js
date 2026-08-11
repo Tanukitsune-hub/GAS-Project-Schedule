@@ -265,7 +265,7 @@ test('R-AI-08_PRODUCTION_SOURCE_HAS_NO_REAL_TRANSPORT_OR_ENDPOINT', () => {
     manifest.oauthScopes.includes(
       'https://www.googleapis.com/auth/script.external_request'
     ),
-    false
+    true
   );
 });
 

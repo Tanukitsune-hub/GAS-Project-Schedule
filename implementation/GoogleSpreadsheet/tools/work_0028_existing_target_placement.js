@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * Work 0018-only one-use repair placement lane.
+ * Work 0028-only one-use Gemini candidate placement lane.
  *
  * The lane reuses the consumed, locally bound Work 0010 personal-synthetic
- * target only after proving the completed Work 0016 placement on that binding.
+ * target only after proving the completed Work 0018 placement on that binding.
  * It never resets or mutates earlier state, creates no Google resource, and
  * emits no target/account identifier.
  */
@@ -34,17 +34,17 @@ const repositoryRoot = path.resolve(moduleRoot, '..', '..');
 const sourceRoot = path.join(moduleRoot, 'apps-script-v2');
 const sourceRootFromRepository = path.relative(repositoryRoot, sourceRoot)
   .split(path.sep).join('/');
-const workspaceName = '.clasp-work-0018';
-const pullWorkspaceName = '.clasp-pull-verify-work-0018';
+const workspaceName = '.clasp-work-0028';
+const pullWorkspaceName = '.clasp-pull-verify-work-0028';
 const workspaceRoot = path.join(moduleRoot, workspaceName);
 const payloadRoot = path.join(workspaceRoot, 'payload');
 const pullRoot = path.join(moduleRoot, pullWorkspaceName);
 const inventoryPath = path.join(workspaceRoot, 'payload-inventory.json');
 const configPath = path.join(workspaceRoot, '.clasp.json');
 const ignorePath = path.join(workspaceRoot, '.claspignore');
-const executionStateFileName = 'work-0018-execution-state.json';
+const executionStateFileName = 'work-0028-execution-state.json';
 const executionStatePath = path.join(workspaceRoot, executionStateFileName);
-const operationLockPath = path.join(workspaceRoot, 'work-0018-operation.lock');
+const operationLockPath = path.join(workspaceRoot, 'work-0028-operation.lock');
 const sourceWorkspaceRoot = path.join(moduleRoot, '.clasp-work-0010');
 const sourceConfigPath = path.join(sourceWorkspaceRoot, '.clasp.json');
 const sourceTargetPath = path.join(sourceWorkspaceRoot, 'target.json');
@@ -52,10 +52,10 @@ const sourceStatePath = path.join(
   sourceWorkspaceRoot, 'work-0010-execution-state.json'
 );
 const previousPlacementStatePath = path.join(
-  moduleRoot, '.clasp-work-0016', 'work-0016-execution-state.json'
+  moduleRoot, '.clasp-work-0018', 'work-0018-execution-state.json'
 );
-const exactBranch = 'codex/0018-advanced-gmail-byte-body-repair';
-const instructionHead = '3b91f44abe51c68b73b32de62215d998e73a14ca';
+const exactBranch = 'codex/0028-gemini-provider-integration';
+const instructionHead = '87dfeb7a826d773be88f33d1f0f6dea9ec5418de';
 
 class GateError extends Error {
   constructor(code) {
@@ -92,7 +92,7 @@ function isExactBranch(branch) {
 
 function assertExactBranchCleanAndPublished(expectedHead) {
   const branch = String(git(['branch', '--show-current'])).trim();
-  if (!isExactBranch(branch)) fail('WORK_0018_EXACT_BRANCH_REQUIRED');
+  if (!isExactBranch(branch)) fail('WORK_0028_EXACT_BRANCH_REQUIRED');
   if (String(git([
     'status', '--porcelain=v1', '--untracked-files=normal'
   ])).trim()) fail('DIRTY_WORKTREE_REFUSED');
@@ -101,12 +101,12 @@ function assertExactBranchCleanAndPublished(expectedHead) {
     '-C', repositoryRoot, 'merge-base', '--is-ancestor', instructionHead, head
   ], { windowsHide: true });
   if (ancestry.error || ancestry.status !== 0) {
-    fail('WORK_0018_INSTRUCTION_ANCESTRY_INVALID');
+    fail('WORK_0028_INSTRUCTION_ANCESTRY_INVALID');
   }
   const remote = String(git(['rev-parse', `origin/${exactBranch}`])).trim();
-  if (remote !== head) fail('WORK_0018_REPAIR_HEAD_NOT_PUBLISHED');
+  if (remote !== head) fail('WORK_0028_REPAIR_HEAD_NOT_PUBLISHED');
   if (expectedHead && expectedHead !== head) {
-    fail('WORK_0018_REPAIR_HEAD_CHANGED');
+    fail('WORK_0028_REPAIR_HEAD_CHANGED');
   }
   return head;
 }
@@ -133,7 +133,7 @@ function acquireOperationLock(command, lockPath = operationLockPath) {
     fs.closeSync(descriptor);
   } catch (_) {
     if (Number.isInteger(descriptor)) fs.closeSync(descriptor);
-    fail('WORK_0018_OPERATION_ALREADY_RUNNING');
+    fail('WORK_0028_OPERATION_ALREADY_RUNNING');
   }
   return () => {
     try {
@@ -148,8 +148,8 @@ function assertIdentifierNotTracked(identifier) {
   const result = childProcess.spawnSync('git', [
     '-C', repositoryRoot, 'grep', '-I', '-F', '--', identifier
   ], { encoding: 'utf8', windowsHide: true });
-  if (result.status === 0) fail('WORK_0018_TARGET_IDENTIFIER_IS_TRACKED');
-  if (result.status !== 1) fail('WORK_0018_TRACKED_IDENTIFIER_SCAN_FAILED');
+  if (result.status === 0) fail('WORK_0028_TARGET_IDENTIFIER_IS_TRACKED');
+  if (result.status !== 1) fail('WORK_0028_TRACKED_IDENTIFIER_SCAN_FAILED');
 }
 
 function assertExistingBindingObjects(config, target, state) {
@@ -157,7 +157,7 @@ function assertExistingBindingObjects(config, target, state) {
     assertTargetObjects(config, target, null);
   } catch (error) {
     if (error instanceof ClaspGateError) {
-      fail('WORK_0018_EXISTING_TARGET_BINDING_INVALID');
+      fail('WORK_0028_EXISTING_TARGET_BINDING_INVALID');
     }
     throw error;
   }
@@ -180,25 +180,25 @@ function assertExistingBindingObjects(config, target, state) {
     state.target_fingerprint === target.target_fingerprint &&
     typeof state.target_fingerprint === 'string' &&
     state.target_fingerprint.length === 64;
-  if (!valid) fail('WORK_0018_EXISTING_TARGET_BINDING_INVALID');
+  if (!valid) fail('WORK_0028_EXISTING_TARGET_BINDING_INVALID');
   return { config, target, state };
 }
 
 function loadExistingBinding() {
   const binding = assertExistingBindingObjects(
-    readJson(sourceConfigPath, 'WORK_0018_EXISTING_TARGET_CONFIG_MISSING'),
-    readJson(sourceTargetPath, 'WORK_0018_EXISTING_TARGET_METADATA_MISSING'),
-    readJson(sourceStatePath, 'WORK_0018_EXISTING_TARGET_STATE_MISSING')
+    readJson(sourceConfigPath, 'WORK_0028_EXISTING_TARGET_CONFIG_MISSING'),
+    readJson(sourceTargetPath, 'WORK_0028_EXISTING_TARGET_METADATA_MISSING'),
+    readJson(sourceStatePath, 'WORK_0028_EXISTING_TARGET_STATE_MISSING')
   );
   assertIdentifierNotTracked(binding.state.script_id);
   assertIdentifierNotTracked(binding.state.parent_id);
   var previousPlacement = readJson(
     previousPlacementStatePath,
-    'WORK_0018_PREVIOUS_PLACEMENT_STATE_MISSING'
+    'WORK_0028_PREVIOUS_PLACEMENT_STATE_MISSING'
   );
   var previousValid = previousPlacement &&
     previousPlacement.schema === 'WORK_OS_EXISTING_TARGET_REPAIR_PLACEMENT_V1' &&
-    previousPlacement.work_id === '0016' &&
+    previousPlacement.work_id === '0018' &&
     previousPlacement.source_binding_work_id === '0010' &&
     previousPlacement.phase === 'PULL_PARITY_PASS' &&
     previousPlacement.push_attempt_count === 1 &&
@@ -207,7 +207,7 @@ function loadExistingBinding() {
     previousPlacement.target_fingerprint === binding.state.target_fingerprint &&
     /^[0-9a-f]{40}$/.test(String(previousPlacement.repair_head || '')) &&
     /^[0-9a-f]{64}$/.test(String(previousPlacement.payload_sha256 || ''));
-  if (!previousValid) fail('WORK_0018_PREVIOUS_PLACEMENT_STATE_INVALID');
+  if (!previousValid) fail('WORK_0028_PREVIOUS_PLACEMENT_STATE_INVALID');
   binding.previousPlacement = previousPlacement;
   return binding;
 }
@@ -234,17 +234,17 @@ function assertPayloadInventory(inventory) {
       inventory.files.filter((file) => file.name === 'appsscript.json').length !== 1 ||
       typeof inventory.payload_sha256 !== 'string' ||
       !/^[0-9a-f]{64}$/.test(inventory.payload_sha256)) {
-    fail('WORK_0018_CANONICAL_PAYLOAD_MISMATCH');
+    fail('WORK_0028_CANONICAL_PAYLOAD_MISMATCH');
   }
   return inventory;
 }
 
 function initialExecutionState(repairHead, inventory, binding) {
   return {
-    schema: 'WORK_OS_EXISTING_TARGET_REPAIR_PLACEMENT_V1',
-    work_id: '0018',
+    schema: 'WORK_OS_GEMINI_PROVIDER_PLACEMENT_V1',
+    work_id: '0028',
     source_binding_work_id: '0010',
-    previous_placement_work_id: '0016',
+    previous_placement_work_id: '0018',
     repair_head: repairHead,
     payload_sha256: inventory.payload_sha256,
     target_fingerprint: binding.state.target_fingerprint,
@@ -256,15 +256,15 @@ function initialExecutionState(repairHead, inventory, binding) {
 
 function assertStateBase(state) {
   const valid = state &&
-    state.schema === 'WORK_OS_EXISTING_TARGET_REPAIR_PLACEMENT_V1' &&
-    state.work_id === '0018' && state.source_binding_work_id === '0010' &&
-    state.previous_placement_work_id === '0016' &&
+    state.schema === 'WORK_OS_GEMINI_PROVIDER_PLACEMENT_V1' &&
+    state.work_id === '0028' && state.source_binding_work_id === '0010' &&
+    state.previous_placement_work_id === '0018' &&
     /^[0-9a-f]{40}$/.test(String(state.repair_head || '')) &&
     /^[0-9a-f]{64}$/.test(String(state.payload_sha256 || '')) &&
     /^[0-9a-f]{64}$/.test(String(state.target_fingerprint || '')) &&
     Number.isInteger(state.push_attempt_count) &&
     Number.isInteger(state.pull_attempt_count);
-  if (!valid) fail('WORK_0018_EXECUTION_STATE_INVALID');
+  if (!valid) fail('WORK_0028_EXECUTION_STATE_INVALID');
 }
 
 function nextAttemptState(state, command) {
@@ -272,28 +272,28 @@ function nextAttemptState(state, command) {
   const next = Object.assign({}, state);
   if (command === 'push') {
     if (state.phase !== 'STAGED' || state.push_attempt_count !== 0 ||
-        state.pull_attempt_count !== 0) fail('WORK_0018_PUSH_ALREADY_ATTEMPTED');
+        state.pull_attempt_count !== 0) fail('WORK_0028_PUSH_ALREADY_ATTEMPTED');
     next.push_attempt_count = 1;
     next.phase = 'PUSH_ATTEMPT_STARTED';
     return next;
   }
   if (command === 'pull-verify') {
     if (state.phase !== 'PUSH_PASS' || state.push_attempt_count !== 1 ||
-        state.pull_attempt_count !== 0) fail('WORK_0018_PULL_ALREADY_ATTEMPTED');
+        state.pull_attempt_count !== 0) fail('WORK_0028_PULL_ALREADY_ATTEMPTED');
     next.pull_attempt_count = 1;
     next.phase = 'PULL_ATTEMPT_STARTED';
     return next;
   }
-  fail('WORK_0018_REMOTE_COMMAND_INVALID');
+  fail('WORK_0028_REMOTE_COMMAND_INVALID');
 }
 
 function stagePayload() {
-  if (process.env.GAS_WORK_0018_REPAIR_CI_CONFIRMED !== 'true') {
-    fail('WORK_0018_REPAIR_CI_CONFIRMATION_REQUIRED');
+  if (process.env.GAS_WORK_0028_CI_CONFIRMED !== 'true') {
+    fail('WORK_0028_REPAIR_CI_CONFIRMATION_REQUIRED');
   }
   const head = assertExactBranchCleanAndPublished();
   if (fs.existsSync(workspaceRoot) || fs.existsSync(pullRoot)) {
-    fail('WORK_0018_LOCAL_STATE_ALREADY_EXISTS');
+    fail('WORK_0028_LOCAL_STATE_ALREADY_EXISTS');
   }
   const binding = loadExistingBinding();
   const names = canonicalPayloadNames();
@@ -306,7 +306,7 @@ function stagePayload() {
   writeJsonAtomic(configPath, claspProjectConfig(binding.config.scriptId));
   const staged = assertPayloadInventory(inventoryFor(payloadRoot, names));
   if (JSON.stringify(staged) !== JSON.stringify(committed)) {
-    fail('WORK_0018_STAGED_PAYLOAD_SOURCE_SKEW');
+    fail('WORK_0028_STAGED_PAYLOAD_SOURCE_SKEW');
   }
   writeJsonAtomic(inventoryPath, staged);
   writeJsonAtomic(
@@ -320,31 +320,31 @@ function assertStagedPayload() {
   if (!fs.existsSync(payloadRoot) || !fs.existsSync(inventoryPath) ||
       !fs.existsSync(ignorePath) || !fs.existsSync(configPath) ||
       !fs.existsSync(executionStatePath)) {
-    fail('WORK_0018_STAGED_PAYLOAD_MISSING');
+    fail('WORK_0028_STAGED_PAYLOAD_MISSING');
   }
-  const state = readJson(executionStatePath, 'WORK_0018_EXECUTION_STATE_INVALID');
+  const state = readJson(executionStatePath, 'WORK_0028_EXECUTION_STATE_INVALID');
   assertStateBase(state);
   assertExactBranchCleanAndPublished(state.repair_head);
   const binding = loadExistingBinding();
-  const config = readJson(configPath, 'WORK_0018_TARGET_CONFIG_MISSING');
+  const config = readJson(configPath, 'WORK_0028_TARGET_CONFIG_MISSING');
   if (config.scriptId !== binding.config.scriptId ||
       state.target_fingerprint !== binding.state.target_fingerprint) {
-    fail('WORK_0018_EXISTING_TARGET_CHANGED');
+    fail('WORK_0028_EXISTING_TARGET_CHANGED');
   }
   try {
     assertTargetObjects(config, binding.target, null);
   } catch (error) {
     if (error instanceof ClaspGateError) {
-      fail('WORK_0018_EXISTING_TARGET_BINDING_INVALID');
+      fail('WORK_0028_EXISTING_TARGET_BINDING_INVALID');
     }
     throw error;
   }
   assertExactPayloadDirectory(
-    payloadRoot, 'WORK_0018_STAGED_PAYLOAD_UNEXPECTED_CONTENT'
+    payloadRoot, 'WORK_0028_STAGED_PAYLOAD_UNEXPECTED_CONTENT'
   );
   const names = canonicalPayloadNames();
   const saved = assertPayloadInventory(readJson(
-    inventoryPath, 'WORK_0018_STAGED_PAYLOAD_INVENTORY_INVALID'
+    inventoryPath, 'WORK_0028_STAGED_PAYLOAD_INVENTORY_INVALID'
   ));
   const staged = assertPayloadInventory(inventoryFor(payloadRoot, names));
   const committed = assertPayloadInventory(inventoryForCommittedPayload(names));
@@ -352,14 +352,14 @@ function assertStagedPayload() {
       JSON.stringify(staged) !== JSON.stringify(committed) ||
       state.payload_sha256 !== staged.payload_sha256 ||
       fs.readFileSync(ignorePath, 'utf8') !== claspIgnoreContents()) {
-    fail('WORK_0018_STAGED_PAYLOAD_MISMATCH');
+    fail('WORK_0028_STAGED_PAYLOAD_MISMATCH');
   }
   return { inventory: staged, config, state };
 }
 
 function isolatedNativeSelection() {
   const staged = assertStagedPayload();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0018-native-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0028-native-'));
   try {
     const isolatedPayload = path.join(root, 'payload');
     fs.mkdirSync(isolatedPayload, { recursive: true });
@@ -400,7 +400,7 @@ async function existingAuthStatus() {
     const auth = await authModule.initAuth({});
     if (!auth || !auth.credentials) fail('USER_ACTION_REQUIRED_BLOCKER');
     return {
-      lane: 'work_0018_existing_target_placement',
+      lane: 'work_0028_existing_target_placement',
       command: 'auth-status',
       status: 'PASS',
       existing_clasp_auth: 'READY',
@@ -414,9 +414,9 @@ async function existingAuthStatus() {
 }
 
 function pushPayload() {
-  if (process.env.GAS_WORK_0018_PUSH_ALLOWED !== 'true' ||
+  if (process.env.GAS_WORK_0028_PUSH_ALLOWED !== 'true' ||
       process.env.GAS_DEV_CLASP_ALLOWED !== 'true') {
-    fail('WORK_0018_PUSH_OPT_IN_REQUIRED');
+    fail('WORK_0028_PUSH_OPT_IN_REQUIRED');
   }
   const staged = assertStagedPayload();
   const native = assertClaspNativePayloadSelection(workspaceRoot);
@@ -441,7 +441,7 @@ function pushPayload() {
   });
   writeJsonAtomic(executionStatePath, started);
   return {
-    lane: 'work_0018_existing_target_placement', command: 'push', status: 'PASS',
+    lane: 'work_0028_existing_target_placement', command: 'push', status: 'PASS',
     push_attempt_count: 1, file_count: semantic.file_count,
     gs_file_count: semantic.gs_file_count,
     manifest_file_count: semantic.manifest_file_count,
@@ -456,7 +456,7 @@ function pushPayload() {
 }
 
 function preparePullWorkspace(config) {
-  if (fs.existsSync(pullRoot)) fail('WORK_0018_PULL_WORKSPACE_ALREADY_EXISTS');
+  if (fs.existsSync(pullRoot)) fail('WORK_0028_PULL_WORKSPACE_ALREADY_EXISTS');
   fs.mkdirSync(path.join(pullRoot, 'payload'), { recursive: true });
   writeJsonAtomic(path.join(pullRoot, '.clasp.json'), claspProjectConfig(
     config.scriptId
@@ -465,25 +465,25 @@ function preparePullWorkspace(config) {
 }
 
 function pullVerify() {
-  if (process.env.GAS_WORK_0018_PULL_ALLOWED !== 'true' ||
+  if (process.env.GAS_WORK_0028_PULL_ALLOWED !== 'true' ||
       process.env.GAS_DEV_CLASP_ALLOWED !== 'true') {
-    fail('WORK_0018_PULL_OPT_IN_REQUIRED');
+    fail('WORK_0028_PULL_OPT_IN_REQUIRED');
   }
   const staged = assertStagedPayload();
   preparePullWorkspace(staged.config);
   const started = nextAttemptState(staged.state, 'pull-verify');
   writeJsonAtomic(executionStatePath, started);
   const result = runClasp(['pull'], pullRoot);
-  if (result.exit_code !== 0) fail('WORK_0018_CLASP_PULL_FAILED');
+  if (result.exit_code !== 0) fail('WORK_0028_CLASP_PULL_FAILED');
   const pulledRoot = path.join(pullRoot, 'payload');
   assertExactPayloadDirectory(
-    pulledRoot, 'WORK_0018_PULLBACK_UNEXPECTED_CONTENT'
+    pulledRoot, 'WORK_0028_PULLBACK_UNEXPECTED_CONTENT'
   );
   const pulled = assertPayloadInventory(
     inventoryFor(pulledRoot, canonicalPayloadNames())
   );
   if (JSON.stringify(pulled) !== JSON.stringify(staged.inventory)) {
-    fail('WORK_0018_PULLBACK_PARITY_FAILED');
+    fail('WORK_0028_PULLBACK_PARITY_FAILED');
   }
   Object.assign(started, {
     phase: 'PULL_PARITY_PASS',
@@ -492,7 +492,7 @@ function pullVerify() {
   });
   writeJsonAtomic(executionStatePath, started);
   return {
-    lane: 'work_0018_existing_target_placement',
+    lane: 'work_0028_existing_target_placement',
     command: 'pull-verify', status: 'PASS', pull_attempt_count: 1,
     parity: 'PASS', file_count: pulled.file_count,
     gs_file_count: pulled.files.filter((file) => file.name.endsWith('.gs')).length,
@@ -544,24 +544,24 @@ async function main() {
     }
     if (command === 'auth-status') safeWrite(await existingAuthStatus());
     else if (command === 'stage') safeWrite(Object.assign({
-      lane: 'work_0018_existing_target_placement', command, status: 'PASS',
+      lane: 'work_0028_existing_target_placement', command, status: 'PASS',
       google_operation: 'NOT_EXECUTED'
     }, stagePayload()));
     else if (command === 'inventory-check') safeWrite(Object.assign({
-      lane: 'work_0018_existing_target_placement', command, status: 'PASS',
+      lane: 'work_0028_existing_target_placement', command, status: 'PASS',
       google_operation: 'NOT_EXECUTED'
     }, isolatedNativeSelection()));
     else if (command === 'push') safeWrite(pushPayload());
     else if (command === 'pull-verify') safeWrite(pullVerify());
     else if (command === 'evidence') safeWrite({
-      lane: 'work_0018_existing_target_placement', command, status: 'PASS',
+      lane: 'work_0028_existing_target_placement', command, status: 'PASS',
       sensitive_output: 'SUPPRESSED', attempts: safeAttemptEvidence()
     });
-    else fail('UNKNOWN_WORK_0018_COMMAND');
+    else fail('UNKNOWN_WORK_0028_COMMAND');
   } catch (error) {
-    const code = error && error.code || 'WORK_0018_OPERATION_FAILED';
+    const code = error && error.code || 'WORK_0028_OPERATION_FAILED';
     safeWrite({
-      lane: 'work_0018_existing_target_placement', command, status: code,
+      lane: 'work_0028_existing_target_placement', command, status: code,
       sensitive_output: 'SUPPRESSED', attempts: safeAttemptEvidence(),
       message: code
     });

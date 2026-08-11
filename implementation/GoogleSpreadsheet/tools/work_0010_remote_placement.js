@@ -58,7 +58,7 @@ const exactBranch = 'codex/0010-fresh-controlled-remote-placement';
 const startingWork0007Head =
   '3f54d2a90c38ea574db6bd20ab8341d27d82a183';
 const expectedPayloadSha256 =
-  '59327c8322cea8d5884375cdca12935b96674cb127460cf4ca0a2df02c2107ee';
+  '84059b5b9977824ea32c7c3e6e80d4e67062b27806e6041952e257776dc3763a';
 const syntheticTitle = 'Work OS Synthetic Sandbox Work 0010';
 const spreadsheetMimeType = 'application/vnd.google-apps.spreadsheet';
 
@@ -188,9 +188,10 @@ function committedPayloadBuffer(name) {
 
 function assertPayloadInventory(inventory) {
   if (!inventory || inventory.schema !== 'WORK_OS_LOCAL_CLASP_PAYLOAD_V1' ||
-      inventory.file_count !== 23 ||
+      inventory.file_count !== canonicalPayloadFileNames.length ||
       inventory.payload_sha256 !== expectedPayloadSha256 ||
-      !Array.isArray(inventory.files) || inventory.files.length !== 23) {
+      !Array.isArray(inventory.files) ||
+      inventory.files.length !== canonicalPayloadFileNames.length) {
     fail('WORK_0010_CANONICAL_PAYLOAD_MISMATCH');
   }
   return inventory;
@@ -597,7 +598,9 @@ async function pushPayload() {
   const target = readJson(targetPath, 'WORK_0010_TARGET_NOT_CONFIGURED');
   assertTargetBinding(config, target, state);
   const native = assertClaspNativePayloadSelection(workspaceRoot);
-  if (native.file_count !== 23) fail('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+  if (native.file_count !== canonicalPayloadFileNames.length) {
+    fail('CLASP_NATIVE_PAYLOAD_SELECTION_INVALID');
+  }
   const started = nextAttemptState(state, 'push');
   writeJsonAtomic(executionStatePath, started);
   const result = runClasp(claspSemanticPushArguments, workspaceRoot);

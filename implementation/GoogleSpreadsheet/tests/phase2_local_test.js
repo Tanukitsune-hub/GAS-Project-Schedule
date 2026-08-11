@@ -1561,6 +1561,7 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
       ...(phase6
         ? ['https://www.googleapis.com/auth/script.scriptapp']
         : []),
+      'https://www.googleapis.com/auth/script.external_request',
       'https://www.googleapis.com/auth/script.container.ui',
       'https://www.googleapis.com/auth/spreadsheets.currentonly',
       'https://www.googleapis.com/auth/userinfo.email'
@@ -1584,7 +1585,9 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
   );
   const sources = fs.readdirSync(appsScriptRoot)
     .filter((fileName) =>
-      fileName.endsWith('.gs') && fileName !== '99_TestHarness.gs'
+      fileName.endsWith('.gs') &&
+      fileName !== '99_TestHarness.gs' &&
+      fileName !== '20_GeminiProvider.gs'
     )
     .map((fileName) =>
       fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8')

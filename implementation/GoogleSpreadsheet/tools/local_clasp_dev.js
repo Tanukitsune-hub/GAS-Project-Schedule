@@ -66,6 +66,7 @@ const canonicalPayloadFileNames = Object.freeze([
   '17_Utilities.gs',
   '18_Worker.gs',
   '19_RuntimeSettings.gs',
+  '20_GeminiProvider.gs',
   '99_TestHarness.gs',
   'Menu.gs',
   'appsscript.json'
@@ -888,7 +889,7 @@ function selfTest() {
   }
   test('PAYLOAD_ALLOWLIST_EXCLUDES_DOCS_AND_CLASP_EXAMPLE', () => {
     const names = canonicalPayloadNames();
-    assert.strictEqual(names.length, 23);
+    assert.strictEqual(names.length, 24);
     assert.ok(names.every((name) => name.endsWith('.gs') || name === 'appsscript.json'));
     assert.ok(!names.includes('.clasp.json.example'));
   });
@@ -1063,7 +1064,7 @@ function main() {
       completeWork0006RemoteAttempt(command);
       const safe = {
         lane: 'local_clasp_dev', command, status: 'PASS', parity: 'PASS',
-        file_count: inventory.file_count, gs_file_count: 22,
+        file_count: inventory.file_count, gs_file_count: 23,
         manifest_file_count: 1, missing_file_count: 0, extra_file_count: 0,
         payload_sha256: inventory.payload_sha256,
         clasp_version: claspVersion(), command_output_sha256: result.output_sha256

@@ -1,4 +1,4 @@
-# Calendar Outbox and Authority-Loss Protocol — Code 2.8.14-prepilot
+# Calendar Outbox and Authority-Loss Protocol 窶・Code 2.8.15-prepilot
 
 ## Invariant
 

@@ -77,10 +77,10 @@ test('STAGING_USES_EXACT_COMMITTED_CURRENT_PAYLOAD_BYTES', () => {
   const inventory = inventoryForCommittedPayload(
     canonicalPayloadFileNames.slice().sort()
   );
-  assert.strictEqual(inventory.file_count, 23);
+  assert.strictEqual(inventory.file_count, 24);
   assert.strictEqual(
     inventory.payload_sha256,
-    '82f41338f4892f364922abc54aa4bf236cab69b58e93fcac28d1a04c31071613'
+    '84059b5b9977824ea32c7c3e6e80d4e67062b27806e6041952e257776dc3763a'
   );
 });
 
@@ -156,13 +156,13 @@ test('NATIVE_INVENTORY_PASSES_BEFORE_PUSH_ATTEMPT_RECORD', () => {
     'synthetic-workspace', config, target, {
       assertClaspNativePayloadSelection: () => {
         calls.push('native-inventory');
-        return { file_count: 23 };
+        return { file_count: 24 };
       },
       beginWork0004RemoteAttempt: () => calls.push('begin-attempt')
     }
   );
   assert.deepStrictEqual(calls, ['native-inventory', 'begin-attempt']);
-  assert.strictEqual(status.file_count, 23);
+  assert.strictEqual(status.file_count, 24);
 });
 
 test('SECOND_PUSH_ATTEMPT_IS_REFUSED', () => {

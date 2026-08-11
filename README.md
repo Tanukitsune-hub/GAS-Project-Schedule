@@ -7,7 +7,7 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.14-prepilot` |
+| Code | `2.8.15-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
@@ -18,12 +18,13 @@ Workspace Personal Work OS.
 | Active deployment target | `NONE` |
 
 `CURRENT_CONTRACT.json` is the machine-checkable source/release contract once
-the A14 source commit and direct-child B14 release commit have been created.
+the Work 0028 A15 source commit and direct-child B15 release commit have been
+created.
 The two current packages are:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.14-prepilot/` —
+- `implementation/GoogleSpreadsheet/release/v2.8.15-prepilot/` 窶・
   `TEST_MODE=true`, Automation OFF, test harness included.
-- `implementation/GoogleSpreadsheet/release/v2.8.14-prepilot-phase8c/` — the
+- `implementation/GoogleSpreadsheet/release/v2.8.15-prepilot-phase8c/` 窶・the
   audited `TEST_MODE=false` transformation only, with the test harness omitted.
 
 Neither package is a deployment authorization. There is no active transfer
@@ -41,8 +42,8 @@ path in Work 0002.
 - Authority protocols: `docs/TASK_AUTHORITY_PROTOCOL.md` and
   `docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`
 - Current verification matrix: `docs/R4_VERIFICATION_MATRIX.md`
-- Work instruction/report: `docs/handoffs/0002-instruction.md` and
-  `docs/handoffs/0002-report.md`
+- Work instruction/report: `docs/handoffs/0028-instruction.md` and
+  `docs/handoffs/0028-report.md`
 
 Historical audits, instructions, releases, transfers, and evidence remain
 historical records. They are not active operator instructions or current
@@ -59,7 +60,7 @@ pnpm run verify:local
 
 The gate parses tracked JSON/YAML, validates the Apps Script payload and V8
 syntax, executes every current `*_test.js` suite against the real `.gs`
-source, verifies the two current release packages and A14/B14 ancestry, scans
+source, verifies the two current release packages and A15/B15 ancestry, scans
 for secrets and local state, and rejects untracked generated residue.
 
 CI performs the same non-Google gate from a fresh checkout with read-only
@@ -72,5 +73,6 @@ deployment identifiers, OAuth state, or GitHub secret context, and never runs
 Local and CI PASS justify only `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`.
 Live Apps Script runtime, Gmail, Calendar, Sheets-native semantics, triggers,
 OAuth, deployment, real AI Provider behavior, pilot, production, and company
-handoff remain unaccepted. The production AI registry remains intentionally
-empty and fails closed. Automation remains OFF.
+handoff remain unaccepted. The Gemini registry is present, but external AI is
+disabled by default and fails closed until separately authorized credential
+and synthetic runtime validation. Automation remains OFF.

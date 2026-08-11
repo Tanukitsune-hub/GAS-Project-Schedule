@@ -166,10 +166,10 @@ function classifyRemoteContent(files) {
   if (files.length === 1 && serverCount === 0 && manifestCount === 1 &&
       htmlCount === 0 && actual[0] === 'appsscript.json') {
     classification = 'REMOTE_HAS_MANIFEST_ONLY';
-  } else if (files.length === 23 && serverCount === 22 &&
+  } else if (files.length === 24 && serverCount === 23 &&
       manifestCount === 1 && htmlCount === 0 &&
       normalized.every(Boolean) && missing.length === 0 && extra.length === 0) {
-    classification = 'REMOTE_HAS_23_CANONICAL_FILES';
+    classification = 'REMOTE_HAS_24_CANONICAL_FILES';
   }
   return {
     classification,

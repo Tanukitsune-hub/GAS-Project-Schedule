@@ -1,4 +1,4 @@
-# Current Verification Matrix — 2.8.14-prepilot
+# Current Verification Matrix 窶・2.8.15-prepilot
 
 Gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -14,7 +14,7 @@ Gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 | Diagnostic completeness/read-only | bounded sorted IDs, completeness flags, no write paths | T1-01 bounded-summary suite | Local required; real Google pending |
 | Gmail exact-message behavior | exact-message ordering, idempotency, labels, checkpoints | Phase 2/3/6 and Gmail policy suites | Local required; real Gmail pending |
 | Current version/gate/transfer state | one machine contract and active-document scan | `canonical_document_consistency_test.js` | Local required |
-| Source/release parity and ancestry | A14→B14, manifests, checksums, exact transform | release verifiers and local gate | Local/fresh clone/CI required |
+| Source/release parity and ancestry | A15竊達14, manifests, checksums, exact transform | release verifiers and local gate | Local/fresh clone/CI required |
 | Secret/local/clasp exclusion | tracked-path and content scan | `local_validation_secret_scan_test.js`, local gate | Local/fresh clone/CI required |
 
 Historical fixed-transfer evidence remains immutable but is not current. Work

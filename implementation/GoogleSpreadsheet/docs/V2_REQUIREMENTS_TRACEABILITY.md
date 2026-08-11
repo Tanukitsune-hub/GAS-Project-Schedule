@@ -1,4 +1,4 @@
-# Requirements Traceability — 2.8.12 Clean Integration Baseline
+# Requirements Traceability 窶・2.8.12 Clean Integration Baseline
 
 Last updated: 2026-08-08
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
@@ -6,7 +6,7 @@ Specification: `docs/handoffs/0002-instruction.md`
 Baseline version contract: Code `2.8.12-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 Current publication gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`. There is no active transfer or deployment target. Local and CI checks are non-Google only; standalone functional acceptance remains `NOT_EXECUTED`.
 
-The current Work 0018 successor is Code `2.8.14-prepilot`; it changes only the
+The current Work 0018 successor is Code `2.8.15-prepilot`; it changes only the
 Gmail Advanced Service body decode boundary from the Work 0016 String-only
 assumption to strict explicit-String or validated byte-sequence handling, plus
 associated validation, release, and placement tooling. The Work 0002
@@ -96,8 +96,8 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 | ID | Requirement | Primary evidence | Current evidence |
 |---|---|---|---|
 | QD-01 | Dashboard exact Setup control plane and exact seed; foreign data/control/format remains fail-closed | `15_Dashboard.gs`; `prepilot_dashboard_safety_test.js`; `phase8b_quick_diagnostic_real_runtime_test.js`; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
-| QD-02 | Task rows 1–2 / 50-column protection, five schema-defined checkbox validation, and narrow identity-empty `false` contract | `01_TypesAndSchemas.gs`; `03_SheetBuilder.gs`; `16_Diagnostics.gs`; runtime suite; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
-| QD-03 | S00–S80 preserved; S90/S99 resume neither duplicates nor deletes synthetic label/calendar/edit-trigger resources | `phase8b_setup_ledger_visibility_test.js`; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
+| QD-02 | Task rows 1窶・ / 50-column protection, five schema-defined checkbox validation, and narrow identity-empty `false` contract | `01_TypesAndSchemas.gs`; `03_SheetBuilder.gs`; `16_Diagnostics.gs`; runtime suite; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
+| QD-03 | S00窶鉄80 preserved; S90/S99 resume neither duplicates nor deletes synthetic label/calendar/edit-trigger resources | `phase8b_setup_ledger_visibility_test.js`; T7 fresh-clone audit | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 | QD-04 | Company-PC replacement list is Git raw-byte derived from T6.1 and final B7 payload | v2.8.7 patch-manifest tools; T7 manifest verifier | FIXED_TRANSFER_VERIFIED; real Workspace retransfer/retest `NOT_EXECUTED` |
 
 ## Phase 8B Dashboard surface traceability
@@ -107,17 +107,17 @@ replace the v2.8.6 evidence after `PHASE8B-SETUP-01`.
 | DS-01 | Accept explicit owner and proven implicit owner Protection representations without relying on editor count alone | `15_Dashboard.gs`; `phase8b_dashboard_surface_real_runtime_test.js` | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
 | DS-02 | Reject null owner / Shared Drive, different effective user, `canEdit=false`, foreign/blank editor, domain edit, target audience, warning-only, duplicate/wrong/unprotected/overlapping protections | `15_Dashboard.gs`; native-protection fake-runtime cases | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
 | DS-03 | Separate Protection/name/value/formula/validation/note/merge/hidden/background/font/number-format/seed-marker conflicts into closed safe enums/counts | `15_Dashboard.gs`; `16_Diagnostics.gs`; surface conflict matrix | LOCAL_REGRESSION_PASS; no content/identity emitted |
-| DS-04 | Quick Diagnostic is byte-stable and S00–S80 resume preserves labels, Calendar, Properties, edit trigger, Automation OFF, and no five-minute trigger | dashboard runtime suite; prior Setup/Quick Diagnostic suites | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
+| DS-04 | Quick Diagnostic is byte-stable and S00窶鉄80 resume preserves labels, Calendar, Properties, edit trigger, Automation OFF, and no five-minute trigger | dashboard runtime suite; prior Setup/Quick Diagnostic suites | LOCAL_REGRESSION_PASS; real Workspace retransfer/retest `NOT_EXECUTED` |
 | DS-05 | Company-PC patch is raw-Git-blob derived from fixed T7 and final B8 | v2.8.8 patch-manifest builder/verifier; fixed T8 detached-clone audit | FIXED_TRANSFER_VERIFIED; exactly 3 changed / 20 unchanged; `appsscript.json` unchanged |
 
 ## Phase 8B Dashboard number-format traceability
 
 | ID | Requirement | Primary evidence | Current evidence |
 |---|---|---|---|
-| NF-01 | Strict Diagnostic reports the exact 17×3 system-block format conflict with closed enum/count output only | `15_Dashboard.gs`; `phase8b_dashboard_number_format_real_runtime_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+| NF-01 | Strict Diagnostic reports the exact 17ﾃ・ system-block format conflict with closed enum/count output only | `15_Dashboard.gs`; `phase8b_dashboard_number_format_real_runtime_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
 | NF-02 | Setup, and only Setup before S90, may establish the deterministic plain-text contract after full control-plane and non-format surface proof | `02_Setup.gs`; `15_Dashboard.gs`; number-format runtime suite | LOCAL_REGRESSION_PASS; no Diagnostic repair path |
 | NF-03 | Seed, owned marker, and full versioned states are idempotent; empty/foreign/ambiguous surfaces fail closed and leave the range unchanged | number-format runtime suite; recovery guide | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
-| NF-04 | S00〜S80 resume preserves external-resource identity, Automation OFF, and absent five-minute trigger while S90/S99 resume | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_setup_ledger_visibility_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
+| NF-04 | S00縲彜80 resume preserves external-resource identity, Automation OFF, and absent five-minute trigger while S90/S99 resume | `phase8b_dashboard_number_format_real_runtime_test.js`; `phase8b_setup_ledger_visibility_test.js` | LOCAL_REGRESSION_PASS; real Workspace retest `NOT_EXECUTED` |
 | NF-05 | Company-PC patch list is raw Git-blob derived from fixed T8 and corrected final B9.1 payload | v2.8.9 patch-manifest builder/verifier; fixed T9 detached-clone audit | FIXED_TRANSFER_VERIFIED; exactly 3 changed / 20 unchanged; `appsscript.json` unchanged; real Workspace retest `NOT_EXECUTED` |
 
 ## Phase 8B Dashboard write-visibility / module-skew traceability
@@ -133,7 +133,7 @@ remains `NOT_EXECUTED`.
 | WV-03 | Flush unavailable/failure or stale post-flush state fails as `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION` with bounded evidence | Dashboard runtime suite; recovery guide | PASS; no locale or actual format string captured |
 | WV-04 | Canonical block is idempotent with zero write/flush; Quick/Deep remain zero-write and zero-flush | Dashboard and Diagnostic runtime suites | PASS; read-only resource snapshots and mutation sentinels covered |
 | WV-05 | Config/Setup/Dashboard mismatch fails as `E_MODULE_VERSION_SKEW` before a write; aligned identifiers may proceed | `00_Config.gs`; `02_Setup.gs`; `15_Dashboard.gs`; module-skew suite | PASS, 5/5 suite assertions |
-| WV-06 | S00–S80 resume records safe normalization evidence without changing Gmail-label, Calendar, Property, edit-trigger, Automation-OFF, or no-five-minute-trigger invariants | Setup resume/runtime suites | PASS; real Workspace retest `NOT_EXECUTED` |
+| WV-06 | S00窶鉄80 resume records safe normalization evidence without changing Gmail-label, Calendar, Property, edit-trigger, Automation-OFF, or no-five-minute-trigger invariants | Setup resume/runtime suites | PASS; real Workspace retest `NOT_EXECUTED` |
 | WV-07 | Four canonical documents and the marked active Company-PC boundary agree on current version/gate/fixed-ref/path; synthetic T8/T9/T10, old-gate, and old-path skew fail | canonical-document consistency suite | LOCAL PASS; T11 is the active fixed transfer; historical T10 manifest baseline remains allowed |
 | WV-08 | Historical T10 patch-list provenance remains immutable; current T11 patch manifest uses T10 only as its old-byte/hash baseline | v2.8.10 and v2.8.11 patch-manifest verifiers | LOCAL PASS; T11 lists 5 modified / 18 unchanged / 0 added or removed; `appsscript.json` unchanged |
 
@@ -141,7 +141,7 @@ remains `NOT_EXECUTED`.
 
 | ID | Route | Primary module | Authority contract |
 |---|---|---|---|
-| W-01 | insertTask | `08_TaskRepository.gs` | PREPARED → one row write → COMMITTED |
+| W-01 | insertTask | `08_TaskRepository.gs` | PREPARED 竊・one row write 竊・COMMITTED |
 | W-02 | upsertTask update | `08_TaskRepository.gs` | shared validator / commitAuthorityRow |
 | W-03 | direct Task update | `08_TaskRepository.gs` | shared validator / commitAuthorityRow |
 | W-04 | review decision update | `08_TaskRepository.gs` | ledger projection plus one controlled decision input |

@@ -1436,6 +1436,9 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
       'https://www.googleapis.com/auth/calendar.calendarlist.readonly'
     );
   }
+  expectedScopes.push(
+    'https://www.googleapis.com/auth/script.external_request'
+  );
   assert.deepStrictEqual(manifest.oauthScopes, expectedScopes);
   const expectedServices = [
     {
@@ -1458,7 +1461,10 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
   assert.strictEqual(Object.prototype.hasOwnProperty.call(manifest, 'triggers'), false);
   const serialized = JSON.stringify(manifest);
   assert.strictEqual(/calendar/i.test(serialized), phase4);
-  assert.strictEqual(/external_request/i.test(serialized), false);
+  assert.strictEqual(
+    /https:\/\/www\.googleapis\.com\/auth\/script\.external_request/i.test(serialized),
+    true
+  );
   assert.strictEqual(
     /scriptapp|script\.scriptapp/i.test(serialized),
     phase6
@@ -1467,6 +1473,7 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
   const productionSource = fs
     .readdirSync(appsScriptRoot)
     .filter((name) => name.endsWith('.gs'))
+    .filter((name) => name !== '20_GeminiProvider.gs')
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
   assert.strictEqual(/\bUrlFetchApp\b/.test(productionSource), false);

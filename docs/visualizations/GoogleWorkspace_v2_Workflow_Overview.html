@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" data-code-version="2.8.14-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_CONTROLLED_SANDBOX_VALIDATION">
+<html lang="en" data-code-version="2.8.15-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_CONTROLLED_SANDBOX_VALIDATION">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Google Workspace Personal Work OS v2 — Authority Workflow</title>
+  <title>Google Workspace Personal Work OS v2 窶・Authority Workflow</title>
   <style>
     :root{--ink:#172033;--line:#bac7da;--blue:#195cab;--good:#16734c;--warn:#8a4b00;--bad:#b42318}
     body{margin:0;background:#f5f7fb;color:var(--ink);font:15px system-ui,sans-serif}
@@ -21,7 +21,7 @@
 <main>
   <h1>Task Authority and Calendar Reconciliation</h1>
   <div class="meta">
-    <span class="badge">Code 2.8.14-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
+    <span class="badge">Code 2.8.15-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
     <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">READY_FOR_CONTROLLED_SANDBOX_VALIDATION</span>
   </div>
   <h2>Setup control-plane bootstrap</h2>
@@ -36,14 +36,14 @@
   <section class="flow" aria-label="quick diagnostic workflow">
     <article class="node"><h3>Setup-owned Dashboard</h3><p>Only the exact protected sheet/header control plane and exact three-row safe seed are accepted before explicit refresh.</p></article>
     <div class="arrow">&rarr;</div>
-    <article class="node authority"><h3>Task control plane</h3><p>Rows 1–2 across all 50 Task columns are one canonical protection. All five schema checkbox fields, including <code>calendar_reconcile_required</code>, come from the validation plan.</p></article>
+    <article class="node authority"><h3>Task control plane</h3><p>Rows 1窶・ across all 50 Task columns are one canonical protection. All five schema checkbox fields, including <code>calendar_reconcile_required</code>, come from the validation plan.</p></article>
     <div class="arrow">&rarr;</div>
     <article class="node"><h3>Read-only result</h3><p>An identity-empty row may retain only canonical checkbox Boolean <code>false</code>. Foreign controls, values, formulas, notes, names, merges, hidden state, or unsafe formatting fail closed.</p></article>
   </section>
-  <p><code>PHASE8B-QUICK-DIAGNOSTIC-01</code>: S00–S80 may be preserved while only S90/S99 resume. No manual Sheet, checkbox, protection, Dashboard, Ledger, Gmail, Calendar, trigger, or Task-data repair is permitted.</p>
+  <p><code>PHASE8B-QUICK-DIAGNOSTIC-01</code>: S00窶鉄80 may be preserved while only S90/S99 resume. No manual Sheet, checkbox, protection, Dashboard, Ledger, Gmail, Calendar, trigger, or Task-data repair is permitted.</p>
   <p><code>PHASE8B-DASHBOARD-01</code>: canonical owner-created Protection accepts either an explicit owner editor or an implicit owner with <code>canEdit()=true</code>, only when effective user equals owner. Foreign editors, domain edit, target audiences, wrong/duplicate protection, unprotected ranges, and each closed-enum surface conflict remain FAIL.</p>
-  <p><code>PHASE8B-DASHBOARD-NUMBER-FORMAT-01</code>: only Setup, immediately before S90, may establish the deterministic plain-text contract for the exact 17×3 proven system block. Quick/Deep Diagnostic remain read-only; any other surface conflict blocks normalization.</p>
-  <h2>v2.8.14 bounded Diagnostic-summary boundary</h2>
+  <p><code>PHASE8B-DASHBOARD-NUMBER-FORMAT-01</code>: only Setup, immediately before S90, may establish the deterministic plain-text contract for the exact 17ﾃ・ proven system block. Quick/Deep Diagnostic remain read-only; any other surface conflict blocks normalization.</p>
+  <h2>v2.8.15 bounded Diagnostic-summary boundary</h2>
   <section class="flow" aria-label="bounded diagnostic summary workflow">
     <article class="node authority"><h3>1. Preserve</h3><p>All existing Diagnostic checks and WARN/FAIL outcomes remain unchanged.</p></article>
     <div class="arrow">&rarr;</div>
@@ -55,30 +55,30 @@
   <section class="flow" aria-label="dashboard write visibility workflow">
     <article class="node authority"><h3>1. Module contract</h3><p>Config, Setup, and Dashboard must expose one matching S90 contract. Skew fails before any format write.</p></article>
     <div class="arrow">&rarr;</div>
-    <article class="node"><h3>2. Write and flush</h3><p>Only a proven noncanonical exact 17×3 block is written. Setup calls <code>SpreadsheetApp.flush()</code> once.</p></article>
+    <article class="node"><h3>2. Write and flush</h3><p>Only a proven noncanonical exact 17ﾃ・ block is written. Setup calls <code>SpreadsheetApp.flush()</code> once.</p></article>
     <div class="arrow">&rarr;</div>
     <article class="node authority"><h3>3. Fresh strict read</h3><p>Setup reacquires the exact Range and requires all 51 cells to satisfy the canonical contract before read-only Quick Diagnostic.</p></article>
   </section>
   <p>Flush unavailable/failure or a noncanonical reread stops as <code>E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION</code>. Module mismatch stops as <code>E_MODULE_VERSION_SKEW</code>. Only closed states, Booleans, and counts are retained.</p>
   <section class="flow" aria-label="authority workflow">
     <article class="node"><h3>1. User / Gmail input</h3><p>Raw business intent enters the visible Task workflow.</p></article>
-    <div class="arrow">→</div>
+    <div class="arrow">竊・/div>
     <article class="node"><h3>2. Validate</h3><p>Shared validator checks the protected hidden ledger. No snapshot-cell fallback.</p></article>
-    <div class="arrow">→</div>
-    <article class="node authority"><h3>3. Two-slot ledger</h3><p>Inactive slot PREPARED → one Task-row write → durable COMMITTED promotion.</p></article>
+    <div class="arrow">竊・/div>
+    <article class="node authority"><h3>3. Two-slot ledger</h3><p>Inactive slot PREPARED 竊・one Task-row write 竊・durable COMMITTED promotion.</p></article>
   </section>
   <section class="flow" aria-label="operational workflow">
     <article class="node"><h3>4. Operational Task</h3><p>Only COMMITTED, authority-valid Task rows are indexed for Worker and Review.</p></article>
-    <div class="arrow">→</div>
+    <div class="arrow">竊・/div>
     <article class="node"><h3>5. Durable outbox intent</h3><p>Calendar intent is persisted before external Calendar I/O.</p></article>
-    <div class="arrow">→</div>
+    <div class="arrow">竊・/div>
     <article class="node"><h3>6. Calendar reconcile</h3><p>A final short-lock validator arms durable intent before I/O; authority loss compensates only a verified-owned deterministic Event. Calendar is derived state.</p></article>
   </section>
   <section class="flow" aria-label="failure workflow">
     <article class="node excluded"><h3>Moved / sorted row</h3><p>Rebind the ledger physical hint only. Do not rewrite business data.</p></article>
-    <div class="arrow">→</div>
+    <div class="arrow">竊・/div>
     <article class="node excluded"><h3>Deleted row</h3><p>Ledger becomes ORPHANED, clears its live hint, and never recreates the Task.</p></article>
-    <div class="arrow">→</div>
+    <div class="arrow">竊・/div>
     <article class="node excluded"><h3>Missing / duplicate authority</h3><p>QUARANTINED or UNRECOVERABLE. Worker, Review, and Calendar exclude it; pending outbox is CANCELLED.</p></article>
   </section>
   <h2>Fault recovery matrix</h2>

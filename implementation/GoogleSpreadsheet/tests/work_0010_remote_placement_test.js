@@ -108,18 +108,18 @@ test('EXACT_BRANCH_AND_STARTING_HEAD_ARE_PINNED', () => {
   assert.strictEqual(isExactBranch('codex/0006-fresh-controlled-remote-placement'), false);
 });
 
-test('EXACT_COMMITTED_CANDIDATE_IS_23_FILES', () => {
+test('EXACT_COMMITTED_CURRENT_CANDIDATE_IS_24_FILES', () => {
   const inventory = inventoryForCommittedPayload(
     canonicalPayloadFileNames.slice().sort()
   );
-  assert.strictEqual(inventory.file_count, 23);
+  assert.strictEqual(inventory.file_count, 24);
   assert.strictEqual(
     expectedPayloadSha256,
-    '59327c8322cea8d5884375cdca12935b96674cb127460cf4ca0a2df02c2107ee'
+    '84059b5b9977824ea32c7c3e6e80d4e67062b27806e6041952e257776dc3763a'
   );
   assert.match(inventory.payload_sha256, /^[0-9a-f]{64}$/);
   assert.strictEqual(
-    inventory.files.filter((file) => file.name.endsWith('.gs')).length, 22
+    inventory.files.filter((file) => file.name.endsWith('.gs')).length, 23
   );
 });
 

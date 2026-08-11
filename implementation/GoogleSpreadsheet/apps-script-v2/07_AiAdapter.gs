@@ -367,6 +367,94 @@ var WorkOsAiAdapter = (function () {
     return output;
   }
 
+  function getOutputJsonSchema() {
+    function nullable(type, extra) {
+      return Object.assign({ type: [type, 'null'] }, extra || {});
+    }
+    var actionProperties = {
+      action_type: {
+        type: 'string',
+        enum: ACTION_TYPES.slice()
+      },
+      target_task_id: nullable('string', {
+        pattern: '^tsk_[0-9a-f]{32}$',
+        maxLength: 80
+      }),
+      task_title: nullable('string', { maxLength: 300 }),
+      deadline: nullable('string', {
+        pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+      }),
+      suggested_deadline: nullable('string', {
+        pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+      }),
+      deadline_basis: {
+        type: 'string',
+        enum: DEADLINE_BASES.slice()
+      },
+      priority: {
+        type: 'string',
+        enum: PRIORITIES.slice()
+      },
+      waiting_for_reply: { type: 'boolean' },
+      needs_review: { type: 'boolean' },
+      calendar_category: {
+        type: 'string',
+        enum: CALENDAR_CATEGORIES.slice()
+      },
+      calendar_importance: {
+        type: 'string',
+        enum: CALENDAR_IMPORTANCE.slice()
+      },
+      confidence: { type: 'number', minimum: 0, maximum: 1 },
+      reason: { type: 'string', maxLength: 1000 },
+      changes: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          task_title: nullable('string', { maxLength: 300 }),
+          due_date: nullable('string', {
+            pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+          }),
+          priority: nullable('string', { enum: PRIORITIES.slice() }),
+          waiting_for_reply: nullable('boolean'),
+          calendar_category: nullable('string', {
+            enum: CALENDAR_CATEGORIES.slice()
+          }),
+          calendar_importance: nullable('string', {
+            enum: CALENDAR_IMPORTANCE.slice()
+          })
+        }
+      }
+    };
+    return {
+      type: 'object',
+      additionalProperties: false,
+      required: OUTPUT_FIELDS.slice(),
+      properties: {
+        schema_version: {
+          type: 'string',
+          enum: [WorkOsConfig.AI_SCHEMA_VERSION]
+        },
+        overall_confidence: { type: 'number', minimum: 0, maximum: 1 },
+        actions: {
+          type: 'array',
+          maxItems: WorkOsConfig.MAX_AI_ACTIONS,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ACTION_FIELDS.slice(),
+            properties: actionProperties
+          }
+        },
+        warnings: {
+          type: 'array',
+          maxItems: WorkOsConfig.MAX_AI_WARNINGS,
+          items: { type: 'string', maxLength: 500 }
+        }
+      }
+    };
+  }
+
   function validateInput(input) {
     exactFields(
       input,
@@ -816,6 +904,22 @@ var WorkOsAiAdapter = (function () {
     });
   }
 
+  function productionProviderRegistry() {
+    var entries = [];
+    if (typeof WorkOsGeminiProvider !== 'undefined' &&
+        WorkOsGeminiProvider &&
+        typeof WorkOsGeminiProvider.createAdapterSettings === 'function') {
+      entries.push({
+        provider_id: 'GEMINI',
+        create_adapter_settings: function (settings) {
+          return WorkOsGeminiProvider.createAdapterSettings(settings);
+        }
+      });
+    }
+    return entries.length ? createProviderRegistry(entries) :
+      EMPTY_PRODUCTION_PROVIDER_REGISTRY;
+  }
+
   function validateOpaqueCredentialReference(value) {
     var reference = String(value || '');
     if (!metadataToken(reference) ||
@@ -875,8 +979,7 @@ var WorkOsAiAdapter = (function () {
   function getProductionReadiness(options) {
     var settings = options || {};
     var config = productionConfigSnapshot(settings.config || settings);
-    var registry = settings.registry ||
-      EMPTY_PRODUCTION_PROVIDER_REGISTRY;
+    var registry = settings.registry || productionProviderRegistry();
     var reasons = [];
     var provider = String(config.provider || '').toUpperCase();
     if (config.external_enabled !== true ||
@@ -1117,6 +1220,14 @@ var WorkOsAiAdapter = (function () {
     var normalizedKind = String(
       response && response.error_kind || ''
     ).toUpperCase();
+    if (normalizedKind === 'INVALID_RESPONSE') {
+      return aiFailure(
+        'E_AI_PROVIDER_RESPONSE',
+        'AI_RESPONSE',
+        false,
+        'AI Provider response envelope could not be accepted.'
+      );
+    }
     if (normalizedKind === 'UNSUPPORTED_MODEL') {
       return aiFailure(
         'E_AI_MODEL_UNSUPPORTED',
@@ -1352,6 +1463,19 @@ var WorkOsAiAdapter = (function () {
     var execution = arguments.length > 1 && arguments[1]
       ? arguments[1]
       : {};
+    if (this.settings.max_classify_calls != null) {
+      var maxCalls = Number(this.settings.max_classify_calls);
+      var calls = Number(this.settings.classify_calls || 0);
+      if (!Number.isInteger(maxCalls) || maxCalls < 1 || calls >= maxCalls) {
+        throw aiFailure(
+          'E_AI_CALL_LIMIT',
+          'AI_REQUEST',
+          false,
+          'AI request call limit was reached.'
+        );
+      }
+      this.settings.classify_calls = calls + 1;
+    }
     var metadata = validateAdapterConfig(this.settings);
     var configuredTimeout = Number(
       this.settings.timeout_ms == null
@@ -1415,8 +1539,7 @@ var WorkOsAiAdapter = (function () {
       );
     }
     var config = productionConfigSnapshot(settings.config || {});
-    var registry = settings.registry ||
-      EMPTY_PRODUCTION_PROVIDER_REGISTRY;
+    var registry = settings.registry || productionProviderRegistry();
     var readiness = getProductionReadiness({
       config: config,
       registry: registry
@@ -1541,8 +1664,10 @@ var WorkOsAiAdapter = (function () {
     createProviderRegistry: createProviderRegistry,
     validateOpaqueCredentialReference: validateOpaqueCredentialReference,
     getProductionReadiness: getProductionReadiness,
+    getProductionProviderRegistry: productionProviderRegistry,
     validateAdapterConfig: validateAdapterConfig,
     buildCanonicalRequest: buildCanonicalRequest,
+    getOutputJsonSchema: getOutputJsonSchema,
     parseCanonicalResponse: parseCanonicalResponse,
     classifyTransportFailure: classifyTransportFailure,
     classificationHash: classificationHash,

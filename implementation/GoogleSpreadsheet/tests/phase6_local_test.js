@@ -849,9 +849,11 @@ test('P6-L14_MANIFEST_SCOPE_IS_MINIMAL_FOR_TRIGGER_MANAGEMENT', () => {
     'https://www.googleapis.com/auth/script.scriptapp'
   ));
   assert(!manifest.oauthScopes.includes(
+    'https://mail.google.com/'
+  ));
+  assert(manifest.oauthScopes.includes(
     'https://www.googleapis.com/auth/script.external_request'
   ));
-  assert(!manifest.oauthScopes.includes('https://mail.google.com/'));
   assert.strictEqual(Object.prototype.hasOwnProperty.call(
     manifest,
     'triggers'

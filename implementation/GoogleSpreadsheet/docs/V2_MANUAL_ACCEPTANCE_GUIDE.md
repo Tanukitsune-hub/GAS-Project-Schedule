@@ -1,6 +1,6 @@
-# Controlled Sandbox Trial Guide — 2.8.14-prepilot
+# Controlled Sandbox Trial Guide 窶・2.8.15-prepilot
 
-Code Version: `2.8.14-prepilot`
+Code Version: `2.8.15-prepilot`
 
 Schema Version: `2.6`
 
@@ -39,8 +39,8 @@ results.
 1. Guarded source staging and payload inventory verification.
 2. One guarded push to the dedicated synthetic target.
 3. Pull-back into an isolated local directory and exact byte parity check.
-4. Setup S00–S99 on a blank synthetic Spreadsheet.
-5. Verify 11 Sheets, Task 50 columns, Ledger 21 columns, canonical rows 1–2,
+4. Setup S00窶鉄99 on a blank synthetic Spreadsheet.
+5. Verify 11 Sheets, Task 50 columns, Ledger 21 columns, canonical rows 1窶・,
    hidden/protected state, Data Validation, note, and Automation OFF.
 6. Verify Dashboard ownership, exact 17-by-3 surface, flush/reacquire/readback,
    and idempotent Setup rerun.

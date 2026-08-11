@@ -107,11 +107,11 @@ async function main() {
     assert.strictEqual(updateContentCalls, 1);
     assert.ok(capturedRequest);
     assert.strictEqual(capturedRequest.scriptId, placeholderScriptId);
-    assert.strictEqual(pushed.length, 23);
+    assert.strictEqual(pushed.length, 24);
     const sentFiles = capturedRequest.requestBody.files;
-    assert.strictEqual(sentFiles.length, 23);
+    assert.strictEqual(sentFiles.length, 24);
     assert.strictEqual(
-      sentFiles.filter((file) => file.type === 'SERVER_JS').length, 22
+      sentFiles.filter((file) => file.type === 'SERVER_JS').length, 23
     );
     assert.strictEqual(
       sentFiles.filter((file) => file.type === 'JSON').length, 1
@@ -129,8 +129,8 @@ async function main() {
       stdout: JSON.stringify(pushed.map((file) => file.localPath))
     }, pushRoot);
     assert.deepStrictEqual(semantic, {
-      file_count: 23,
-      gs_file_count: 22,
+      file_count: 24,
+      gs_file_count: 23,
       manifest_file_count: 1,
       missing_file_count: 0,
       extra_file_count: 0,
@@ -151,14 +151,14 @@ async function main() {
         configFile: pullRoot, rootDir: pullRoot, credentials: {}
       });
       const pulled = await clasp.files.pull();
-      assert.strictEqual(pulled.length, 23);
+      assert.strictEqual(pulled.length, 24);
     } finally {
       process.chdir(previousCwd);
     }
     const pulledNames = exactLocalInventory(path.join(pullRoot, 'payload'));
     assert.deepStrictEqual(pulledNames, expectedLocalNames);
     assert.strictEqual(
-      pulledNames.filter((name) => name.endsWith('.gs')).length, 22
+      pulledNames.filter((name) => name.endsWith('.gs')).length, 23
     );
     assert.strictEqual(
       pulledNames.filter((name) => name === 'appsscript.json').length, 1
@@ -172,12 +172,12 @@ async function main() {
       future_push_arguments: claspSemanticPushArguments,
       update_content_call_count: updateContentCalls,
       serialized_file_count: sentFiles.length,
-      serialized_server_js_count: 22,
+      serialized_server_js_count: 23,
       serialized_manifest_count: 1,
       serialized_html_count: 0,
       semantic_no_op_rejected: true,
       pull_materialized_file_count: pulledNames.length,
-      pull_materialized_gs_count: 22,
+      pull_materialized_gs_count: 23,
       pull_materialized_manifest_count: 1,
       google_operation: 'NOT_EXECUTED',
       status: 'PASS'

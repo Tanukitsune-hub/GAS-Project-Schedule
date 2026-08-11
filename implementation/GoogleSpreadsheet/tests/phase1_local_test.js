@@ -393,6 +393,11 @@ test('P1-L14_STATIC_GUARDRAILS', () => {
     .filter((fileName) => fileName.endsWith('.gs'))
     .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
     .join('\n');
+  const nonProviderSources = fs.readdirSync(appsScriptRoot)
+    .filter((fileName) => fileName.endsWith('.gs') &&
+      fileName !== '20_GeminiProvider.gs')
+    .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
+    .join('\n');
   const taskRepositorySource = fs.readFileSync(
     path.join(appsScriptRoot, '08_TaskRepository.gs'),
     'utf8'
@@ -407,7 +412,7 @@ test('P1-L14_STATIC_GUARDRAILS', () => {
     true
   );
   assert.strictEqual(/\.setValue\s*\(\s*false\s*\)/i.test(sources), false);
-  assert.strictEqual(/\b(?:GmailApp|CalendarApp|UrlFetchApp)\b/.test(sources), false);
+  assert.strictEqual(/\b(?:GmailApp|CalendarApp|UrlFetchApp)\b/.test(nonProviderSources), false);
   const phase6 = Number(
     String(sandbox.WorkOsConfig.CODE_VERSION).split('.')[1]
   ) >= 6;
@@ -462,13 +467,15 @@ test('P1-L15_MANIFEST_MINIMAL_SCOPES', () => {
       'https://www.googleapis.com/auth/script.scriptapp'
     );
   }
+  expectedScopes.push(
+    'https://www.googleapis.com/auth/script.external_request'
+  );
   assert.deepStrictEqual(
     Array.from(manifest.oauthScopes).sort(),
     expectedScopes.sort()
   );
   [
     'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/script.external_request',
     'https://www.googleapis.com/auth/drive',
     'https://mail.google.com/'
   ].forEach((forbiddenScope) => {

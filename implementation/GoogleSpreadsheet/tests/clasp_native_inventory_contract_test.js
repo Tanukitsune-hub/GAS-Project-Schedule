@@ -164,18 +164,18 @@ async function main() {
     assert.deepStrictEqual(currentExtensions, ['.js', '.gs']);
     assert.strictEqual(currentExtensions[0], '.js');
     assert.strictEqual(currentPulledScript, 'PulledScript.js');
-    assert.strictEqual(currentStatus.file_count, 23);
+    assert.strictEqual(currentStatus.file_count, 24);
     assert.deepStrictEqual(currentStatus.names, expectedNames);
 
     assert.deepStrictEqual(repairedConfig.scriptExtensions, ['.gs', '.js']);
     assert.deepStrictEqual(repairedExtensions, ['.gs', '.js']);
     assert.strictEqual(repairedExtensions[0], '.gs');
     assert.strictEqual(repairedPulledScript, 'PulledScript.gs');
-    assert.strictEqual(repairedStatus.file_count, 23);
+    assert.strictEqual(repairedStatus.file_count, 24);
     assert.deepStrictEqual(repairedStatus.names, expectedNames);
     assert.strictEqual(
       repairedStatus.names.filter((name) => name.endsWith('.gs')).length,
-      22
+      23
     );
     assert.strictEqual(
       repairedStatus.names.filter((name) => name === 'appsscript.json').length,
@@ -205,7 +205,7 @@ async function main() {
       repaired_native_pull_script_filename: repairedPulledScript,
       expected_payload_file_count: expectedNames.length,
       push_eligible_file_count: repairedStatus.file_count,
-      expected_gs_file_count: 22,
+      expected_gs_file_count: 23,
       manifest_file_count: 1,
       missing_eligible_file_count: missing.length,
       unexpected_eligible_file_count: extra.length,

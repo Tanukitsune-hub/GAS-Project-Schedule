@@ -296,27 +296,30 @@ var WorkOsTaskReviewPolicy = (function () {
         results.push({
           action_index: actionIndex,
           operation: 'NO_TASK',
-          origin_key: originKey
+          origin_key: originKey,
+          review_required: false
         });
         return;
       }
       if (action.action_type === 'NEW_TASK' ||
           action.action_type === 'ADD_TASK' ||
           action.action_type === 'UNCLEAR') {
+        var newTask = newTaskFromAction(
+          action,
+          classification,
+          actionIndex,
+          environment
+        );
         var created = WorkOsTaskRepository.upsertTask(
-          newTaskFromAction(
-            action,
-            classification,
-            actionIndex,
-            environment
-          ),
+          newTask,
           taskContext
         );
         results.push({
           action_index: actionIndex,
           operation: created.operation,
           task_id: created.task_id,
-          origin_key: originKey
+          origin_key: originKey,
+          review_required: newTask.needs_review === true
         });
         return;
       }
@@ -327,13 +330,14 @@ var WorkOsTaskReviewPolicy = (function () {
         message
       );
       if (!resolution.task) {
+        var unresolvedTask = newTaskFromAction(
+          action,
+          classification,
+          actionIndex,
+          environment
+        );
         var unresolved = WorkOsTaskRepository.upsertTask(
-          newTaskFromAction(
-            action,
-            classification,
-            actionIndex,
-            environment
-          ),
+          unresolvedTask,
           taskContext
         );
         results.push({
@@ -346,7 +350,8 @@ var WorkOsTaskReviewPolicy = (function () {
           fabricated_target: resolution.fabricated,
           target_outside_active_input: resolution.outside_active_input,
           target_repository_missing: resolution.repository_missing,
-          target_thread_mismatch: resolution.thread_mismatch
+          target_thread_mismatch: resolution.thread_mismatch,
+          review_required: true
         });
         return;
       }
@@ -394,7 +399,8 @@ var WorkOsTaskReviewPolicy = (function () {
           operation: conflictReview.operation,
           task_id: conflictReview.task_id,
           origin_key: originKey,
-          pending_conflict: true
+          pending_conflict: true,
+          review_required: true
         });
         return;
       }
@@ -421,7 +427,8 @@ var WorkOsTaskReviewPolicy = (function () {
         task_id: resolution.task.task_id,
         origin_key: originKey,
         pending: true,
-        manual_conflicts: conflicts
+        manual_conflicts: conflicts,
+        review_required: true
       });
     });
     return results;

@@ -26,7 +26,7 @@ const {
   acquireOperationLock,
   safeAttemptEvidence,
   normalizeCommand
-} = require('../tools/work_0016_existing_target_placement');
+} = require('../tools/work_0028_existing_target_placement');
 
 const tests = [];
 function test(id, body) {
@@ -88,16 +88,17 @@ function pushedState() {
   });
 }
 
-test('WORK_0016_HAS_DISTINCT_ONE_USE_LOCAL_STATE', () => {
-  assert.strictEqual(workspaceName, '.clasp-work-0016');
-  assert.strictEqual(pullWorkspaceName, '.clasp-pull-verify-work-0016');
-  assert.strictEqual(executionStateFileName, 'work-0016-execution-state.json');
+test('WORK_0028_HAS_DISTINCT_ONE_USE_LOCAL_STATE', () => {
+  assert.strictEqual(workspaceName, '.clasp-work-0028');
+  assert.strictEqual(pullWorkspaceName, '.clasp-pull-verify-work-0028');
+  assert.strictEqual(executionStateFileName, 'work-0028-execution-state.json');
   assert.notStrictEqual(workspaceName, '.clasp-work-0010');
+  assert.notStrictEqual(workspaceName, '.clasp-work-0018');
 });
 
 test('EXACT_BRANCH_AND_INSTRUCTION_HEAD_ARE_PINNED', () => {
-  assert.strictEqual(exactBranch, 'codex/0016-gmail-body-decode-runtime-repair');
-  assert.strictEqual(instructionHead, '2621a64f44c52719f4fb721572f142b4e119c455');
+  assert.strictEqual(exactBranch, 'codex/0028-gemini-provider-integration');
+  assert.strictEqual(instructionHead, '87dfeb7a826d773be88f33d1f0f6dea9ec5418de');
   assert.strictEqual(isExactBranch(exactBranch), true);
   assert.strictEqual(isExactBranch('codex/0015-synthetic-gmail-mock-task-e2e'), false);
 });
@@ -136,18 +137,19 @@ test('ONLY_COMPLETED_WORK_0010_BINDING_IS_ACCEPTED', () => {
       {}, sourceState, { phase: 'PUSH_PASS' }
     )),
     (error) => error instanceof GateError &&
-      error.code === 'WORK_0016_EXISTING_TARGET_BINDING_INVALID'
+      error.code === 'WORK_0028_EXISTING_TARGET_BINDING_INVALID'
   );
   assert.throws(
     () => assertExistingBindingObjects(config, Object.assign(
       {}, target, { work_id: '0006' }
     ), sourceState),
     (error) => error instanceof GateError &&
-      error.code === 'WORK_0016_EXISTING_TARGET_BINDING_INVALID'
+      error.code === 'WORK_0028_EXISTING_TARGET_BINDING_INVALID'
   );
 });
 
-test('WORK_0016_STATE_CONTAINS_NO_TARGET_OR_ACCOUNT_IDENTIFIER', () => {
+test('WORK_0028_STATE_CONTAINS_NO_TARGET_OR_ACCOUNT_IDENTIFIER', () => {
+  assert.strictEqual(stagedState().previous_placement_work_id, '0018');
   const serialized = JSON.stringify(stagedState());
   assert.strictEqual(serialized.includes(scriptId), false);
   assert.strictEqual(serialized.includes(parentId), false);
@@ -162,7 +164,7 @@ test('PUSH_MARKER_IS_ATOMIC_AND_ONE_USE', () => {
   assert.throws(
     () => nextAttemptState(started, 'push'),
     (error) => error instanceof GateError &&
-      error.code === 'WORK_0016_PUSH_ALREADY_ATTEMPTED'
+      error.code === 'WORK_0028_PUSH_ALREADY_ATTEMPTED'
   );
 });
 
@@ -170,7 +172,7 @@ test('OPTIONAL_PULL_REQUIRES_PUSH_PASS_AND_IS_ONE_USE', () => {
   assert.throws(
     () => nextAttemptState(stagedState(), 'pull-verify'),
     (error) => error instanceof GateError &&
-      error.code === 'WORK_0016_PULL_ALREADY_ATTEMPTED'
+      error.code === 'WORK_0028_PULL_ALREADY_ATTEMPTED'
   );
   const started = nextAttemptState(pushedState(), 'pull-verify');
   assert.strictEqual(started.pull_attempt_count, 1);
@@ -178,19 +180,19 @@ test('OPTIONAL_PULL_REQUIRES_PUSH_PASS_AND_IS_ONE_USE', () => {
   assert.throws(
     () => nextAttemptState(started, 'pull-verify'),
     (error) => error instanceof GateError &&
-      error.code === 'WORK_0016_PULL_ALREADY_ATTEMPTED'
+      error.code === 'WORK_0028_PULL_ALREADY_ATTEMPTED'
   );
 });
 
 test('OPERATION_LOCK_REFUSES_CONCURRENCY', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0016-lock-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0028-lock-'));
   const lockPath = path.join(root, 'operation.lock');
   try {
     const release = acquireOperationLock('push', lockPath);
     assert.throws(
       () => acquireOperationLock('push', lockPath),
       (error) => error instanceof GateError &&
-        error.code === 'WORK_0016_OPERATION_ALREADY_RUNNING'
+        error.code === 'WORK_0028_OPERATION_ALREADY_RUNNING'
     );
     release();
   } finally {
@@ -199,7 +201,7 @@ test('OPERATION_LOCK_REFUSES_CONCURRENCY', () => {
 });
 
 test('SAFE_EVIDENCE_EXCLUDES_BINDING_IDENTIFIERS', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0016-evidence-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0028-evidence-'));
   const statePath = path.join(root, 'state.json');
   try {
     fs.writeFileSync(statePath, JSON.stringify(pushedState()), 'utf8');
@@ -221,7 +223,7 @@ test('ARBITRARY_COMMAND_FAILS_CLOSED', () => {
 
 const failed = tests.filter((item) => item.status !== 'PASS');
 process.stdout.write(`${JSON.stringify({
-  suite: 'work_0016_existing_target_placement',
+  suite: 'work_0028_existing_target_placement',
   environment: 'LOCAL_NON_GOOGLE_SYNTHETIC_ONLY',
   passed: tests.length - failed.length,
   failed: failed.length,

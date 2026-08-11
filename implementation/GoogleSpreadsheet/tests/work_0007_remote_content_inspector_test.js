@@ -152,16 +152,16 @@ test('MANIFEST_ONLY_REMOTE_CONTENT_IS_CLOSED_CLASSIFICATION', () => {
     manifest_file_count: 1,
     html_file_count: 0,
     invalid_file_count: 0,
-    missing_file_count: 22,
+    missing_file_count: 23,
     extra_file_count: 0
   });
 });
 
 test('CANONICAL_REMOTE_CONTENT_IS_CLOSED_CLASSIFICATION', () => {
   assert.deepStrictEqual(classifyRemoteContent(canonicalRemoteFiles()), {
-    classification: 'REMOTE_HAS_23_CANONICAL_FILES',
-    total_file_count: 23,
-    server_js_file_count: 22,
+    classification: 'REMOTE_HAS_24_CANONICAL_FILES',
+    total_file_count: 24,
+    server_js_file_count: 23,
     manifest_file_count: 1,
     html_file_count: 0,
     invalid_file_count: 0,

@@ -9,6 +9,7 @@
  */
 var WorkOsWorker = (function () {
   var INTERNAL_SCHEDULED_CAPABILITY = {};
+  var INTERNAL_GEMINI_SYNTHETIC_CAPABILITY = {};
   var LOCAL_TEST_PROPERTIES = {};
 
   function workerProperties(settings) {
@@ -1493,17 +1494,8 @@ var WorkOsWorker = (function () {
               } else if (result.operation === 'UPDATE') {
                 summary.updated_task_count += 1;
               }
-              if (result.pending || result.target_unresolved ||
-                  result.pending_conflict) {
+              if (result.review_required === true) {
                 summary.review_count += 1;
-              } else if (result.task_id) {
-                var task = WorkOsTaskRepository.findByTaskId(
-                  taskContext,
-                  result.task_id
-                );
-                if (task && task.needs_review) {
-                  summary.review_count += 1;
-                }
               }
             });
             WorkOsMessageStateRepository.checkpointTasksWrittenInContext(
@@ -1952,6 +1944,9 @@ var WorkOsWorker = (function () {
     var internalScheduled =
       settings.internal_scheduled_capability ===
         INTERNAL_SCHEDULED_CAPABILITY;
+    var internalGeminiSynthetic =
+      settings.internal_gemini_synthetic_capability ===
+        INTERNAL_GEMINI_SYNTHETIC_CAPABILITY;
     if (Object.keys(settings).length &&
         !WorkOsConfig.TEST_MODE &&
         !internalScheduled) {
@@ -1994,7 +1989,8 @@ var WorkOsWorker = (function () {
       isNetworkFreeExternalTest = isNetworkFreeExternalTest ||
         (internalScheduled &&
          !(adapter instanceof WorkOsAiAdapter.ExternalAiAdapter));
-      if (!isNetworkFreeExternalTest && !internalScheduled) {
+      if (!isNetworkFreeExternalTest && !internalScheduled &&
+          !internalGeminiSynthetic) {
         throw new WorkOsAppError(
           'E_AI_EXTERNAL_WORKER_DISABLED',
           'AI_CONFIG',
@@ -2442,8 +2438,7 @@ var WorkOsWorker = (function () {
                 } else if (result.operation === 'UPDATE') {
                   summary.updated_task_count += 1;
                 }
-                if (result.pending || result.target_unresolved ||
-                    result.pending_conflict) {
+                if (result.review_required === true) {
                   summary.review_count += 1;
                 }
               });
@@ -3030,6 +3025,116 @@ var WorkOsWorker = (function () {
   function processMockVerticalOnce(options) {
     WorkOsUtilities.assertTestMode('MOCK_VERTICAL_WORKER');
     return processVerticalOnce(options);
+  }
+
+  function runGeminiSyntheticValidation(options) {
+    var settings = options || {};
+    if (WorkOsConfig.TEST_MODE !== true ||
+        WorkOsConfig.AUTOMATION_ENABLED !== false) {
+      throw new WorkOsAppError(
+        'E_GEMINI_SYNTHETIC_GUARD',
+        'AI_CONFIG',
+        false,
+        'Gemini synthetic validation is not enabled.'
+      );
+    }
+    if (typeof WorkOsGeminiProvider === 'undefined' ||
+        !WorkOsGeminiProvider ||
+        !WorkOsGeminiProvider.isSyntheticCandidate(settings.candidate)) {
+      throw new WorkOsAppError(
+        'E_GEMINI_SYNTHETIC_GUARD',
+        'AI_CONFIG',
+        false,
+        'The selected message is not an approved synthetic fixture.'
+      );
+    }
+    var syntheticBody = WorkOsGeminiProvider.SYNTHETIC_BODY;
+    if (settings.preprocessed_result &&
+        (String(settings.preprocessed_result.body || '') !== syntheticBody ||
+         String(settings.preprocessed_result.subject || '') !==
+           WorkOsGeminiProvider.SYNTHETIC_SUBJECT)) {
+      throw new WorkOsAppError(
+        'E_GEMINI_SYNTHETIC_GUARD',
+        'AI_CONFIG',
+        false,
+        'The supplied preprocessed fixture is not approved.'
+      );
+    }
+    var originalPreprocessor = settings.preprocessor ||
+      WorkOsEmailPreprocessor;
+    var guardedPreprocessor = {
+      preprocess: function (messageInput, preprocessOptions) {
+        if (!messageInput ||
+            String(messageInput.subject || '') !==
+              WorkOsGeminiProvider.SYNTHETIC_SUBJECT ||
+            String(messageInput.plain_body || '') !== syntheticBody) {
+          throw new WorkOsAppError(
+            'E_GEMINI_SYNTHETIC_GUARD',
+            'AI_CONFIG',
+            false,
+            'The selected message content is not an approved synthetic fixture.'
+          );
+        }
+        return originalPreprocessor.preprocess(
+          messageInput,
+          preprocessOptions
+        );
+      }
+    };
+    var adapter = settings.adapter;
+    if (!adapter) {
+      adapter = WorkOsAiAdapter.createProductionExternalAdapter({
+        config: {
+          external_enabled: true,
+          provider: WorkOsGeminiProvider.PROVIDER_ID,
+          model: WorkOsGeminiProvider.MODEL,
+          prompt_version: WorkOsGeminiProvider.PROMPT_VERSION,
+          credential_reference:
+            WorkOsGeminiProvider.CREDENTIAL_REFERENCE,
+          company_approved: true,
+          data_policy_approved: true,
+          credential_storage_approved: true,
+          auth_configured: true,
+          timeout_ms: WorkOsConfig.AI_REQUEST_TIMEOUT_MS,
+          max_response_chars: WorkOsConfig.AI_RESPONSE_MAX_CHARS
+        },
+        registry: WorkOsAiAdapter.getProductionProviderRegistry()
+      });
+    }
+    var metadata = WorkOsAiAdapter.getMetadata(adapter);
+    if (metadata.provider !== WorkOsGeminiProvider.PROVIDER_ID) {
+      throw new WorkOsAppError(
+        'E_GEMINI_SYNTHETIC_GUARD',
+        'AI_CONFIG',
+        false,
+        'The synthetic validation adapter is not Gemini.'
+      );
+    }
+    if (adapter.settings) {
+      adapter.settings.max_classify_calls = 1;
+    }
+    var result = processVerticalOnce(Object.assign({}, settings, {
+      adapter: adapter,
+      preprocessor: guardedPreprocessor,
+      internal_gemini_synthetic_capability:
+        INTERNAL_GEMINI_SYNTHETIC_CAPABILITY,
+      calendar_jobs_remaining: 0,
+      skip_run_summary: true
+    }));
+    return {
+      status: result.status,
+      candidate_count: Number(result.candidate_count || 0),
+      processed_count: Number(result.processed_count || 0),
+      skipped_count: Number(result.skipped_count || 0),
+      error_count: Number(result.error_count || 0),
+      created_task_count: Number(result.created_task_count || 0),
+      updated_task_count: Number(result.updated_task_count || 0),
+      review_count: Number(result.review_count || 0),
+      calendar_job_count: Number(result.calendar_job_count || 0),
+      ai_called: result.external_services &&
+        result.external_services.ai !== 'NOT_CALLED_CHECKPOINT_REUSE',
+      automation_enabled: false
+    };
   }
 
   function legacyLockedSyncPendingCalendarJobs(options) {
@@ -5222,6 +5327,7 @@ var WorkOsWorker = (function () {
     processMockVerticalOnce: processMockVerticalOnce,
     processProductionClassificationOnce:
       processProductionClassificationOnce,
+    runGeminiSyntheticValidation: runGeminiSyntheticValidation,
     processAutomaticBatch: processAutomaticBatch,
     syncPendingCalendarJobs: syncPendingCalendarJobs,
     runMockAcceptance: runMockAcceptance

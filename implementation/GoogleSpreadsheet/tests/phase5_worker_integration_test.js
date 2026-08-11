@@ -178,6 +178,29 @@ test('P5-I01_EXTERNAL_MOCK_HTTP_WORKER_PERSISTS_PROVENANCE', () => {
   );
 });
 
+test('P5-I05_EXTERNAL_VERTICAL_REVIEW_COUNT_INCLUDES_NEW_REVIEW_TASK', () => {
+  const spreadsheet = fixture.makeOperationalSpreadsheet();
+  const message = fixture.rawMessage('NEW_REVIEW', {
+    message_id: 'synthetic-phase5-review-count'
+  });
+  const preprocessed = fixture.seedPreprocessed(spreadsheet, message);
+  const external = externalAdapter([responseFor(preprocessed)]);
+  const result = Worker.processMockVerticalOnce({
+    spreadsheet,
+    gateway: fixture.makeVerticalGateway(message),
+    adapter: external.adapter,
+    now: () => new FixtureDate('2026-07-24T01:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(result.review_count, 1);
+  assert.strictEqual(external.transport.calls.length, 1);
+  assert.strictEqual(
+    fixture.allTasks(fixture.taskSheet(spreadsheet))[0].needs_review,
+    true
+  );
+});
+
 test('P5-I02_AI_FAILURE_HAS_ZERO_TASK_AND_CALENDAR_SIDE_EFFECT', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const message = fixture.rawMessage('NEW_HIGH', {

@@ -1,12 +1,12 @@
 # Project Context
 
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
 Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.14-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.15-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Highest gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -24,7 +24,8 @@ auxiliary view.
 - Apps Script runtime: V8/browser-compatible source only.
 - Task schema: 50 columns with canonical internal-ID and Japanese-label rows.
 - Task authority: hidden, protected, 21-column durable ledger.
-- AI schema: provider-neutral `2.0`; production registry intentionally empty.
+- AI schema: provider-neutral `2.0`; production registry recognizes `GEMINI`
+  but external execution remains disabled by default.
 - Migration: bounded v2-only Migration `3`; no v1 migration or silent repair.
 - Automation: OFF.
 
@@ -48,18 +49,20 @@ Calendar, deployment, or real Provider behavior.
 - Local clasp bindings and pull/staging state are ignored and scanned out.
 - Diagnostics and evidence retain only bounded enums, counts, hashes, and safe
   references.
-- External AI remains unavailable and fails closed.
+- Gemini external AI is implemented behind Script Properties and strict
+  approval/configuration gates; no credential is stored in the repository and
+  no real provider request is authorized by this contract.
 - No live Google or external mutation is authorized by this current contract.
 
 ## Current release model
 
-The current release has two packages generated from exact A14 source:
+The current release has two packages generated from exact Work 0028 A15 source:
 
-1. `v2.8.14-prepilot`: `TEST_MODE=true`, Automation OFF, harness included.
-2. `v2.8.14-prepilot-phase8c`: only `TEST_MODE=false` changes and the harness
+1. `v2.8.15-prepilot`: `TEST_MODE=true`, Automation OFF, harness included.
+2. `v2.8.15-prepilot-phase8c`: only `TEST_MODE=false` changes and the harness
    is excluded.
 
-B14 must be A14's direct child. `CURRENT_CONTRACT.json`, manifests, checksums,
+B15 must be A15's direct child. `CURRENT_CONTRACT.json`, manifests, checksums,
 and verifiers bind the source/release roles. Work 0018 creates no transfer or
 deployment target.
 
@@ -69,7 +72,7 @@ Existing audits, legacy `instructions/`, releases, transfers, and evidence are
 retained as historical records. Old version/gate/transfer selectors are not
 active. The current task exchange is under `docs/handoffs/`.
 
-## Runtime evidence addendum — Work 0027 (2026-08-11)
+## Runtime evidence addendum 窶・Work 0027 (2026-08-11)
 
 The source-contract sections above remain unchanged and continue to define the
 machine-bound candidate/release gate. Separately, controlled Works 0019-0026

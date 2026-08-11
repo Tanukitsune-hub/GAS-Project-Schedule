@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.8.15-prepilot - 2026-08-11 Gemini provider boundary and review observability
+
+- Add the isolated Gemini Interactions v1 provider with pinned
+  `gemini-3.6-flash`, strict AI Schema 2.0 structured output, fixed
+  privacy-safe transport errors, and Script Properties credential lookup.
+- Register `GEMINI` lazily without Mock fallback; keep external AI disabled by
+  default, Automation OFF, and real Gemini requests unexecuted.
+- Count Review-required Task/Review writes from result metadata in both Worker
+  paths, including newly inserted Review Tasks, unresolved targets, pending
+  changes, and conflicts.
+- Add network-free provider/readiness and synthetic-guard coverage while
+  preserving the Work 0018 Gmail byte-body decoder and all existing contracts.
+
 ## 2.8.14-prepilot - 2026-08-10 Advanced Gmail byte-body decode repair
 
 - Inspect Advanced Gmail body data before any String coercion and preserve the
