@@ -11,7 +11,7 @@
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "a96bc91a8d769b89fc2f190fcb95ddacbba29cc6",
+  "source_commit": "75dc4be1de14865a53612ae18738f6f32d330ebf",
   "release_commit": "SELF",
   "phase8b": {
     "path": "implementation/GoogleSpreadsheet/release/v2.8.16-prepilot",
