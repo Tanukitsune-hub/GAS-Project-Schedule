@@ -239,21 +239,36 @@ var WorkOsGeminiProvider = (function () {
 
   function responseObject(response) {
     if (!response || typeof response !== 'object' ||
-        String(response.status || '') !== 'completed' ||
-        !Array.isArray(response.steps) || response.steps.length !== 1) {
+        Array.isArray(response) || response.status !== 'completed' ||
+        !Array.isArray(response.steps)) {
       return null;
     }
-    var step = response.steps[0];
-    if (!step || step.type !== 'model_output' ||
-        !Array.isArray(step.content) || step.content.length !== 1) {
-      return null;
+
+    var outputText = null;
+    for (var index = 0; index < response.steps.length; index += 1) {
+      var step = response.steps[index];
+      if (!step || typeof step !== 'object' || Array.isArray(step)) {
+        return null;
+      }
+      if (step.type === 'thought') {
+        // Thought signatures and summaries are opaque provider material.
+        // Do not inspect, parse, retain, or surface them.
+        if (outputText !== null) return null;
+        continue;
+      }
+      if (step.type !== 'model_output' || outputText !== null ||
+          !Array.isArray(step.content) || step.content.length !== 1) {
+        return null;
+      }
+      var content = step.content[0];
+      if (!content || typeof content !== 'object' || Array.isArray(content) ||
+          content.type !== 'text' || typeof content.text !== 'string' ||
+          !content.text.trim()) {
+        return null;
+      }
+      outputText = content.text;
     }
-    var content = step.content[0];
-    if (!content || content.type !== 'text' ||
-        typeof content.text !== 'string' || !content.text.trim()) {
-      return null;
-    }
-    return content.text;
+    return outputText;
   }
 
   function extractResponse(response, status) {

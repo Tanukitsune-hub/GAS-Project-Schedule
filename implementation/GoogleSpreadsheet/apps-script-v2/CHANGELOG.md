@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.8.17-prepilot - 2026-08-12 Gemini thinking-step parser remediation
+
+- Accept only completed Gemini Interactions responses shaped as
+  `thought* model_output`, with exactly one final nonempty text output.
+- Treat thought signatures and summaries as opaque provider material: they are
+  not read, parsed, logged, hashed, persisted, or surfaced.
+- Reject unexpected, missing, duplicate, incomplete, failed, or malformed
+  response steps while preserving the existing strict AI Schema 2.0 validator,
+  one-call transport, no-retry behavior, and no Mock fallback.
+- Add local fake-transport regression coverage only. No real API key,
+  Gemini request, Gmail runtime, or Apps Script function is executed.
+
 ## 2.8.16-prepilot - 2026-08-11 Gemini runtime activation remediation
 
 - Add no-argument `checkGeminiSyntheticReadiness()` and

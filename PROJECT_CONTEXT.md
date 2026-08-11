@@ -1,16 +1,16 @@
 # Project Context
 
-Last updated: 2026-08-11
+Last updated: 2026-08-12
 
 Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.16-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.17-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0029 boundary: `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
+Work 0030 boundary: `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
 
 ## Purpose
 
@@ -30,17 +30,16 @@ derived view. Automation is OFF.
   authoritative after any Provider response.
 - Provider: Gemini is registered behind explicit approval and credential
   gates. The current Work does not configure, inspect, or call it.
-- Release: Code `2.8.16-prepilot`, Schema `2.6`, Migration `3`.
+- Release: Code `2.8.17-prepilot`, Schema `2.6`, Migration `3`.
 
-## Work 0029 runtime surface
+## Work 0030 Gemini response surface
 
-`checkGeminiSyntheticReadiness()` is a no-argument, read-only readiness
-entrypoint. `runGeminiSyntheticValidationOnce()` is a no-argument test-mode
-entrypoint that accepts only one exact manual synthetic message and permits at
-most one Provider request in a later authorized Work. Both are exposed through
-the test-mode Spreadsheet menu. The runtime guard reads the actual Automation
-state and requires consistent disabled state, zero scheduled/clock triggers,
-no stored canonical trigger ID, and no canonical scheduled trigger.
+The provider accepts only `thought* model_output` for a completed Gemini
+Interactions response. Thought signatures and summaries are opaque and never
+parsed, retained, logged, hashed, or surfaced. Exactly one final text output
+is passed to the existing strict application validator. The existing
+no-argument readiness and synthetic-validation entrypoints remain unchanged
+and are not invoked in Work 0030.
 
 The canonical synthetic body is fictional, contains no personal, confidential,
 or production data, requests an internal Task, uses a seven-day relative

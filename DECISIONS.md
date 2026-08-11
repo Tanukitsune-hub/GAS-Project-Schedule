@@ -1,8 +1,8 @@
 # Decisions
 
-Last updated: 2026-08-11
+Last updated: 2026-08-12
 
-This file records active decisions for the current Code `2.8.16-prepilot`
+This file records active decisions for the current Code `2.8.17-prepilot`
 candidate. Historical handoffs, reports, release packages, and audit records
 remain immutable evidence.
 
@@ -11,7 +11,7 @@ Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 ## D-048: one active candidate
 
 The active source, tests, tools, documents, and generated packages form one
-linear A16/B16 candidate. Older release and transfer trees are historical and
+linear A17/B17 candidate. Older release and transfer trees are historical and
 not deployment selectors.
 
 ## D-049: the Task ledger is the trust anchor
@@ -40,8 +40,8 @@ Workspace state.
 ## D-053: deterministic release lineage
 
 Phase 8B retains `TEST_MODE=true` and the harness. Phase 8C applies only the
-audited `TEST_MODE=false` transform and harness exclusion. B16 is a direct
-child of A16, and neither package is a deployment authorization.
+audited `TEST_MODE=false` transform and harness exclusion. B17 is a direct
+child of A17, and neither package is a deployment authorization.
 
 ## D-054: strict Gmail body decoding
 
@@ -58,8 +58,9 @@ directly through an Apps Script Blob. Attachment content is excluded.
 ## D-056: historical release identities
 
 Work 0018 is Code `2.8.14-prepilot` with A14/B14. Work 0028 is Code
-`2.8.15-prepilot` with A15/B15. Work 0029 is the successor Code
-`2.8.16-prepilot` with A16/B16. These identities must not be overwritten.
+`2.8.15-prepilot` with A15/B15. Work 0029 remains Code `2.8.16-prepilot`
+with A16/B16. Work 0030 is the successor Code `2.8.17-prepilot` with
+A17/B17. These identities must not be overwritten.
 
 ## D-057: Gemini remains explicitly bounded
 
@@ -67,6 +68,10 @@ The Gemini Interactions provider uses only the documented schema subset needed
 by the application and sends `thinking_level=low`,
 `thinking_summaries=none`, and `max_output_tokens=4096`. No tools, streaming,
 background execution, persistence, sampling, or fallback provider is used.
+Completed responses are accepted only as `thought* model_output`; thought
+signatures and summaries are opaque and never read, parsed, logged, hashed,
+persisted, or surfaced. Exactly one final text output remains subject to the
+existing strict application validator.
 
 ## D-058: runtime Automation guard
 
@@ -86,7 +91,7 @@ deadline, and is not a high-impact Calendar item.
 
 ## D-060: credential and runtime boundary
 
-Work 0029 does not configure or inspect a real API key, make a Gemini request,
+Work 0030 does not configure or inspect a real API key, make a Gemini request,
 access Gmail runtime, invoke an Apps Script function, or run Task, Review,
 Calendar, Setup, Diagnostics, Dashboard, trigger, or Automation operations.
 The next user-assisted boundary is separately authorized manual Script

@@ -1,12 +1,12 @@
 # Current Status
 
-Last updated: 2026-08-11
+Last updated: 2026-08-12
 
-Candidate version: Code `2.8.16-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.17-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0029 highest permitted status: `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
+Work 0030 highest permitted status: `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
 
 Automation: `OFF`
 
@@ -22,8 +22,10 @@ source and release commits.
 The source contains the isolated Gemini Interactions provider, strict AI
 Schema 2.0 post-response validation, exact synthetic fixture guards, bounded
 low-thinking generation settings, and the actual runtime Automation-OFF
-guard. The provider is not configured by this repository and no real request
-is implied by the local gate.
+guard. Its completed response grammar is strictly `thought* model_output`:
+thought signatures and summaries are opaque and never retained or exposed.
+The provider is not configured by this repository and no real request is
+implied by the local gate.
 
 ## Historical lineage
 
@@ -34,6 +36,9 @@ is implied by the local gate.
 - Work 0029: Code `2.8.16-prepilot`, source A16 and release B16. It activates
   callable readiness and synthetic validation entrypoints without executing
   Gmail, Apps Script functions, or Gemini.
+- Work 0030: Code `2.8.17-prepilot`, source A17 and release B17. It repairs
+  strict Gemini thinking-step parsing without configuring a key, requesting
+  Gemini, or invoking an Apps Script function.
 
 Historical handoffs and reports are immutable evidence. They are not rewritten
 to change their original claims.
@@ -46,8 +51,8 @@ to change their original claims.
 | Pre-Google GitHub Actions validation | Required before placement |
 | Real Gemini request | `NOT_EXECUTED` |
 | Real API-key configuration or inspection | `NOT_EXECUTED` |
-| Gmail runtime access in Work 0029 | `NOT_EXECUTED` |
-| Apps Script function invocation in Work 0029 | `0` |
+| Gmail runtime access in Work 0030 | `NOT_EXECUTED` |
+| Apps Script function invocation in Work 0030 | `0` |
 | Task, Review, Calendar, Setup, Diagnostics, Dashboard, triggers | `NOT_EXECUTED` |
 | Company/production resource access | `NOT_AUTHORIZED` |
 

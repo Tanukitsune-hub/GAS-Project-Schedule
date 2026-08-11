@@ -1,12 +1,12 @@
-# Google Workspace Personal Work OS v2 - 2.8.16-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.17-prepilot
 
-This directory is the canonical Apps Script source for the Work 0029
-runtime-activation remediation in
+This directory is the canonical Apps Script source for the Work 0030
+Gemini thinking-step parser remediation in
 `Tanukitsune-hub/GAS-Project-Schedule`.
 
 ## Active contract
 
-- Code: `2.8.16-prepilot`
+- Code: `2.8.17-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
@@ -15,14 +15,15 @@ runtime-activation remediation in
 - `TEST_MODE`: `true` in the Phase 8B package
 - Automation: `OFF`
 - Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
-- Work 0029 highest permitted status:
+- Work 0030 highest permitted status:
   `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
 
 The source retains the Gmail byte-body decoder, durable Task authority,
 Review/CAS, Calendar outbox, diagnostics, and strict privacy boundaries. It
 also contains the isolated Gemini Interactions v1 provider, documented
-structured-output subset, bounded generation settings, exact synthetic UTF-8
-fixture, and no-argument readiness/validation entrypoints.
+structured-output subset, bounded generation settings, strict
+`thought* model_output` parsing, exact synthetic UTF-8 fixture, and
+no-argument readiness/validation entrypoints.
 
 `checkGeminiSyntheticReadiness()` performs no Gmail or Gemini request.
 `runGeminiSyntheticValidationOnce()` is test-mode only, checks actual runtime
@@ -40,6 +41,6 @@ pnpm run verify:local
 ```
 
 The local gate runs the current test suites, source/static checks, release
-parity, A16/B16 lineage, active-document UTF-8/history checks, and secret/local
+parity, A17/B17 lineage, active-document UTF-8/history checks, and secret/local
 state scans. It does not configure or inspect a real key and performs no
 Google, OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.

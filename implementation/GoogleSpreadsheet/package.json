@@ -1,6 +1,6 @@
 {
   "name": "gas-project-schedule-local-validation",
-  "version": "2.8.16-local-validation.0",
+  "version": "2.8.17-local-validation.0",
   "private": true,
   "description": "Non-Google validation and guarded personal-dev clasp tooling for GAS Project Schedule.",
   "engines": {
@@ -70,7 +70,15 @@
     "gas:inventory:work-0029": "node tools/work_0029_existing_target_placement.js inventory-check",
     "gas:push:work-0029": "node tools/work_0029_existing_target_placement.js push",
     "gas:pull-verify:work-0029": "node tools/work_0029_existing_target_placement.js pull-verify",
-    "gas:evidence:work-0029": "node tools/work_0029_existing_target_placement.js evidence"
+    "gas:evidence:work-0029": "node tools/work_0029_existing_target_placement.js evidence",
+    "verify:work-0030": "node tests/work_0030_existing_target_placement_test.js",
+    "verify:gemini-thought-parser:work-0030": "node tests/work_0030_gemini_thought_step_parser_test.js",
+    "gas:auth-status:work-0030": "node tools/work_0030_existing_target_placement.js auth-status",
+    "gas:stage:work-0030": "node tools/work_0030_existing_target_placement.js stage",
+    "gas:inventory:work-0030": "node tools/work_0030_existing_target_placement.js inventory-check",
+    "gas:push:work-0030": "node tools/work_0030_existing_target_placement.js push",
+    "gas:pull-verify:work-0030": "node tools/work_0030_existing_target_placement.js pull-verify",
+    "gas:evidence:work-0030": "node tools/work_0030_existing_target_placement.js evidence"
   },
   "devDependencies": {
     "@google/clasp": "3.3.0",

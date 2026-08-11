@@ -1,7 +1,7 @@
-# Task Authority Protocol - Code 2.8.16-prepilot
+# Task Authority Protocol - Code 2.8.17-prepilot
 
 The authoritative protocol is `../../../docs/TASK_AUTHORITY_PROTOCOL.md` and
-is bound to Code `2.8.16-prepilot`, Schema `2.6`, and Migration `3`.
+is bound to Code `2.8.17-prepilot`, Schema `2.6`, and Migration `3`.
 
 This implementation copy is intentionally a pointer. The protected hidden
 21-column `Task Authority Ledger` is the only trust anchor for persisted Task
