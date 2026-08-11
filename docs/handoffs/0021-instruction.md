@@ -54,6 +54,14 @@ For this OPEN `NEW_TASK` Review, one user edit changing `判断` to `受入` sho
 
 The edit handler may update Task authority state, run-history audit, and Calendar Outbox intent, but it does not call Gmail, AI, or Calendar APIs. No Calendar event is expected for this fixture.
 
+## Runtime observation before Stage D
+
+The one authorized Work 0021 Mock vertical completed with one candidate, one processed message, one created Task, zero errors, final checkpoint `DONE`, Mock-only AI, and zero Calendar jobs. The visible Task row matched the complete expected Review-required state above.
+
+The returned run summary nevertheless reported `review_count=0`. Worker summary logic increments this metric either for pending/unresolved action results or by immediately re-reading a newly inserted Task from the existing in-memory Task context and checking `needs_review`. Because the authoritative visible Task is already in the exact expected Review state while only the summary count is zero, this discrepancy is classified as a `FIX SOON` observability/counting defect, not a failure of Review creation.
+
+Stage C therefore passes through the handoff's existing `Review count 1 or equivalent review-required confirmation` clause. Do not retry import or Mock vertical. Stage D remains authorized exactly once.
+
 ## Authorized user sequence
 
 ### A. Create one fresh synthetic Review message
@@ -107,6 +115,8 @@ PASS requires:
 - Automation remains OFF;
 - no real/company data or prohibited operation.
 
+The observed `review_count=0` summary discrepancy remains a non-blocking `FIX SOON` item and must be recorded in the final Work 0021 report.
+
 Highest permitted success status: `READY_FOR_CONTROLLED_SYNTHETIC_MANUAL_TASK_EDIT_VALIDATION`.
 
 ## Stop conditions
@@ -121,4 +131,4 @@ No rejection-path test; no existing-Task AI-change Review/restage/CAS test; no a
 
 ## Evidence / Git requirements
 
-After user reports safe outputs and visible before/after states, ChatGPT owns GitHub recording: create `docs/handoffs/0021-report.md`, update Draft PR, keep Draft/Open/Unmerged, and check final report-head CI. Store no Gmail IDs, run IDs, addresses/account identity, URLs, source body, Task IDs, Calendar IDs, OAuth values, or raw Google payloads. If a defect appears, create a separate Work ID.
+After user reports safe outputs and visible before/after states, ChatGPT owns GitHub recording: create `docs/handoffs/0021-report.md`, update Draft PR, keep Draft/Open/Unmerged, and check final report-head CI. Store no Gmail IDs, run IDs, addresses/account identity, URLs, source body, Task IDs, Calendar IDs, OAuth values, or raw Google payloads. Record the `review_count=0` discrepancy as `FIX SOON`. If a separate implementation repair is needed, create a later Work ID rather than broadening Work 0021.
