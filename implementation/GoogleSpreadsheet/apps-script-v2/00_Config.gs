@@ -5,7 +5,7 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.15-prepilot',
+  CODE_VERSION: '2.8.16-prepilot',
   SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
   MIGRATION_VERSION: '3',

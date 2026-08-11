@@ -3029,8 +3029,7 @@ var WorkOsWorker = (function () {
 
   function runGeminiSyntheticValidation(options) {
     var settings = options || {};
-    if (WorkOsConfig.TEST_MODE !== true ||
-        WorkOsConfig.AUTOMATION_ENABLED !== false) {
+    if (WorkOsConfig.TEST_MODE !== true) {
       throw new WorkOsAppError(
         'E_GEMINI_SYNTHETIC_GUARD',
         'AI_CONFIG',
@@ -3040,7 +3039,63 @@ var WorkOsWorker = (function () {
     }
     if (typeof WorkOsGeminiProvider === 'undefined' ||
         !WorkOsGeminiProvider ||
-        !WorkOsGeminiProvider.isSyntheticCandidate(settings.candidate)) {
+        typeof WorkOsGeminiProvider.assertAutomationOff !== 'function') {
+      throw new WorkOsAppError(
+        'E_GEMINI_AUTOMATION_STATE_UNAVAILABLE',
+        'AI_CONFIG',
+        false,
+        'Gemini synthetic validationのAutomation状態を確認できません。'
+      );
+    }
+    var automationOptions = {};
+    if (settings.automation_status && WorkOsConfig.TEST_MODE === true) {
+      automationOptions.automation_status = settings.automation_status;
+      automationOptions.local_test_only = true;
+    }
+    var automationStatus =
+      WorkOsGeminiProvider.assertAutomationOff(automationOptions);
+
+    var gateway = settings.gateway || WorkOsGmailGateway;
+    var preprocessor = settings.preprocessor || null;
+    var budget = settings.budget || WorkOsUtilities.createSoftBudget(
+      WorkOsConfig.MANUAL_WORKER_SOFT_LIMIT_MS,
+      Date.now()
+    );
+    var callMeter = settings.gmail_call_meter ||
+      (gateway && typeof gateway.createCallMeter === 'function'
+        ? gateway.createCallMeter(WorkOsConfig.MANUAL_GMAIL_API_CALL_LIMIT)
+        : null);
+    var candidate = settings.candidate || null;
+    if (!candidate) {
+      if (!gateway || typeof gateway.listManualCandidates !== 'function') {
+        throw new WorkOsAppError(
+          'E_GEMINI_SYNTHETIC_GUARD',
+          'GMAIL',
+          false,
+          'Gemini synthetic validationの候補を確認できません。'
+        );
+      }
+      var candidates = gateway.listManualCandidates({
+        budget: budget,
+        reserve_ms: WorkOsConfig.MANUAL_WORKER_RESERVE_MS,
+        call_meter: callMeter
+      });
+      var syntheticCandidates = (candidates || []).filter(function (item) {
+        return WorkOsGeminiProvider.isSyntheticCandidate(item);
+      });
+      if (syntheticCandidates.length !== 1) {
+        throw new WorkOsAppError(
+          'E_GEMINI_SYNTHETIC_GUARD',
+          'GMAIL',
+          false,
+          'Gemini synthetic validationの候補数が許可範囲外です。'
+        );
+      }
+      candidate = syntheticCandidates[0];
+    }
+    if (typeof WorkOsGeminiProvider === 'undefined' ||
+        !WorkOsGeminiProvider ||
+        !WorkOsGeminiProvider.isSyntheticCandidate(candidate)) {
       throw new WorkOsAppError(
         'E_GEMINI_SYNTHETIC_GUARD',
         'AI_CONFIG',
@@ -3048,11 +3103,68 @@ var WorkOsWorker = (function () {
         'The selected message is not an approved synthetic fixture.'
       );
     }
-    var syntheticBody = WorkOsGeminiProvider.SYNTHETIC_BODY;
-    if (settings.preprocessed_result &&
-        (String(settings.preprocessed_result.body || '') !== syntheticBody ||
-         String(settings.preprocessed_result.subject || '') !==
-           WorkOsGeminiProvider.SYNTHETIC_SUBJECT)) {
+    var preprocessed = settings.preprocessed_result || null;
+    if (!preprocessor && !preprocessed) {
+      if (typeof WorkOsEmailPreprocessor === 'undefined' ||
+          !WorkOsEmailPreprocessor) {
+        throw new WorkOsAppError(
+          'E_GEMINI_SYNTHETIC_GUARD',
+          'PREPROCESS',
+          false,
+          'Gemini synthetic validationの本文を確認できません。'
+        );
+      }
+      preprocessor = WorkOsEmailPreprocessor;
+    }
+    if (!preprocessed) {
+      if (!gateway || typeof gateway.fetchSelectedContent !== 'function') {
+        throw new WorkOsAppError(
+          'E_GEMINI_SYNTHETIC_GUARD',
+          'GMAIL',
+          false,
+          'Gemini synthetic validationの本文を確認できません。'
+        );
+      }
+      var syntheticCandidate = Object.assign({}, candidate, {
+        message_refs: [{
+          id: String(candidate.message_id || ''),
+          internal_date: candidate.received_at instanceof Date
+            ? candidate.received_at.getTime()
+            : Number(candidate.received_at || 0)
+        }]
+      });
+      var messageInput = gateway.fetchSelectedContent(syntheticCandidate, {
+        call_meter: callMeter,
+        budget: budget,
+        reserve_ms: WorkOsConfig.MANUAL_WORKER_RESERVE_MS
+      });
+      if (String(messageInput && messageInput.subject || '') !==
+          WorkOsGeminiProvider.SYNTHETIC_SUBJECT ||
+          messageInput.body_transport_truncated === true ||
+          !WorkOsGeminiProvider.isSyntheticBody(messageInput.plain_body)) {
+        throw new WorkOsAppError(
+          'E_GEMINI_SYNTHETIC_GUARD',
+          'GMAIL',
+          false,
+          'The selected message content is not an approved synthetic fixture.'
+        );
+      }
+      preprocessed = preprocessor.preprocess(messageInput, {
+        today: formatToday(
+          typeof settings.now === 'function'
+            ? settings.now()
+            : WorkOsUtilities.now()
+        ),
+        timezone: WorkOsConfig.TIMEZONE,
+        activeTaskProvider: function () { return []; }
+      });
+    }
+    if (String(preprocessed && preprocessed.subject || '') !==
+          WorkOsGeminiProvider.SYNTHETIC_SUBJECT ||
+        !WorkOsGeminiProvider.isSyntheticBody(
+          preprocessed && preprocessed.body
+        ) ||
+        preprocessed.metadata && preprocessed.metadata.truncated === true) {
       throw new WorkOsAppError(
         'E_GEMINI_SYNTHETIC_GUARD',
         'AI_CONFIG',
@@ -3060,14 +3172,15 @@ var WorkOsWorker = (function () {
         'The supplied preprocessed fixture is not approved.'
       );
     }
-    var originalPreprocessor = settings.preprocessor ||
-      WorkOsEmailPreprocessor;
+    var originalPreprocessor = preprocessor;
     var guardedPreprocessor = {
       preprocess: function (messageInput, preprocessOptions) {
         if (!messageInput ||
             String(messageInput.subject || '') !==
               WorkOsGeminiProvider.SYNTHETIC_SUBJECT ||
-            String(messageInput.plain_body || '') !== syntheticBody) {
+            !WorkOsGeminiProvider.isSyntheticBody(
+              messageInput.plain_body
+            )) {
           throw new WorkOsAppError(
             'E_GEMINI_SYNTHETIC_GUARD',
             'AI_CONFIG',
@@ -3115,6 +3228,9 @@ var WorkOsWorker = (function () {
     }
     var result = processVerticalOnce(Object.assign({}, settings, {
       adapter: adapter,
+      candidate: candidate,
+      preprocessed_result: preprocessed,
+      gateway: gateway,
       preprocessor: guardedPreprocessor,
       internal_gemini_synthetic_capability:
         INTERNAL_GEMINI_SYNTHETIC_CAPABILITY,
@@ -3133,7 +3249,15 @@ var WorkOsWorker = (function () {
       calendar_job_count: Number(result.calendar_job_count || 0),
       ai_called: result.external_services &&
         result.external_services.ai !== 'NOT_CALLED_CHECKPOINT_REUSE',
-      automation_enabled: false
+      automation_status: automationStatus.status,
+      automation_enabled: automationStatus.enabled,
+      automation_desired_enabled: automationStatus.desired_enabled,
+      scheduled_trigger_count: automationStatus.trigger_count,
+      clock_trigger_count: automationStatus.clock_trigger_count,
+      stored_trigger_id_present:
+        automationStatus.stored_trigger_id_present,
+      canonical_trigger_present:
+        automationStatus.canonical_trigger_present
     };
   }
 
@@ -5340,6 +5464,10 @@ function processManualImportOnce() {
 
 function processMockVerticalOnce() {
   return WorkOsWorker.processMockVerticalOnce();
+}
+
+function runGeminiSyntheticValidationOnce() {
+  return WorkOsWorker.runGeminiSyntheticValidation();
 }
 
 function syncPendingCalendarJobs() {

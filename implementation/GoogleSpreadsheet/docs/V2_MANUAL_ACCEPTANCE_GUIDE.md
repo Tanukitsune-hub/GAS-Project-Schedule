@@ -1,6 +1,6 @@
-# Controlled Sandbox Trial Guide 窶・2.8.15-prepilot
+# Controlled Sandbox Trial Guide - 2.8.16-prepilot
 
-Code Version: `2.8.15-prepilot`
+Code Version: `2.8.16-prepilot`
 
 Schema Version: `2.6`
 
@@ -8,64 +8,54 @@ AI Schema Version: `2.0`
 
 Migration Version: `3`
 
-Highest current gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+Highest machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+
+Work 0029 highest permitted status:
+`READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
 
 Automation: `OFF`
 
+Task canonical schema: `50` physical columns; authority ledger: `21` columns.
+
 ## Authorization boundary
 
-This guide describes possible trial steps for a future Work ID. It does not
-authorize a Google, OAuth, deployment, clasp, Gmail, Calendar, Sheets, trigger,
-or Provider action. There is no active company transfer path. Use only a
-dedicated personal synthetic target after the exact action, target, function,
-principal, and attempt count are separately authorized.
+This guide describes a later user-assisted validation boundary. It does not
+authorize a Google, OAuth, deployment, clasp, Gmail, Calendar, Sheets,
+trigger, Provider, Task, Review, Setup, Diagnostics, or Dashboard action in
+Work 0029. Work 0029 does not configure or inspect a real API key, make a real
+Gemini request, access Gmail runtime, or invoke an Apps Script function.
 
-## Before any remote mutation
+The user may manually enter a real Gemini key into the designated Script
+Property only in a later explicitly authorized Work. The key must never be
+pasted into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
 
-1. Bind the exact source/release commit and payload SHA-256.
-2. Directly verify script/container ownership, Shared Drive absence, pending
-   owner absence, standard Cloud project link, principal equality, and a
-   MYSELF-only immutable deployment.
-3. Create the Work-ID-specific durable one-use marker before the call.
-4. Confirm no identifier, token, URL, account value, raw provider error, or
-   production/private data will enter tracked evidence.
-5. Stop if any direct evidence is missing or stale.
+## Work 0029 entrypoints
 
-## Proposed structural trial order
+- `checkGeminiSyntheticReadiness()` is no-argument and read-only. It reports
+  only bounded provider metadata, credential configured/not-configured state,
+  and actual Automation status. It performs no Gmail or Gemini request.
+- `runGeminiSyntheticValidationOnce()` is no-argument and test-mode only. It
+  accepts exactly one manually selected candidate whose subject and normalized
+  body exactly match the fictional UTF-8 fixture. It checks Automation first,
+  excludes attachments and prior-thread context, and permits at most one
+  Provider request in the later authorized Work. It never falls back to Mock.
 
-Run each item only under its own authorization and retain only bounded closed
-results.
+The fixture contains a fixed sentinel, says that it contains no personal,
+confidential, or production data, asks for one fictional internal Task due
+seven days after processing, and explicitly excludes external, legal, tax,
+regulatory, contract, bid, and other high-impact Calendar use.
 
-1. Guarded source staging and payload inventory verification.
-2. One guarded push to the dedicated synthetic target.
-3. Pull-back into an isolated local directory and exact byte parity check.
-4. Setup S00窶鉄99 on a blank synthetic Spreadsheet.
-5. Verify 11 Sheets, Task 50 columns, Ledger 21 columns, canonical rows 1窶・,
-   hidden/protected state, Data Validation, note, and Automation OFF.
-6. Verify Dashboard ownership, exact 17-by-3 surface, flush/reacquire/readback,
-   and idempotent Setup rerun.
-7. Run standalone Quick Diagnostic, Deep Diagnostic, and Dashboard refresh as
-   separate actions; require complete bounded results.
+## Structural checks before any later placement
 
-## Proposed synthetic functional order
+1. Bind the exact A16 source and B16 release commits and verify checksums.
+2. Confirm the payload contains exactly 23 `.gs` files and `appsscript.json`.
+3. Confirm Automation is OFF and no scheduled trigger exists.
+4. Confirm no credential value, identifier, private URL, raw response, or real
+   data is present in evidence.
+5. Stop on any stale, ambiguous, or incomplete evidence. Do not repair or
+   retry a remote operation in this Work.
 
-Only after structural acceptance and separate authorization:
-
-1. exact synthetic Gmail Message selection and PREPROCESSED checkpoint;
-2. deterministic Mock classification and Task upsert;
-3. Review stage/apply/reject/restage with CAS failure checks;
-4. Task manual edit, multi-row edit, header restoration, authority partial-write
-   recovery, tamper rejection, and quarantine;
-5. Calendar create/update/delete/no-op intent plus enqueue/ack interruption;
-6. retry, Dead Letter, manual retry, duplicate suppression, and authority-loss
-   compensation;
-7. installable edit trigger, disabled time-driven trigger, LockService, quota,
-   and bounded execution checks.
-
-## Acceptance cap
-
-Even complete success in this guide does not by itself declare Phase 8B
-overall PASS, Phase 8C GO, pilot ready, production ready, or company handoff.
-Real AI Provider implementation and approval remain a separate project-level
-blocker. Any incomplete result, unexpected mutation, identity mismatch, parity
-mismatch, raw modification, duplicate effect, or secret exposure fails closed.
+All remaining native Google, Provider, Gmail, Task, Review, Calendar, Setup,
+Diagnostics, Dashboard, trigger, deployment, and OAuth observations must be
+recorded as `PASS`, `FAIL`, or `NOT EXECUTED` under their own authorization.
+Local tests and package checksums do not promote them to runtime acceptance.

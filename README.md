@@ -7,49 +7,39 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.15-prepilot` |
+| Code | `2.8.16-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Highest gate | `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` |
+| Machine gate | `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` |
+| Work 0029 highest permitted status | `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION` |
 | Automation | `OFF` |
-| Environment assurance | `LOCAL_NON_GOOGLE` |
-| Active company transfer | `NONE` |
-| Active deployment target | `NONE` |
+| Environment | `LOCAL_NON_GOOGLE` |
 
-`CURRENT_CONTRACT.json` is the machine-checkable source/release contract once
-the Work 0028 A15 source commit and direct-child B15 release commit have been
-created.
-The two current packages are:
+The current payload is exactly 23 `.gs` files plus `appsscript.json`.
+`CURRENT_CONTRACT.json`, release manifests, checksums, and the release
+verifiers bind the source A16 and direct-child release B16.
 
-- `implementation/GoogleSpreadsheet/release/v2.8.15-prepilot/` 窶・
-  `TEST_MODE=true`, Automation OFF, test harness included.
-- `implementation/GoogleSpreadsheet/release/v2.8.15-prepilot-phase8c/` 窶・the
-  audited `TEST_MODE=false` transformation only, with the test harness omitted.
+Current packages:
 
-Neither package is a deployment authorization. There is no active transfer
-path in Work 0002.
+- `implementation/GoogleSpreadsheet/release/v2.8.16-prepilot/`: `TEST_MODE=true`,
+  Automation OFF, harness included.
+- `implementation/GoogleSpreadsheet/release/v2.8.16-prepilot-phase8c/`:
+  only the audited `TEST_MODE=false` transform, with the harness excluded.
 
-## Canonical paths
+## Work 0029 runtime boundary
 
-- Current status: `CURRENT_STATUS.md`
-- Governing decisions: `DECISIONS.md`
-- Project context: `PROJECT_CONTEXT.md`
-- Delivery plan: `MASTER_PLAN.md`
-- Apps Script source: `implementation/GoogleSpreadsheet/apps-script-v2/`
-- Tests and tools: `implementation/GoogleSpreadsheet/tests/` and
-  `implementation/GoogleSpreadsheet/tools/`
-- Authority protocols: `docs/TASK_AUTHORITY_PROTOCOL.md` and
-  `docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md`
-- Current verification matrix: `docs/R4_VERIFICATION_MATRIX.md`
-- Work instruction/report: `docs/handoffs/0028-instruction.md` and
-  `docs/handoffs/0028-report.md`
+The source exposes no-argument `checkGeminiSyntheticReadiness()` and
+`runGeminiSyntheticValidationOnce()` functions in the test-mode menu. The
+readiness path is network-free. The validation path requires the actual
+Automation state to be consistently OFF and accepts only one exact fictional
+UTF-8 synthetic message. It never falls back to Mock and permits at most one
+Gemini request in a later, separately authorized Work.
 
-Historical audits, instructions, releases, transfers, and evidence remain
-historical records. They are not active operator instructions or current
-payload sources.
+Work 0018 remains Code `2.8.14-prepilot` A14/B14. Work 0028 remains Code
+`2.8.15-prepilot` A15/B15. Their historical reports are not rewritten.
 
-## Local validation
+## Validation
 
 From `implementation/GoogleSpreadsheet`:
 
@@ -58,21 +48,13 @@ pnpm install --frozen-lockfile
 pnpm run verify:local
 ```
 
-The gate parses tracked JSON/YAML, validates the Apps Script payload and V8
-syntax, executes every current `*_test.js` suite against the real `.gs`
-source, verifies the two current release packages and A15/B15 ancestry, scans
-for secrets and local state, and rejects untracked generated residue.
+The gate validates JSON/YAML, Apps Script inventory and syntax, every current
+test suite, deterministic release packages, A16/B16 lineage, active document
+integrity, and secret/local-state exclusions. It performs no real Google,
+OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.
 
-CI performs the same non-Google gate from a fresh checkout with read-only
-repository permission. CI never reads Google credentials, clasp state,
-deployment identifiers, OAuth state, or GitHub secret context, and never runs
-`clasp push` or any Workspace operation.
-
-## Acceptance boundary
-
-Local and CI PASS justify only `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`.
-Live Apps Script runtime, Gmail, Calendar, Sheets-native semantics, triggers,
-OAuth, deployment, real AI Provider behavior, pilot, production, and company
-handoff remain unaccepted. The Gemini registry is present, but external AI is
-disabled by default and fails closed until separately authorized credential
-and synthetic runtime validation. Automation remains OFF.
+No credential, token, private URL, account identifier, message body, raw
+Provider response, real Workspace identifier, or machine path belongs in
+tracked evidence. The next user-assisted boundary requires manual Script
+Property entry of a real key; that key must never be pasted into GitHub,
+Codex, or ChatGPT.

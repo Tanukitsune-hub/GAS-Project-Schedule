@@ -376,16 +376,13 @@ var WorkOsAiAdapter = (function () {
         type: 'string',
         enum: ACTION_TYPES.slice()
       },
-      target_task_id: nullable('string', {
-        pattern: '^tsk_[0-9a-f]{32}$',
-        maxLength: 80
-      }),
-      task_title: nullable('string', { maxLength: 300 }),
+      target_task_id: nullable('string'),
+      task_title: nullable('string'),
       deadline: nullable('string', {
-        pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+        format: 'date'
       }),
       suggested_deadline: nullable('string', {
-        pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+        format: 'date'
       }),
       deadline_basis: {
         type: 'string',
@@ -406,15 +403,13 @@ var WorkOsAiAdapter = (function () {
         enum: CALENDAR_IMPORTANCE.slice()
       },
       confidence: { type: 'number', minimum: 0, maximum: 1 },
-      reason: { type: 'string', maxLength: 1000 },
+      reason: { type: 'string' },
       changes: {
         type: 'object',
         additionalProperties: false,
         properties: {
-          task_title: nullable('string', { maxLength: 300 }),
-          due_date: nullable('string', {
-            pattern: '^\\d{4}-\\d{2}-\\d{2}$'
-          }),
+          task_title: nullable('string'),
+          due_date: nullable('string', { format: 'date' }),
           priority: nullable('string', { enum: PRIORITIES.slice() }),
           waiting_for_reply: nullable('boolean'),
           calendar_category: nullable('string', {
@@ -449,7 +444,7 @@ var WorkOsAiAdapter = (function () {
         warnings: {
           type: 'array',
           maxItems: WorkOsConfig.MAX_AI_WARNINGS,
-          items: { type: 'string', maxLength: 500 }
+          items: { type: 'string' }
         }
       }
     };

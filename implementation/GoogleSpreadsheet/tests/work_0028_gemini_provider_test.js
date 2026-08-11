@@ -49,6 +49,9 @@ const sandbox = {
         getContentText: () => responseBody
       };
     }
+  },
+  WorkOsAutomation: {
+    getDiagnosticAutomationStatus: () => disabledAutomationStatus()
   }
 };
 vm.createContext(sandbox);
@@ -73,7 +76,7 @@ function test(name, fn) {
     tests.push({
       name,
       status: 'FAIL',
-      safe_message: String(error && error.code || error && error.message || error)
+      safe_message: String(error && error.message || error && error.code || error)
         .slice(0, 160)
     });
   }
@@ -100,6 +103,18 @@ function validInput() {
       no_email_send: true
     }
   };
+}
+
+function disabledAutomationStatus(overrides = {}) {
+  return Object.assign({
+    status: 'CONSISTENT',
+    enabled: false,
+    desired_enabled: false,
+    trigger_count: 0,
+    clock_trigger_count: 0,
+    stored_trigger_id_present: false,
+    canonical_trigger_present: false
+  }, overrides);
 }
 
 function validOutput() {
@@ -159,7 +174,10 @@ test('GEMINI_REGISTRY_AND_READINESS_ARE_PROVIDER_SPECIFIC_BUT_SAFE', () => {
   const registry = AI.getProductionProviderRegistry();
   assert.strictEqual(registry.has('GEMINI'), true);
   propertyValues.clear();
-  const readiness = Gemini.readiness();
+  const readiness = Gemini.readiness({
+    automation_status: disabledAutomationStatus(),
+    local_test_only: true
+  });
   assert.deepStrictEqual({
     provider: readiness.provider,
     model: readiness.model,
@@ -206,9 +224,48 @@ test('GEMINI_INTERACTIONS_REQUEST_IS_ONE_POST_AND_STRUCTURED', () => {
   assert.strictEqual(body.response_format.type, 'text');
   assert.strictEqual(body.response_format.mime_type, 'application/json');
   assert.strictEqual(body.response_format.schema.additionalProperties, false);
+  assert.deepStrictEqual(body.generation_config, {
+    thinking_level: 'low',
+    thinking_summaries: 'none',
+    max_output_tokens: 4096
+  });
   assert.strictEqual(body.tools, undefined);
-  assert.strictEqual(body.generation_config, undefined);
   assert.strictEqual(body.input.includes('untrusted email/task data'), true);
+});
+
+test('GEMINI_SCHEMA_USES_DOCUMENTED_SUBSET_AND_APP_VALIDATOR_STAYS_STRICT', () => {
+  const schema = AI.getOutputJsonSchema();
+  const supported = new Set([
+    'type', 'properties', 'required', 'additionalProperties', 'enum',
+    'format', 'minimum', 'maximum', 'items', 'maxItems'
+  ]);
+  const visit = (value, propertyMap = false) => {
+    if (!value || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      value.forEach((item) => visit(item, false));
+      return;
+    }
+    for (const key of Object.keys(value)) {
+      if (!propertyMap) {
+        assert.strictEqual(supported.has(key), true,
+          `unsupported provider schema keyword: ${key}`);
+      }
+      visit(value[key], key === 'properties');
+    }
+  };
+  visit(schema);
+  assert.strictEqual(JSON.stringify(schema).includes('pattern'), false);
+  assert.strictEqual(JSON.stringify(schema).includes('maxLength'), false);
+
+  const invalidId = validOutput();
+  invalidId.actions[0].target_task_id = 'tsk_invalid';
+  assert.throws(() => AI.validateOutput(invalidId), /E_AI_SCHEMA|形式/);
+  const invalidDate = validOutput();
+  invalidDate.actions[0].deadline = '2026-99-99';
+  assert.throws(() => AI.validateOutput(invalidDate), /E_AI_SCHEMA|日付/);
+  const excessiveText = validOutput();
+  excessiveText.actions[0].task_title = 'x'.repeat(301);
+  assert.throws(() => AI.validateOutput(excessiveText), /E_AI_SCHEMA|不正/);
 });
 
 test('GEMINI_MISSING_CREDENTIAL_FAILS_CLOSED_WITHOUT_NETWORK', () => {

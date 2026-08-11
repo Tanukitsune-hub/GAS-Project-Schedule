@@ -443,6 +443,9 @@ var WorkOsGmailGateway = (function () {
         thread_id: String(
           thread.id || summary.id || selected.threadId || ''
         ),
+        // Subject is read from bounded metadata so a synthetic fixture can
+        // be verified before any body fetch.  Body/content remains excluded.
+        subject: headerValue(selected, 'Subject'),
         stable_thread_key: makeStableThreadKey(first.id, thread.id || summary.id),
         received_at: new Date(messageTimestamp(selected)),
         source_mode: 'MANUAL',

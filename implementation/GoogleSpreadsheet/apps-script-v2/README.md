@@ -1,35 +1,34 @@
-# Google Workspace Personal Work OS v2 窶・2.8.15-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.16-prepilot
 
-This directory is the canonical Apps Script source for the Work 0028 successor
-to the Work 0018 Gmail repair and Work 0002 clean integration candidate in
+This directory is the canonical Apps Script source for the Work 0029
+runtime-activation remediation in
 `Tanukitsune-hub/GAS-Project-Schedule`.
 
 ## Active contract
 
-- Code: `2.8.15-prepilot`
+- Code: `2.8.16-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
-- Task sheet: `50` physical columns
-- Authority store: protected hidden `Task Authority Ledger`, `21` columns
-- Authority protocol: versioned two-slot `PREPARED` / Task row write /
-  `COMMITTED`
-- Snapshot or note fallback: `FORBIDDEN`
-- `TEST_MODE`: `true` in the Phase 8B candidate
+- Task schema: 50 physical columns
+- Authority: protected hidden `Task Authority Ledger`, 21 columns
+- `TEST_MODE`: `true` in the Phase 8B package
 - Automation: `OFF`
-- Production provider registry: lazy `GEMINI` registration only; external AI
-  remains disabled until credential and approval gates are explicitly met
-- Highest gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+- Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+- Work 0029 highest permitted status:
+  `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
 
-The candidate consolidates the final Code 2.8.11 authority, Calendar outbox,
-Dashboard, diagnostic-summary, Setup, and fail-closed behavior on the exact
-Work 0002 starting main. The S90 module contract identifier remains
-`WORK_OS_V2_S90_CONTRACT_2_8_11` because its three-module runtime contract is
-unchanged; the candidate Code version is independently `2.8.15-prepilot`.
-Work 0028 adds the isolated Gemini Interactions v1 transport in
-`20_GeminiProvider.gs`, strict AI2 structured-output validation, a private
-synthetic one-message readiness entrypoint, and write-time Review-count
-metadata. No real Gemini request is executed in this Work.
+The source retains the Gmail byte-body decoder, durable Task authority,
+Review/CAS, Calendar outbox, diagnostics, and strict privacy boundaries. It
+also contains the isolated Gemini Interactions v1 provider, documented
+structured-output subset, bounded generation settings, exact synthetic UTF-8
+fixture, and no-argument readiness/validation entrypoints.
+
+`checkGeminiSyntheticReadiness()` performs no Gmail or Gemini request.
+`runGeminiSyntheticValidationOnce()` is test-mode only, checks actual runtime
+Automation state before external access, accepts one exact manual synthetic
+message, and permits at most one Provider request in a later separately
+authorized Work. It never accepts a real message or falls back to Mock.
 
 ## Local validation
 
@@ -40,11 +39,7 @@ pnpm install --frozen-lockfile
 pnpm run verify:local
 ```
 
-The gate validates tracked JSON/YAML, the canonical Apps Script inventory,
-static policy, every current `*_test.js` suite, both deterministic release
-packages, A15/B15 lineage, governance identity, and secret/local-state
-exclusions. It performs no Google, OAuth, deployment, clasp, Gmail, Calendar,
-Sheets, trigger, or Provider operation.
-
-There is no active transfer or deployment target. The future Sandbox trial
-guide is `../docs/V2_MANUAL_ACCEPTANCE_GUIDE.md` and is descriptive only.
+The local gate runs the current test suites, source/static checks, release
+parity, A16/B16 lineage, active-document UTF-8/history checks, and secret/local
+state scans. It does not configure or inspect a real key and performs no
+Google, OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.

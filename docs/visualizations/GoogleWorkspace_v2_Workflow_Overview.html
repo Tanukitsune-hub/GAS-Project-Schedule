@@ -1,97 +1,20 @@
 <!doctype html>
-<html lang="en" data-code-version="2.8.15-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_CONTROLLED_SANDBOX_VALIDATION">
+<html lang="en" data-code-version="2.8.16-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_CONTROLLED_SANDBOX_VALIDATION">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Google Workspace Personal Work OS v2 窶・Authority Workflow</title>
-  <style>
-    :root{--ink:#172033;--line:#bac7da;--blue:#195cab;--good:#16734c;--warn:#8a4b00;--bad:#b42318}
-    body{margin:0;background:#f5f7fb;color:var(--ink);font:15px system-ui,sans-serif}
-    main{max-width:1120px;margin:36px auto;padding:0 24px}.meta{display:flex;gap:8px;flex-wrap:wrap}
-    .badge{padding:5px 8px;border-radius:999px;background:#e9eff8;font-weight:650}.gate{background:#fff4df;color:var(--warn)}
-    .flow{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:12px;margin:28px 0}
-    .node{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;min-height:112px}
-    .authority{border-color:var(--blue);box-shadow:0 0 0 3px #e6effb}.excluded{border-color:var(--bad);background:#fff6f5}
-    h1,h2,h3{margin-top:0}.arrow{align-self:center;text-align:center;color:var(--blue);font-size:26px}
-    table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid var(--line);padding:10px;vertical-align:top;text-align:left}
-    @media(max-width:840px){.flow{grid-template-columns:1fr}.arrow{display:none}}
-  </style>
+  <title>Google Workspace Personal Work OS v2 - Authority Workflow</title>
+  <style>:root{--ink:#172033;--line:#bac7da;--blue:#195cab;--warn:#8a4b00;--bad:#b42318}body{margin:0;background:#f5f7fb;color:var(--ink);font:15px system-ui,sans-serif}main{max-width:1040px;margin:36px auto;padding:0 24px}.meta{display:flex;gap:8px;flex-wrap:wrap}.badge{padding:5px 8px;border-radius:999px;background:#e9eff8;font-weight:650}.gate{background:#fff4df;color:var(--warn)}.flow{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:12px;margin:24px 0}.node{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;min-height:100px}.authority{border-color:var(--blue)}.excluded{border-color:var(--bad);background:#fff6f5}@media(max-width:840px){.flow{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <main>
-  <h1>Task Authority and Calendar Reconciliation</h1>
-  <div class="meta">
-    <span class="badge">Code 2.8.15-prepilot</span><span class="badge">Schema 2.6 / 50 Task columns</span>
-    <span class="badge">11 Sheets / 5 hidden</span><span class="badge gate">READY_FOR_CONTROLLED_SANDBOX_VALIDATION</span>
-  </div>
-  <h2>Setup control-plane bootstrap</h2>
-  <section class="flow" aria-label="setup control-plane workflow">
-    <article class="node"><h3>S00 / S10</h3><p>Validate one empty unknown sheet, then create the canonical 11-sheet workbook.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node authority"><h3>S20 control plane</h3><p>Setup establishes canonical Ledger protection and hidden visibility before any authority validation.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node"><h3>Validate / S30 reassert</h3><p>The strict validator remains fail-closed. S30 and completed Setup reruns idempotently reassert the same controls.</p></article>
-  </section>
-  <h2>Quick Diagnostic real-runtime contract</h2>
-  <section class="flow" aria-label="quick diagnostic workflow">
-    <article class="node"><h3>Setup-owned Dashboard</h3><p>Only the exact protected sheet/header control plane and exact three-row safe seed are accepted before explicit refresh.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node authority"><h3>Task control plane</h3><p>Rows 1窶・ across all 50 Task columns are one canonical protection. All five schema checkbox fields, including <code>calendar_reconcile_required</code>, come from the validation plan.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node"><h3>Read-only result</h3><p>An identity-empty row may retain only canonical checkbox Boolean <code>false</code>. Foreign controls, values, formulas, notes, names, merges, hidden state, or unsafe formatting fail closed.</p></article>
-  </section>
-  <p><code>PHASE8B-QUICK-DIAGNOSTIC-01</code>: S00窶鉄80 may be preserved while only S90/S99 resume. No manual Sheet, checkbox, protection, Dashboard, Ledger, Gmail, Calendar, trigger, or Task-data repair is permitted.</p>
-  <p><code>PHASE8B-DASHBOARD-01</code>: canonical owner-created Protection accepts either an explicit owner editor or an implicit owner with <code>canEdit()=true</code>, only when effective user equals owner. Foreign editors, domain edit, target audiences, wrong/duplicate protection, unprotected ranges, and each closed-enum surface conflict remain FAIL.</p>
-  <p><code>PHASE8B-DASHBOARD-NUMBER-FORMAT-01</code>: only Setup, immediately before S90, may establish the deterministic plain-text contract for the exact 17ﾃ・ proven system block. Quick/Deep Diagnostic remain read-only; any other surface conflict blocks normalization.</p>
-  <h2>v2.8.15 bounded Diagnostic-summary boundary</h2>
-  <section class="flow" aria-label="bounded diagnostic summary workflow">
-    <article class="node authority"><h3>1. Preserve</h3><p>All existing Diagnostic checks and WARN/FAIL outcomes remain unchanged.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node"><h3>2. Bound</h3><p>Sorted unique warning/failure IDs, completeness, counts, and closed Task/Ledger aggregates are emitted before detail.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node excluded"><h3>3. Stop on incomplete</h3><p>Overflow, malformed, duplicate, or unavailable data remains REVIEW_REQUIRED; Diagnostic makes no repair.</p></article>
-  </section>
-  <h2>v2.8.10 write-visibility and module-skew boundary retained</h2>
-  <section class="flow" aria-label="dashboard write visibility workflow">
-    <article class="node authority"><h3>1. Module contract</h3><p>Config, Setup, and Dashboard must expose one matching S90 contract. Skew fails before any format write.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node"><h3>2. Write and flush</h3><p>Only a proven noncanonical exact 17ﾃ・ block is written. Setup calls <code>SpreadsheetApp.flush()</code> once.</p></article>
-    <div class="arrow">&rarr;</div>
-    <article class="node authority"><h3>3. Fresh strict read</h3><p>Setup reacquires the exact Range and requires all 51 cells to satisfy the canonical contract before read-only Quick Diagnostic.</p></article>
-  </section>
-  <p>Flush unavailable/failure or a noncanonical reread stops as <code>E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION</code>. Module mismatch stops as <code>E_MODULE_VERSION_SKEW</code>. Only closed states, Booleans, and counts are retained.</p>
-  <section class="flow" aria-label="authority workflow">
-    <article class="node"><h3>1. User / Gmail input</h3><p>Raw business intent enters the visible Task workflow.</p></article>
-    <div class="arrow">竊・/div>
-    <article class="node"><h3>2. Validate</h3><p>Shared validator checks the protected hidden ledger. No snapshot-cell fallback.</p></article>
-    <div class="arrow">竊・/div>
-    <article class="node authority"><h3>3. Two-slot ledger</h3><p>Inactive slot PREPARED 竊・one Task-row write 竊・durable COMMITTED promotion.</p></article>
-  </section>
-  <section class="flow" aria-label="operational workflow">
-    <article class="node"><h3>4. Operational Task</h3><p>Only COMMITTED, authority-valid Task rows are indexed for Worker and Review.</p></article>
-    <div class="arrow">竊・/div>
-    <article class="node"><h3>5. Durable outbox intent</h3><p>Calendar intent is persisted before external Calendar I/O.</p></article>
-    <div class="arrow">竊・/div>
-    <article class="node"><h3>6. Calendar reconcile</h3><p>A final short-lock validator arms durable intent before I/O; authority loss compensates only a verified-owned deterministic Event. Calendar is derived state.</p></article>
-  </section>
-  <section class="flow" aria-label="failure workflow">
-    <article class="node excluded"><h3>Moved / sorted row</h3><p>Rebind the ledger physical hint only. Do not rewrite business data.</p></article>
-    <div class="arrow">竊・/div>
-    <article class="node excluded"><h3>Deleted row</h3><p>Ledger becomes ORPHANED, clears its live hint, and never recreates the Task.</p></article>
-    <div class="arrow">竊・/div>
-    <article class="node excluded"><h3>Missing / duplicate authority</h3><p>QUARANTINED or UNRECOVERABLE. Worker, Review, and Calendar exclude it; pending outbox is CANCELLED.</p></article>
-  </section>
-  <h2>Fault recovery matrix</h2>
-  <table>
-    <thead><tr><th>Failure point</th><th>Durable evidence</th><th>Allowed result</th></tr></thead>
-    <tbody>
-      <tr><td>PREPARED write fails</td><td>Ledger re-read</td><td>No visible Task write, or deterministic rollback.</td></tr>
-      <tr><td>Task row write ambiguous</td><td>Committed and prepared slots plus visible row</td><td>Promote, roll back, or isolate; never infer success.</td></tr>
-      <tr><td>Migration / Setup sees missing authority</td><td>Common validator and bounded observation</td><td>Isolation, never silent rebaseline.</td></tr>
-      <tr><td>Authority is lost after Calendar arm / I/O</td><td><code>DEADLINE_CALENDAR_ARMED</code> then compensation target</td><td>Cancel before I/O, or delete only a verified-owned Event; never patch an excluded Task.</td></tr>
-    </tbody>
-  </table>
-  <p>The current gate is READY_FOR_CONTROLLED_SANDBOX_VALIDATION on non-Google evidence only. There is no active transfer or deployment target. Automation is OFF; live Dashboard, triggers, Gmail, Calendar, locking, authority faults, and provider validation remain NOT_EXECUTED.</p>
+  <h1>Task Authority and Gemini Synthetic Boundary</h1>
+  <div class="meta"><span class="badge">Code 2.8.16-prepilot</span><span class="badge">Schema 2.6 / AI Schema 2.0 / Migration 3</span><span class="badge gate">READY_FOR_CONTROLLED_SANDBOX_VALIDATION</span></div>
+  <h2>Governed workflow</h2>
+  <section class="flow"><article class="node"><h3>1. Select</h3><p>Only an approved exact-message label/query boundary may select input.</p></article><article class="node authority"><h3>2. Validate</h3><p>The protected hidden Task Authority Ledger is the only trust anchor.</p></article><article class="node"><h3>3. Review</h3><p>Review/CAS controls human acceptance; invalid authority fails closed.</p></article><article class="node"><h3>4. Outbox</h3><p>Calendar intent is durable and derived from the authoritative Task.</p></article><article class="node excluded"><h3>5. Bound</h3><p>Automation is OFF; diagnostics and local evidence never authorize runtime.</p></article></section>
+  <h2>Work 0029 Gemini entrypoints</h2>
+  <section class="flow"><article class="node authority"><h3>Readiness</h3><p><code>checkGeminiSyntheticReadiness()</code> is no-argument and network-free.</p></article><article class="node"><h3>Guard</h3><p>Actual Automation state must be consistently disabled with zero scheduled triggers before external access.</p></article><article class="node"><h3>Fixture</h3><p>One exact fictional UTF-8 message, no personal or production data, and a seven-day relative Task deadline.</p></article><article class="node excluded"><h3>Provider</h3><p>At most one request in a later Work; no key configuration, real request, or Mock fallback here.</p></article></section>
+  <p>Historical Work 0018 remains A14/B14 and Work 0028 remains A15/B15. Work 0029 produces A16/B16. This visualization is descriptive only and does not authorize a Google operation.</p>
 </main>
 </body>
 </html>

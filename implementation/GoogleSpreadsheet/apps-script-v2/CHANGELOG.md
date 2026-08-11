@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.8.16-prepilot - 2026-08-11 Gemini runtime activation remediation
+
+- Add no-argument `checkGeminiSyntheticReadiness()` and
+  `runGeminiSyntheticValidationOnce()` entrypoints plus test-mode menu actions.
+- Read the actual canonical Automation state before credential, Gmail, or
+  Provider access; fail closed unless scheduled Automation is consistently OFF.
+- Replace the opaque fixture with an exact UTF-8 fictional internal Task
+  message, a seven-day relative deadline, and a non-Calendar statement.
+- Restrict Provider structured output to the documented schema subset and add
+  bounded low-thinking/no-summary generation settings.
+- Repair active UTF-8 documentation and preserve historical A14/B14 and
+  A15/B15 release identities. No real key, Gemini request, Gmail runtime, or
+  Apps Script function is executed.
+
 ## 2.8.15-prepilot - 2026-08-11 Gemini provider boundary and review observability
 
 - Add the isolated Gemini Interactions v1 provider with pinned

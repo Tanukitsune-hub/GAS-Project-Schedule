@@ -31,7 +31,39 @@ function onOpen() {
       .addItem('Phase 6テストを実行', 'menuRunPhase6Tests')
       .addItem('Phase 7テストを実行', 'menuRunPhase7Tests');
   }
+  if (WorkOsConfig.TEST_MODE === true) {
+    menu
+      .addSeparator()
+      .addItem('Gemini synthetic readiness',
+        'menuCheckGeminiSyntheticReadiness')
+      .addItem('Gemini synthetic validation (one request)',
+        'menuRunGeminiSyntheticValidation');
+  }
   menu.addToUi();
+}
+
+function menuCheckGeminiSyntheticReadiness() {
+  showSafeResult_(
+    'Gemini synthetic readiness',
+    checkGeminiSyntheticReadiness()
+  );
+}
+
+function menuRunGeminiSyntheticValidation() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    'Gemini synthetic validation',
+    'Later authorized Workで最大1回の実Gemini API requestが発生します。' +
+      'Automationが停止中で、承認済みの合成メッセージだけを対象にします。続行しますか。',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_(
+    'Gemini synthetic validation',
+    runGeminiSyntheticValidationOnce()
+  );
 }
 
 function menuSetupSystem() {
