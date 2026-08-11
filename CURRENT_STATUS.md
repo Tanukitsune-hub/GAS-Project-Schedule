@@ -65,3 +65,46 @@ runtime/end-to-end acceptance:
 
 No local, release, fresh-clone, or CI result may raise this candidate above
 `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`.
+
+## Runtime evidence addendum — Work 0027 (2026-08-11)
+
+The sections above remain the canonical machine-bound source/release contract
+and are intentionally retained unchanged. Later controlled Works 0019-0026
+added separate real-Google evidence on the existing personal-synthetic target;
+that evidence does not alter `CURRENT_CONTRACT.json`, release identity, or the
+`READY_FOR_CONTROLLED_SANDBOX_VALIDATION` source-contract gate.
+
+Runtime evidence now accepted for synthetic-only data includes:
+
+- Advanced Gmail Service preprocessing through the repaired body decoder;
+- authoritative Task creation and persistence;
+- Review creation and human `受入` through the canonical installable edit Trigger;
+- ordinary manual Task editing through the same authority path;
+- post-Setup Quick Diagnostic with zero FAIL and Task Authority Ledger validator PASS;
+- dedicated managed Calendar CREATE, UPDATE-in-place, and DELETE on completion.
+
+The managed Calendar lifecycle `CREATE -> UPDATE -> DELETE` has therefore been
+proven end to end for one synthetic Task/event pair. Automation remains OFF.
+
+For runtime planning only, the next product boundary is
+`READY_FOR_CONTROLLED_PRODUCTION_AI_PROVIDER_INTEGRATION`: implement/configure
+one approved production-AI Provider boundary and prove it on grouped synthetic
+end-to-end cases while Automation remains OFF. This runtime planning status is
+not a replacement for the machine-bound overall status above and does not
+authorize company/production data or autonomous processing.
+
+Known non-blocking observations retained deliberately:
+
+- Mock vertical `review_count` can under-count a newly inserted Review Task in
+  one lock-free summary path; the Review workflow itself is runtime-proven.
+- `VERSION_PROPERTIES` WARN truthfully reflects target version metadata that
+  predates the placed `2.8.14-prepilot` candidate and should be refreshed only
+  during a controlled future target update.
+- `RETRY_DEAD_LETTER_STATE` WARN truthfully reflects retained historical
+  synthetic negative-test failures and should not be suppressed merely to make
+  diagnostics green.
+
+Remaining blockers before an automated pilot are production-AI Provider
+transport, opaque credential reference/storage, policy/authorization readiness,
+synthetic real-AI end-to-end proof, and a separate explicit Automation pilot
+decision.

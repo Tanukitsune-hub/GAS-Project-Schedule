@@ -107,3 +107,41 @@ exclusion, idempotency, and Automation-OFF boundaries remain unchanged.
 - Production AI remains fail-closed until one approved provider, transport,
   credential boundary, and data policy are separately implemented and tested.
 - Automation defaults to OFF and cannot be enabled by Setup or local tests.
+
+## Work 0027 runtime-evidence decisions — 2026-08-11
+
+### D-056 — Runtime evidence is tracked separately from source/release identity
+
+**Decision.** Controlled Works 0019-0026 establish accepted real-Google
+synthetic-runtime evidence for Gmail preprocessing, Task authority, Review,
+ordinary manual edits, and managed Calendar CREATE/UPDATE/DELETE. The machine
+source/release contract remains `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` and
+`CURRENT_CONTRACT.json` is unchanged.
+
+**Consequence.** Runtime planning may advance to controlled production-AI
+Provider integration without regenerating packages or rewriting the machine
+gate. This does not authorize company/production data, deployment, or
+Automation.
+
+### D-057 — Truthful diagnostics outrank cosmetic green status
+
+**Decision.** `VERSION_PROPERTIES` and `RETRY_DEAD_LETTER_STATE` remain visible
+while their underlying conditions are real. The former reflects Setup-stored
+version metadata predating the current placed candidate; the latter reflects
+retained controlled synthetic failure history.
+
+**Consequence.** Do not weaken diagnostic predicates or delete synthetic
+negative-test evidence merely to reduce WARN count. Refresh target version
+metadata during the next controlled target update; treat Dead Letter cleanup
+as an explicit retention decision.
+
+### D-058 — Mock `review_count` under-counting is FIX SOON, not a blocker
+
+**Decision.** One lock-free Mock summary path under-counts a newly inserted
+Review Task. The Review row itself and human acceptance path have been proven
+in real runtime.
+
+**Consequence.** Bundle the counter fix and focused regression coverage into
+the next coherent source-change Work, expected to be production-AI Provider
+integration. Do not create standalone source/version/release churn solely for
+this observability defect.

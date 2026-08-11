@@ -68,3 +68,36 @@ deployment target.
 Existing audits, legacy `instructions/`, releases, transfers, and evidence are
 retained as historical records. Old version/gate/transfer selectors are not
 active. The current task exchange is under `docs/handoffs/`.
+
+## Runtime evidence addendum — Work 0027 (2026-08-11)
+
+The source-contract sections above remain unchanged and continue to define the
+machine-bound candidate/release gate. Separately, controlled Works 0019-0026
+proved materially stronger behavior on the existing personal-synthetic Google
+target without changing source/release identity.
+
+Accepted synthetic-only real-runtime evidence now covers:
+
+- Advanced Gmail Service preprocessing through the repaired decoder;
+- Task authority persistence;
+- Mock Task creation;
+- Review creation and human acceptance through the canonical installable edit
+  Trigger;
+- ordinary manual Task edits through the authority path;
+- managed secondary Calendar CREATE, UPDATE in place, and DELETE;
+- post-Setup Quick Diagnostic with zero FAIL and authority-ledger validation.
+
+This evidence does not authorize production/company data, deployment, or
+automatic processing. It also does not replace the `Highest gate` field above.
+For runtime planning, the next coherent boundary is controlled production-AI
+Provider integration on synthetic data while Automation remains OFF.
+
+Three known observations remain intentionally visible:
+
+- Mock vertical `review_count` under-counting is a non-blocking observability
+  defect; bundle it into the next coherent source-change Work rather than
+  creating standalone release churn.
+- `VERSION_PROPERTIES` WARN is truthful target metadata drift and should be
+  refreshed during the next controlled target update, not suppressed.
+- `RETRY_DEAD_LETTER_STATE` WARN is truthful retained synthetic negative-test
+  history and should not be deleted simply to make diagnostics green.

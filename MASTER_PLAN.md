@@ -82,3 +82,48 @@ No step is authorized by this plan itself.
 - Historical packages and transfer envelopes remain immutable and inactive.
 - Any missing authorization, identity binding, parity evidence, or complete
   bounded result fails closed.
+
+## Runtime progress addendum — Work 0027 (2026-08-11)
+
+The canonical source/release plan above remains retained because the current
+machine contract is still `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`. The
+separately authorized sandbox sequence has since been executed through
+controlled Works 0019-0026 on synthetic-only data.
+
+Completed real-Google runtime outcomes now include:
+
+1. Gmail Advanced Service preprocessing through the repaired decoder.
+2. Deterministic Mock Task creation with authoritative persistence.
+3. Review-required Task creation and human `受入` via the canonical installable
+   edit Trigger.
+4. Ordinary manual Task editing through the same authority path.
+5. Dedicated Calendar CREATE for one managed deadline event.
+6. Calendar UPDATE in place after one due-date change, without duplication.
+7. Calendar DELETE after Task completion, leaving no matching managed event in
+   the bounded target window.
+
+Work 0027 consolidates that evidence and deliberately makes no Apps Script,
+release-package, schema, migration, or `CURRENT_CONTRACT.json` change.
+
+### Next grouped Work
+
+The next coherent source-change Work should combine rather than fragment:
+
+1. implement/configure one approved production-AI Provider transport compatible
+   with the existing provider-neutral AI schema;
+2. use only an opaque credential reference/storage boundary;
+3. fix the non-blocking Mock `review_count` under-counting with focused
+   regression coverage in the same source-change bundle;
+4. run the full local/CI gate once;
+5. update the existing synthetic target once and refresh truthful version
+   metadata as part of that controlled update;
+6. run a small grouped synthetic real-AI end-to-end trial while Automation
+   remains OFF;
+7. finish with one bounded diagnostic and one consolidated report.
+
+Do not repeat the already proven Calendar CREATE/UPDATE/DELETE lifecycle unless
+that source change materially touches Calendar behavior.
+
+Only after production-AI integration succeeds should a separate grouped Work
+enable bounded scheduled Automation for a synthetic/personal-safe pilot with an
+immediate disable path. Production/company use remains a separate decision.
