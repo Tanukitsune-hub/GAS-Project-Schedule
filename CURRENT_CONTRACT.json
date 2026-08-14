@@ -3,7 +3,7 @@
   "repository": "Tanukitsune-hub/GAS-Project-Schedule",
   "starting_main": "e2a7c683a7c0f7f1a865aec89a9e24ec56f830da",
   "branch": "codex/0002-clean-integration-candidate",
-  "code_version": "2.8.17-prepilot",
+  "code_version": "2.8.18-prepilot",
   "schema_version": "2.6",
   "ai_schema_version": "2.0",
   "migration_version": "3",
@@ -11,23 +11,23 @@
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "8b4267c7ff9f156866df171107ddd5aed02d8268",
+  "source_commit": "8305bdda431fb7dccfb4bf9c799dfb92389e8df9",
   "release_commit": "SELF",
   "phase8b": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.17-prepilot",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.18-prepilot",
     "test_mode": true,
     "test_harness": true,
     "payload_files": 24,
     "package_files": 28,
-    "payload_sha256": "ece597b54d360c7ca398db9ceea40c75ace0c8714e950b78a8375949a8bcdf72"
+    "payload_sha256": "a4aa45515afde380e0da35f83f627a34db73e5159d28274859cef5bac84c247b"
   },
   "phase8c": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.17-prepilot-phase8c",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.18-prepilot-phase8c",
     "test_mode": false,
     "test_harness": false,
     "transform": "TEST_MODE_ONLY",
     "payload_files": 23,
     "package_files": 26,
-    "payload_sha256": "71d1b4c45b4870eb91886e517e19d28161a9e3c875b82c8a2e18dc74dfad6cd3"
+    "payload_sha256": "4d6d82361619f9fb8d99ba84177664fdca5a38f12f37efb20c7369230b87678a"
   }
 }
