@@ -52,7 +52,7 @@ const visualizationPaths = [
 ];
 for (const file of visualizationPaths) {
   const content = read(file);
-  check(() => assert.match(content, /data-code-version="2\.8\.17-prepilot"/));
+  check(() => assert.match(content, /data-code-version="2\.8\.18-prepilot"/));
   check(() => assert.match(content, /data-schema-version="2\.6"/));
   check(() => assert.match(content, /data-ai-schema-version="2\.0"/));
   check(() => assert.match(content, /data-migration-version="3"/));
