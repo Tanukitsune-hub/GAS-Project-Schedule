@@ -11,7 +11,7 @@ var WorkOsGeminiProvider = (function () {
   var MODEL = 'gemini-3.6-flash';
   var PROMPT_VERSION = 'gemini-interactions-v1-work-os-v1';
   var ENDPOINT =
-    'https://generativelanguage.googleapis.com/v1/interactions';
+    'https://generativelanguage.googleapis.com/v1beta/interactions';
   var CREDENTIAL_REFERENCE = 'WORK_OS_V2_GEMINI_API_KEY';
   var SYNTHETIC_SUBJECT = '[WORK_OS_SYNTHETIC_GEMINI_0029]';
   var SYNTHETIC_BODY = [

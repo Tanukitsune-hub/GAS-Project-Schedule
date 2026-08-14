@@ -7,38 +7,38 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.17-prepilot` |
+| Code | `2.8.18-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Machine gate | `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` |
-| Work 0030 highest permitted status | `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION` |
+| Work 0031 highest permitted status | `READY_FOR_USER_GEMINI_ONE_MESSAGE_RETRY` |
 | Automation | `OFF` |
 | Environment | `LOCAL_NON_GOOGLE` |
 
 The current payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and the release
-verifiers bind the source A17 and direct-child release B17.
+verifiers bind the source A18 and direct-child release B18.
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.17-prepilot/`: `TEST_MODE=true`,
+- `implementation/GoogleSpreadsheet/release/v2.8.18-prepilot/`: `TEST_MODE=true`,
   Automation OFF, harness included.
-- `implementation/GoogleSpreadsheet/release/v2.8.17-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.18-prepilot-phase8c/`:
   only the audited `TEST_MODE=false` transform, with the harness excluded.
 
-## Work 0030 Gemini response boundary
+## Work 0031 Gemini transport boundary
 
-The source accepts the strict Gemini Interactions grammar
-`thought* model_output`: opaque thought signatures and summaries are never
-read, retained, logged, or surfaced, while exactly one final text output is
-passed to the existing strict classification validator. The existing
-no-argument readiness and synthetic-validation entrypoints remain test-mode
-only and network-free in this Work; they are not invoked here.
+The source uses exactly the confirmed Gemini Interactions creation endpoint
+`/v1beta/interactions` and preserves the strict `thought* model_output`
+grammar. Opaque thought signatures and summaries are never read, retained,
+logged, or surfaced, while exactly one final text output is passed to the
+existing strict classification validator. No real request is made here.
 
 Work 0018 remains Code `2.8.14-prepilot` A14/B14. Work 0028 remains Code
 `2.8.15-prepilot` A15/B15, and Work 0029 remains Code `2.8.16-prepilot`
-A16/B16. Their historical reports are not rewritten.
+A16/B16. Work 0030 remains Code `2.8.17-prepilot` A17/B17. Their historical
+reports are not rewritten.
 
 ## Validation
 
@@ -50,7 +50,7 @@ pnpm run verify:local
 ```
 
 The gate validates JSON/YAML, Apps Script inventory and syntax, every current
-test suite, deterministic release packages, A17/B17 lineage, active document
+test suite, deterministic release packages, A18/B18 lineage, active document
 integrity, and secret/local-state exclusions. It performs no real Google,
 OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.
 

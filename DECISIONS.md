@@ -1,8 +1,8 @@
 # Decisions
 
-Last updated: 2026-08-12
+Last updated: 2026-08-14
 
-This file records active decisions for the current Code `2.8.17-prepilot`
+This file records active decisions for the current Code `2.8.18-prepilot`
 candidate. Historical handoffs, reports, release packages, and audit records
 remain immutable evidence.
 
@@ -11,7 +11,7 @@ Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 ## D-048: one active candidate
 
 The active source, tests, tools, documents, and generated packages form one
-linear A17/B17 candidate. Older release and transfer trees are historical and
+linear A18/B18 candidate. Older release and transfer trees are historical and
 not deployment selectors.
 
 ## D-049: the Task ledger is the trust anchor
@@ -40,8 +40,8 @@ Workspace state.
 ## D-053: deterministic release lineage
 
 Phase 8B retains `TEST_MODE=true` and the harness. Phase 8C applies only the
-audited `TEST_MODE=false` transform and harness exclusion. B17 is a direct
-child of A17, and neither package is a deployment authorization.
+audited `TEST_MODE=false` transform and harness exclusion. B18 is a direct
+child of A18, and neither package is a deployment authorization.
 
 ## D-054: strict Gmail body decoding
 
@@ -59,8 +59,9 @@ directly through an Apps Script Blob. Attachment content is excluded.
 
 Work 0018 is Code `2.8.14-prepilot` with A14/B14. Work 0028 is Code
 `2.8.15-prepilot` with A15/B15. Work 0029 remains Code `2.8.16-prepilot`
-with A16/B16. Work 0030 is the successor Code `2.8.17-prepilot` with
-A17/B17. These identities must not be overwritten.
+with A16/B16. Work 0030 remains Code `2.8.17-prepilot` with A17/B17. Work
+0031 is the successor Code `2.8.18-prepilot` with A18/B18. These identities
+must not be overwritten.
 
 ## D-057: Gemini remains explicitly bounded
 
@@ -96,3 +97,17 @@ access Gmail runtime, invoke an Apps Script function, or run Task, Review,
 Calendar, Setup, Diagnostics, Dashboard, trigger, or Automation operations.
 The next user-assisted boundary is separately authorized manual Script
 Property configuration and one synthetic-message validation.
+
+## D-061: Gemini v1beta transport endpoint
+
+The active Gemini Interactions provider uses exactly
+`https://generativelanguage.googleapis.com/v1beta/interactions`. It performs
+one bounded POST with the existing API-key header and request contract, with no
+endpoint fallback, retry, model fallback, or alternate provider.
+
+## D-062: Work 0031 credential and runtime boundary
+
+Work 0031 does not configure or inspect the existing Gemini credential, make a
+real Gemini request, invoke an Apps Script function, or access Gmail, Task,
+Review, Calendar, Setup, Diagnostics, Dashboard, triggers, or Automation
+runtime.

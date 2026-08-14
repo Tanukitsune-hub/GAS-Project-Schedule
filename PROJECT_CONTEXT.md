@@ -1,16 +1,16 @@
 # Project Context
 
-Last updated: 2026-08-12
+Last updated: 2026-08-14
 
 Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.17-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.18-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0030 boundary: `READY_FOR_USER_GEMINI_KEY_CONFIGURATION_AND_ONE_MESSAGE_VALIDATION`
+Work 0031 boundary: `READY_FOR_USER_GEMINI_ONE_MESSAGE_RETRY`
 
 ## Purpose
 
@@ -30,21 +30,27 @@ derived view. Automation is OFF.
   authoritative after any Provider response.
 - Provider: Gemini is registered behind explicit approval and credential
   gates. The current Work does not configure, inspect, or call it.
-- Release: Code `2.8.17-prepilot`, Schema `2.6`, Migration `3`.
+- Release: Code `2.8.18-prepilot`, Schema `2.6`, Migration `3`.
 
-## Work 0030 Gemini response surface
+## Work 0031 Gemini transport surface
 
-The provider accepts only `thought* model_output` for a completed Gemini
-Interactions response. Thought signatures and summaries are opaque and never
-parsed, retained, logged, hashed, or surfaced. Exactly one final text output
-is passed to the existing strict application validator. The existing
-no-argument readiness and synthetic-validation entrypoints remain unchanged
-and are not invoked in Work 0030.
+The provider uses the exact Gemini Interactions creation endpoint
+`https://generativelanguage.googleapis.com/v1beta/interactions` and retains
+the Work 0030 `thought* model_output` grammar. Thought signatures and
+summaries are opaque and never parsed, retained, logged, hashed, or surfaced.
+Exactly one final text output is passed to the existing strict application
+validator. No readiness or synthetic-validation entrypoint is invoked in Work
+0031.
 
 The canonical synthetic body is fictional, contains no personal, confidential,
 or production data, requests an internal Task, uses a seven-day relative
 deadline, and is not a Calendar item. Subject and normalized body matching are
 exact. Attachment content and prior-thread context are excluded.
+
+Work 0030 remains the historical A17/B17 parser candidate. Work 0031 is the
+active A18/B18 endpoint candidate. The existing personal-synthetic target may
+be used only for the one guarded placement sequence authorized by the Work
+0031 handoff; no credential value or private identifier belongs in evidence.
 
 ## Assurance and privacy
 

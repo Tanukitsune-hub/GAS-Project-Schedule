@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.8.18-prepilot - 2026-08-14 Gemini v1beta endpoint remediation
+
+- Use the confirmed Gemini Interactions creation endpoint
+  `https://generativelanguage.googleapis.com/v1beta/interactions`.
+- Preserve the Work 0029/0030 bounded request, Automation-OFF, no-retry,
+  no-fallback, and strict `thought* model_output` contracts.
+- Add local fake-transport endpoint regression coverage. No real credential,
+  Gemini request, Gmail runtime, or Apps Script function is executed.
+
 ## 2.8.17-prepilot - 2026-08-12 Gemini thinking-step parser remediation
 
 - Accept only completed Gemini Interactions responses shaped as

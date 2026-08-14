@@ -7,7 +7,7 @@ const path = require('node:path');
 const repositoryRoot = path.resolve(__dirname, '..', '..', '..');
 const moduleRoot = path.join(repositoryRoot, 'implementation', 'GoogleSpreadsheet');
 const expected = {
-  code: '2.8.17-prepilot', schema: '2.6', aiSchema: '2.0', migration: '3',
+  code: '2.8.18-prepilot', schema: '2.6', aiSchema: '2.0', migration: '3',
   gate: 'READY_FOR_CONTROLLED_SANDBOX_VALIDATION'
 };
 
@@ -22,7 +22,7 @@ function check(body) {
 }
 
 const config = read('implementation/GoogleSpreadsheet/apps-script-v2/00_Config.gs');
-check(() => assert.match(config, /CODE_VERSION:\s*'2\.8\.17-prepilot'/));
+check(() => assert.match(config, /CODE_VERSION:\s*'2\.8\.18-prepilot'/));
 check(() => assert.match(config, /SCHEMA_VERSION:\s*'2\.6'/));
 check(() => assert.match(config, /AI_SCHEMA_VERSION:\s*'2\.0'/));
 check(() => assert.match(config, /MIGRATION_VERSION:\s*'3'/));
@@ -35,9 +35,9 @@ const activeDocuments = [
   'docs/R4_VERIFICATION_MATRIX.md',
   'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
   'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
-  'implementation/GoogleSpreadsheet/tools/v2_8_17/DEPLOYMENT_MANIFEST.template.md',
-  'implementation/GoogleSpreadsheet/tools/v2_8_17/MANUAL_ACCEPTANCE_GUIDE.md',
-  'implementation/GoogleSpreadsheet/tools/v2_8_17/SANDBOX_QUICKSTART.md'
+  'implementation/GoogleSpreadsheet/tools/v2_8_18/DEPLOYMENT_MANIFEST.template.md',
+  'implementation/GoogleSpreadsheet/tools/v2_8_18/MANUAL_ACCEPTANCE_GUIDE.md',
+  'implementation/GoogleSpreadsheet/tools/v2_8_18/SANDBOX_QUICKSTART.md'
 ];
 for (const file of activeDocuments) {
   const content = read(file);
@@ -48,7 +48,7 @@ for (const file of activeDocuments) {
 const visualizationPaths = [
   'docs/visualizations/index.html',
   'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html',
-  'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_17.html'
+  'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_18.html'
 ];
 for (const file of visualizationPaths) {
   const content = read(file);
@@ -61,22 +61,22 @@ for (const file of visualizationPaths) {
 }
 
 check(() => assert.strictEqual(
-  fs.existsSync(path.join(moduleRoot, 'transfer', 'v2.8.17-prepilot')),
+  fs.existsSync(path.join(moduleRoot, 'transfer', 'v2.8.18-prepilot')),
   false,
   'Work 0002 must not create an active transfer package'
 ));
 
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const releasePaths = [
-  path.join(moduleRoot, 'release', 'v2.8.17-prepilot'),
-  path.join(moduleRoot, 'release', 'v2.8.17-prepilot-phase8c')
+  path.join(moduleRoot, 'release', 'v2.8.18-prepilot'),
+  path.join(moduleRoot, 'release', 'v2.8.18-prepilot-phase8c')
 ];
 const currentReleasePresent = releasePaths.every((target) =>
   fs.existsSync(target) && fs.statSync(target).isDirectory()
 );
 if (!currentReleasePresent) {
   check(() => assert.ok(releasePaths.every((target) => !fs.existsSync(target)),
-    'Source A17 must not contain generated v2.8.17 release packages'));
+    'Source A18 must not contain generated v2.8.18 release packages'));
 } else {
   const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
   check(() => assert.strictEqual(contract.code_version, expected.code));
@@ -89,10 +89,10 @@ if (!currentReleasePresent) {
   check(() => assert.strictEqual(contract.active_deployment, null));
   check(() => assert.ok(releasePaths.every((target) =>
     fs.statSync(target).isDirectory()),
-    'Release B17 must contain both generated packages'));
+    'Release B18 must contain both generated packages'));
 }
 
 process.stdout.write(`${JSON.stringify({
   suite: 'canonical_document_consistency', passed, failed: 0,
-  release_stage: currentReleasePresent ? 'B17_OR_LATER' : 'A17_SOURCE'
+  release_stage: currentReleasePresent ? 'B18_OR_LATER' : 'A18_SOURCE'
 }, null, 2)}\n`);
