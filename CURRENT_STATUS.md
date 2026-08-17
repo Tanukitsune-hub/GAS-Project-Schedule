@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
 Candidate version: Code `2.8.19-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
@@ -21,12 +21,19 @@ source and release commits.
 
 The source contains the isolated Gemini Interactions provider, strict AI
 Schema 2.0 post-response validation, exact synthetic fixture guards, bounded
-low-thinking generation settings, and the actual runtime Automation-OFF
-guard. Its completed response grammar is strictly `thought* model_output`:
-thought signatures and summaries are opaque and never retained or exposed.
-The active Gemini Interactions transport uses the confirmed `/v1beta`
-creation endpoint. The provider is not configured by this repository and no
-real request is implied by the local gate.
+low-thinking generation settings, the actual runtime Automation-OFF guard,
+privacy-safe provider diagnostics, Message-only failure finalization, and
+exact synthetic candidate pinning. Completed response grammar remains strictly
+`thought* model_output`; thought signatures and summaries are opaque and never
+retained or exposed. The active transport remains `/v1beta/interactions`.
+
+The Gemini credential is never stored in this repository. The user has already
+configured it manually in the personal-synthetic Apps Script target, and
+network-free readiness returned READY. User-controlled real Gemini attempts
+have reached the provider outside Codex, but Gemini E2E has not yet passed
+because no real classification and Task were completed. Work 0032 itself made
+no real Gemini request and prepared the next attempt to return bounded,
+actionable diagnostics if it fails.
 
 ## Historical lineage
 
@@ -40,10 +47,13 @@ real request is implied by the local gate.
 - Work 0030: Code `2.8.17-prepilot`, source A17 and release B17. It repairs
   strict Gemini thinking-step parsing without configuring a key, requesting
   Gemini, or invoking an Apps Script function.
+- Work 0031: Code `2.8.18-prepilot`, source A18 and release B18. It established
+  the current `/v1beta/interactions` transport candidate and preserved the
+  Work 0030 parser and one-call boundary.
 - Work 0032: Code `2.8.19-prepilot`, source A19 and release B19. It repairs
   privacy-safe Gemini provider diagnostics, Message failure finalization, and
   exact synthetic candidate routing without configuring a key, requesting
-  Gemini, or invoking an Apps Script function.
+  Gemini, or invoking an Apps Script function in Codex.
 
 Historical handoffs and reports are immutable evidence. They are not rewritten
 to change their original claims.
@@ -53,16 +63,20 @@ to change their original claims.
 | Boundary | Status |
 |---|---|
 | Local source/static/test/release validation | Required and machine-checked |
-| Pre-Google GitHub Actions validation | Required before placement |
-| Real Gemini request | `NOT_EXECUTED` |
-| Real API-key configuration or inspection | `NOT_EXECUTED` |
-| Gmail runtime access in Work 0032 | `NOT_EXECUTED` |
-| Apps Script function invocation in Work 0032 | `0` |
-| Task, Review, Calendar, Setup, Diagnostics, Dashboard, triggers | `NOT_EXECUTED` |
+| Pre-Google and final-head GitHub Actions validation | PASS |
+| Work 0032 real Gemini request by Codex | `0` |
+| Work 0032 Gmail/Task/Review/Calendar runtime by Codex | `0` |
+| Personal-sandbox credential configuration by user | `CONFIGURED_OUTSIDE_REPOSITORY` |
+| Personal-sandbox real Gemini call | `EXECUTED`; E2E not yet PASS |
+| Latest pre-2.8.19 live attempt | Failed before classification/Task; historical state retained |
+| Next permitted action | One fresh exact synthetic-message retry on Code `2.8.19-prepilot` |
 | Company/production resource access | `NOT_AUTHORIZED` |
 
-Local and CI evidence does not establish native Google behavior or Provider
-acceptance. The next explicitly bounded user-assisted boundary is manual entry
-of a real Gemini key into Script Properties by the user, followed by one
-synthetic-message validation in a separately authorized Work. The key must
-never be pasted into GitHub, Codex, or ChatGPT.
+The next boundary is not API-key entry. Use one fresh exact synthetic Gmail
+Message, ensure only that fresh Message carries `手動/取込`, and invoke
+`Gemini synthetic validation (one request)` once. Prior failed or stuck
+Messages remain evidence and must not be reused. If the attempt succeeds, the
+personal-environment Gemini E2E completion condition is met and the candidate
+can move to code freeze. If it fails, the bounded Work OS code/stage, provider
+HTTP status and machine code, checkpoint, and failure-finalization state are
+the sole basis for one minimal follow-up repair.
