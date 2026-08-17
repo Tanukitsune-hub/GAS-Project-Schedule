@@ -10,6 +10,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 
 $releaseVersion = 'v2.8.19-prepilot-phase8c'
 $expectedCodeVersion = '2.8.19-prepilot'
