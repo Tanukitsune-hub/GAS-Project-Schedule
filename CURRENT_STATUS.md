@@ -1,12 +1,12 @@
 # Current Status
 
-Last updated: 2026-08-14
+Last updated: 2026-08-17
 
-Candidate version: Code `2.8.18-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.19-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0031 highest permitted status: `READY_FOR_USER_GEMINI_ONE_MESSAGE_RETRY`
+Work 0032 highest permitted status: `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`
 
 Automation: `OFF`
 
@@ -40,9 +40,10 @@ real request is implied by the local gate.
 - Work 0030: Code `2.8.17-prepilot`, source A17 and release B17. It repairs
   strict Gemini thinking-step parsing without configuring a key, requesting
   Gemini, or invoking an Apps Script function.
-- Work 0031: Code `2.8.18-prepilot`, source A18 and release B18. It repairs
-  the confirmed Gemini Interactions `/v1beta` endpoint without configuring a
-  key, requesting Gemini, or invoking an Apps Script function.
+- Work 0032: Code `2.8.19-prepilot`, source A19 and release B19. It repairs
+  privacy-safe Gemini provider diagnostics, Message failure finalization, and
+  exact synthetic candidate routing without configuring a key, requesting
+  Gemini, or invoking an Apps Script function.
 
 Historical handoffs and reports are immutable evidence. They are not rewritten
 to change their original claims.
@@ -55,8 +56,8 @@ to change their original claims.
 | Pre-Google GitHub Actions validation | Required before placement |
 | Real Gemini request | `NOT_EXECUTED` |
 | Real API-key configuration or inspection | `NOT_EXECUTED` |
-| Gmail runtime access in Work 0031 | `NOT_EXECUTED` |
-| Apps Script function invocation in Work 0031 | `0` |
+| Gmail runtime access in Work 0032 | `NOT_EXECUTED` |
+| Apps Script function invocation in Work 0032 | `0` |
 | Task, Review, Calendar, Setup, Diagnostics, Dashboard, triggers | `NOT_EXECUTED` |
 | Company/production resource access | `NOT_AUTHORIZED` |
 

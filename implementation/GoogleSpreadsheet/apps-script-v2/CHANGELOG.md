@@ -1,13 +1,18 @@
 # Changelog
 
-## 2.8.18-prepilot - 2026-08-14 Gemini v1beta endpoint remediation
+## 2.8.19-prepilot - 2026-08-17 Gemini runtime diagnostics hardening
 
-- Use the confirmed Gemini Interactions creation endpoint
-  `https://generativelanguage.googleapis.com/v1beta/interactions`.
-- Preserve the Work 0029/0030 bounded request, Automation-OFF, no-retry,
-  no-fallback, and strict `thought* model_output` contracts.
-- Add local fake-transport endpoint regression coverage. No real credential,
-  Gemini request, Gmail runtime, or Apps Script function is executed.
+- Preserve the confirmed `/v1beta/interactions` endpoint, Work 0029/0030
+  request/parser contracts, Automation-OFF, no-retry, and no-fallback rules.
+- Add bounded privacy-safe provider status/code diagnostics without retaining
+  provider bodies, messages, headers, payloads, identifiers, or credentials.
+- Finalize failed Message State from a Message-only held-lock checkpoint with
+  explicit `PENDING` evidence when finalization itself cannot be recorded.
+- Pin synthetic validation to the exact selected message and fail closed on
+  stale, terminal, conflicting, or missing candidates without fallback scans.
+- Add local fake-transport, worker-finalization, candidate-routing, and privacy
+  regression coverage. No real credential, Gemini request, Gmail runtime, or
+  Apps Script function is executed.
 
 ## 2.8.17-prepilot - 2026-08-12 Gemini thinking-step parser remediation
 

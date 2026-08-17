@@ -271,16 +271,84 @@ var WorkOsGeminiProvider = (function () {
     return outputText;
   }
 
+  function boundedHttpStatus(value) {
+    var status = Number(value);
+    return Number.isInteger(status) && status >= 100 && status <= 599
+      ? status
+      : null;
+  }
+
+  function boundedProviderErrorCode(value) {
+    var text = String(value || '');
+    return /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/.test(text) &&
+        text.length <= 64
+      ? text
+      : 'UNSAFE_PROVIDER_ERROR_CODE';
+  }
+
+  function boundedInteractionStatus(value) {
+    var text = String(value || '');
+    return [
+      'completed',
+      'failed',
+      'in_progress',
+      'cancelled',
+      'incomplete',
+      'requires_action'
+    ].indexOf(text) >= 0 ? text : '';
+  }
+
+  function providerErrorDiagnostic(responseText, status) {
+    var diagnostic = {
+      provider_http_status: boundedHttpStatus(status),
+      provider_error_code: 'UNSAFE_PROVIDER_ERROR_CODE'
+    };
+    try {
+      var parsed = JSON.parse(String(responseText || ''));
+      var providerError = parsed && parsed.error;
+      if (providerError && typeof providerError === 'object' &&
+          !Array.isArray(providerError)) {
+        diagnostic.provider_error_code = boundedProviderErrorCode(
+          providerError.code
+        );
+      }
+    } catch (error) {
+      // The response body is intentionally discarded after this bounded parse.
+    }
+    return diagnostic;
+  }
+
+  function invalidResponseDiagnostic(parsed, status) {
+    var diagnostic = {
+      provider_http_status: boundedHttpStatus(status)
+    };
+    var interactionStatus = boundedInteractionStatus(
+      parsed && parsed.status
+    );
+    if (interactionStatus) {
+      diagnostic.provider_interaction_status = interactionStatus;
+    }
+    return diagnostic;
+  }
+
   function extractResponse(response, status) {
     var parsed;
     try {
       parsed = JSON.parse(String(response || ''));
     } catch (error) {
-      return { status: status, error_kind: 'INVALID_RESPONSE' };
+      return {
+        status: status,
+        error_kind: 'INVALID_RESPONSE',
+        diagnostic: invalidResponseDiagnostic(null, status)
+      };
     }
     var text = responseObject(parsed);
     return text === null
-      ? { status: status, error_kind: 'INVALID_RESPONSE' }
+      ? {
+        status: status,
+        error_kind: 'INVALID_RESPONSE',
+        diagnostic: invalidResponseDiagnostic(parsed, status)
+      }
       : { status: status, body: text };
   }
 
@@ -308,7 +376,18 @@ var WorkOsGeminiProvider = (function () {
             return { status: 0, error_kind: 'INVALID_RESPONSE' };
           }
           if (status < 200 || status > 299) {
-            return { status: status };
+            var errorText = '';
+            try {
+              errorText = response &&
+                typeof response.getContentText === 'function'
+                ? response.getContentText()
+                : '';
+            } catch (bodyError) {
+              errorText = '';
+            }
+            var diagnostic = providerErrorDiagnostic(errorText, status);
+            errorText = null;
+            return { status: status, diagnostic: diagnostic };
           }
           return extractResponse(
             response && typeof response.getContentText === 'function'

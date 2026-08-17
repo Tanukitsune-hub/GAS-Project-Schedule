@@ -1179,8 +1179,15 @@ var WorkOsAiAdapter = (function () {
     return request;
   }
 
-  function aiFailure(code, stage, retryable, message) {
-    return new WorkOsAppError(code, stage, retryable, message);
+  function aiFailure(code, stage, retryable, message, diagnostic) {
+    return new WorkOsAppError(
+      code,
+      stage,
+      retryable,
+      message,
+      null,
+      diagnostic
+    );
   }
 
   function classifyTransportFailure(error) {
@@ -1190,7 +1197,8 @@ var WorkOsAiAdapter = (function () {
         error.code,
         'AI_REQUEST',
         error.retryable,
-        'AI transportが構造化エラーを返しました。'
+        'AI transportが構造化エラーを返しました。',
+        error.diagnostic
       );
     }
     var kind = String(error && error.ai_error_kind || '').toUpperCase();
@@ -1212,6 +1220,7 @@ var WorkOsAiAdapter = (function () {
 
   function responseStatusFailure(response) {
     var status = Number(response && response.status);
+    var diagnostic = response && response.diagnostic;
     var normalizedKind = String(
       response && response.error_kind || ''
     ).toUpperCase();
@@ -1220,7 +1229,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_PROVIDER_RESPONSE',
         'AI_RESPONSE',
         false,
-        'AI Provider response envelope could not be accepted.'
+        'AI Provider response envelope could not be accepted.',
+        diagnostic
       );
     }
     if (normalizedKind === 'UNSUPPORTED_MODEL') {
@@ -1236,7 +1246,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_TIMEOUT',
         'AI_REQUEST',
         true,
-        'AI requestが時間内に完了しませんでした。'
+        'AI requestが時間内に完了しませんでした。',
+        diagnostic
       );
     }
     if (status === 429) {
@@ -1244,7 +1255,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_RATE_LIMIT',
         'AI_REQUEST',
         true,
-        'AI Providerの一時的な利用上限に達しました。'
+        'AI Providerの一時的な利用上限に達しました。',
+        diagnostic
       );
     }
     if (status >= 500 && status <= 599) {
@@ -1252,7 +1264,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_UPSTREAM',
         'AI_REQUEST',
         true,
-        'AI Providerで一時的な障害が発生しました。'
+        'AI Providerで一時的な障害が発生しました。',
+        diagnostic
       );
     }
     if (status === 401) {
@@ -1260,7 +1273,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_AUTH',
         'AI_REQUEST',
         false,
-        'AI Providerの認証を確認できません。'
+        'AI Providerの認証を確認できません。',
+        diagnostic
       );
     }
     if (status === 403) {
@@ -1268,7 +1282,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_PERMISSION',
         'AI_REQUEST',
         false,
-        'AI Providerの利用権限を確認できません。'
+        'AI Providerの利用権限を確認できません。',
+        diagnostic
       );
     }
     if (status >= 400 && status <= 499) {
@@ -1276,7 +1291,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_INVALID_REQUEST',
         'AI_REQUEST',
         false,
-        'AI requestがProviderの契約と一致しません。'
+        'AI requestがProviderの契約と一致しません。',
+        diagnostic
       );
     }
     if (!Number.isInteger(status) || status < 200 || status > 299) {
@@ -1284,7 +1300,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_NETWORK',
         'AI_REQUEST',
         true,
-        'AI transportから有効なstatusを取得できませんでした。'
+        'AI transportから有効なstatusを取得できませんでした。',
+        diagnostic
       );
     }
     return null;

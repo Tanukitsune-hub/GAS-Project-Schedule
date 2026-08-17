@@ -2040,7 +2040,14 @@ var WorkOsWorker = (function () {
       calendar_called: false,
       calendar_job_count: 0,
       gmail_called: false,
-      ai_called: false
+      ai_called: false,
+      safe_error_code: '',
+      safe_error_stage: '',
+      provider_http_status: null,
+      provider_error_code: '',
+      provider_interaction_status: '',
+      failure_finalization: 'NOT_APPLICABLE',
+      failure_finalization_code: ''
     };
     var workerLease = settings.worker_lease || null;
     var ownsWorkerLease = !workerLease;
@@ -2049,8 +2056,101 @@ var WorkOsWorker = (function () {
     var selectedThreadId = '';
     var selectedStableThreadKey = '';
     var calendarFailureMetadata = null;
-    var errorContext = settings.error_context ||
-      WorkOsLogAndDeadLetter.createErrorContext(spreadsheet);
+    var errorContext = settings.error_context || null;
+    var messageSheet = WorkOsMessageStateRepository.messageSheet(
+      spreadsheet
+    );
+
+    function getErrorContext() {
+      if (!errorContext) {
+        errorContext = WorkOsLogAndDeadLetter.createErrorContext(
+          spreadsheet
+        );
+      }
+      return errorContext;
+    }
+
+    function copySafeDiagnostic(safe) {
+      var diagnostic = safe && safe.diagnostic;
+      if (!diagnostic) {
+        return;
+      }
+      if (Number.isInteger(diagnostic.provider_http_status)) {
+        summary.provider_http_status = diagnostic.provider_http_status;
+      }
+      if (diagnostic.provider_error_code) {
+        summary.provider_error_code = String(
+          diagnostic.provider_error_code
+        );
+      }
+      if (diagnostic.provider_interaction_status) {
+        summary.provider_interaction_status = String(
+          diagnostic.provider_interaction_status
+        );
+      }
+    }
+
+    function failureFinalizationPending() {
+      summary.failure_finalization = 'PENDING';
+      summary.failure_finalization_code = 'E_MESSAGE_FAILURE_CHECKPOINT_PENDING';
+      summary.checkpoint = 'FAILURE_FINALIZATION';
+    }
+
+    function finalizeMessageFailure(error, safe) {
+      if (!selectedMessageId) {
+        summary.failure_finalization = 'NOT_APPLICABLE';
+        return null;
+      }
+      var result = WorkOsUtilities.withScriptLock(function (lock) {
+        var messages =
+          WorkOsMessageStateRepository.createContextForHeldLock(
+            messageSheet,
+            lock
+          );
+        var current = WorkOsMessageStateRepository.getByMessageId(
+          messages,
+          selectedMessageId
+        );
+        if (!current ||
+            current.processing_status !==
+              WorkOsMessageStateRepository.STATUSES.CLAIMED ||
+            current.claim_run_id !== runId) {
+          throw new WorkOsAppError(
+            'E_MESSAGE_FAILURE_CHECKPOINT_CONFLICT',
+            'FINALIZE',
+            false,
+            'Message failure checkpoint ownership is not current.'
+          );
+        }
+        var failure = isExecutionPauseCode(safe.code)
+          ? WorkOsMessageStateRepository.pauseForBudgetInContext(
+            selectedMessageId,
+            runId,
+            messages,
+            clock()
+          )
+          : WorkOsMessageStateRepository.recordFailureInContext(
+            selectedMessageId,
+            runId,
+            error,
+            messages,
+            clock()
+          );
+        if (!failure || !failure.record) {
+          throw new WorkOsAppError(
+            'E_MESSAGE_FAILURE_CHECKPOINT_CONFLICT',
+            'FINALIZE',
+            false,
+            'Message failure checkpoint was not recorded.'
+          );
+        }
+        return failure;
+      }, WorkOsConfig.LOCK_WAIT_MS);
+      summary.failure_finalization = 'RECORDED';
+      summary.failure_finalization_code = '';
+      summary.checkpoint = result.record.resume_stage;
+      return result.record;
+    }
 
     function freshContexts(lock) {
       var taskSheet = spreadsheet.getSheetByName(
@@ -2059,7 +2159,7 @@ var WorkOsWorker = (function () {
       return {
         messages:
           WorkOsMessageStateRepository.createContextForHeldLock(
-            WorkOsMessageStateRepository.messageSheet(spreadsheet),
+            messageSheet,
             lock
           ),
         tasks: WorkOsTaskRepository.createContextForHeldLock(
@@ -2082,12 +2182,22 @@ var WorkOsWorker = (function () {
             selectedMessageId
           )
           : null;
-        if (!record) {
-          var eligible = eligiblePhase3Records(
-            contexts.messages,
-            clock()
+        if (internalGeminiSynthetic && !selectedMessageId) {
+          throw new WorkOsAppError(
+            'E_GEMINI_SYNTHETIC_CANDIDATE_CONFLICT',
+            'GMAIL',
+            false,
+            'Gemini synthetic candidate was not pinned.'
           );
-          record = eligible.length ? eligible[0] : null;
+        }
+        if (!record) {
+          if (!internalGeminiSynthetic) {
+            var eligible = eligiblePhase3Records(
+              contexts.messages,
+              clock()
+            );
+            record = eligible.length ? eligible[0] : null;
+          }
         }
         if (!record && settings.candidate) {
           record = WorkOsMessageStateRepository.discoverInContext(
@@ -2095,6 +2205,15 @@ var WorkOsWorker = (function () {
             contexts.messages,
             clock()
           ).record;
+        }
+        if (internalGeminiSynthetic && record &&
+            String(record.message_id || '') !== selectedMessageId) {
+          throw new WorkOsAppError(
+            'E_GEMINI_SYNTHETIC_CANDIDATE_CONFLICT',
+            'GMAIL',
+            false,
+            'Gemini synthetic candidate identity changed.'
+          );
         }
         if (!record) {
           return { stage: 'IDLE' };
@@ -2107,6 +2226,24 @@ var WorkOsWorker = (function () {
         var owned = record.processing_status ===
             WorkOsMessageStateRepository.STATUSES.CLAIMED &&
           record.claim_run_id === runId;
+        if (internalGeminiSynthetic && !owned &&
+            record.processing_status !==
+              WorkOsMessageStateRepository.STATUSES.DISCOVERED &&
+            record.processing_status !==
+              WorkOsMessageStateRepository.STATUSES.PREPROCESSED &&
+            record.processing_status !==
+              WorkOsMessageStateRepository.STATUSES.CLASSIFIED &&
+            record.processing_status !==
+              WorkOsMessageStateRepository.STATUSES.TASKS_WRITTEN &&
+            record.processing_status !==
+              WorkOsMessageStateRepository.STATUSES.CALENDAR_PENDING) {
+          throw new WorkOsAppError(
+            'E_GEMINI_SYNTHETIC_CANDIDATE_CONFLICT',
+            'GMAIL',
+            false,
+            'Gemini synthetic candidate is not fresh and resumable.'
+          );
+        }
         if (!owned) {
           var claim;
           if (record.resume_stage ===
@@ -2782,7 +2919,7 @@ var WorkOsWorker = (function () {
                 selectedMessageId,
                 spreadsheet,
                 clock(),
-                errorContext
+                getErrorContext()
               );
               WorkOsMessageStateRepository.checkpointDoneInContext(
                 selectedMessageId,
@@ -2803,43 +2940,17 @@ var WorkOsWorker = (function () {
         ? 'PAUSED'
         : 'FAILED';
       summary.note = safe.code;
+      summary.safe_error_code = safe.code;
+      summary.safe_error_stage = safe.stage;
+      copySafeDiagnostic(safe);
       if (!isExecutionPauseCode(safe.code)) {
         summary.error_count += 1;
       }
       var failureRecord = null;
       try {
-        WorkOsUtilities.withScriptLock(function (lock) {
-          var contexts = freshContexts(lock);
-          var current = selectedMessageId
-            ? WorkOsMessageStateRepository.getByMessageId(
-              contexts.messages,
-              selectedMessageId
-            )
-            : null;
-          if (current &&
-              current.processing_status ===
-                WorkOsMessageStateRepository.STATUSES.CLAIMED &&
-              current.claim_run_id === runId) {
-            var failure = isExecutionPauseCode(safe.code)
-              ? WorkOsMessageStateRepository.pauseForBudgetInContext(
-                selectedMessageId,
-                runId,
-                contexts.messages,
-                clock()
-              )
-              : WorkOsMessageStateRepository.recordFailureInContext(
-                selectedMessageId,
-                runId,
-                error,
-                contexts.messages,
-                clock()
-              );
-            failureRecord = failure.record;
-            summary.checkpoint = failure.record.resume_stage;
-          }
-        }, WorkOsConfig.LOCK_WAIT_MS);
+        failureRecord = finalizeMessageFailure(error, safe);
       } catch (failureFinalizeError) {
-        summary.note += ';CHECKPOINT_FINALIZE_PENDING';
+        failureFinalizationPending();
       }
       if (/^AI_/.test(String(safe.stage || ''))) {
         try {
@@ -2904,7 +3015,7 @@ var WorkOsWorker = (function () {
               },
               runId,
               spreadsheet,
-              errorContext
+              getErrorContext()
             );
           } catch (labelErrorLogFailure) {
             summary.note += ';E_ERROR_LABEL_LOG_WRITE';
@@ -2936,7 +3047,7 @@ var WorkOsWorker = (function () {
               },
               runId,
               spreadsheet,
-              errorContext
+              getErrorContext()
             );
           } else {
             WorkOsLogAndDeadLetter.recordMessageError(
@@ -2956,7 +3067,7 @@ var WorkOsWorker = (function () {
               },
               runId,
               spreadsheet,
-              errorContext
+              getErrorContext()
             );
           }
         } catch (errorLogFailure) {
@@ -2999,6 +3110,13 @@ var WorkOsWorker = (function () {
       calendar_job_count: summary.calendar_job_count,
       duration_ms: summary.duration_ms,
       log_recorded: logRecorded,
+      safe_error_code: summary.safe_error_code,
+      safe_error_stage: summary.safe_error_stage,
+      provider_http_status: summary.provider_http_status,
+      provider_error_code: summary.provider_error_code,
+      provider_interaction_status: summary.provider_interaction_status,
+      failure_finalization: summary.failure_finalization,
+      failure_finalization_code: summary.failure_finalization_code,
       external_services: {
         gmail: summary.gmail_called
           ? 'ADVANCED_GMAIL_SERVICE'
@@ -3101,6 +3219,16 @@ var WorkOsWorker = (function () {
         'AI_CONFIG',
         false,
         'The selected message is not an approved synthetic fixture.'
+      );
+    }
+    if (typeof candidate.message_id !== 'string' ||
+        !candidate.message_id.trim() ||
+        candidate.message_id.length > 240) {
+      throw new WorkOsAppError(
+        'E_GEMINI_SYNTHETIC_CANDIDATE_CONFLICT',
+        'GMAIL',
+        false,
+        'The approved synthetic candidate has no stable identity.'
       );
     }
     var preprocessed = settings.preprocessed_result || null;
@@ -3232,6 +3360,7 @@ var WorkOsWorker = (function () {
       preprocessed_result: preprocessed,
       gateway: gateway,
       preprocessor: guardedPreprocessor,
+      selected_message_id: candidate.message_id,
       internal_gemini_synthetic_capability:
         INTERNAL_GEMINI_SYNTHETIC_CAPABILITY,
       calendar_jobs_remaining: 0,
@@ -3249,6 +3378,22 @@ var WorkOsWorker = (function () {
       calendar_job_count: Number(result.calendar_job_count || 0),
       ai_called: result.external_services &&
         result.external_services.ai !== 'NOT_CALLED_CHECKPOINT_REUSE',
+      error_code: String(result.safe_error_code || ''),
+      error_stage: String(result.safe_error_stage || ''),
+      checkpoint: String(result.checkpoint || ''),
+      failure_finalization: String(
+        result.failure_finalization || 'NOT_APPLICABLE'
+      ),
+      failure_finalization_code: String(
+        result.failure_finalization_code || ''
+      ),
+      provider_http_status: Number.isInteger(result.provider_http_status)
+        ? result.provider_http_status
+        : null,
+      provider_error_code: String(result.provider_error_code || ''),
+      provider_interaction_status: String(
+        result.provider_interaction_status || ''
+      ),
       automation_status: automationStatus.status,
       automation_enabled: automationStatus.enabled,
       automation_desired_enabled: automationStatus.desired_enabled,

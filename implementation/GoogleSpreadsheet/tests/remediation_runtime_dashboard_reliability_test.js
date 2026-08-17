@@ -614,7 +614,7 @@ test('R-UX-03_PAUSED_ACTION_DEPENDS_ON_OPERATION', () => {
 test('R-META-01_PHASE_BOUNDARY_AND_VERSIONS_ARE_CURRENT', () => {
   const config = source('00_Config.gs');
   const setup = source('02_Setup.gs');
-  assert.match(config, /CODE_VERSION:\s*'2\.8\.18-prepilot'/);
+  assert.match(config, /CODE_VERSION:\s*'2\.8\.19-prepilot'/);
   assert.match(config, /SCHEMA_VERSION:\s*'2\.6'/);
   assert.match(config, /AI_SCHEMA_VERSION:\s*'2\.0'/);
   assert.match(config, /MIGRATION_VERSION:\s*'3'/);

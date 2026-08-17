@@ -298,7 +298,7 @@ test('GEMINI_MALFORMED_SUCCESS_ENVELOPE_IS_SAFE_ERROR', () => {
   assert.strictEqual(fetchCalls, 1);
 });
 
-test('GEMINI_NON_2XX_DOES_NOT_READ_PROVIDER_BODY', () => {
+test('GEMINI_NON_2XX_READS_BODY_ONLY_FOR_BOUNDED_SAFE_DIAGNOSTICS', () => {
   resetResponse();
   propertyValues.set(Gemini.CREDENTIAL_REFERENCE, syntheticCredential);
   responseStatus = 401;
@@ -308,7 +308,7 @@ test('GEMINI_NON_2XX_DOES_NOT_READ_PROVIDER_BODY', () => {
     fetchRequest = { url, params };
     return {
       getResponseCode: () => 401,
-      getContentText: () => { throw new Error('raw provider body read'); }
+      getContentText: () => ''
     };
   };
   try {
@@ -318,7 +318,12 @@ test('GEMINI_NON_2XX_DOES_NOT_READ_PROVIDER_BODY', () => {
     });
     assert.throws(
       () => adapter.classify(validInput()),
-      (error) => error.code === 'E_AI_AUTH'
+      (error) => error.code === 'E_AI_AUTH' &&
+        AI &&
+        sandbox.WorkOsUtilities.safeError(error).diagnostic
+          .provider_http_status === 401 &&
+        sandbox.WorkOsUtilities.safeError(error).diagnostic
+          .provider_error_code === 'UNSAFE_PROVIDER_ERROR_CODE'
     );
   } finally {
     sandbox.UrlFetchApp.fetch = original;

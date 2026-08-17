@@ -1,12 +1,12 @@
-# Google Workspace Personal Work OS v2 - 2.8.18-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.19-prepilot
 
-This directory is the canonical Apps Script source for the Work 0031
-Gemini v1beta endpoint remediation in
+This directory is the canonical Apps Script source for the Work 0032
+Gemini runtime diagnostics hardening in
 `Tanukitsune-hub/GAS-Project-Schedule`.
 
 ## Active contract
 
-- Code: `2.8.18-prepilot`
+- Code: `2.8.19-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
@@ -15,8 +15,8 @@ Gemini v1beta endpoint remediation in
 - `TEST_MODE`: `true` in the Phase 8B package
 - Automation: `OFF`
 - Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
-- Work 0031 highest permitted status:
-  `READY_FOR_USER_GEMINI_ONE_MESSAGE_RETRY`
+- Work 0032 highest permitted status:
+  `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`
 
 The source retains the Gmail byte-body decoder, durable Task authority,
 Review/CAS, Calendar outbox, diagnostics, and strict privacy boundaries. It
@@ -41,6 +41,6 @@ pnpm run verify:local
 ```
 
 The local gate runs the current test suites, source/static checks, release
-parity, A18/B18 lineage, active-document UTF-8/history checks, and secret/local
+parity, A19/B19 lineage, active-document UTF-8/history checks, and secret/local
 state scans. It does not configure or inspect a real key and performs no
 Google, OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.

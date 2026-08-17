@@ -6,9 +6,10 @@
  * @param {boolean} retryable
  * @param {string} safeMessage
  * @param {Error=} cause
+ * @param {Object=} diagnostic
  * @constructor
  */
-function WorkOsAppError(code, stage, retryable, safeMessage, cause) {
+function WorkOsAppError(code, stage, retryable, safeMessage, cause, diagnostic) {
   this.name = 'WorkOsAppError';
   this.code = code;
   this.stage = stage;
@@ -16,6 +17,10 @@ function WorkOsAppError(code, stage, retryable, safeMessage, cause) {
   this.safeMessage = String(safeMessage || '');
   this.message = this.safeMessage;
   this.cause = cause || null;
+  this.diagnostic = diagnostic && typeof diagnostic === 'object' &&
+      !Array.isArray(diagnostic)
+    ? diagnostic
+    : null;
   if (Error.captureStackTrace) {
     Error.captureStackTrace(this, WorkOsAppError);
   }
@@ -131,14 +136,66 @@ var WorkOsUtilities = (function () {
     return isSafeIdentifier(fallbackText) ? fallbackText : 'UNKNOWN';
   }
 
+  function safeProviderErrorCode(value) {
+    var text = String(value || '');
+    if (/^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/.test(text) &&
+        text.length <= 64) {
+      return text;
+    }
+    if (text === 'UNSAFE_PROVIDER_ERROR_CODE') {
+      return text;
+    }
+    return 'UNSAFE_PROVIDER_ERROR_CODE';
+  }
+
+  function safeInteractionStatus(value) {
+    var text = String(value || '');
+    return [
+      'completed',
+      'failed',
+      'in_progress',
+      'cancelled',
+      'incomplete',
+      'requires_action'
+    ].indexOf(text) >= 0 ? text : '';
+  }
+
+  function safeProviderDiagnostic(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    var safe = {};
+    var status = Number(value.provider_http_status);
+    if (Number.isInteger(status) && status >= 100 && status <= 599) {
+      safe.provider_http_status = status;
+    }
+    if (value.provider_error_code != null) {
+      safe.provider_error_code = safeProviderErrorCode(
+        value.provider_error_code
+      );
+    }
+    var interactionStatus = safeInteractionStatus(
+      value.provider_interaction_status
+    );
+    if (interactionStatus) {
+      safe.provider_interaction_status = interactionStatus;
+    }
+    return Object.keys(safe).length ? safe : null;
+  }
+
   function safeError(error, fallbackStage) {
     if (error instanceof WorkOsAppError) {
-      return {
+      var safe = {
         code: safeIdentifier(error.code, 'E_UNEXPECTED'),
         stage: safeIdentifier(error.stage, fallbackStage || 'UNKNOWN'),
         retryable: error.retryable,
         safe_message: redact(error.safeMessage)
       };
+      var diagnostic = safeProviderDiagnostic(error.diagnostic);
+      if (diagnostic) {
+        safe.diagnostic = diagnostic;
+      }
+      return safe;
     }
     return {
       code: 'E_UNEXPECTED',
@@ -353,6 +410,9 @@ var WorkOsUtilities = (function () {
     isSafeIdentifier: isSafeIdentifier,
     safeIdentifier: safeIdentifier,
     safeError: safeError,
+    safeProviderDiagnostic: safeProviderDiagnostic,
+    safeProviderErrorCode: safeProviderErrorCode,
+    safeInteractionStatus: safeInteractionStatus,
     createSoftBudget: createSoftBudget,
     withScriptLock: withScriptLock,
     isBlank: isBlank,

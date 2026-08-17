@@ -1,6 +1,6 @@
-# Controlled Sandbox Trial Guide - 2.8.18-prepilot
+# Controlled Sandbox Trial Guide - 2.8.19-prepilot
 
-Code Version: `2.8.18-prepilot`
+Code Version: `2.8.19-prepilot`
 
 Schema Version: `2.6`
 
@@ -10,8 +10,8 @@ Migration Version: `3`
 
 Highest machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0031 highest permitted status:
-`READY_FOR_USER_GEMINI_ONE_MESSAGE_RETRY`
+Work 0032 highest permitted status:
+`READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`
 
 Automation: `OFF`
 
@@ -22,14 +22,14 @@ Task canonical schema: `50` physical columns; authority ledger: `21` columns.
 This guide describes a later user-assisted validation boundary. It does not
 authorize a Google, OAuth, deployment, clasp, Gmail, Calendar, Sheets,
   trigger, Provider, Task, Review, Setup, Diagnostics, or Dashboard action in
-  Work 0031. Work 0031 does not configure or inspect a real API key, make a real
+  Work 0032. Work 0032 does not configure or inspect a real API key, make a real
 Gemini request, access Gmail runtime, or invoke an Apps Script function.
 
 The user may manually enter a real Gemini key into the designated Script
 Property only in a later explicitly authorized Work. The key must never be
 pasted into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
 
-## Work 0031 response boundary
+## Work 0032 response boundary
 
 - Gemini uses the exact `/v1beta/interactions` creation endpoint and completed
   responses are accepted only as `thought* model_output`.
@@ -50,7 +50,7 @@ regulatory, contract, bid, and other high-impact Calendar use.
 
 ## Structural checks before any later placement
 
-1. Bind the exact A18 source and B18 release commits and verify checksums.
+1. Bind the exact A19 source and B19 release commits and verify checksums.
 2. Confirm the payload contains exactly 23 `.gs` files and `appsscript.json`.
 3. Confirm Automation is OFF and no scheduled trigger exists.
 4. Confirm no credential value, identifier, private URL, raw response, or real

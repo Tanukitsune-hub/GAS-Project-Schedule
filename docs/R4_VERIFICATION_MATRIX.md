@@ -1,4 +1,4 @@
-# Current Verification Matrix - 2.8.18-prepilot
+# Current Verification Matrix - 2.8.19-prepilot
 
 Gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -11,10 +11,10 @@ Gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 | Actual Automation-OFF guard | canonical runtime trigger/property state | Work 0029 runtime suite | No trigger mutation |
 | Provider response grammar | strict `thought* model_output`, opaque thought metadata | Work 0030 parser suite | Fake transport only |
 | Provider schema and generation bound | documented subset, low thinking, 4096 cap | Provider suite | Fake transport only |
-| Source/release identity | A18/B18 direct-child lineage, manifests, checksums | release verifiers/local gate | Local/fresh clone/CI |
-| Gemini transport endpoint | exact `/v1beta/interactions` creation endpoint | Work 0031 endpoint suite | Fake transport only |
+| Source/release identity | A19/B19 direct-child lineage, manifests, checksums | release verifiers/local gate | Local/fresh clone/CI |
+| Gemini runtime diagnostics | bounded provider error envelope, Message finalization, exact candidate pin | Work 0032 diagnostics suite | Synthetic fakes only |
 | Secret and local-state exclusion | tracked path/content scan | secret-scan suites | Local/CI |
 
 Historical A14/B14, A15/B15, and A17/B17 identities remain immutable. Local and CI
 evidence does not establish native Google, OAuth, real Provider, production, or
-pilot acceptance. Work 0031 does not configure or inspect a real API key.
+pilot acceptance. Work 0032 does not configure or inspect a real API key.
