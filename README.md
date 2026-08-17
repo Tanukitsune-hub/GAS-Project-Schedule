@@ -14,7 +14,7 @@ Workspace Personal Work OS.
 | Machine gate | `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` |
 | Work 0032 highest permitted status | `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY` |
 | Automation | `OFF` |
-| Environment | `LOCAL_NON_GOOGLE` |
+| Environment | `LOCAL_NON_GOOGLE` plus separately controlled personal sandbox |
 
 The current payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and the release
@@ -29,19 +29,24 @@ Current packages:
 
 ## Work 0032 Gemini runtime boundary
 
-The source uses exactly the confirmed Gemini Interactions creation endpoint
+The source uses the Gemini Interactions creation endpoint
 `/v1beta/interactions` and preserves the strict `thought* model_output` grammar.
-Non-2xx responses yield only bounded numeric status, strict provider code, and
-allowlisted interaction status; provider bodies, messages, headers, payloads,
-identifiers, and credentials are never retained or surfaced. Failed Message
-State finalization is Message-only and records explicit `PENDING` evidence when
-the checkpoint itself fails. Synthetic validation pins one exact candidate and
-does not fall back to generic eligible rows. No real request is made here.
+Non-2xx responses yield only bounded numeric status and a strict machine-safe
+provider code. Invalid 2xx responses may expose only an allowlisted interaction
+status. Provider bodies, human messages, details, headers, payloads,
+identifiers, credentials, and opaque thought content are not surfaced or
+persisted.
+
+External-AI failure finalization is Message-only and reports `RECORDED` when
+the durable failure checkpoint is saved or an explicit safe `PENDING` state
+when that checkpoint cannot be confirmed. Synthetic validation pins one exact
+candidate and does not fall back to generic eligible rows. Work 0032 itself
+made no real Gemini request.
 
 Work 0018 remains Code `2.8.14-prepilot` A14/B14. Work 0028 remains Code
-`2.8.15-prepilot` A15/B15, and Work 0029 remains Code `2.8.16-prepilot`
-A16/B16. Work 0030 remains Code `2.8.17-prepilot` A17/B17. Their historical
-reports are not rewritten.
+`2.8.15-prepilot` A15/B15. Work 0029 remains Code `2.8.16-prepilot` A16/B16.
+Work 0030 remains Code `2.8.17-prepilot` A17/B17. Work 0031 remains Code
+`2.8.18-prepilot` A18/B18. Their historical reports are not rewritten.
 
 ## Validation
 
@@ -57,8 +62,27 @@ test suite, deterministic release packages, A19/B19 lineage, active document
 integrity, and secret/local-state exclusions. It performs no real Google,
 OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.
 
+## Personal-sandbox completion step
+
+The user has already placed the Gemini API key in the intended personal-sandbox
+Script Property outside the repository, and readiness passed. Do not paste,
+copy, rotate, or re-enter the key through GitHub, Codex, or ChatGPT.
+
+The remaining personal Gemini E2E check is:
+
+1. create one fresh Gmail Message using the exact approved synthetic subject
+   and body;
+2. ensure only that fresh Message carries `手動/取込`;
+3. do not reuse any previous failed, stuck, or terminal Message;
+4. run `業務OS v2` → `Gemini synthetic validation (one request)` once; and
+5. retain the full safe result without running a second request.
+
+Success means the strict classification is accepted and the governed Task or
+valid Review outcome is created without an error, Calendar job, or Automation
+activation. At that point the personal candidate moves to code freeze and
+company-PC work is treated as environment qualification unless a distinct
+environment-specific BLOCKER appears.
+
 No credential, token, private URL, account identifier, message body, raw
 Provider response, real Workspace identifier, or machine path belongs in
-tracked evidence. The next user-assisted boundary requires manual Script
-Property entry of a real key; that key must never be pasted into GitHub,
-Codex, or ChatGPT.
+tracked evidence.
