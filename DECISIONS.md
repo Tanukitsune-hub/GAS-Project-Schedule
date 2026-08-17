@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
 This file records active decisions for the current Code `2.8.19-prepilot`
 candidate. Historical handoffs, reports, release packages, and audit records
@@ -91,13 +91,14 @@ defined by `20_GeminiProvider.gs`. It describes a fictional internal Task,
 contains no personal/confidential/production data, uses a seven-day relative
 deadline, and is not a high-impact Calendar item.
 
-## D-060: credential and runtime boundary
+## D-060: Work 0030 historical credential boundary
 
-Work 0030 does not configure or inspect a real API key, make a Gemini request,
+Work 0030 did not configure or inspect a real API key, make a Gemini request,
 access Gmail runtime, invoke an Apps Script function, or run Task, Review,
 Calendar, Setup, Diagnostics, Dashboard, trigger, or Automation operations.
-The next user-assisted boundary is separately authorized manual Script
-Property configuration and one synthetic-message validation.
+The manual Script Property configuration that was then described as the next
+boundary has since been completed by the user in the personal-synthetic target
+and is superseded by D-063.
 
 ## D-061: Gemini v1beta transport endpoint
 
@@ -111,4 +112,28 @@ endpoint fallback, retry, model fallback, or alternate provider.
 Work 0032 does not configure or inspect the existing Gemini credential, make a
 real Gemini request, invoke an Apps Script function, or access Gmail, Task,
 Review, Calendar, Setup, Diagnostics, Dashboard, triggers, or Automation
-runtime.
+runtime in Codex.
+
+## D-063: personal Gemini E2E convergence boundary
+
+The user has configured the Gemini credential in personal-synthetic Script
+Properties outside the repository. Readiness has passed and bounded
+user-controlled real Gemini attempts have occurred, but no real
+classification-to-Task E2E has completed yet.
+
+The next live action is exactly one fresh approved synthetic Gmail Message on
+Code `2.8.19-prepilot`. Prior failed, stuck, or terminal Messages remain
+historical evidence and are never reset or reused. The selected Message is
+pinned exactly; no older resumable row may hijack the call.
+
+A successful strict classification and governed Task or valid Review outcome,
+with no processing error, no Calendar job for the fixture, and Automation OFF,
+completes the personal-environment E2E and triggers code freeze. After that,
+company-PC work is environment qualification only unless a company-specific
+BLOCKER is proven.
+
+If the live call fails, the next repair is constrained to the smallest change
+supported by the new bounded code/stage, HTTP status, provider machine code,
+checkpoint, and failure-finalization evidence. Broad redesign, fallback
+providers/endpoints, and additional speculative qualification are not
+permitted without new material evidence.
