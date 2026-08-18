@@ -1,21 +1,20 @@
 # Decisions
 
-Last updated: 2026-08-18
+Last updated: 2026-08-19
 
-This file records active decisions for the current Code `2.8.20-prepilot`
-candidate. Historical handoffs, reports, release packages, and audit records
-remain immutable evidence.
+This file records active decisions for Code `2.8.20-prepilot` and its successor
+personal Automation qualification. Historical handoffs, reports, releases, and
+audit records remain immutable evidence.
 
 Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_CODE_FROZEN`
+Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
 
 ## D-048: one active candidate
 
-Work 0033 is the active Code `2.8.20-prepilot` with A20/B20. The active
-source, tests, tools, documents, and generated packages form one linear A20/B20
-candidate. Older release and transfer trees are historical and not deployment
-selectors.
+Work 0033 is the active Code `2.8.20-prepilot` with A20/B20. Work 0035
+materializes the qualified tree cleanly onto current `main`; older stacked
+branches and releases are historical, not current selectors.
 
 ## D-049: the Task ledger is the trust anchor
 
@@ -31,129 +30,71 @@ recoverable.
 
 ## D-051: diagnostics are read-only
 
-Dashboard ownership, protection, flush, reacquire, and readback checks remain
-strict. Quick and Deep Diagnostics emit bounded evidence and never repair data.
+Quick and Deep Diagnostics emit bounded evidence and do not repair data.
 
 ## D-052: one non-Google CI gate
 
-The repository CI installs locked dependencies and runs the full local gate
-with read-only contents permission. CI cannot access credentials or Google
+The repository CI installs locked dependencies and runs the complete local gate
+with read-only repository permission. It cannot access credentials or Google
 Workspace state.
 
 ## D-053: deterministic release lineage
 
 Phase 8B retains `TEST_MODE=true` and the harness. Phase 8C applies only the
-audited `TEST_MODE=false` transform and harness exclusion. B20 is a direct
-child of A20, and neither package is a deployment authorization.
+audited `TEST_MODE=false` transform and harness exclusion. Historical B20 is a
+direct child of A20; clean-main materialization preserves this evidence without
+replaying the stacked history.
 
 ## D-054: strict Gmail body decoding
 
-Explicit String body data remains strict padded/unpadded base64url normalized
-for Apps Script web-safe decoding. Malformed input stays a fixed,
-privacy-safe, non-retryable `E_GMAIL_BODY_DECODE` failure.
-
-## D-055: dual Gmail body representations
-
-Before String coercion, only bounded dense Array, Int8Array, Uint8Array, or
-Uint8ClampedArray byte sequences are accepted. Values are validated and decoded
-directly through an Apps Script Blob. Attachment content is excluded.
+String and bounded byte-sequence body representations remain strictly decoded.
+Malformed input fails closed as privacy-safe `E_GMAIL_BODY_DECODE`.
 
 ## D-056: historical release identities
 
 Work 0018 is Code `2.8.14-prepilot` with A14/B14. Work 0028 is Code
 `2.8.15-prepilot` with A15/B15. Work 0029 remains Code `2.8.16-prepilot`
 with A16/B16. Work 0030 remains Code `2.8.17-prepilot` with A17/B17. Work
-0031 remains the historical Code `2.8.18-prepilot` with A18/B18. Work 0032
-is the successor Code `2.8.19-prepilot` with A19/B19. These identities must
-not be overwritten.
+0031 remains Code `2.8.18-prepilot` with A18/B18. Work 0032 remains Code
+`2.8.19-prepilot` with A19/B19. Work 0033 is the active Code
+`2.8.20-prepilot` with A20/B20. These identities are not overwritten.
 
 ## D-057: Gemini remains explicitly bounded
 
-The Gemini Interactions provider uses a deterministic projection of the
-canonical AI Schema 2.0 that retains the output shape, required fields, types,
-and enums while omitting provider-complexity constraints already enforced by
-the application validator. It sends `thinking_level=low`,
-`thinking_summaries=none`, and `max_output_tokens=4096`. No tools, streaming,
-background execution, persistence, sampling, or fallback provider is used.
-Completed responses are accepted only as `thought* model_output`; thought
-signatures and summaries are opaque and never read, parsed, logged, hashed,
-persisted, or surfaced. Exactly one final text output remains subject to the
-existing strict application validator.
+The Gemini provider uses the compatibility projection of AI Schema 2.0,
+`thinking_level=low`, `thinking_summaries=none`, and one strict final output.
+No tools, streaming, background execution, fallback provider, or raw thought
+retention is permitted.
 
-## D-058: runtime Automation guard
+## D-058: Automation is fail-closed
 
-Readiness and synthetic validation read the actual canonical Automation status
-before credential, Gmail, or Provider access. The required state is
-`CONSISTENT`, disabled, undesired, zero scheduled/clock triggers, no stored
-canonical ID, and no canonical scheduled trigger. No repair or mutation is
-performed.
+Automation requires explicit enablement, complete prerequisites, one canonical
+time trigger, matching enabled and desired state, and a canonical trigger UID at
+run time. Otherwise it refuses work without calling external services.
 
-## D-059: exact synthetic fixture
+## D-064: personal Gemini E2E passed; 2.8.20 is the recovery baseline
 
-The only candidate accepted by the Work 0029 validation path has the fixed
-subject `[WORK_OS_SYNTHETIC_GEMINI_0029]` and the exact normalized UTF-8 body
-defined by `20_GeminiProvider.gs`. It describes a fictional internal Task,
-contains no personal/confidential/production data, uses a seven-day relative
-deadline, and is not a high-impact Calendar item.
+The user-controlled fresh synthetic E2E completed with one Task, one Review,
+zero errors, zero Calendar jobs, checkpoint `DONE`, and Automation OFF. This
+freezes 2.8.20 as the known-good manual-plus-Gemini recovery point.
 
-## D-060: Work 0030 historical credential boundary
+## D-065: clean main integration precedes Automation work
 
-Work 0030 did not configure or inspect a real API key, make a Gemini request,
-access Gmail runtime, invoke an Apps Script function, or run Task, Review,
-Calendar, Setup, Diagnostics, Dashboard, trigger, or Automation operations.
-The manual Script Property configuration that was then described as the next
-boundary has since been completed by the user in the personal-synthetic target
-and is superseded by D-063 and D-064.
+Work 0035 must preserve current-main governance, exact 2.8.20 product and
+release bytes, and a canonical validation gate that also works after the branch
+becomes `main`. The stacked Draft PRs are closed only after the clean main merge
+and post-merge CI succeed; their branches and historical evidence are retained.
 
-## D-061: Gemini v1beta transport endpoint
+## D-066: next deployment boundary is personal Automation only
 
-The active Gemini Interactions provider uses exactly
-`https://generativelanguage.googleapis.com/v1beta/interactions`. It performs
-one bounded POST with the existing API-key header and request contract, with no
-endpoint fallback, retry, model fallback, or alternate provider.
+No company-PC or company-environment rollout is planned. The next Work performs
+controlled Automation qualification in the same personal Google Workspace
+environment, beginning OFF and using synthetic mail. Newsletter and
+Calendar-generated notification mail are excluded from automatic task creation
+unless a later evidence-backed decision explicitly changes that policy.
 
-## D-062: Work 0032 credential and runtime boundary
-
-Work 0032 does not configure or inspect the existing Gemini credential, make a
-real Gemini request, invoke an Apps Script function, or access Gmail, Task,
-Review, Calendar, Setup, Diagnostics, Dashboard, triggers, or Automation
-runtime in Codex.
-
-## D-063: personal Gemini E2E convergence boundary after Work 0033
-
-The user configured the Gemini credential in personal-synthetic Script
-Properties outside the repository. The final required live boundary was one
-fresh approved synthetic Gmail Message on Code `2.8.20-prepilot`, with prior
-failed, stuck, or terminal Messages retained as historical evidence and never
-reset or reused.
-
-The pre-declared success condition was a successful strict classification and
-governed Task or valid Review outcome, with no processing error, no Calendar
-job for the fixture, and Automation consistently OFF. That boundary has now
-been satisfied and is closed by D-064.
-
-## D-064: personal Gemini E2E passed; product code is frozen
-
-On 2026-08-18 the user supplied the bounded result from one fresh approved
-`Gemini synthetic validation (one request)` invocation on Code
-`2.8.20-prepilot`. The result was `COMPLETE`, processed one candidate, created
-one Task and one Review, recorded zero errors and zero Calendar jobs, reached
-checkpoint `DONE`, called AI, and left Automation `CONSISTENT`, disabled, with
-zero scheduled/clock triggers and no stored or canonical trigger presence.
-
-The exact privacy-safe review is recorded in
-`docs/handoffs/0033-live-e2e-review.md`. ChatGPT did not independently invoke
-Google Workspace or inspect the credential; the accepted evidence is the
-bounded user-visible output contract intentionally designed for this
-qualification boundary.
-
-This satisfies the pre-declared personal-environment Gemini E2E completion
-condition. Code `2.8.20-prepilot` therefore enters product-code freeze. No
-additional synthetic rerun, provider change, schema change, endpoint change,
-retry/fallback mechanism, or speculative hardening is justified by the current
-evidence.
-
-Company-PC / company-environment work is environment qualification only unless
-a distinct permission, network, OAuth, policy, or runtime BLOCKER is observed.
-Reopen source only for new material evidence of an environment-independent
-product defect or a failed required qualification check.
+Automation is not considered ready merely because `enableAutomation()` exists.
+Completion requires readiness, exactly one canonical trigger, unattended
+synthetic Inbox → Gemini → Task/Review processing, separately authorized
+Calendar behavior where applicable, and verified disable cleanup. Real personal
+mail remains out of scope until those checks pass.
