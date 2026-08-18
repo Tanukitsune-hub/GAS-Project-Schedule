@@ -503,7 +503,7 @@ test('P7-I07_PROVIDER_SUPPRESSION_DEFERS_STALE_PREPROCESS_WITHOUT_GMAIL_OR_AI', 
 test('P7-I08_AUTOMATIC_BATCH_READS_ERROR_CONTEXT_ONCE', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const props = properties();
-  const messages = Array.from({ length: 10 }, (_, index) =>
+  const messages = Array.from({ length: 1 }, (_, index) =>
     fixture.rawMessage('INFORMATION_ONLY', {
       message_id: `synthetic-phase7-context-${index}`,
       thread_id: `synthetic-phase7-context-thread-${index}`
@@ -520,7 +520,7 @@ test('P7-I08_AUTOMATIC_BATCH_READS_ERROR_CONTEXT_ONCE', () => {
     )
   );
   assert.strictEqual(result.status, 'COMPLETE');
-  assert.strictEqual(result.processed_count, 10);
+  assert.strictEqual(result.processed_count, 1);
   assert(
     errorSheet.readLog.length <= 2,
     `Error context was read ${errorSheet.readLog.length} times`

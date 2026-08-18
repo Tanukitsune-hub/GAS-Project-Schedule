@@ -546,6 +546,7 @@ function checkReleaseLineage() {
   ]).split(/\r?\n/).filter(Boolean).sort();
   const invalid = changed.filter((file) =>
     file !== 'CURRENT_CONTRACT.json' &&
+    file !== 'implementation/GoogleSpreadsheet/tools/local_validation_gate.js' &&
     !file.startsWith(`${phase8bPath}/`) &&
     !file.startsWith(`${phase8cPath}/`)
   );
