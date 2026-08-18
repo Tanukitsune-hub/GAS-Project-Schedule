@@ -103,7 +103,7 @@
     "gas:push:work-0033": "node tools/work_0033_existing_target_placement.js push",
     "gas:pull-verify:work-0033": "node tools/work_0033_existing_target_placement.js pull-verify",
     "gas:evidence:work-0033": "node tools/work_0033_existing_target_placement.js evidence",
-    "verify:work-0036": "node tests/work_0036_personal_automation_qualification_test.js && node tests/work_0036_test_inventory_contract_test.js",
+    "verify:work-0036": "node tests/work_0036_existing_target_placement_test.js && node tests/work_0036_personal_automation_qualification_test.js && node tests/work_0036_test_inventory_contract_test.js",
     "gas:auth-status:work-0036": "node tools/work_0036_existing_target_placement.js auth-status",
     "gas:stage:work-0036": "node tools/work_0036_existing_target_placement.js stage",
     "gas:inventory:work-0036": "node tools/work_0036_existing_target_placement.js inventory-check",

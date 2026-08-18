@@ -1,7 +1,7 @@
 {
   "schema": "WORK_OS_TEST_INVENTORY_V1",
-  "suite_count": 76,
-  "fingerprint": "aee471f5819eff9f0a72819df22c09a2d46d78fb7aa0f5ad03a0efe945f3dfac",
+  "suite_count": 77,
+  "fingerprint": "8f7521b865c25eab8f22e3f25eb1ccdb6f45eedcadb1c5a5c7ba74004992134a",
   "suites": [
     "baseline_upgrade_test.js",
     "canonical_document_consistency_test.js",
@@ -77,6 +77,7 @@
     "work_0033_existing_target_placement_test.js",
     "work_0033_gemini_schema_compatibility_test.js",
     "work_0035_main_post_merge_gate_test.js",
+    "work_0036_existing_target_placement_test.js",
     "work_0036_personal_automation_qualification_test.js",
     "work_0036_test_inventory_contract_test.js"
   ]
