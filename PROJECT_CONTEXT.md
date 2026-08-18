@@ -1,266 +1,72 @@
 # Project Context
 
-最終更新日: 2026-07-27  
-Project ID: google-workspace-personal-work-os  
-Owner: Repository owner  
-Status: Active - Code 2.8.4-prepilot / READY_FOR_INDEPENDENT_REAUDIT  
-Timezone: Asia/Tokyo
+Last updated: 2026-08-19
 
-## 1. 目的
+Project ID: `google-workspace-personal-work-os`
 
-Gmail、Google Sheets、Google Calendar、Google Docs、Google Drive、NotebookLMおよびApps Scriptを連携し、メール起点のタスク・期日管理を自動化する。
+Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-中心となる利用体験。
+Current candidate: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-```text
-Gmailへメールを受信
-↓
-Apps Scriptが候補メールを小さなバッチで取得
-↓
-Gmail Message IDで未処理を確認
-↓
-会社承認済みAIが内容を構造化分類
-↓
-必要な候補をGoogle Sheetsの「タスク一覧」へupsert
-↓
-高信頼候補は通常タスク、曖昧候補は同じ行で要確認
-↓
-重要期限だけを専用Calendarへ同期
-↓
-利用者は原則「タスク一覧」と軽量Dashboardだけを確認
-```
+Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-空のGoogleスプレッドシートへApps Scriptを導入し、各利用者が自分のGoogle Workspace権限で再現できる社内配布可能なツールへ発展させる。
+Personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
 
-部内展開を直ちに行わず、Repository owner本人によるSandbox・実業務パイロットと反復改善を経てから展開範囲を広げる。
+## Purpose
 
-## 2. 現在の公式方針
+The Apps Script application turns eligible Gmail messages into governed Tasks
+in Google Sheets, supports human Review, and projects authorized deadlines to a
+Calendar outbox. Sheets is the Task system of record. Automation is OFF.
 
-- Google Sheetsをタスク、期限、状態、確認結果の正本とする
-- 日常操作画面を`タスク一覧`へ一本化する
-- 軽量Dashboardは運用状況の集計専用とし、Workerの処理経路から直接更新しない
-- 要確認専用タブは作成しない
-- Apps Scriptを自動処理の中核とする
-- Gmailをタスク・期日情報の入口とする
-- Google Calendarは重要期限の可視化に限定する
-- AI自動分類と人間補正の単一構成とする
-- `手動/取込`と`手動/除外`はAI判定を補正する例外操作とする
-- AIによる完了・取消・重要な既存タスク変更は人間の判断なしに確定しない
-- v1.xプロトタイプを継ぎ足さず、v2を新しい空のスプレッドシートへ新規構築する
-- v2初期版はv1との後方互換Migrationを持たない
-- 通常利用者の操作は曖昧候補、完了、対象外、誤った期限等の例外処理へ限定する
-- 自動処理は初期停止とし、Sandbox受入後に明示的に有効化する
-- 実Provider、認証、credential保管方式は会社承認なしに確定しない
-- Phase 8はSandbox準備、TEST_MODE Sandbox、実接続Sandbox、個人パイロットの順に進める
+This is a personal Google Workspace tool. No company-PC or company-environment
+deployment is planned.
 
-## 3. 対象範囲
+## Source contract
 
-### In Scope
+- Source: `implementation/GoogleSpreadsheet/apps-script-v2/`
+- Runtime: Google Apps Script V8; local validation tooling is separate.
+- Payload: 23 `.gs` files plus `appsscript.json`.
+- Task schema: 50 canonical columns.
+- Authority: hidden protected 21-column Task Authority Ledger.
+- AI Schema: provider-neutral `2.0`; application validation is authoritative.
+- Provider: Gemini Interactions `/v1beta/interactions`, behind explicit gates.
+- Release: Code `2.8.20-prepilot`, Schema `2.6`, Migration `3`.
+- Product state: frozen manual-plus-Gemini recovery baseline.
 
-- Gmail受信メールのAI分類
-- Gmail Message IDを用いた未処理管理
-- GmailへのAIラベル自動付与
-- `手動/取込`および`手動/除外`による人間補正
-- 1メール・1スレッドから複数タスクを抽出できる構造
-- Google Sheets上のタスク、期限、状態、確認結果、完了、対象外、処理履歴管理
-- タスク一覧上での要確認、受入、却下
-- installable edit TriggerによるTask編集の安全な反映
-- 専用サブカレンダー`自動期日管理`への重要期限同期
-- Apps Scriptによる定期処理、初期構築、診断、ログ、再実行、Retry、Dead Letter
-- 軽量な運用Dashboard
-- Mock Adapterと会社承認済みAI Adapterの差替え境界
-- Google Docs上の手引書、FAQ、仕様書、保守資料
-- NotebookLMによる利用者支援
-- 空のGoogle Sheetsからの新規セットアップ
-- TEST_MODE=true、Automation OFF、非機密データでのSandbox受入
+## Qualified behavior
 
-### Out of Scope
+The personal sandbox has already exercised Gmail preprocessing, governed
+Task/Review creation, manual edits, managed Calendar CREATE/UPDATE/DELETE, and
+one real Gemini classification-to-Task E2E. The final Gemini attempt completed
+with one candidate, one Task, one Review, zero errors, zero Calendar jobs, and
+checkpoint `DONE`; Automation remained consistently disabled with no trigger.
 
-- 独立したManualモード
-- 要確認専用タブ
-- v1.xプロトタイプの本番利用
-- v1.x既存シートを直接v2へ変換する初期Migration
-- メールの自動送信
-- AIによる無承認のタスク完了・取消
-- 初期版での添付ファイル内容解析
-- 初期版での送信済みメール常時巡回
-- NotebookLMチャットのApps Scriptからの自動実行
-- 管理者権限による全利用者Gmailの集中読取
-- 個人PCへの会社メール、認証情報、未公表情報の持出し
-- Phase 8B完了前の実業務メール利用
-- 個人パイロット完了前の少人数・部内展開
-- 高度なWork Block、日次・週次レビュー、スケジュール最適化
+The bounded runtime evidence is stored in
+`docs/handoffs/0033-live-e2e-review.md`. Credentials and private identifiers
+remain outside GitHub and ChatGPT.
 
-## 4. 利用環境
+## Current repository boundary
 
-利用可能と確認済みのもの。
+Work 0035 cleanly integrates the qualified Code `2.8.20-prepilot` state into
+current `main`, preserving current-main governance and historical A20/B20
+release evidence without replaying the stacked Draft-PR history.
 
-- Google Chrome
-- Gmail
-- Google Sheets
-- Google Docs
-- Google Drive
-- Google Calendar
-- Apps Script
-- NotebookLM
-- Gemini
+The canonical non-Google gate must work on `main` itself as well as on numbered
+Work branches and PR merge refs. A branch-name-only validation exception is not
+an acceptable completion state.
 
-会社環境で確認または承認が必要なもの。
+## Next boundary
 
-- Gemini API、Vertex AIまたは代替AI Provider
-- Apps Scriptから利用できる認証方式
-- Google Cloudプロジェクト
-- API課金主体および利用上限
-- AI提供者のデータ保持・学習利用条件
-- credential保管方式
-- UrlFetchおよびOAuthスコープの管理者制限
-- 他メンバー配布時のWorkspace管理者制限
+The next outcome is controlled personal Automation qualification. It begins
+with Automation OFF and synthetic data only, then proves readiness, one
+canonical time trigger, unattended Inbox → Gemini → Task/Review processing,
+any separately authorized Calendar projection, and complete disable cleanup.
+Real personal mail remains out of scope until the automatic synthetic E2E and
+rollback path pass.
 
-Workspace Studioは使用しない。
+## Assurance and privacy
 
-## 5. RepositoryとSource of Truth
-
-### Google Workspace内
-
-- タスク、期限、進捗、確認状態、回答待ち、完了、対象外: Google Sheetsの`タスク一覧`
-- 自動登録された重要期限: Google Calendarの`自動期日管理`
-- メール原文およびラベル: Gmail
-- 案件資料、成果物、原資料: Google Drive
-- 利用手引書、FAQ、仕様書、保守資料: Google Docs
-- 手引書に基づく検索・利用者向け質問: NotebookLM
-- 自動処理、同期、初期構築、ログ、再実行: Apps Script
-
-### GitHub / Git
-
-`Tanukitsune-hub/GAS-Project-Schedule`を唯一のGitHub正本とする。
-
-このRepositoryで一体管理するもの。
-
-- context: `PROJECT_CONTEXT.md`、`MASTER_PLAN.md`、`DECISIONS.md`、`CURRENT_STATUS.md`
-- implementation: `implementation/GoogleSpreadsheet/apps-script-v2/`
-- tests and tools: `implementation/GoogleSpreadsheet/tests/`、`implementation/GoogleSpreadsheet/tools/`
-- release and reports: `implementation/GoogleSpreadsheet/release/`、実装報告
-- audit and instructions: `audits/`、`instructions/`
-
-別Repositoryを参照・更新・同期先として使用しない。
-
-詳細資料。
-
-- `AUTOMATED_DEADLINE_MANAGER_DESIGN.md`
-- `INITIAL_IMPLEMENTATION_DEFAULTS.md`
-- `NAMING_AND_GMAIL_LABELS.md`
-- `PROTOTYPE_V1_LESSONS_LEARNED.md`
-
-実装Repository側の主要資料。
-
-- `V2_IMPLEMENTATION_SPEC.md`
-- `V2_CODEX_IMPLEMENTATION_PLAN.md`
-- Requirements Traceability
-- Manual Acceptance Guide
-- Phase別実装・監査報告
-- `release/v2.8.4-prepilot/`
-- `release/v2.8.4-prepilot-phase8c/`
-
-## 6. v2の基本原則
-
-- 新しい空のGoogle Sheetsだけを初期対象とする
-- v1プロトタイプのコードをコピーしてパッチしない
-- Phaseごとの受入テスト完了前に次の機能へ進まない
-- 追記位置に`getLastRow()`を使用せず、主キー列の最初の論理空行を使用する
-- 空行へBoolean値を事前投入しない
-- 初期行数は50～100行程度とし、必要時だけ拡張する
-- Setup、Runtime、Diagnostic、Migrationの責務を分離する
-- メール処理中に書式、入力規則、列順、Protectionを変更しない
-- 設定、Task index、Message Stateは1実行内で原則1回だけ読み込む
-- すべての長時間処理にsoft execution budgetを設ける
-- 長時間のGmail、AI、Calendar外部I/Oをmain Script Lock内へ置かない
-- claim、ownership、physical row version、business version、CAS、checkpointにより冪等性と競合安全性を確保する
-- management列を含むeditはevent全体を拒否し、trusted full-row stateから完全復元する
-- Setupはcurrent Schemaのdriftをsilent repairまたはsilent rebaselineしない
-- Task editのCalendar reconcile intentをdurableに保存し、Outboxを再構築可能にする
-- 診断は読取中心とし、Dashboard更新や全行書換えを行わない
-- Dashboardは利用者領域を上書きせず、layout conflict時はfail-closedとする
-- AI推測期限と正式期限を分離する
-- AI推測だけの期限はCalendarへ自動登録しない
-- OAuth権限は各利用者本人が承認する
-- 自動処理は初期値停止とし、受入テスト後に明示的に開始する
-- TEST_MODEと実Provider接続を明確に分離する
-- 職場の情報管理規程を最優先する
-
-## 7. タスク一覧と確認フロー
-
-### 新規候補
-
-- 高信頼かつ安全に確定できる場合: `status=OPEN`
-- 人の確認が必要な場合: `status=REVIEW`、`needs_review=true`、`decision=未選択`
-- 受入: `status=OPEN`へ移行
-- 却下: `status=EXCLUDED`へ移行
-
-### 既存タスクの変更候補
-
-既存タスクの現在状態を維持し、次をpending項目へ保存する。
-
-- `pending_action_type`
-- `pending_changes_json`
-- `needs_review`
-- `decision`
-
-受入時だけpending変更を適用し、却下時は既存Taskを変更せずpending項目を消去する。
-
-## 8. 正式Gmailラベル
-
-```text
-AI/要対応
-AI/期限
-AI/返信待
-AI/要確認
-手動/取込
-手動/除外
-SYS/失敗
-```
-
-- 処理済みはMessage IDで管理する
-- 完了・対象外・確認結果はGoogle Sheetsで管理する
-- AIは人間が付与した`手動/*`を削除しない
-- `手動/除外`を最優先し、次にMessage単位の`手動/取込`を優先する
-- 未処理のexact `手動/取込` MessageはThread間・Thread内とも受信時刻の古い順に処理する
-
-## 9. 現在の展開段階
-
-```text
-Phase 8A: Sandbox準備 - 履歴上完了
-Code 2.8.4 Round 3 remediation - local完了、独立再監査待ち
-Phase 8B: GO/PASS未宣言、実Workspace受入未実施
-Phase 8C: GO未宣言
-Phase 8D: Pilot ready未宣言
-少人数限定展開 - 未着手
-部内展開 - 未着手
-```
-
-Phase 8Bでは、実案件・未公表情報・個人情報を使用せず、新しい空のSpreadsheet、自分宛ての非機密メール、Mock AI、Automation OFFで受入を行う。
-
-## 10. v1プロトタイプの扱い
-
-v1.xは技術検証用プロトタイプとして完了した。
-
-- 本番利用しない
-- 自動処理を開始しない
-- 旧スプレッドシートは検証記録として保存してよい
-- v2コードベースへ継ぎ足さない
-- 必要な旧タスクの移行はv2安定後に別タスクとして検討する
-
-具体的な失敗事例と再発防止ルールは`PROTOTYPE_V1_LESSONS_LEARNED.md`を参照する。
-
-## 11. GitHubへ保存しない情報
-
-- APIキー、password、tokenその他の認証情報
-- Authorization header、Cookie、private key
-- 個人情報
-- 会社の未公表情報
-- メール本文、添付資料その他の秘密情報
-- Google Workspace内の実データ
-- 実際のSpreadsheet ID、Calendar ID、Gmail Message ID、Thread ID、内部URL
-- 実AI request・response全文
-- local `.clasp.json`その他の環境固有設定
-
-GitHubには非機密の設計、判断、進捗、コード、synthetic test、テスト方針、release packageおよび未解決事項だけを保存する。
+No credential, token, private URL, account identifier, message body, personal
+data, raw provider response, real Workspace identifier, or machine path belongs
+in tracked evidence. Environment-specific evidence must remain bounded and
+privacy-safe.

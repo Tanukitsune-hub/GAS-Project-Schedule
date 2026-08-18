@@ -305,6 +305,20 @@ function makeSchemaSheet(sheetName, rows = 100) {
   ]);
   sheet.readLog = [];
   sheet.writeLog = [];
+  if (sheetName === sandbox.WorkOsConfig.SHEETS.TASKS) {
+    const ledgerName = sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER;
+    const ledgerSchema = sandbox.WorkOsSchemas.getSheetSchema(ledgerName);
+    const ledger = new FakeSheet(ledgerName, rows, ledgerSchema.length);
+    ledger.getRange(1, 1, 1, ledgerSchema.length).setValues([
+      Array.from(ledgerSchema, (column) => column.id)
+    ]);
+    ledger.getRange(2, 1, 1, ledgerSchema.length).setValues([
+      Array.from(ledgerSchema, (column) => column.header)
+    ]);
+    ledger.readLog = [];
+    ledger.writeLog = [];
+    new FakeSpreadsheet([sheet, ledger]);
+  }
   return sheet;
 }
 
@@ -314,7 +328,8 @@ function makeOperationalSpreadsheet() {
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.RUN_HISTORY),
-    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.ERRORS)
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.ERRORS),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
   ]);
 }
 
@@ -702,6 +717,7 @@ test('P3-U01_NEW_HIGH_IS_AUTOMATIC_OPEN', () => {
   const applied = applyMarker(sheet, 'NEW_HIGH');
   assert.strictEqual(applied.results.length, 1);
   assert.strictEqual(applied.results[0].operation, 'INSERT');
+  assert.strictEqual(applied.results[0].review_required, false);
   assert.strictEqual(applied.tasks.length, 1);
   const task = applied.tasks[0];
   assert.strictEqual(task.status, 'OPEN');
@@ -742,6 +758,7 @@ test('P3-U02_NEW_REVIEW_STAYS_ON_TASK_SHEET', () => {
   const spreadsheet = makeOperationalSpreadsheet();
   const applied = applyMarker(taskSheet(spreadsheet), 'NEW_REVIEW');
   assert.strictEqual(applied.tasks.length, 1);
+  assert.strictEqual(applied.results[0].review_required, true);
   const task = applied.tasks[0];
   assert.strictEqual(task.status, 'REVIEW');
   assert.strictEqual(task.needs_review, true);
@@ -804,6 +821,7 @@ test('P3-U05_UPDATE_DUE_PRESERVES_CURRENT_AND_STAGES_PENDING', () => {
     stable_thread_key: stableThreadKey,
     active_tasks: [activeTaskSummary(existing)]
   });
+  assert.strictEqual(applied.results[0].review_required, true);
   const task = readTask(sheet, existing.task_id);
   assert.strictEqual(applied.results[0].pending, true);
   assert.strictEqual(task.status, 'OPEN');
@@ -971,6 +989,7 @@ test('P3-U11_UNKNOWN_EXPLICIT_TARGET_IS_NOT_AUTO_APPLIED', () => {
     }]
   });
   assert.strictEqual(applied.results[0].target_unresolved, true);
+  assert.strictEqual(applied.results[0].review_required, true);
   assert.strictEqual(applied.results[0].fabricated_target, true);
   assert.strictEqual(applied.tasks.length, 1);
   assert.strictEqual(applied.tasks[0].status, 'REVIEW');
@@ -1128,7 +1147,8 @@ test('P3-U18_EDIT_HANDLER_READS_ONLY_EDITED_TASK_ROWS', () => {
   const sheet = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   new FakeSpreadsheet([
     sheet,
-    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE)
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
   ]);
   const first = insertExistingTask(sheet, {
     source: 'synthetic-edit-a',
@@ -1151,7 +1171,9 @@ test('P3-U18_EDIT_HANDLER_READS_ONLY_EDITED_TASK_ROWS', () => {
   const dataReads = sheet.readLog.filter((read) =>
     read.row >= sandbox.WorkOsConfig.DATA_START_ROW
   );
-  assert.strictEqual(dataReads.length <= 3, true);
+  // The two-slot authority coordinator performs a bounded extra Task-row
+  // compare before COMMIT. It must still never scan unedited Task rows.
+  assert.strictEqual(dataReads.length <= 6, true);
   assert.strictEqual(
     dataReads.every((read) =>
       read.row === row && read.rowCount === 1
@@ -1170,7 +1192,11 @@ test('P3-U18_EDIT_HANDLER_READS_ONLY_EDITED_TASK_ROWS', () => {
 test('P3-R2-01B_OVER_LIMIT_PASTE_RESTORES_ALL_ROWS', () => {
   const sheet = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   const sync = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE);
-  new FakeSpreadsheet([sheet, sync]);
+  new FakeSpreadsheet([
+    sheet,
+    sync,
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
+  ]);
   const inserted = [];
   for (let index = 0; index < 21; index += 1) {
     inserted.push(insertExistingTask(sheet, {
@@ -1390,14 +1416,16 @@ test('P3-G05_PHASE_BOUNDARY_AND_MANIFEST_STATIC_GUARDRAILS', () => {
   const phase6 = Number(
     String(sandbox.WorkOsConfig.CODE_VERSION).split('.')[1]
   ) >= 6;
-  const sources = fs.readdirSync(appsScriptRoot)
-    .filter((fileName) => fileName.endsWith('.gs'))
-    .map((fileName) =>
-      fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8')
-    )
+  const sourceFiles = fs.readdirSync(appsScriptRoot)
+    .filter((fileName) => fileName.endsWith('.gs'));
+  const sources = sourceFiles
+    .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
+    .join('\n');
+  const nonProviderSources = sourceFiles
+    .filter((fileName) => fileName !== '20_GeminiProvider.gs')
+    .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
     .join('\n');
   const prohibitedPatterns = [
-    /\bUrlFetchApp\b/,
     /\bCalendarApp\b/,
     /\bfunction\s+onEdit\s*\(/
   ];
@@ -1410,6 +1438,10 @@ test('P3-G05_PHASE_BOUNDARY_AND_MANIFEST_STATIC_GUARDRAILS', () => {
   prohibitedPatterns.forEach(
     (pattern) => assert.strictEqual(pattern.test(sources), false)
   );
+  assert.strictEqual(/\bUrlFetchApp\b/.test(nonProviderSources), false);
+  assert.strictEqual(/\bUrlFetchApp\b/.test(
+    fs.readFileSync(path.join(appsScriptRoot, '20_GeminiProvider.gs'), 'utf8')
+  ), true);
   assert.strictEqual(
     sandbox.WorkOsSheetOrder.some((name) =>
       /Review Queue|要確認専用/.test(String(name))
@@ -1434,12 +1466,15 @@ test('P3-G05_PHASE_BOUNDARY_AND_MANIFEST_STATIC_GUARDRAILS', () => {
   });
   [
     'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/script.external_request',
     'https://www.googleapis.com/auth/drive',
     'https://mail.google.com/'
   ].forEach((scope) => {
     assert.strictEqual(scopes.includes(scope), false);
   });
+  assert.strictEqual(
+    scopes.includes('https://www.googleapis.com/auth/script.external_request'),
+    true
+  );
   assert.strictEqual(
     scopes.includes('https://www.googleapis.com/auth/script.scriptapp'),
     phase6
@@ -1829,7 +1864,8 @@ test('P3-G18_MENU_REACHABLE_SELECTION_APPLIES_REVIEW_DECISION', () => {
   const sheet = makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS);
   new FakeSpreadsheet([
     sheet,
-    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE)
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER)
   ]);
   const applied = applyMarker(sheet, 'NEW_REVIEW', {
     message_id: 'synthetic-menu-review'
@@ -2531,6 +2567,26 @@ test('P3-G19_MOCK_ACCEPTANCE_USES_ONE_SHARED_120_SECOND_BUDGET', () => {
     sandbox.WorkOsGmailGateway = originalGateway;
     sandbox.WorkOsUtilities = originalUtilities;
   }
+});
+
+test('P3-G20_MOCK_VERTICAL_REVIEW_COUNT_INCLUDES_NEW_REVIEW_TASK', () => {
+  const spreadsheet = makeOperationalSpreadsheet();
+  activeSpreadsheet = spreadsheet;
+  const message = rawMessage('NEW_REVIEW', {
+    message_id: 'synthetic-worker-review-count'
+  });
+  seedPreprocessed(spreadsheet, message);
+  const result = sandbox.WorkOsWorker.processMockVerticalOnce({
+    spreadsheet,
+    gateway: makeVerticalGateway(message),
+    now: () => new Date('2026-07-24T01:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(result.processed_count, 1);
+  assert.strictEqual(result.created_task_count, 1);
+  assert.strictEqual(result.review_count, 1);
+  assert.strictEqual(allTasks(taskSheet(spreadsheet))[0].needs_review, true);
 });
 
 const summary = {

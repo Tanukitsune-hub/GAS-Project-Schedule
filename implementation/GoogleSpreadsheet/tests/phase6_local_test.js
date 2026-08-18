@@ -837,7 +837,7 @@ test('P6-L13_SETUP_NEVER_CREATES_OR_ENSURES_TRIGGER', () => {
   assert.strictEqual(/ensureSingleAutomationTrigger\s*\(/.test(source), false);
   assert.match(
     source,
-    /phase_boundary:[\s\S]*READY_FOR_INDEPENDENT_REAUDIT/
+    /phase_boundary:[\s\S]*READY_FOR_PHASE8B_SANDBOX_RETRANSFER/
   );
 });
 
@@ -849,9 +849,11 @@ test('P6-L14_MANIFEST_SCOPE_IS_MINIMAL_FOR_TRIGGER_MANAGEMENT', () => {
     'https://www.googleapis.com/auth/script.scriptapp'
   ));
   assert(!manifest.oauthScopes.includes(
+    'https://mail.google.com/'
+  ));
+  assert(manifest.oauthScopes.includes(
     'https://www.googleapis.com/auth/script.external_request'
   ));
-  assert(!manifest.oauthScopes.includes('https://mail.google.com/'));
   assert.strictEqual(Object.prototype.hasOwnProperty.call(
     manifest,
     'triggers'

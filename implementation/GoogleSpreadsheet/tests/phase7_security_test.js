@@ -56,15 +56,18 @@ function test(id, body) {
   }
 }
 
-test('P7-SEC01_NO_REAL_NETWORK_IMPLEMENTATION_OR_SCOPE', () => {
-  allSource.forEach(({ name, source }) => {
-    assert.strictEqual(/\bUrlFetchApp\s*\./.test(source), false, name);
-  });
+test('P7-SEC01_PROVIDER_TRANSPORT_IS_ISOLATED_AND_SCOPE_IS_NARROW', () => {
+  allSource.filter(({ name }) => name !== '20_GeminiProvider.gs')
+    .forEach(({ name, source }) => {
+      assert.strictEqual(/\bUrlFetchApp\s*\./.test(source), false, name);
+    });
+  assert.match(byName['20_GeminiProvider.gs'], /typeof UrlFetchApp/);
+  assert.match(byName['20_GeminiProvider.gs'], /fetchApp\.fetch/);
   assert.strictEqual(
     manifest.oauthScopes.includes(
       'https://www.googleapis.com/auth/script.external_request'
     ),
-    false
+    true
   );
 });
 
@@ -75,25 +78,26 @@ test('P7-SEC02_PROVIDER_AND_APPROVAL_DEFAULTS_FAIL_CLOSED', () => {
   assert.match(config, /EXTERNAL_AI_DATA_POLICY_APPROVED:\s*false/);
   assert.match(config, /EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED:\s*false/);
   assert.match(config, /EXTERNAL_AI_AUTH_CONFIGURED:\s*false/);
-  assert.match(config, /EXTERNAL_AI_PROVIDER:\s*''/);
-  assert.match(config, /EXTERNAL_AI_MODEL:\s*''/);
+  assert.match(config, /EXTERNAL_AI_PROVIDER:\s*'GEMINI'/);
+  assert.match(config, /EXTERNAL_AI_MODEL:\s*'gemini-3\.6-flash'/);
+  assert.match(config, /EXTERNAL_AI_CREDENTIAL_REFERENCE:\s*'WORK_OS_V2_GEMINI_API_KEY'/);
 });
 
-test('P7-SEC03_NO_GUESSED_PROVIDER_ENDPOINT_OR_PRODUCTION_MODEL', () => {
-  const productionSources = allSource
-    .filter(({ name }) => name !== '99_TestHarness.gs')
-    .map(({ source }) => source)
-    .join('\n');
+test('P7-SEC03_PROVIDER_ENDPOINT_AND_MODEL_ARE_EXPLICITLY_PINNED', () => {
+  const providerSource = byName['20_GeminiProvider.gs'];
+  const adapterSource = byName['07_AiAdapter.gs'];
   assert.strictEqual(
     /https?:\/\/(?:api|generativelanguage|bedrock|vertex)[^'"\s]*/i
-      .test(productionSources),
-    false
+      .test(providerSource),
+    true
   );
   assert.strictEqual(
     /\b(?:gpt-|gemini-|claude-|amazon\.nova|text-bison)/i
-      .test(productionSources),
-    false
+      .test(providerSource),
+    true
   );
+  assert.strictEqual(/https?:\/\//i.test(adapterSource), false);
+  assert.strictEqual(/UrlFetchApp/.test(adapterSource), false);
 });
 
 test('P7-SEC04_ERROR_RECORDS_USE_HASHED_EXTERNAL_REFERENCES', () => {
@@ -157,8 +161,9 @@ test('P7-SEC10_NO_CREDENTIAL_PROPERTY_OR_LITERAL_SECRET', () => {
     .filter(({ name }) => name !== '99_TestHarness.gs')
     .map(({ source }) => source)
     .join('\n');
+  assert.match(productionSources, /GEMINI_API_KEY/);
   assert.strictEqual(
-    /PROPERTIES\.[A-Z_]*(?:CREDENTIAL|API_KEY|PASSWORD|AUTH_TOKEN)/
+    /PROPERTIES\.(?!GEMINI_API_KEY)[A-Z_]*(?:CREDENTIAL|API_KEY|PASSWORD|AUTH_TOKEN)/
       .test(productionSources),
     false
   );

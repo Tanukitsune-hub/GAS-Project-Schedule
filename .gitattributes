@@ -1,0 +1,7 @@
+# Release inputs and generated artifacts must be byte-stable on every checkout.
+implementation/GoogleSpreadsheet/apps-script-v2/** text eol=lf
+implementation/GoogleSpreadsheet/tools/** text eol=lf
+implementation/GoogleSpreadsheet/tests/** text eol=lf
+implementation/GoogleSpreadsheet/release/** text eol=lf
+implementation/GoogleSpreadsheet/*.json text eol=lf
+CURRENT_CONTRACT.json text eol=lf

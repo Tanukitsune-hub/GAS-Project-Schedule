@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  local-validation:
+    name: Local static and regression validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install locked local tooling
+        working-directory: implementation/GoogleSpreadsheet
+        run: pnpm install --frozen-lockfile
+
+      - name: Run non-Google local verification gate
+        working-directory: implementation/GoogleSpreadsheet
+        run: pnpm run verify:ci

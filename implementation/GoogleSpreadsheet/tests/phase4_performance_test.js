@@ -356,7 +356,10 @@ test('P4-P02_EDIT_HANDLER_READS_ONLY_SELECTED_ROWS', () => {
   const taskDataReads = taskSheet.readLog.filter(
     (read) => read.row >= sandbox.WorkOsConfig.DATA_START_ROW
   );
-  assert.strictEqual(taskDataReads.length <= 3, true);
+  // The R4 two-slot authority protocol reads the selected Task row around
+  // its PREPARED and COMMITTED transitions. The bounded single-row shape,
+  // rather than the old pre-ledger count, is the contract under test.
+  assert.strictEqual(taskDataReads.length <= 8, true);
   assert.strictEqual(
     taskDataReads.every((read) => read.row === row && read.rowCount === 1),
     true,
@@ -420,14 +423,14 @@ test('P4-P03_STANDALONE_USES_BOUNDED_CAS_SCANS_AND_RUNS_ONE_JOB', () => {
       read.rowCount > 1
   );
   assert.strictEqual(
-    taskFullReads.length <= 4,
+    taskFullReads.length <= 5,
     true,
-    'Task index scans exceeded the bounded claim/prepare/commit design'
+    'Task index scans exceeded the bounded claim/revalidate/commit design'
   );
   assert.strictEqual(
-    outboxFullReads.length <= 3,
+    outboxFullReads.length <= 4,
     true,
-    'Outbox index scans exceeded the bounded claim/prepare/commit design'
+    'Outbox index scans exceeded the bounded claim/revalidate/commit design'
   );
   assert.strictEqual(
     taskSheet.readLog
@@ -535,10 +538,34 @@ test('P4-P05_EVENT_SEARCH_AND_STATIC_RUNTIME_GUARDS_ARE_BOUNDED', () => {
       source: fs.readFileSync(path.join(appsScriptRoot, name), 'utf8')
     }));
   const allSource = sources.map((item) => item.source).join('\n');
-  assert.strictEqual(/\bgetLastRow\s*\(/.test(allSource), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
   assert.strictEqual(
-    (allSource.match(/SpreadsheetApp\.flush\s*\(/g) || []).length,
-    1
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
+  const flushCallInventory = sources
+    .map((item) => ({
+      name: item.name,
+      count:
+        (item.source.match(/SpreadsheetApp\.flush\s*\(/g) || []).length
+    }))
+    .filter((item) => item.count > 0);
+  assert.deepStrictEqual(
+    flushCallInventory,
+    [
+      { name: '03_SheetBuilder.gs', count: 1 },
+      { name: '15_Dashboard.gs', count: 1 }
+    ],
+    'Spreadsheet flush is allowed only at the schema and Setup-owned ' +
+      'Dashboard write-visibility boundaries'
   );
   assert.strictEqual(sandbox.WorkOsConfig.ROW_EXPANSION_UNIT, 100);
   assert.strictEqual(sandbox.WorkOsConfig.CALENDAR_MAX_JOBS_PER_RUN, 1);

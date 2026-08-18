@@ -1,120 +1,82 @@
 # Current Status
 
-最終更新日: 2026-07-27  
-Current Phase: Code 2.8.4-prepilot independent re-audit complete / additional remediation required  
-Overall Status: `REAUDIT_NO_GO`  
-Production Status: Not approved / `TEST_MODE=true` / Automation `OFF`  
-Version: Code `2.8.4-prepilot` / Schema `2.5` / AI Schema `2.0` / Migration `2`  
-GitHub Source of Truth: `Tanukitsune-hub/GAS-Project-Schedule`
+Last updated: 2026-08-19
 
-## 1. 結論
+Candidate version: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Source commit A `a7f66eb4ca5ef71dab6faaaa595964c7af73326e`とRelease commit B `2c31ba8303b9988ac96c0ef29b81e64eaee0c84b`を固定し、Source、tests、tools、canonical documents、release packageおよびRound 3実装報告を独立再監査した。
+Overall status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
 
-申告された全local regression、static validation、release checksumおよびsource parityは独立再現した。
+Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-```text
-Regression suites: 38
-PASS: 556
-FAIL: 0
-SKIPPED: 11
-Static validation: 10 PASS / 0 FAIL
-Phase 8B package checksum / source parity: PASS
-Phase 8C candidate checksum / audited transform parity: PASS
-Source A -> Release B: exactly 1 commit
-```
+Personal Gemini E2E: `PASS`
 
-一方、既存testが対象としていないauthority failure boundary、mirror fallback、multi-row restoration、Task header editおよびcurrent documentationに、High Finding 3件とMedium Finding 3件を確認した。
+Automation: `OFF`
 
-よって、Code 2.8.4-prepilotはPhase 8B受入へ進めず、追加修正後に再度`READY_FOR_INDEPENDENT_REAUDIT`へ到達させる。
+## Current contract
 
-## 2. Gate
+The canonical source is `implementation/GoogleSpreadsheet/apps-script-v2/`.
+The payload is exactly 23 `.gs` files plus `appsscript.json`. Phase 8B keeps
+`TEST_MODE=true` and the test harness. Phase 8C is the audited
+`TEST_MODE=false` transform with the harness excluded. `CURRENT_CONTRACT.json`,
+release manifests, checksums, and verifiers bind the historical A20/B20 source
+and release evidence.
 
-```text
-Source syntax / static validation: PASS
-既存38 regression suites: PASS
-Release checksum / parity: PASS
-Phase 8B Part A～C: HOLD
-Phase 8B Part D以降の管理下再現試験: 実施可能
-Phase 8B受入完了: NO-GO
-Phase 8C TEST_MODE=false Sandbox: NO-GO
-Phase 8D実業務パイロット: NO-GO
-少人数・部内展開: NO-GO
-```
+The source includes the Gemini Interactions provider, provider-facing schema
+projection, strict AI Schema 2.0 post-response validation, exact synthetic
+fixture guards, bounded provider diagnostics, durable Task/Review handling,
+Calendar outbox controls, and an Automation lifecycle that remains disabled by
+default and fail-closed.
 
-Phase 8Bはauthority protocol修正後のpackageへ一本化する。
+The Gemini credential is not stored in this repository. The user configured it
+in the personal-synthetic Apps Script target and, on 2026-08-18, completed one
+fresh approved synthetic-message E2E on Code `2.8.20-prepilot`. The reviewed
+bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
-## 3. 残存Finding
+Code `2.8.20-prepilot` is the frozen manual-plus-Gemini baseline. Work 0035
+materializes that baseline cleanly onto current `main` without replaying the
+stacked Draft-PR history. Automation qualification is a separate successor
+boundary in the same personal Google Workspace environment; no company-PC or
+company-environment rollout is planned.
 
-| ID | 重要度 | 現在地 |
-|---|---|---|
-| R4-01 | High | Task row `setValues`成功後にtrusted authority note `setNote`が失敗すると、rowとauthorityが分離し、次の更新が`E_TASK_AUTHORITY_DRIFT`で停止する |
-| R4-02 | High | authority note欠損時にsnapshot cellへfallbackするため、live rowとsnapshot cellの同時改変を自己承認できる。Setupもnote側の破損を検出しない |
-| R4-03 | High | multi-row editで1行のauthorityが不正だと1行も復元されず、trigger前に反映済みのraw改変が全行へ残る |
-| R4-04 | Medium | Task header row 1 / 2の改変を検出してもcanonical schemaへ復元しない |
-| R4-05 | Medium | root READMEから参照されるworkflow HTMLがCode 2.8.3 / Schema 2.4の表示のまま |
-| R4-06 | Medium | Round 3報告が記載するv2.8.3 backup directoryがGitHub treeに存在しない |
+## Historical lineage
 
-## 4. 独立再監査証跡
+- Work 0018: Code `2.8.14-prepilot`, source A14 and release B14. It repaired
+  the Gmail Advanced Service body decoding boundary.
+- Work 0028: Code `2.8.15-prepilot`, source A15 and release B15. It added the
+  Gemini provider boundary and Review observability.
+- Work 0029: Code `2.8.16-prepilot`, source A16 and release B16. It added the
+  callable readiness and synthetic validation boundary.
+- Work 0030: Code `2.8.17-prepilot`, source A17 and release B17. It repaired
+  strict Gemini thinking-step parsing.
+- Work 0031: Code `2.8.18-prepilot`, source A18 and release B18. It established
+  the `/v1beta/interactions` transport candidate.
+- Work 0032: Code `2.8.19-prepilot`, source A19 and release B19. It hardened
+  bounded diagnostics, failure finalization, and exact candidate routing.
+- Work 0033: Code `2.8.20-prepilot`, source A20 and release B20. It added the
+  provider-schema compatibility projection; the subsequent user-controlled
+  personal Gemini E2E passed.
 
-```text
-audits/2026-07-27/
-  GoogleWorkspace_v2_8_4_Independent_Reaudit_Report_2026-07-27.md
-  GoogleWorkspace_v2_8_4_reaudit_dynamic_results.json
-  GoogleWorkspace_v2_8_4_reaudit_verification_results.json
+Historical handoffs and reports remain immutable evidence.
 
-instructions/
-  GoogleWorkspace_v2_8_4_Next_Remediation_Work_Prompt_2026-07-27.md
-```
+## Evidence boundary
 
-監査用GitHub Actions artifact digest:
+| Boundary | Status |
+|---|---|
+| Local source/static/test/release validation | `PASS` |
+| Personal-sandbox Gemini E2E | `PASS` |
+| E2E result | `COMPLETE`; 1 processed; 1 Task; 1 Review; 0 errors; `DONE` |
+| Calendar job for the non-calendar fixture | `0` |
+| Automation after E2E | `CONSISTENT`; disabled; zero clock triggers |
+| Frozen Apps Script payload | 23 `.gs` + manifest; SHA-256 `ced2ce52cd4a3faa46c66f0e1971a7cebb14334ca7d3f2bcb3ec79799c82effe` |
+| Company-PC / company-environment rollout | `NOT PLANNED` |
 
-```text
-sha256:943ccca8f8c20b3ba3d1e1ef8f81d9bc029d51dd8c324ca84bc57ca4025f2150
-```
+## Next boundary
 
-一時PR #7はartifact取得後にmergeせずCloseした。
-
-## 5. 次のVersion方針
-
-推奨:
-
-```text
-Code Version: 2.8.5-prepilot
-Schema Version: 2.6
-AI Schema Version: 2.0
-Migration Version: 3
-```
-
-主要修正対象:
-
-- failure-recoverableなTask authority protocol
-- mandatory authority validationと明示的repair
-- authority不正rowのquarantine
-- Task headerのcanonical restore
-- workflow visualizationのcurrent metadata同期
-- backup記載とGitHub treeの整合
-
-## 6. 実施していない項目
-
-次は`NOT EXECUTED`のままである。
-
-- OAuth consent
-- native Data ValidationとProtection owner behavior
-- Gmail exact Message mutation
-- Calendar CRUD
-- installable edit Triggerの実event shape
-- time-driven Trigger
-- LockService実競合
-- Apps Script quota / runtime
-- real Provider
-- deployment / clasp push
-
-## 7. Guardrails
-
-- このRepository以外を正本、参照、更新、同期先にしない。
-- force push、reset、clean、unrelated revertを行わない。
-- credential、実メール本文、個人情報、実Workspace ID／URLを保存しない。
-- Automation defaultをONにしない。
-- external testをlocal fakeだけでPASSへ昇格しない。
-- 独立再監査PASS前にPhase 8B GO/PASS、Phase 8C GO、Pilot readyを宣言しない。
+After Work 0035 is merged and the canonical main gate is green, the next Work
+is controlled personal-environment Automation qualification. It must begin with
+Automation OFF, settle the approved inbox exclusions and provider approval
+configuration, use a production-mode successor candidate where required, and
+prove enable, one-trigger ownership, automatic synthetic Gmail-to-Task/Review
+processing, any explicitly authorized Calendar projection, and complete disable
+rollback. Real personal mail is out of scope until that synthetic automatic E2E
+passes.

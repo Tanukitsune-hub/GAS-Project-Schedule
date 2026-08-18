@@ -51,6 +51,10 @@ function makeGrid(options = {}) {
   const formulas = blankMatrix(rows, columns, '');
   const notes = blankMatrix(rows, columns, '');
   const validations = blankMatrix(rows, columns, null);
+  const backgrounds = blankMatrix(rows, columns, '#ffffff');
+  const fontWeights = blankMatrix(rows, columns, 'normal');
+  const fontStyles = blankMatrix(rows, columns, 'normal');
+  const numberFormats = blankMatrix(rows, columns, '@');
   values[0] = ['metric_key', 'metric_value', 'note'];
   values[1] = ['項目', '値', '注記'];
   const merged = new Set();
@@ -145,19 +149,19 @@ function makeGrid(options = {}) {
         },
         getBackgrounds: () => {
           reads.backgrounds += 1;
-          return blankMatrix(rowCount, columnCount, '#ffffff');
+          return slice(backgrounds, row, column, rowCount, columnCount);
         },
         getFontWeights: () => {
           reads.fontWeights += 1;
-          return blankMatrix(rowCount, columnCount, 'normal');
+          return slice(fontWeights, row, column, rowCount, columnCount);
         },
         getFontStyles: () => {
           reads.fontStyles += 1;
-          return blankMatrix(rowCount, columnCount, 'normal');
+          return slice(fontStyles, row, column, rowCount, columnCount);
         },
         getNumberFormats: () => {
           reads.numberFormats += 1;
-          return blankMatrix(rowCount, columnCount, 'General');
+          return slice(numberFormats, row, column, rowCount, columnCount);
         },
         getHorizontalAlignments: () =>
           blankMatrix(rowCount, columnCount, 'general'),
@@ -213,8 +217,32 @@ function makeGrid(options = {}) {
       }
     }
   };
+  const owner = { getEmail: () => 'owner@example.invalid' };
+  const canonicalProtectionAccess = {
+    isWarningOnly: () => false,
+    canDomainEdit: () => false,
+    canEdit: () => true,
+    getTargetAudiences: () => [],
+    getUnprotectedRanges: () => [],
+    getEditors: () => [owner],
+    getRangeName: () => null
+  };
+  protections.push(Object.assign({
+    type: context.SpreadsheetApp.ProtectionType.SHEET,
+    getDescription: () => `WORK_OS_V2_PHASE1_${
+      context.WorkOsConfig.SHEETS.DASHBOARD
+    }_SYSTEM_OWNED_EDIT_POLICY`
+  }, canonicalProtectionAccess));
+  protections.push(Object.assign({
+    type: context.SpreadsheetApp.ProtectionType.RANGE,
+    getDescription: () => `WORK_OS_V2_PHASE1_${
+      context.WorkOsConfig.SHEETS.DASHBOARD
+    }_HEADER_IDS`,
+    getRange: () => rangeFromKey('1:1:2:3')
+  }, canonicalProtectionAccess));
   const spreadsheet = {
     getSheetByName: () => sheet,
+    getOwner: () => owner,
     getNamedRanges: () => {
       reads.namedRanges += 1;
       return namedRanges.slice();
@@ -227,6 +255,10 @@ function makeGrid(options = {}) {
     formulas,
     notes,
     validations,
+    backgrounds,
+    fontWeights,
+    fontStyles,
+    numberFormats,
     merged,
     protections,
     namedRanges,
@@ -243,11 +275,14 @@ const context = {
   JSON,
   WorkOsConfig: {
     TIMEZONE: 'Asia/Tokyo',
+    HEADER_ID_ROW: 1,
+    HEADER_LABEL_ROW: 2,
     DATA_START_ROW: 3,
     ROW_EXPANSION_UNIT: 100,
     LOCK_WAIT_MS: 5000,
     DASHBOARD_RESERVE_MS: 5000,
     DASHBOARD_SOFT_LIMIT_MS: 60000,
+    DASHBOARD_SYSTEM_BLOCK_TEXT_FORMAT: '@',
     TEST_MODE: true,
     PROPERTIES: { INSTANCE_ID: 'WORK_OS_V2_INSTANCE_ID' },
     SHEETS: {
@@ -301,6 +336,11 @@ const context = {
   },
   SpreadsheetApp: {
     ProtectionType: { RANGE: 'RANGE', SHEET: 'SHEET' }
+  },
+  Session: {
+    getEffectiveUser: () => ({
+      getEmail: () => 'owner@example.invalid'
+    })
   },
   Utilities: {
     formatDate: (value, timezone, format) =>
@@ -452,19 +492,32 @@ test('PREP-DASH-05_EMPTY_CREATE_AND_OWNED_UPDATE_ARE_IDEMPOTENT', () => {
 
 test('PREP-DASH-05B_SYSTEM_OWNED_SHEET_PROTECTION_ALLOWS_REFRESH', () => {
   const grid = makeGrid();
-  grid.protections.push({
-    type: context.SpreadsheetApp.ProtectionType.SHEET,
-    getDescription: () =>
-      'WORK_OS_V2_PHASE1_ダッシュボード_SYSTEM_OWNED_EDIT_POLICY',
-    isWarningOnly: () => false,
-    getUnprotectedRanges: () => []
-  });
   const result = context.WorkOsDashboard.upsertMetricRows(
     grid.spreadsheet,
     desiredRows()
   );
   assert.strictEqual(result.updated_count, 17);
   assert.strictEqual(grid.values[2][0], 'AUTOMATION_STATUS');
+});
+
+test('PREP-DASH-05C_NATIVE_WHITE_BACKGROUND_VARIANTS_ARE_CANONICAL', () => {
+  const grid = makeGrid();
+  grid.backgrounds[2][0] = 'rgb(255, 255, 255)';
+  grid.backgrounds[3][1] = '#FFF';
+  const result = context.WorkOsDashboard.upsertMetricRows(
+    grid.spreadsheet,
+    desiredRows()
+  );
+  assert.strictEqual(result.updated_count, 17);
+  assert.strictEqual(grid.values[2][0], 'AUTOMATION_STATUS');
+});
+
+test('PREP-DASH-05D_NONDEFAULT_FORMATTING_REMAINS_FAIL_CLOSED', () => {
+  const grid = makeGrid();
+  for (let rowIndex = 2; rowIndex < grid.backgrounds.length; rowIndex += 17) {
+    grid.backgrounds[rowIndex][1] = '#ff0000';
+  }
+  assertConflict(grid);
 });
 
 test('PREP-DASH-06_QUICK_DIAGNOSTIC_FAIL_REJECTS_BEFORE_WRITE', () => {

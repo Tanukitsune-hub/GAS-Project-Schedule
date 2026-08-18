@@ -324,6 +324,7 @@ function makeSchemaSheet(sheetName, rows = 100) {
 function makeOperationalSpreadsheet() {
   return new FakeSpreadsheet([
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASKS),
+    makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.TASK_AUTHORITY_LEDGER),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.MESSAGE_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.SYNC_STATE),
     makeSchemaSheet(sandbox.WorkOsConfig.SHEETS.RUN_HISTORY),
@@ -1274,7 +1275,10 @@ test('P3-I23_EDIT_HANDLER_READS_ONLY_SMALL_RANGE_AND_CALLS_NO_EXTERNAL_SERVICE',
     JSON.stringify(taskSheet.readLog)
   );
   assert.strictEqual(
-    taskSheet.readLog.length <= 6,
+    // The two-slot authority commit validates the same physical Task row
+    // before and after its ledger transition. It remains bounded to this
+    // row and headers; it must never scan the Task grid.
+    taskSheet.readLog.length <= 10,
     true,
     JSON.stringify(taskSheet.readLog)
   );
@@ -1432,6 +1436,9 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
       'https://www.googleapis.com/auth/calendar.calendarlist.readonly'
     );
   }
+  expectedScopes.push(
+    'https://www.googleapis.com/auth/script.external_request'
+  );
   assert.deepStrictEqual(manifest.oauthScopes, expectedScopes);
   const expectedServices = [
     {
@@ -1454,7 +1461,10 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
   assert.strictEqual(Object.prototype.hasOwnProperty.call(manifest, 'triggers'), false);
   const serialized = JSON.stringify(manifest);
   assert.strictEqual(/calendar/i.test(serialized), phase4);
-  assert.strictEqual(/external_request/i.test(serialized), false);
+  assert.strictEqual(
+    /https:\/\/www\.googleapis\.com\/auth\/script\.external_request/i.test(serialized),
+    true
+  );
   assert.strictEqual(
     /scriptapp|script\.scriptapp/i.test(serialized),
     phase6
@@ -1463,6 +1473,7 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
   const productionSource = fs
     .readdirSync(appsScriptRoot)
     .filter((name) => name.endsWith('.gs'))
+    .filter((name) => name !== '20_GeminiProvider.gs')
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
   assert.strictEqual(/\bUrlFetchApp\b/.test(productionSource), false);

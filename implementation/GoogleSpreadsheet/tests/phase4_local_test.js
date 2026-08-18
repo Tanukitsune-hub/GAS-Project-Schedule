@@ -1064,15 +1064,16 @@ test('P4-G08_TAMPERED_ERROR_CODE_AND_MISSING_TASK_WRITER_FAIL_CLOSED', () => {
   enqueue(missingTaskState);
   missingTaskState.options.task_reader = () => null;
   const missingTaskResult = processJob(missingTaskState);
-  assert.strictEqual(missingTaskResult.processed_count, 1);
-  assert.strictEqual(missingTaskResult.result.status, 'DEAD');
-  assert.strictEqual(
-    missingTaskResult.result.error_code,
-    'E_CALENDAR_TASK_NOT_FOUND'
-  );
+  assert.strictEqual(missingTaskResult.processed_count, 0);
+  assert.strictEqual(missingTaskResult.authority_excluded_count, 1);
+  assert.strictEqual(missingTaskResult.status, 'IDLE');
   assert.strictEqual(missingTaskState.taskWrites.length, 0);
   assert.strictEqual(missingTaskState.gateway.calls.eventInsert, 0);
-  assert.strictEqual(outboxRecord(missingTaskState).status, 'DEAD');
+  assert.strictEqual(outboxRecord(missingTaskState).status, 'CANCELLED');
+  assert.strictEqual(
+    outboxRecord(missingTaskState).error_code,
+    'E_CALENDAR_TASK_AUTHORITY_EXCLUDED'
+  );
 });
 
 const summary = {

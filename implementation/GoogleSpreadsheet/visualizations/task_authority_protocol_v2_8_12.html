@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja" data-code-version="2.8.12-prepilot" data-schema-version="2.6" data-ai-schema-version="2.0" data-migration-version="3" data-release-status="READY_FOR_CONTROLLED_SANDBOX_VALIDATION">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>v2.8.12 Task Authority / T1-01 Diagnostic Summary Control Plane</title>
+  <style>
+    :root{--ink:#172033;--line:#c6d2e3;--blue:#195cab;--warn:#8a4b00;--bad:#b42318;--surface:#f5f7fb}
+    body{margin:0;background:var(--surface);color:var(--ink);font:15px system-ui,sans-serif}
+    main{max-width:1120px;margin:32px auto;padding:0 24px}.meta,.flow{display:flex;gap:12px;flex-wrap:wrap}
+    .badge,.node{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}.gate{color:var(--warn);font-weight:700}
+    .node{flex:1 1 170px}.owned{border-color:var(--blue)}.blocked{border-color:var(--bad)}
+    h1,h2,h3{margin-top:0}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+    code{background:#edf2f8;padding:2px 4px;border-radius:4px}@media(max-width:640px){main{padding:0 14px}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>v2.8.12 Task Authority / Dashboard control plane</h1>
+  <div class="meta">
+    <span class="badge">Code 2.8.12-prepilot</span>
+    <span class="badge">Schema 2.6 / AI Schema 2.0 / Migration 3</span>
+    <span class="badge">11 Sheets / hidden 5 / Task columns 50</span>
+    <span class="badge gate">READY_FOR_CONTROLLED_SANDBOX_VALIDATION</span>
+  </div>
+
+  <h2>T1-01 bounded acceptance summary</h2>
+  <section class="flow">
+    <article class="node owned"><h3>Collect</h3><p>Quick/Deep retain every existing PASS, WARN, FAIL, and NOT_EXECUTED check.</p></article>
+    <article class="node owned"><h3>Bound</h3><p>Sorted unique WARN/FAIL IDs are capped at a documented safe bound with explicit completeness flags.</p></article>
+    <article class="node owned"><h3>Expose</h3><p>Counts, all-false side-effect Booleans, Task 50-column/header and Ledger 21-column/control states appear before details.</p></article>
+    <article class="node blocked"><h3>Fail closed</h3><p>Malformed, duplicate, missing, or overflowed summary data is REVIEW_REQUIRED or UNKNOWN; it never repairs or promotes a finding.</p></article>
+  </section>
+
+  <h2>S90-critical module contract retained</h2>
+  <section class="flow">
+    <article class="node owned"><h3>Config</h3><p>Exposes the v2.8.10 S90 contract identifier independently.</p></article>
+    <article class="node owned"><h3>Setup</h3><p>Requires Config, Setup, and Dashboard identifiers to match before a write.</p></article>
+    <article class="node owned"><h3>Dashboard</h3><p>Repeats the guard at the write boundary. Skew returns <code>E_MODULE_VERSION_SKEW</code>.</p></article>
+    <article class="node blocked"><h3>Partial patch</h3><p>Stops before format write, flush, Quick Diagnostic, or S90 completion.</p></article>
+  </section>
+
+  <h2>Setup-only queued-write visibility</h2>
+  <section class="flow">
+    <article class="node owned"><h3>1. Prove</h3><p>Require canonical schema, owner-proven Protection, exact seed/owned state, exact 17×3 block, and zero non-format conflicts.</p></article>
+    <article class="node owned"><h3>2. Write</h3><p>Only a proven noncanonical block receives the deterministic plain-text contract. Outside cells are untouched.</p></article>
+    <article class="node owned"><h3>3. Flush</h3><p>Call <code>SpreadsheetApp.flush()</code> exactly once after a write so pending operations become visible.</p></article>
+    <article class="node owned"><h3>4. Reacquire</h3><p>Obtain a fresh exact Range and require the canonical postcondition across all 51 cells.</p></article>
+    <article class="node"><h3>5. Diagnose</h3><p>Only after the strict postcondition, invoke read-only Quick Diagnostic. Deep Diagnostic remains read-only.</p></article>
+  </section>
+
+  <h2>Fail-closed matrix</h2>
+  <table>
+    <thead><tr><th>State</th><th>Permitted outcome</th><th>Forbidden shortcut</th></tr></thead>
+    <tbody>
+      <tr><td>Already canonical exact block</td><td>Return <code>CANONICAL</code>; zero write and zero flush.</td><td>Unnecessary rewrite or broad format acceptance.</td></tr>
+      <tr><td>Safe format-only drift</td><td>Write, flush, fresh reread, strict 51-cell verification.</td><td>Immediate stale read or cached Range proof.</td></tr>
+      <tr><td>Flush unavailable/failure or stale postcondition</td><td>Stop with <code>E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION</code> and closed counts.</td><td>Continue to S90, retry silently, or emit actual formats/locale.</td></tr>
+      <tr><td>Foreign or ambiguous surface</td><td>Preserve the existing closed reason/subreason and counts.</td><td>Normalization, marker write, silent rebaseline, or manual repair.</td></tr>
+      <tr><td>S00–S80 complete; S90/S99 incomplete</td><td>Preserve labels, Calendar, Properties, edit trigger, Automation OFF, and absent five-minute trigger.</td><td>Duplicate/delete resources or enable automation.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Authority boundary retained</h2>
+  <p><code>PHASE8B-SETUP-01</code> keeps the Setup-owned Ledger bootstrap in <code>S20_CREATE_SCHEMAS</code>. <code>PHASE8B-QUICK-DIAGNOSTIC-01</code> keeps diagnostics read-only, while <code>PHASE8B-DASHBOARD-01</code> keeps foreign Dashboard surfaces fail-closed. The schema-defined <code>calendar_reconcile_required</code> field remains part of durable Task intent.</p>
+  <section class="flow">
+    <article class="node owned"><h3>Task Authority Ledger</h3><p>The protected hidden 21-column two-slot ledger remains the only technical Task recovery authority.</p></article>
+    <article class="node"><h3>Visible Task projection</h3><p>One full-row write is bracketed by durable <code>PREPARED</code> and <code>COMMITTED</code> states.</p></article>
+    <article class="node blocked"><h3>Invalid authority</h3><p>Quarantine/unrecoverable/orphaned rows stay excluded. No snapshot, note, or raw-row fallback exists.</p></article>
+    <article class="node"><h3>Calendar intent</h3><p>Calendar remains derived state with final authority revalidation and owned-event-only compensation.</p></article>
+  </section>
+
+  <p>Safe Setup evidence contains only a closed normalization state, write/flush/postcondition Booleans, checked-cell count, and noncanonical count. It contains no locale, actual format string, value, formula, note, address, ID, URL, or identity.</p>
+  <p>This visualization records the 2.8.12-prepilot local candidate only. There is no active transfer or deployment target. Setup, Dashboard refresh, functional triggers, Gmail, Calendar reconciliation, locking, authority faults, provider work, <code>clasp push</code>, and real data remain <strong>NOT_EXECUTED</strong>. Automation remains OFF.</p>
+</main>
+</body>
+</html>

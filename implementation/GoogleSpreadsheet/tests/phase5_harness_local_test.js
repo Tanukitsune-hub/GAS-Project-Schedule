@@ -66,7 +66,7 @@ const exposureNeedle =
 let harnessSource = fs.readFileSync(
   path.join(appsScriptRoot, '99_TestHarness.gs'),
   'utf8'
-);
+).replace(/\r\n/g, '\n');
 if (!harnessSource.includes(exposureNeedle)) {
   throw new Error('PHASE5_HARNESS_EXPOSURE_POINT_NOT_FOUND');
 }

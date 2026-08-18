@@ -13,7 +13,7 @@ const path = require('path');
 const vm = require('vm');
 
 const phase4Path = path.resolve(__dirname, 'phase4_independent_test.js');
-const phase4Source = fs.readFileSync(phase4Path, 'utf8');
+const phase4Source = fs.readFileSync(phase4Path, 'utf8').replace(/\r\n/g, '\n');
 const marker = '\nconst tests = [];';
 const markerIndex = phase4Source.indexOf(marker);
 if (markerIndex < 0) {
