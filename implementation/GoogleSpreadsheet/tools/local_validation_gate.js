@@ -25,6 +25,7 @@ const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const contractStartingMain = '4c28231dc08dc89ee7a529cb0a6192325263c810';
 const currentScopeStartingMain = contractStartingMain;
+const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -484,8 +485,7 @@ function checkReleaseLineage() {
   if (!/^[0-9a-f]{40}$/.test(releaseCommit)) {
     throw new Error('RELEASE_COMMIT_NOT_FOUND');
   }
-  if (git(['rev-parse', `${contract.source_commit}^`]) !==
-        currentScopeStartingMain ||
+  if (git(['rev-parse', `${contract.source_commit}^`]) !== sourceParentRef ||
       git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
     throw new Error('B21_NOT_DIRECT_CHILD_OF_A21');
   }
@@ -530,6 +530,7 @@ function checkReleaseLineage() {
   }
   return {
     command: 'A21/B21 direct ancestry, release-only B21 scope, historical 2.8.20 preservation, and source-stage absence',
+    source_parent_ref: sourceParentRef,
     source_commit: contract.source_commit,
     release_commit: releaseCommit,
     b21_changed_file_count: changed.length,

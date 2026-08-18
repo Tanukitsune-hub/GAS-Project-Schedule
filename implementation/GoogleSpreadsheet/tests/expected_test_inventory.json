@@ -1,7 +1,7 @@
 {
   "schema": "WORK_OS_TEST_INVENTORY_V1",
   "suite_count": 76,
-  "fingerprint": "74c18f796d63f998d246e365ff290d5b70d0dbe3f710dacbb7807152e7d20f33",
+  "fingerprint": "aee471f5819eff9f0a72819df22c09a2d46d78fb7aa0f5ad03a0efe945f3dfac",
   "suites": [
     "baseline_upgrade_test.js",
     "canonical_document_consistency_test.js",
