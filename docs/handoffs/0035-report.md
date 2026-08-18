@@ -77,6 +77,8 @@ product source, manifest, release bytes, or candidate identity.
 - Historical A20/B20 lineage and release-only scope: PASS.
 - Secret/local-state/transfer scan: PASS, 0 hits.
 - `git diff --check`: PASS on the final clean worktree.
+- Final-head GitHub Actions CI: PASS; the final run is recorded in Draft PR
+  `#50` after the report commit is pushed.
 - No merge commits after current main; current main is an ancestor of the
   integration head.
 
