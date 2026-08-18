@@ -8,6 +8,8 @@ remain immutable evidence.
 
 Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
+Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_CODE_FROZEN`
+
 ## D-048: one active candidate
 
 Work 0033 is the active Code `2.8.20-prepilot` with A20/B20. The active
@@ -101,7 +103,7 @@ access Gmail runtime, invoke an Apps Script function, or run Task, Review,
 Calendar, Setup, Diagnostics, Dashboard, trigger, or Automation operations.
 The manual Script Property configuration that was then described as the next
 boundary has since been completed by the user in the personal-synthetic target
-and is superseded by D-063.
+and is superseded by D-063 and D-064.
 
 ## D-061: Gemini v1beta transport endpoint
 
@@ -119,24 +121,39 @@ runtime in Codex.
 
 ## D-063: personal Gemini E2E convergence boundary after Work 0033
 
-The user has configured the Gemini credential in personal-synthetic Script
-Properties outside the repository. Readiness has passed and bounded
-user-controlled real Gemini attempts have occurred, but no real
-classification-to-Task E2E has completed yet.
+The user configured the Gemini credential in personal-synthetic Script
+Properties outside the repository. The final required live boundary was one
+fresh approved synthetic Gmail Message on Code `2.8.20-prepilot`, with prior
+failed, stuck, or terminal Messages retained as historical evidence and never
+reset or reused.
 
-The next live action is exactly one fresh approved synthetic Gmail Message on
-Code `2.8.20-prepilot`. Prior failed, stuck, or terminal Messages remain
-historical evidence and are never reset or reused. The selected Message is
-pinned exactly; no older resumable row may hijack the call.
+The pre-declared success condition was a successful strict classification and
+governed Task or valid Review outcome, with no processing error, no Calendar
+job for the fixture, and Automation consistently OFF. That boundary has now
+been satisfied and is closed by D-064.
 
-A successful strict classification and governed Task or valid Review outcome,
-with no processing error, no Calendar job for the fixture, and Automation OFF,
-completes the personal-environment E2E and triggers code freeze. After that,
-company-PC work is environment qualification only unless a company-specific
-BLOCKER is proven.
+## D-064: personal Gemini E2E passed; product code is frozen
 
-If the live call fails, the next repair is constrained to the smallest change
-supported by the new bounded code/stage, HTTP status, provider machine code,
-checkpoint, and failure-finalization evidence. Broad redesign, fallback
-providers/endpoints, and additional speculative qualification are not
-permitted without new material evidence.
+On 2026-08-18 the user supplied the bounded result from one fresh approved
+`Gemini synthetic validation (one request)` invocation on Code
+`2.8.20-prepilot`. The result was `COMPLETE`, processed one candidate, created
+one Task and one Review, recorded zero errors and zero Calendar jobs, reached
+checkpoint `DONE`, called AI, and left Automation `CONSISTENT`, disabled, with
+zero scheduled/clock triggers and no stored or canonical trigger presence.
+
+The exact privacy-safe review is recorded in
+`docs/handoffs/0033-live-e2e-review.md`. ChatGPT did not independently invoke
+Google Workspace or inspect the credential; the accepted evidence is the
+bounded user-visible output contract intentionally designed for this
+qualification boundary.
+
+This satisfies the pre-declared personal-environment Gemini E2E completion
+condition. Code `2.8.20-prepilot` therefore enters product-code freeze. No
+additional synthetic rerun, provider change, schema change, endpoint change,
+retry/fallback mechanism, or speculative hardening is justified by the current
+evidence.
+
+Company-PC / company-environment work is environment qualification only unless
+a distinct permission, network, OAuth, policy, or runtime BLOCKER is observed.
+Reopen source only for new material evidence of an environment-independent
+product defect or a failed required qualification check.
