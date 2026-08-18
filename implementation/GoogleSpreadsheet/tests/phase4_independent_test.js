@@ -18,7 +18,8 @@ const appsScriptRoot = path.join(repositoryRoot, 'apps-script-v2');
 
 function loadHarness() {
   const phase3HarnessPath = path.join(__dirname, 'phase3_local_test.js');
-  const source = fs.readFileSync(phase3HarnessPath, 'utf8');
+  const source = fs.readFileSync(phase3HarnessPath, 'utf8')
+    .replace(/\r\n/g, '\n');
   const marker = '\nconst tests = [];';
   const markerIndex = source.indexOf(marker);
   assert.notStrictEqual(
@@ -913,6 +914,10 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     .filter((name) => name.endsWith('.gs'))
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
+  const nonProviderGs = fs.readdirSync(appsScriptRoot)
+    .filter((name) => name.endsWith('.gs') && name !== '20_GeminiProvider.gs')
+    .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
+    .join('\n');
   const manifest = JSON.parse(fs.readFileSync(
     path.join(appsScriptRoot, 'appsscript.json'),
     'utf8'
@@ -942,8 +947,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     'https://www.googleapis.com/auth/calendar',
     'https://www.googleapis.com/auth/calendar.events',
     'https://www.googleapis.com/auth/calendar.events.owned',
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/script.external_request'
+    'https://www.googleapis.com/auth/drive'
   ].forEach((scope) => {
     assert.strictEqual(manifest.oauthScopes.includes(scope), false, scope);
   });
@@ -957,7 +961,7 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
   );
   assert.match(
     setupSource,
-    /S99_COMPLETE[\s\S]*READY_FOR_INDEPENDENT_REAUDIT/
+    /S99_COMPLETE[\s\S]*READY_FOR_PHASE8B_SANDBOX_RETRANSFER/
   );
   assert.strictEqual(/\bCalendar\./.test(diagnosticSource), false);
   assert.strictEqual(/\bCalendarApp\b/.test(diagnosticSource), false);
@@ -979,14 +983,26 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     /CALENDAR_REMOTE_VERIFICATION[\s\S]*'WARN'[\s\S]*NOT_EXECUTED/
   );
   assert.strictEqual(/ScriptApp\.newTrigger/.test(triggerSource), false);
-  assert.strictEqual(/\bUrlFetchApp\b/.test(allGs), false);
+  assert.strictEqual(/\bUrlFetchApp\b/.test(nonProviderGs), false);
   assert.match(
     triggerSource,
     /EDIT_HANDLER_FUNCTION[\s\S]*forSpreadsheet\(spreadsheet\)\.onEdit\(\)/
   );
-  assert.strictEqual(/getLastRow\s*\(/.test(allGs), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
   assert.strictEqual(
-    /GeminiAdapter|GoogleGenAI|generativelanguage\.googleapis/.test(allGs),
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
+  assert.strictEqual(
+    /GeminiAdapter|GoogleGenAI|generativelanguage\.googleapis/.test(nonProviderGs),
     false
   );
 });

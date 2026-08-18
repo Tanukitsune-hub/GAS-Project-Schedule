@@ -14,7 +14,8 @@ const path = require('path');
 const vm = require('vm');
 
 const phase3Path = path.resolve(__dirname, 'phase3_local_test.js');
-const phase3Source = fs.readFileSync(phase3Path, 'utf8');
+const phase3Source = fs.readFileSync(phase3Path, 'utf8')
+  .replace(/\r\n/g, '\n');
 const reportMarker = '\nconst summary = {\n';
 const reportIndex = phase3Source.lastIndexOf(reportMarker);
 if (reportIndex < 0) {
@@ -174,6 +175,29 @@ test('P5-I01_EXTERNAL_MOCK_HTTP_WORKER_PERSISTS_PROVENANCE', () => {
   assert.strictEqual(
     fixture.allTasks(fixture.taskSheet(spreadsheet)).length,
     1
+  );
+});
+
+test('P5-I05_EXTERNAL_VERTICAL_REVIEW_COUNT_INCLUDES_NEW_REVIEW_TASK', () => {
+  const spreadsheet = fixture.makeOperationalSpreadsheet();
+  const message = fixture.rawMessage('NEW_REVIEW', {
+    message_id: 'synthetic-phase5-review-count'
+  });
+  const preprocessed = fixture.seedPreprocessed(spreadsheet, message);
+  const external = externalAdapter([responseFor(preprocessed)]);
+  const result = Worker.processMockVerticalOnce({
+    spreadsheet,
+    gateway: fixture.makeVerticalGateway(message),
+    adapter: external.adapter,
+    now: () => new FixtureDate('2026-07-24T01:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(result.review_count, 1);
+  assert.strictEqual(external.transport.calls.length, 1);
+  assert.strictEqual(
+    fixture.allTasks(fixture.taskSheet(spreadsheet))[0].needs_review,
+    true
   );
 });
 

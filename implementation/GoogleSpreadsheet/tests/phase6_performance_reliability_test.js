@@ -149,10 +149,10 @@ test('P6-P09_CALENDAR_AND_LAYOUT_SIDE_EFFECTS_ARE_BOUNDED', () => {
   assert.strictEqual(/SpreadsheetApp\.flush\s*\(/.test(worker + gateway + triggers), false);
 });
 
-test('P6-P10_AUTOMATION_STAYS_EXPLICIT_AND_EXTERNAL_SCOPE_ABSENT', () => {
+test('P6-P10_AUTOMATION_STAYS_EXPLICIT_AND_EXTERNAL_SCOPE_IS_NARROW', () => {
   assert.strictEqual(/\bnewTrigger\s*\(/.test(setup), false);
   assert.match(triggers, /E_REAL_AI_TRANSPORT_NOT_IMPLEMENTED|REAL_AI_TRANSPORT_NOT_IMPLEMENTED/);
-  assert(!manifest.oauthScopes.includes(
+  assert(manifest.oauthScopes.includes(
     'https://www.googleapis.com/auth/script.external_request'
   ));
 });

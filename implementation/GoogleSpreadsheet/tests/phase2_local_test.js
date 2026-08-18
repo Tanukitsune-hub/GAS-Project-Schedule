@@ -112,6 +112,28 @@ class FakeSpreadsheet {
 
 let activeSpreadsheet = null;
 let lockAvailable = true;
+const webSafeDecodeInputs = [];
+
+function strictBase64DecodeWebSafe(value) {
+  const encoded = String(value);
+  webSafeDecodeInputs.push(encoded);
+  if (
+    encoded.length % 4 !== 0 ||
+    !/^[A-Za-z0-9_-]+={0,2}$/.test(encoded)
+  ) {
+    throw new Error('STRICT_WEB_SAFE_DECODE_REJECTED');
+  }
+  const unpadded = encoded.replace(/=+$/, '');
+  const suppliedPadding = encoded.length - unpadded.length;
+  const requiredPadding = (4 - (unpadded.length % 4)) % 4;
+  if (unpadded.length % 4 === 1 || suppliedPadding !== requiredPadding) {
+    throw new Error('STRICT_WEB_SAFE_DECODE_REJECTED');
+  }
+  return Array.from(Buffer.from(encoded, 'base64url')).map((byte) =>
+    byte > 127 ? byte - 256 : byte
+  );
+}
+
 const sandbox = {
   console,
   Date,
@@ -122,6 +144,11 @@ const sandbox = {
   String,
   Boolean,
   Array,
+  ArrayBuffer,
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Uint16Array,
   Error,
   RegExp,
   Utilities: {
@@ -132,10 +159,7 @@ const sandbox = {
       ).map((byte) => (byte > 127 ? byte - 256 : byte)),
     DigestAlgorithm: { SHA_256: 'SHA_256' },
     Charset: { UTF_8: 'UTF_8' },
-    base64DecodeWebSafe: (value) =>
-      Array.from(Buffer.from(String(value), 'base64url')).map((byte) =>
-        byte > 127 ? byte - 256 : byte
-      ),
+    base64DecodeWebSafe: strictBase64DecodeWebSafe,
     newBlob: (bytes) => ({
       getDataAsString: () =>
         Buffer.from(
@@ -223,6 +247,38 @@ function metadata(id, overrides = {}) {
 
 function base64Url(value) {
   return Buffer.from(String(value), 'utf8').toString('base64url');
+}
+
+function fetchSingleEncodedBody(data, options = {}) {
+  const messageId = options.message_id || 'synthetic-body-target';
+  const message = {
+    id: messageId,
+    internalDate: '1000',
+    payload: {
+      headers: [
+        { name: 'Subject', value: 'Synthetic subject' },
+        { name: 'From', value: 'noreply@example.invalid' }
+      ],
+      parts: [{
+        mimeType: 'text/plain',
+        filename: '',
+        body: {
+          data,
+          size: options.size === undefined ? 1 : options.size
+        }
+      }].concat(options.extra_parts || [])
+    }
+  };
+  installGmailFake({
+    labels: allFormalLabels(),
+    messages: { [messageId]: message }
+  });
+  return sandbox.WorkOsGmailGateway.fetchSelectedContent({
+    message_id: messageId,
+    thread_id: 'synthetic-body-thread',
+    stable_thread_key: `root:${messageId}`,
+    message_refs: [{ id: messageId, internal_date: 1000 }]
+  });
 }
 
 function installGmailFake(options = {}) {
@@ -677,7 +733,7 @@ test('P2-L07_SELECTED_BODY_FETCH_IS_BOUNDED_AND_SKIPS_ATTACHMENTS', () => {
             filename: 'secret.bin',
             body: {
               attachmentId: 'attachment-id',
-              data: base64Url('ATTACHMENT_SECRET'),
+              data: 'ATTACHMENT_SECRET+',
               size: 99
             }
           }
@@ -702,6 +758,223 @@ test('P2-L07_SELECTED_BODY_FETCH_IS_BOUNDED_AND_SKIPS_ATTACHMENTS', () => {
   assert.strictEqual(fake.calls.messageGet.length, 3);
   assert.strictEqual(JSON.stringify(output).includes('ATTACHMENT_SECRET'), false);
   assert.strictEqual(output.previous_messages.length, 2);
+});
+
+test('P2-L07A_GMAIL_BODY_BASE64URL_NORMALIZATION_IS_STRICT', () => {
+  const decodeStart = webSafeDecodeInputs.length;
+  const japanese = '日本語の合成本文';
+  assert.strictEqual(
+    fetchSingleEncodedBody(base64Url(japanese), {
+      message_id: 'synthetic-japanese',
+      size: Buffer.byteLength(japanese, 'utf8')
+    }).plain_body,
+    japanese
+  );
+
+  [
+    { text: 'a', padded: 'YQ==', unpadded: 'YQ' },
+    { text: 'ab', padded: 'YWI=', unpadded: 'YWI' }
+  ].forEach((fixture, index) => {
+    assert.strictEqual(
+      fetchSingleEncodedBody(fixture.padded, {
+        message_id: `synthetic-padded-${index}`,
+        size: Buffer.byteLength(fixture.text, 'utf8')
+      }).plain_body,
+      fixture.text
+    );
+    assert.strictEqual(
+      fetchSingleEncodedBody(fixture.unpadded, {
+        message_id: `synthetic-unpadded-${index}`,
+        size: Buffer.byteLength(fixture.text, 'utf8')
+      }).plain_body,
+      fixture.text
+    );
+  });
+
+  fetchSingleEncodedBody('-_8', {
+    message_id: 'synthetic-url-safe-alphabet',
+    size: 2
+  });
+  const normalizedInputs = webSafeDecodeInputs.slice(decodeStart);
+  assert.strictEqual(normalizedInputs.includes('YQ=='), true);
+  assert.strictEqual(normalizedInputs.includes('YWI='), true);
+  assert.strictEqual(normalizedInputs.includes('-_8='), true);
+  normalizedInputs.forEach((encoded) => {
+    assert.strictEqual(encoded.length % 4, 0);
+    assert.strictEqual(/[+/]/.test(encoded), false);
+  });
+
+  const malformedFixtures = [
+    'A',
+    'YQ=',
+    'YWI==',
+    'YQ===',
+    'PRIVATE_BODY+',
+    'PRIVATE/BODY',
+    'PRIVATE BODY'
+  ];
+  malformedFixtures.forEach((fixture, index) => {
+    let observed = null;
+    try {
+      fetchSingleEncodedBody(fixture, {
+        message_id: `synthetic-malformed-${index}`,
+        size: fixture.length
+      });
+    } catch (error) {
+      observed = error;
+    }
+    assert.notStrictEqual(observed, null);
+    assert.strictEqual(observed.code, 'E_GMAIL_BODY_DECODE');
+    const safeEvidence = JSON.stringify({
+      code: observed.code,
+      step: observed.step,
+      message: observed.message
+    });
+    assert.strictEqual(
+      observed.message,
+      'Gmail本文を安全にdecodeできませんでした。'
+    );
+    assert.strictEqual(safeEvidence.includes('PRIVATE_BODY'), false);
+    assert.strictEqual(safeEvidence.includes('PRIVATE/BODY'), false);
+    assert.strictEqual(safeEvidence.includes('synthetic-malformed'), false);
+  });
+
+  const longBody = 'x'.repeat(90000);
+  const truncated = fetchSingleEncodedBody(base64Url(longBody), {
+    message_id: 'synthetic-truncated-body',
+    size: Buffer.byteLength(longBody, 'utf8')
+  });
+  assert.strictEqual(truncated.body_transport_truncated, true);
+  assert.strictEqual(truncated.plain_body.length <= 80000, true);
+  assert.strictEqual(
+    webSafeDecodeInputs[webSafeDecodeInputs.length - 1].length % 4,
+    0
+  );
+});
+
+test('P2-L07B_GMAIL_BODY_BYTE_SEQUENCES_DECODE_WITHOUT_BASE64', () => {
+  const japanese = '日本語の合成本文';
+  const unsigned = Array.from(Buffer.from(japanese, 'utf8'));
+  const signed = unsigned.map((byte) => byte > 127 ? byte - 256 : byte);
+  const decodeStart = webSafeDecodeInputs.length;
+
+  [
+    signed,
+    unsigned,
+    new Int8Array(signed),
+    new Uint8Array(unsigned),
+    new Uint8ClampedArray(unsigned)
+  ].forEach((fixture, index) => {
+    const output = fetchSingleEncodedBody(fixture, {
+      message_id: `synthetic-byte-sequence-${index}`,
+      size: unsigned.length
+    });
+    assert.strictEqual(output.plain_body, japanese);
+    assert.strictEqual(output.body_transport_truncated, false);
+  });
+
+  assert.strictEqual(webSafeDecodeInputs.length, decodeStart);
+  assert.strictEqual(
+    fetchSingleEncodedBody('', {
+      message_id: 'synthetic-empty-string',
+      size: 0
+    }).plain_body,
+    ''
+  );
+  assert.strictEqual(
+    fetchSingleEncodedBody([], {
+      message_id: 'synthetic-empty-bytes',
+      size: 0
+    }).plain_body,
+    ''
+  );
+
+  const longBytes = new Array(90000).fill(120);
+  const truncated = fetchSingleEncodedBody(longBytes, {
+    message_id: 'synthetic-truncated-byte-sequence',
+    size: longBytes.length
+  });
+  assert.strictEqual(truncated.body_transport_truncated, true);
+  assert.strictEqual(truncated.plain_body.length, 80000);
+  assert.strictEqual(webSafeDecodeInputs.length, decodeStart);
+});
+
+test('P2-L07C_GMAIL_BODY_BYTE_SEQUENCE_VALIDATION_IS_STRICT_AND_PRIVATE', () => {
+  const sparse = [];
+  sparse.length = 2;
+  sparse[0] = 65;
+  const malformedFixtures = [
+    sparse,
+    [65, '66'],
+    [65, 66.5],
+    [NaN],
+    [Infinity],
+    [-129],
+    [256],
+    new Uint16Array([65]),
+    { 0: 65, length: 1, [Symbol.toStringTag]: 'Uint8Array' },
+    { 0: 65, length: 1 },
+    new Proxy([65], { get: (target, key) => key === 'length' ? 1.5 : target[key] }),
+    new Proxy([65], { get: (target, key) => key === 'length' ? NaN : target[key] }),
+    new Proxy([65], { get: (target, key) => key === 'length' ? Infinity : target[key] }),
+    new Proxy([65], { get: (target, key) => key === 'length' ? 320001 : target[key] })
+  ];
+  const decodeStart = webSafeDecodeInputs.length;
+
+  malformedFixtures.forEach((fixture, index) => {
+    let observed = null;
+    try {
+      fetchSingleEncodedBody(fixture, {
+        message_id: `synthetic-private-byte-${index}`,
+        size: 1
+      });
+    } catch (error) {
+      observed = error;
+    }
+    assert.notStrictEqual(observed, null);
+    assert.strictEqual(observed.code, 'E_GMAIL_BODY_DECODE');
+    assert.strictEqual(observed.stage, 'GMAIL_MESSAGE_BODY');
+    assert.strictEqual(observed.retryable, false);
+    const safeEvidence = JSON.stringify({
+      code: observed.code,
+      stage: observed.stage,
+      message: observed.message
+    });
+    assert.strictEqual(safeEvidence.includes('synthetic-private-byte'), false);
+    assert.strictEqual(safeEvidence.includes('320001'), false);
+    assert.strictEqual(safeEvidence.includes('Infinity'), false);
+  });
+
+  const malformedTail = new Array(80001).fill(65);
+  malformedTail[80000] = 256;
+  assert.throws(
+    () => fetchSingleEncodedBody(malformedTail, {
+      message_id: 'synthetic-private-malformed-tail',
+      size: malformedTail.length
+    }),
+    (error) => error.code === 'E_GMAIL_BODY_DECODE' && error.retryable === false
+  );
+  assert.strictEqual(webSafeDecodeInputs.length, decodeStart);
+});
+
+test('P2-L07D_ATTACHMENT_BYTE_DATA_IS_EXCLUDED_BEFORE_DECODE', () => {
+  const decodeStart = webSafeDecodeInputs.length;
+  const output = fetchSingleEncodedBody([115, 97, 102, 101], {
+    message_id: 'synthetic-byte-attachment-exclusion',
+    size: 4,
+    extra_parts: [{
+      mimeType: 'text/plain',
+      filename: 'private.txt',
+      body: {
+        attachmentId: 'synthetic-attachment',
+        data: [256, 'PRIVATE_ATTACHMENT'],
+        size: 99
+      }
+    }]
+  });
+  assert.strictEqual(output.plain_body, 'safe');
+  assert.strictEqual(JSON.stringify(output).includes('PRIVATE_ATTACHMENT'), false);
+  assert.strictEqual(webSafeDecodeInputs.length, decodeStart);
 });
 
 test('P2-L08_PREPROCESS_BOUNDARIES_UNICODE_AND_HASH', () => {
@@ -1288,6 +1561,7 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
       ...(phase6
         ? ['https://www.googleapis.com/auth/script.scriptapp']
         : []),
+      'https://www.googleapis.com/auth/script.external_request',
       'https://www.googleapis.com/auth/script.container.ui',
       'https://www.googleapis.com/auth/spreadsheets.currentonly',
       'https://www.googleapis.com/auth/userinfo.email'
@@ -1311,7 +1585,9 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
   );
   const sources = fs.readdirSync(appsScriptRoot)
     .filter((fileName) =>
-      fileName.endsWith('.gs') && fileName !== '99_TestHarness.gs'
+      fileName.endsWith('.gs') &&
+      fileName !== '99_TestHarness.gs' &&
+      fileName !== '20_GeminiProvider.gs'
     )
     .map((fileName) =>
       fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8')
@@ -1339,7 +1615,19 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
   prohibitedPatterns.forEach(
     (pattern) => assert.strictEqual(pattern.test(sources), false)
   );
-  assert.strictEqual(/\bgetLastRow\s*\(/.test(sources), false);
+  const taskRepositorySource = fs.readFileSync(
+    path.join(appsScriptRoot, '08_TaskRepository.gs'),
+    'utf8'
+  );
+  const appendPath = taskRepositorySource.slice(
+    taskRepositorySource.indexOf('function findLogicalEmptyRow'),
+    taskRepositorySource.indexOf('function createContext')
+  );
+  assert.strictEqual(/\bgetLastRow\s*\(/.test(appendPath), false);
+  assert.strictEqual(
+    /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskRepositorySource),
+    true
+  );
 });
 
 const summary = {

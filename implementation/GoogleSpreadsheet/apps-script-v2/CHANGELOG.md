@@ -1,5 +1,476 @@
 # Changelog
 
+## 2.8.20-prepilot - 2026-08-18 Gemini invalid-request schema compatibility
+
+- Add a deterministic provider-facing structured-output schema projection that
+  preserves the canonical output shape, required fields, primitive/null types,
+  and domain enums while removing provider-complexity constraints already
+  enforced by the strict application validator.
+- Preserve the `/v1beta/interactions` endpoint, `gemini-3.6-flash`, bounded
+  low-thinking generation settings, Work 0030 response parsing, Work 0032
+  diagnostics/finalization/candidate guards, one-call/no-retry behavior, and
+  Automation OFF.
+- Add structural schema metrics, canonical/provider drift, strict-validator,
+  and bounded `400 invalid_request` diagnostic regression coverage. No real
+  Gemini request or Apps Script runtime operation is executed.
+
+## 2.8.19-prepilot - 2026-08-17 Gemini runtime diagnostics hardening
+
+- Preserve the confirmed `/v1beta/interactions` endpoint, Work 0029/0030
+  request/parser contracts, Automation-OFF, no-retry, and no-fallback rules.
+- Add bounded privacy-safe provider status/code diagnostics without retaining
+  provider bodies, messages, headers, payloads, identifiers, or credentials.
+- Finalize failed Message State from a Message-only held-lock checkpoint with
+  explicit `PENDING` evidence when finalization itself cannot be recorded.
+- Pin synthetic validation to the exact selected message and fail closed on
+  stale, terminal, conflicting, or missing candidates without fallback scans.
+- Add local fake-transport, worker-finalization, candidate-routing, and privacy
+  regression coverage. No real credential, Gemini request, Gmail runtime, or
+  Apps Script function is executed.
+
+## 2.8.17-prepilot - 2026-08-12 Gemini thinking-step parser remediation
+
+- Accept only completed Gemini Interactions responses shaped as
+  `thought* model_output`, with exactly one final nonempty text output.
+- Treat thought signatures and summaries as opaque provider material: they are
+  not read, parsed, logged, hashed, persisted, or surfaced.
+- Reject unexpected, missing, duplicate, incomplete, failed, or malformed
+  response steps while preserving the existing strict AI Schema 2.0 validator,
+  one-call transport, no-retry behavior, and no Mock fallback.
+- Add local fake-transport regression coverage only. No real API key,
+  Gemini request, Gmail runtime, or Apps Script function is executed.
+
+## 2.8.16-prepilot - 2026-08-11 Gemini runtime activation remediation
+
+- Add no-argument `checkGeminiSyntheticReadiness()` and
+  `runGeminiSyntheticValidationOnce()` entrypoints plus test-mode menu actions.
+- Read the actual canonical Automation state before credential, Gmail, or
+  Provider access; fail closed unless scheduled Automation is consistently OFF.
+- Replace the opaque fixture with an exact UTF-8 fictional internal Task
+  message, a seven-day relative deadline, and a non-Calendar statement.
+- Restrict Provider structured output to the documented schema subset and add
+  bounded low-thinking/no-summary generation settings.
+- Repair active UTF-8 documentation and preserve historical A14/B14 and
+  A15/B15 release identities. No real key, Gemini request, Gmail runtime, or
+  Apps Script function is executed.
+
+## 2.8.15-prepilot - 2026-08-11 Gemini provider boundary and review observability
+
+- Add the isolated Gemini Interactions v1 provider with pinned
+  `gemini-3.6-flash`, strict AI Schema 2.0 structured output, fixed
+  privacy-safe transport errors, and Script Properties credential lookup.
+- Register `GEMINI` lazily without Mock fallback; keep external AI disabled by
+  default, Automation OFF, and real Gemini requests unexecuted.
+- Count Review-required Task/Review writes from result metadata in both Worker
+  paths, including newly inserted Review Tasks, unresolved targets, pending
+  changes, and conflicts.
+- Add network-free provider/readiness and synthetic-guard coverage while
+  preserving the Work 0018 Gmail byte-body decoder and all existing contracts.
+
+## 2.8.14-prepilot - 2026-08-10 Advanced Gmail byte-body decode repair
+
+- Inspect Advanced Gmail body data before any String coercion and preserve the
+  strict padded/unpadded base64url decoder for explicit String input.
+- Accept only dense, bounded Array, Int8Array, Uint8Array, or Uint8ClampedArray
+  byte input; validate every element, normalize unsigned bytes, and decode
+  directly through `Utilities.newBlob(bytes).getDataAsString('UTF-8')`.
+- Reject unsupported, sparse, fractional, non-finite, or out-of-range input as
+  fixed privacy-safe, non-retryable `E_GMAIL_BODY_DECODE` failures.
+- Preserve byte truncation, attachment exclusion, worker PREPROCESSED and
+  idempotency boundaries, Schema `2.6`, AI Schema `2.0`, Migration `3`,
+  `TEST_MODE=true`, and Automation `OFF`.
+
+## 2.8.13-prepilot - 2026-08-10 Gmail body decode compatibility repair
+
+- Normalize valid padded or unpadded Gmail API base64url body data to the
+  explicit padding required by Apps Script `Utilities.base64DecodeWebSafe()`.
+- Reject malformed alphabets, lengths, and padding with the existing fixed
+  `E_GMAIL_BODY_DECODE` fail-closed boundary and no body or identifier leakage.
+- Add strict local coverage for UTF-8 Japanese text, both padding widths,
+  URL-safe alphabet bytes, malformed data, truncation, and attachment exclusion.
+- Preserve Schema `2.6`, AI Schema `2.0`, Migration `3`, `TEST_MODE=true`, and
+  Automation `OFF`.
+
+## 2.8.12-prepilot - 2026-08-08 clean integration candidate
+
+- Selectively integrated the final Code 2.8.11 product source on the exact
+  Work 0002 starting main without donor merge commits or transfer artifacts.
+- Added the locked non-Google validation workflow, deterministic Phase 8B/8C
+  package tooling, canonical current-contract checks, and A12/B12 lineage gate.
+- Set the active contract to Code `2.8.12-prepilot`, Schema `2.6`, AI Schema
+  `2.0`, Migration `3`, Automation `OFF`, with no active transfer or deployment.
+- Capped the candidate at `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`; real
+  Workspace/runtime/provider behavior remains `NOT_EXECUTED`.
+
+## 2.8.11-prepilot - 2026-07-31 T1-01 bounded Diagnostic summary visibility remediation
+
+### 0004 documentation, validation, and transfer-boundary evidence
+
+- Corrected active Company-PC operator wording to the fixed T11/v2.8.11
+  boundary. Fixed T10 remains immutable historical old-byte/hash evidence
+  only; it is not a current carriage source.
+- Added a narrow canonical-document regression check for a contradictory
+  active T10 reference, old gate, or v2.8.10 path, while preserving clearly
+  labelled historical T10 evidence and the T11 manifest's old-hash baseline.
+- No Apps Script executable source, `appsscript.json`, release package,
+  transfer envelope, checksum, or fixed artifact changed. No Workspace or
+  company-PC operation occurred.
+
+### Fixed
+
+- `PHASE8B-T1-01-DIAGNOSTIC-SUMMARY-01`: Quick/Deep Diagnostic detail JSON
+  can be redacted and capped at the UI boundary, so aggregate status counts
+  alone could not prove which WARN/FAIL checks were present. The candidate now
+  emits a bounded summary before details with deterministic sorted unique IDs,
+  completeness flags, counts, closed side-effect Booleans, Task 50-column and
+  header states, and Ledger 21-column/hidden/protected/validator states.
+- A list overflow, duplicate, malformed identifier, or absent canonical
+  aggregate remains fail-closed (`REVIEW_REQUIRED` or `UNKNOWN`). Existing
+  checks, warnings, details, redaction, cap behavior, and strict failures are
+  retained unchanged.
+
+### Added
+
+- Local fake-runtime coverage for six synthetic WARN IDs, state-dependent
+  warning reporting without raw details, legacy Dashboard/AI/Calendar warning
+  retention, Task/Ledger aggregates, bounds overflow, UI ordering before
+  capped detail, and the all-false Quick/Deep side-effect contract.
+- This version does not run or authorize Setup, Dashboard refresh, Gmail,
+  Calendar, trigger, properties, Automation, or another Tranche action.
+
+## 2.8.10-prepilot - 2026-07-31 Dashboard write-visibility / module-skew remediation
+
+### Fixed
+
+- `PHASE8B-DASHBOARD-WRITE-VISIBILITY-01`: the v2.8.9 Setup-only
+  normalizer wrote the exact 17×3 Dashboard system block and then performed a
+  strict read in the same execution without first making queued Spreadsheet
+  writes visible. The v2.8.10 contract requires one
+  `SpreadsheetApp.flush()` after a write, reacquires a fresh exact Range, and
+  verifies all 51 cells before S90 may continue.
+- An unavailable flush API, fresh-Range/read failure, or a still-noncanonical
+  post-flush read fails closed as
+  `E_DASHBOARD_NUMBER_FORMAT_POSTCONDITION`. Safe Setup evidence is retained
+  even if the subsequent read-only Quick Diagnostic throws, and is limited to
+  a closed normalization state, write/flush/postcondition Booleans, checked
+  cell count, and noncanonical count; it contains no locale, format strings,
+  values, addresses, identifiers, or identities.
+- `WorkOsConfig`, `WorkOsSetup`, and `WorkOsDashboard` now participate in one
+  deterministic S90 module-contract check. A partial manual module replacement
+  fails before the format write as `E_MODULE_VERSION_SKEW`.
+
+### Added
+
+- Buffered fake-runtime coverage queues format writes until flush, proves the
+  historical no-flush sequence fails, verifies fresh-Range postconditions,
+  and covers unavailable/failed/stale flush, fresh-Range acquisition,
+  postcondition-read, and post-normalization Diagnostic failure paths.
+- Module-skew and canonical-document consistency coverage, a v2.8.10 workflow
+  visualization, and a non-sensitive repeated-finding incident/recovery note.
+
+### Version and status
+
+- Contract: Code `2.8.10-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; `TEST_MODE=true` for Phase 8B and Automation default `OFF`.
+- Source A10 contains source/tests/tools/canonical docs/specification/
+  visualization/incident/recovery/changelog material only. Source A10,
+  direct-child Release B10, fixed transfer T10, and evidence E10 remain
+  `PENDING_A10`, `PENDING_B10`, `PENDING_T10`, and `PENDING_E10` at this
+  source-edit stage.
+- Source-boundary gate:
+  `PHASE8B_SANDBOX_NO_GO_DASHBOARD_WRITE_VISIBILITY`. Real Workspace
+  retransfer/retest remains `NOT_EXECUTED`.
+
+## 2.8.9-prepilot - 2026-07-30 Phase 8B Dashboard number-format real-runtime remediation
+
+### Fixed
+
+- `PHASE8B-DASHBOARD-NUMBER-FORMAT-01`: the Dashboard inspection previously
+  detected a noncanonical number format but Setup had no ownership-proven,
+  deterministic way to establish it before S90. The exact 17×3 Dashboard
+  system block now uses one configured plain-text contract.
+- Normalization is restricted to Setup immediately before S90, only after the
+  exact canonical schema, owner-proven sheet/header Protection, exact seed or
+  owned/versioned block, and every non-format surface check are safe. Empty,
+  ambiguous, foreign, or user-owned surfaces fail closed without a write.
+- Quick and Deep Diagnostic remain read-only and require the canonical text
+  format exactly. Blank, default, or arbitrary formats remain conflicts; the
+  change does not broaden diagnostic acceptance.
+
+### Added
+
+- `phase8b_dashboard_number_format_real_runtime_test.js` has 12 native fake
+  runtime cases: exact 51-cell pre-normalization detection, seed/owned/full
+  state normalization, idempotence, Quick/Deep zero writes, foreign-surface
+  rejection, outside-block preservation, explicit refresh preservation,
+  S00–S80 resume invariants, and format API failure behavior.
+- v2.8.9 source/release/transfer builders, verifier templates, safe incident
+  and recovery guidance, and a v2.8.9 authority workflow visualization.
+
+### Version and status
+
+- Contract: Code `2.8.9-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; `TEST_MODE=true` for Phase 8B and Automation default `OFF`.
+- Source A9 contains source/tests/tools/canonical docs/visualization/incident/
+  recovery only; it excludes v2.8.9 packages, release report, and transfer.
+- Source-boundary gate:
+  `PHASE8B_SANDBOX_NO_GO_DASHBOARD_NUMBER_FORMAT`. Real Workspace
+  retransfer/retest remains `NOT_EXECUTED`.
+
+## 2.8.8-prepilot - 2026-07-30 Phase 8B Dashboard surface real-runtime remediation
+
+### Fixed
+
+- `PHASE8B-DASHBOARD-01`: replaced the invalid
+  `getEditors().length === 1` ownership assumption with internally proven
+  Spreadsheet-owner/effective-user equality plus `Protection.canEdit()`.
+  Both implicit-owner/no-explicit-editor and explicit-owner representations
+  are accepted; Shared Drive / unavailable owner, different user, foreign or
+  blank editors, domain edit, target audiences, warning-only, wrong/duplicate
+  protections, unprotected ranges, and foreign range protections fail closed.
+- Split the former Boolean `UNSAFE_DASHBOARD_SURFACE` path into closed safe
+  reason/subreason enums and counts for Protection, named range, value,
+  formula, validation, note, merge, hidden state, background, font, number
+  format, and seed/marker contracts. No identity, content, address, ID, or URL
+  is returned.
+- Quick Diagnostic remains byte-for-byte read-only; Setup resume preserves
+  S00–S80 resources, keeps S90/S99 incomplete on a real conflict, keeps
+  Automation OFF, and creates no five-minute trigger.
+
+### Added
+
+- `phase8b_dashboard_surface_real_runtime_test.js` covers explicit and
+  implicit owner representations, owner/effective-user mismatch, null owner,
+  `canEdit=false`, foreign access, domain/audience/warning controls,
+  wrong/duplicate/unprotected/overlapping protections, all surface conflict
+  classes, exact seed/marker states, and byte-stable diagnostics.
+- v2.8.8 release, Phase 8C, raw-Git-blob patch-manifest builders/verifiers,
+  current visualization, safe incident record, and recovery guidance.
+
+### Version and status
+
+- Contract: Code `2.8.8-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; `TEST_MODE=true` for Phase 8B and Automation default `OFF`.
+- Source A8 contains source/tests/tools/canonical docs/visualization/incident/
+  recovery only; it excludes v2.8.8 packages, release report, and transfer.
+- Source-boundary gate:
+  `PHASE8B_SANDBOX_NO_GO_DASHBOARD_SURFACE`. Real Workspace retransfer/retest
+  remains `NOT_EXECUTED`.
+
+## 2.8.7-prepilot - 2026-07-30 Phase 8B Quick Diagnostic real-runtime remediation
+
+### Fixed
+
+- `DASHBOARD_LAYOUT_OWNERSHIP`: Dashboard now recognizes only the exact
+  Setup-owned sheet/header protection control plane and exact three-row
+  pre-refresh seed. Equivalent native white background forms are accepted;
+  foreign controls/data/formulas/notes/names/merges/hidden state/non-default
+  formatting remain fail-closed.
+- `TASK_PROTECTIONS`: the shared canonical header geometry is rows 1–2 across
+  all 50 Task columns. Quick Diagnostic detects wrong range, access policy,
+  or duplicate protection.
+- `BLANK_ROW_BOOLEAN_VALUES`: identity-empty rows may retain only canonical
+  checkbox Boolean `false` materialized by Sheets; `true`, string Boolean,
+  non-checkbox data, and partial identity still fail closed.
+- `TASK_VALIDATION_TYPES`: all checkbox expectations derive from the schema
+  validation plan, including hidden `calendar_reconcile_required`.
+
+### Added
+
+- `phase8b_quick_diagnostic_real_runtime_test.js` reproduces S20/S30/S40
+  local runtime state and verifies the four findings plus negative
+  control-plane/data cases with no Quick Diagnostic writes.
+- Setup visibility regression now proves S00–S80/S90–S99 resume preserves
+  synthetic Gmail-label, Calendar, and edit-trigger resources and keeps
+  Automation/time-trigger creation OFF.
+- v2.8.7 release/verifier and raw-Git-blob company-PC patch-manifest tools;
+  canonical configuration-owned Dashboard legacy seed rows; a current
+  workflow visualization and safe incident/recovery guidance.
+
+### Version and status
+
+- Contract: Code `2.8.7-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; Automation default remains `OFF`.
+- Source A7 `be2e551da310a9b7c0611f3aef8899309a3d7b69` is source/tests/tools/
+  canonical-docs/visualization/incident/recovery guidance only. Direct-child
+  Release B7 `95bc7240d99124b245e188b8e646eccf6c3ead48` contains the generated
+  packages/report; C7 `ba175d3994c86dacc76bad3537df97e3e644dc09` changes only
+  the manifest verifier; fixed T7 `008c643b85c6b234ad489d946033cb9c06d32920`
+  contains the transfer envelope and raw-byte patch manifest.
+- Current gate is `READY_FOR_PHASE8B_SANDBOX_RETRANSFER` for controlled
+  carriage only. Real Google Workspace retransfer/retest is `NOT_EXECUTED`;
+  Automation remains `OFF`.
+
+## 2.8.6-prepilot - 2026-07-29 Phase 8B Setup Ledger visibility remediation
+
+### Fixed
+
+- `PHASE8B-SETUP-01`: a historical P10 first-time Setup applied Ledger schema
+  and then invoked strict authority validation before S30 made the Ledger
+  hidden. It stopped safely with `E_TASK_AUTHORITY_LEDGER_NOT_HIDDEN` at
+  `TASK_AUTHORITY`, with only S00/S10 complete.
+- S20 now uses an explicit Setup-owned, idempotent control-plane operation to
+  establish canonical Ledger protection and hidden visibility before authority
+  validation. Protection/visibility write failures remain deterministic and do
+  not persist S20 completion.
+- S30 and completed-Setup reruns reassert the same control plane before their
+  relevant authority validation. The validator was not weakened and no generic
+  repair path was added to diagnostics, Worker, Review, Calendar, Migration, or
+  edit restoration.
+
+### Added
+
+- `phase8b_setup_ledger_visibility_test.js` covers a fresh empty workbook, the
+  observed S00/S10 partial resume, visibility/protection failure injection,
+  S30 reassertion, completed rerun idempotence, fake hidden/protection behavior,
+  and no snapshot/note/raw-row fallback.
+
+### Version and status
+
+- Contract: Code `2.8.6-prepilot` / Schema `2.6` / AI Schema `2.0` /
+  Migration `3`; Automation default remains `OFF`.
+- The package-generation gate was `PHASE8B_SANDBOX_NO_GO_SETUP_BLOCKER`. The
+  failed P10 v2.8.5 package and transfer evidence are immutable historical
+  evidence and are not executable. Corrected-package real Workspace retest is
+  `NOT_EXECUTED`.
+- Source A6, direct-child Release B6, and the T6.1 fresh-clone proof now
+  establish `READY_FOR_PHASE8B_SANDBOX_RETRANSFER`. It permits carriage only;
+  it is not Phase 8B PASS, Phase 8C GO, production ready, or pilot ready.
+
+## 2.8.5-prepilot - 2026-07-29 R5 follow-up source correction
+
+### Fixed
+
+- An outstanding `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION` record can no
+  longer be erased by a later Task edit or `force_enqueue`. The compensation
+  target, deterministic Event ID, and due state remain durable until the
+  owned-event-only cleanup reaches a safe terminal result.
+- Compensation is claimed and revalidated as compensation even if a Task later
+  becomes authority-valid. Its commit CAS intentionally covers the Outbox but
+  not a changing Task, because the cleanup never writes a Task patch.
+
+### Added
+
+- F016 regression for an authority-valid, ineligible forced re-enqueue while
+  an owned Event compensation is pending. It proves that the record is not
+  rewritten to normal `NOOP` / `DONE`, the Event is deleted exactly once, and
+  the reappeared Task is not patched by compensation.
+
+### Version and status
+
+- The contract remains Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0`
+  / Migration `3`. This is a durability correction requiring a new source and
+  release provenance pair; it does not change the schema or Migration.
+
+## 2.8.5-prepilot - 2026-07-29 corrective source candidate
+
+### Fixed
+
+- Calendar reconciliation now takes a short lock-held final read through the
+  shared Task Authority Ledger validator immediately before external Calendar
+  I/O. An authority-excluded job is durably `CANCELLED` with no Calendar call.
+- Before Calendar I/O, the Outbox records
+  `DEADLINE_CALENDAR_ARMED`, a deterministic Event ID, and the claim
+  fingerprint. The arm survives crash recovery and concurrent re-enqueue so
+  external-I/O intent cannot be inferred from an error string or erased by a
+  competing Task edit.
+- If authority is lost after the arm or I/O, the worker schedules
+  `DEADLINE_CALENDAR_AUTHORITY_COMPENSATION`. It never patches the excluded
+  Task and deletes only a deterministic Event that passes the existing
+  ownership check. Foreign Events are retained and fail closed.
+
+### Added
+
+- F016 local fault injection for authority loss before I/O, loss after the
+  final revalidation, crash after create before commit, concurrent
+  ineligibility, foreign-event refusal, and manual-retry target preservation.
+- The Calendar authority-loss protocol design memo and visualization coverage.
+
+### Version and status
+
+- The contract remains Code `2.8.5-prepilot` / Schema `2.6` / AI Schema `2.0`
+  / Migration `3`; this is a corrective source revision, not a schema or
+  migration change.
+- Source-candidate gate remains `NO-GO_REMOTE_PUBLICATION` until a separately
+  generated Release commit, normal publication, fresh-clone verification, and
+  the independent re-audit evidence are complete. Real Google Workspace
+  execution remains `NOT_EXECUTED`.
+
+## 2.8.5-prepilot - 2026-07-28
+
+### Fixed
+
+- R4-01: replaced the unmarked Task `setValues` then `setNote` authority
+  double-write with a protected hidden `Task Authority Ledger` and a
+  versioned two-slot protocol.  A write records `PREPARED`, performs one full
+  visible Task-row write, and only then promotes `COMMITTED`; interruption
+  recovery deterministically promotes, rolls back, or isolates the row.  A
+  failed first insert that leaves both the Task row and the prior committed slot
+  blank discards only its empty PREPARED record, returns the original failure,
+  and remains retryable rather than being quarantined.
+- R4-02: removed snapshot-cell and note fallback authority.  Setup, Quick
+  Diagnostic, Deep Diagnostic, Task writes, Migration 3, edit restoration,
+  Worker reads, Review and Calendar use the shared fail-closed authority
+  validator.  Live raw rows and user-edited snapshot projections cannot seed
+  current authority.
+- R4-03: multi-row restoration now preserves every valid peer from its own
+  committed ledger slot even if another row is invalid.  Missing, copied,
+  duplicate, corrupt, or ambiguous authority is quarantined with a safe reason
+  code and excluded from operational Task consumers.
+- R4-04: Task rows 1 and 2 restore canonical internal IDs and headers after
+  direct or crossed-paste edits.  Schema 2.6 adds authority generation, hash,
+  and state columns; Migration 3 normalizes the hidden ledger before row work.
+- R4-05: added the current authority protocol design memo and offline workflow
+  visualization with canonical version/status metadata.
+- R4-06: records the Round 3 backup correction: the historic backup was
+  local-only and did not exist in GitHub.  Round 4 source/release provenance
+  remains split into A5 source and B5 release boundaries.
+- Calendar-intent acknowledgement now remains failure-recoverable after a
+  durable Outbox enqueue: a failed Task acknowledgement is counted as pending
+  recovery, retains the exact intent marker, and never reports a false
+  acknowledgement.
+
+### Added
+
+- `docs/TASK_AUTHORITY_PROTOCOL.md` with alternative analysis and
+  PREPARED/COMMITTED/recovery/rollback/quarantine fault matrix.
+- `visualizations/task_authority_protocol_v2_8_5.html`, a dependency-free
+  authority workflow visualization.
+- R4 local fault-injection and static provenance coverage for ledger failures,
+  first-insert rollback/retry, no-fallback behavior, quarantine, header
+  restoration, Calendar acknowledgement recovery, and canonical metadata.
+
+### Version and validation
+
+- Code/Schema/AI Schema/Migration: `2.8.5-prepilot` / `2.6` / `2.0` / `3`.
+- Automation default remains OFF; no deployment or `clasp push` is performed.
+- Final source-candidate regression/static run: 41/41 test files PASS; 604
+  PASS / 0 FAIL / 11 explicit fake-runtime skips; static validation passed
+  11/11 checks over 22 `.gs` files. Package validation is recorded only after
+  corrected Source A5.1 exists and packages are generated from that exact SHA.
+  Real Google Workspace behavior remains `NOT EXECUTED`.
+- R5 publication-consistency corrections add canonical JSON ordering,
+  validator-before-indexing, bounded ledger reads, durable orphan handling,
+  Calendar exclusion, and bounded Migration observation/reconciliation.
+- Existing Schema 2.6 ledger slots with the historical insertion-order hash
+  remain valid only after verification against that protected ledger payload;
+  the next committed generation uses canonical hashing. This is a migration
+  compatibility path, never a visible-row or snapshot-cell fallback.
+- Repeated copied-row isolation reuses its detached `qrow_` authority record,
+  and an exposed ledger protection editor list now fails closed unless it
+  contains only the effective user.
+- Authority-excluded Calendar jobs now use the durable `CANCELLED` outbox
+  state, which is accepted by the outbox reader and remains outside Calendar
+  external I/O.
+- The Phase 8B and 8C builders guard the actual immutable package inputs
+  (`apps-script-v2` and release tools/templates), while deliberately excluding
+  their generated `release/` output. This permits both packages to be built
+  sequentially from one clean Source commit without allowing source drift.
+- Current source-candidate status is `NO-GO_REMOTE_PUBLICATION` until normal
+  publication, remote SHA resolution, and fresh-clone verification. No Phase
+  8B GO/PASS, Phase 8C GO, production-ready, or pilot-ready declaration is
+  made.
+
 ## 2.8.4-prepilot - 2026-07-27
 
 ### Fixed

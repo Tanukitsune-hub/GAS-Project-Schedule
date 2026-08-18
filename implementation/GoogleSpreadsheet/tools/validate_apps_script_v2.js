@@ -31,8 +31,8 @@ function check(id, ok, details = {}) {
   });
 }
 
-check('GS_FILE_COUNT', files.length === 22, {
-  expected: 22,
+check('GS_FILE_COUNT', files.length === 23, {
+  expected: 23,
   actual: files.length
 });
 
@@ -162,9 +162,33 @@ check('WORKOS_NAMESPACES_RESOLVED', unresolvedNamespaces.length === 0, {
   unresolved: unresolvedNamespaces
 });
 
-check('NO_GET_LAST_ROW_APPEND_PATH', !/\.getLastRow\s*\(/.test(combined), {
-  occurrences: (combined.match(/\.getLastRow\s*\(/g) || []).length
+const taskAppendSource = records.find((record) =>
+  record.name === '08_TaskRepository.gs'
+).source;
+const appendFunctions = [
+  'findLogicalEmptyRow',
+  'insertTask'
+].map((name) => {
+  const match = taskAppendSource.match(new RegExp(
+    `function ${name}\\([\\s\\S]*?(?=\\n  function |\\n  return Object\\.freeze)`
+  ));
+  return { name, source: match ? match[0] : '' };
 });
+check('NO_GET_LAST_ROW_TASK_APPEND_PATH', appendFunctions.every((item) =>
+  !/\.getLastRow\s*\(/.test(item.source)
+), {
+  checked_functions: appendFunctions.map((item) => item.name),
+  ledger_get_last_row_is_bounded: /function readAuthorityLedgerContext[\s\S]*?AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(
+    taskAppendSource
+  )
+});
+check('AUTHORITY_LEDGER_BOUNDED_RECOVERY_CONTRACT',
+  /AUTHORITY_LEDGER_MAX_DATA_ROWS/.test(taskAppendSource) &&
+  /AUTHORITY_LEDGER_CHUNK_ROWS/.test(taskAppendSource) &&
+  /function reconcileMissingAuthorityRecords/.test(taskAppendSource) &&
+  /ORPHANED/.test(taskAppendSource),
+  {}
+);
 check('NO_SIMPLE_ONEDIT', !/^function\s+onEdit\s*\(/m.test(combined), {});
 
 const secretPatterns = [
