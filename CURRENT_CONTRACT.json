@@ -11,7 +11,7 @@
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "6d039189e67515c1d67f1efc11d6303827293f5a",
+  "source_commit": "c470ff80ab39c5d0c70d83a79b933040b7456cf8",
   "release_commit": "SELF",
   "phase8b": {
     "path": "implementation/GoogleSpreadsheet/release/v2.8.21-prepilot",
@@ -19,7 +19,7 @@
     "test_harness": true,
     "payload_files": 24,
     "package_files": 28,
-    "payload_sha256": "31ddb5db598cee143c77f77555200030dfe1ace13e83aa21fe36ca71d525e97e"
+    "payload_sha256": "469c1b8e5e015608eebcc120f97349f2dbab406be8febca63ba066697930a332"
   },
   "phase8c": {
     "path": "implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c",

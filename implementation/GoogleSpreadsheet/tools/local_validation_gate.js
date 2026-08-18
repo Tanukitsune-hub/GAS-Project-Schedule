@@ -26,6 +26,8 @@ const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const contractStartingMain = '4c28231dc08dc89ee7a529cb0a6192325263c810';
 const currentScopeStartingMain = contractStartingMain;
 const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
+const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
+const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -479,17 +481,58 @@ function isCleanTreeMaterialization(options = {}) {
 
 function checkReleaseLineage() {
   const contract = readContract();
+  if (git(['rev-parse', `${a21SourceCommit}^`]) !== sourceParentRef) {
+    throw new Error('A21_NOT_DIRECT_CHILD_OF_WORK_0036_REF');
+  }
+  if (git(['rev-parse', `${b21ReleaseCommit}^`]) !== a21SourceCommit) {
+    throw new Error('B21_NOT_DIRECT_CHILD_OF_A21');
+  }
+  if (gitObjectExists(`${a21SourceCommit}:${phase8bPath}`) ||
+      gitObjectExists(`${a21SourceCommit}:${phase8cPath}`)) {
+    throw new Error('A21_CONTAINS_GENERATED_RELEASE');
+  }
+  const b21Changed = git([
+    'diff-tree', '--no-commit-id', '--name-only', '-r', b21ReleaseCommit
+  ]).split(/\r?\n/).filter(Boolean).sort();
+  const invalidB21 = b21Changed.filter((file) =>
+    file !== 'CURRENT_CONTRACT.json' &&
+    !file.startsWith(`${phase8bPath}/`) &&
+    !file.startsWith(`${phase8cPath}/`)
+  );
+  if (invalidB21.length ||
+      !b21Changed.includes('CURRENT_CONTRACT.json') ||
+      !b21Changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
+      !b21Changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
+    throw new Error('B21_SCOPE_INVALID');
+  }
   const releaseCommit = git([
     'log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json'
   ]);
   if (!/^[0-9a-f]{40}$/.test(releaseCommit)) {
     throw new Error('RELEASE_COMMIT_NOT_FOUND');
   }
-  if (git(['rev-parse', `${contract.source_commit}^`]) !== sourceParentRef ||
-      git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
-    throw new Error('B21_NOT_DIRECT_CHILD_OF_A21');
+  const sourceParent = git(['rev-parse', `${contract.source_commit}^`]);
+  const sourceCorrectionChanged = git([
+    'diff-tree', '--no-commit-id', '--name-only', '-r', contract.source_commit
+  ]).split(/\r?\n/).filter(Boolean).sort();
+  if (contract.source_commit === a21SourceCommit) {
+    if (sourceParent !== sourceParentRef) {
+      throw new Error('A21_NOT_DIRECT_CHILD_OF_WORK_0036_REF');
+    }
+  } else if (
+    sourceParent !== b21ReleaseCommit ||
+    sourceCorrectionChanged.length !== 1 ||
+    sourceCorrectionChanged[0] !==
+      'implementation/GoogleSpreadsheet/apps-script-v2/99_TestHarness.gs'
+  ) {
+    throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');
   }
-  if (!gitObjectExists(`${contract.source_commit}^{commit}`) ||
+  if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
+    throw new Error('CURRENT_RELEASE_NOT_DIRECT_CHILD_OF_SOURCE');
+  }
+  if (!gitObjectExists(`${a21SourceCommit}^{commit}`) ||
+      !gitObjectExists(`${b21ReleaseCommit}^{commit}`) ||
+      !gitObjectExists(`${contract.source_commit}^{commit}`) ||
       !gitObjectExists(`${releaseCommit}^{commit}`)) {
     throw new Error('A21_OR_B21_COMMIT_MISSING');
   }
@@ -497,10 +540,6 @@ function checkReleaseLineage() {
     'merge-base', '--is-ancestor', releaseCommit, 'HEAD'
   ]);
   if (ancestor.status !== 0) throw new Error('B21_NOT_ANCESTOR_OF_HEAD');
-  if (gitObjectExists(`${contract.source_commit}:${phase8bPath}`) ||
-      gitObjectExists(`${contract.source_commit}:${phase8cPath}`)) {
-    throw new Error('A21_CONTAINS_GENERATED_RELEASE');
-  }
   const changed = git([
     'diff-tree', '--no-commit-id', '--name-only', '-r', releaseCommit
   ]).split(/\r?\n/).filter(Boolean).sort();
@@ -509,11 +548,11 @@ function checkReleaseLineage() {
     !file.startsWith(`${phase8bPath}/`) &&
     !file.startsWith(`${phase8cPath}/`)
   );
-  if (invalid.length) throw new Error('B21_SCOPE_INVALID');
+  if (invalid.length) throw new Error('CURRENT_RELEASE_SCOPE_INVALID');
   if (!changed.includes('CURRENT_CONTRACT.json') ||
       !changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
       !changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
-    throw new Error('B21_REQUIRED_SCOPE_MISSING');
+    throw new Error('CURRENT_RELEASE_REQUIRED_SCOPE_MISSING');
   }
   const historicalReleasePaths = [
     'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot',
@@ -529,11 +568,17 @@ function checkReleaseLineage() {
     throw new Error('HISTORICAL_2_8_20_RELEASE_CHANGED');
   }
   return {
-    command: 'A21/B21 direct ancestry, release-only B21 scope, historical 2.8.20 preservation, and source-stage absence',
+    command: 'A21/B21 direct ancestry, bounded Work 0036 source correction, current release-only scope, and historical 2.8.20 preservation',
+    a21_source_commit: a21SourceCommit,
+    b21_release_commit: b21ReleaseCommit,
+    source_correction_commit: contract.source_commit === a21SourceCommit
+      ? null
+      : contract.source_commit,
     source_parent_ref: sourceParentRef,
     source_commit: contract.source_commit,
     release_commit: releaseCommit,
-    b21_changed_file_count: changed.length,
+    b21_changed_file_count: b21Changed.length,
+    current_release_changed_file_count: changed.length,
     historical_release_changed_file_count: 0
   };
 }

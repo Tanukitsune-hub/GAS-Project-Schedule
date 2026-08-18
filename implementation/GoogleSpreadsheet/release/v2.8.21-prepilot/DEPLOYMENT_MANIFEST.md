@@ -6,7 +6,7 @@
 | Field | Value |
 |---|---|
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `6d039189e67515c1d67f1efc11d6303827293f5a` |
+| Source commit | `c470ff80ab39c5d0c70d83a79b933040b7456cf8` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.21-prepilot` |
 | Schema Version | `2.6` |
@@ -35,7 +35,7 @@ and production operations remain unexecuted.
 |---|---|
 | Payload files | `24` |
 | `.gs` files | `23` |
-| Canonical payload-list SHA-256 | `31ddb5db598cee143c77f77555200030dfe1ace13e83aa21fe36ca71d525e97e` |
+| Canonical payload-list SHA-256 | `469c1b8e5e015608eebcc120f97349f2dbab406be8febca63ba066697930a332` |
 
 | Relative path | SHA-256 |
 |---|---|
@@ -60,7 +60,7 @@ and production operations remain unexecuted.
 | `apps-script/18_Worker.gs` | `66c311d0eff8e237f0604e8e6953d46e4afafc4fc1da658eb22178290d2bd92a` |
 | `apps-script/19_RuntimeSettings.gs` | `106370ebf78c81266d061f690b3448902d40bf177f283d880fe3965ac6fc618f` |
 | `apps-script/20_GeminiProvider.gs` | `cebbe4842d4dae61457cca3440f23f4f3a6dd5195184fcba2232e66aa130dc1b` |
-| `apps-script/99_TestHarness.gs` | `4e642f0d710c0ce17b496550190e1bf3acbb3ef6bb88e09b0169804280b92c92` |
+| `apps-script/99_TestHarness.gs` | `b9f0f47d23943ac6f0cdb1b3a28d9c983980ae57716d7d6f74d9fb34d4a30a02` |
 | `apps-script/appsscript.json` | `e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe` |
 | `apps-script/Menu.gs` | `bfa8fd5efe5dfc554ae06eef3d8246164a92e1b5c3c80d63a6d2007fc9392989` |
 

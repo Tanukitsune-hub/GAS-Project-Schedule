@@ -2150,7 +2150,7 @@ var WorkOsTestHarness = (function () {
       ready: true,
       reasons: [],
       real_provider_connection: 'LOCAL_FAKE',
-      company_approval: 'SYNTHETIC_TEST_ONLY',
+      operator_approval: 'SYNTHETIC_TEST_ONLY',
       credential_storage_approval: 'SYNTHETIC_TEST_ONLY'
     };
   }
@@ -2161,7 +2161,7 @@ var WorkOsTestHarness = (function () {
       assertEqual(false, WorkOsConfig.AUTOMATION_ENABLED, 'default enabled');
       assertEqual(5, WorkOsConfig.AUTOMATION_INTERVAL_MINUTES, 'interval');
       assertEqual(
-        10,
+        1,
         WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN,
         'message cap'
       );

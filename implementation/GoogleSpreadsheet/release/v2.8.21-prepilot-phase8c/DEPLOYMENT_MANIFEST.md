@@ -7,7 +7,7 @@
 |---|---|
 | Package | `v2.8.21-prepilot-phase8c` |
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `6d039189e67515c1d67f1efc11d6303827293f5a` |
+| Source commit | `c470ff80ab39c5d0c70d83a79b933040b7456cf8` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.21-prepilot` |
 | Schema Version | `2.6` |
