@@ -28,6 +28,7 @@ const currentScopeStartingMain = contractStartingMain;
 const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
 const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
+const inventoryContractCommit = 'd779bee2bdf7015a951bba16aff6b869d4d45aad';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -520,7 +521,7 @@ function checkReleaseLineage() {
       throw new Error('A21_NOT_DIRECT_CHILD_OF_WORK_0036_REF');
     }
   } else if (
-    sourceParent !== b21ReleaseCommit ||
+    sourceParent !== inventoryContractCommit ||
     sourceCorrectionChanged.length !== 1 ||
     sourceCorrectionChanged[0] !==
       'implementation/GoogleSpreadsheet/apps-script-v2/99_TestHarness.gs'

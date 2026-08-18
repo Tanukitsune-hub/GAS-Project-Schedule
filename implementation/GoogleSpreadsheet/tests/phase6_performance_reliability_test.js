@@ -58,7 +58,7 @@ function test(id, body) {
 
 test('P6-P01_EXACT_AUTOMATION_LIMITS_ARE_CONFIGURED', () => {
   assert.match(config, /AUTOMATION_INTERVAL_MINUTES:\s*5\b/);
-  assert.match(config, /AUTOMATION_MAX_MESSAGES_PER_RUN:\s*10\b/);
+    assert.match(config, /AUTOMATION_MAX_MESSAGES_PER_RUN:\s*1\b/);
   assert.match(config, /AUTOMATION_MAX_SEARCH_THREADS:\s*100\b/);
   assert.match(config, /AUTOMATION_SEARCH_PAGE_SIZE:\s*25\b/);
   assert.match(config, /AUTOMATION_WORKER_SOFT_LIMIT_MS:\s*210000\b/);
