@@ -61,7 +61,7 @@ assert.match(decisions, /historical release identities/i);
 assert.match(decisions, /Work 0018 is Code `2\.8\.14-prepilot` with A14\/B14/);
 assert.match(decisions, /Work 0028 is Code[\s\S]*?`2\.8\.15-prepilot` with A15\/B15/);
 assert.match(decisions, /Work 0029 remains Code `2\.8\.16-prepilot`[\s\S]*?A16\/B16/);
-assert.match(decisions, /Work\s+0033\s+is the active Code `2\.8\.20-prepilot` with[\s\S]*?A20\/B20/);
+assert.match(decisions, /Work\s+0033\s+remains the frozen historical Code\s+`2\.8\.20-prepilot` with A20\/B20/);
 
 process.stdout.write(`${JSON.stringify({
   suite: 'work_0029_active_document_integrity',
