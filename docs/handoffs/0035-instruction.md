@@ -24,7 +24,7 @@ Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
 Work branch: `codex/0035-clean-main-integration`
 
-Exact instruction ref: `PENDING_THIS_COMMIT`
+Exact instruction ref: `SELF` — use the immutable Git commit supplied by ChatGPT in the execution message; that commit must contain this exact instruction file.
 
 Current main starting commit:
 
