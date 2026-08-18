@@ -91,13 +91,13 @@ function settingsSpreadsheet(overrides = {}) {
 
 test('R-RUNTIME-01_TYPED_SNAPSHOT_READS_SETTINGS_DATA_ONCE', () => {
   const spreadsheet = settingsSpreadsheet({
-    auto_max_messages: 4,
+    auto_max_messages: 1,
     manual_soft_limit_sec: 60,
     auto_soft_limit_sec: 120
   });
   const snapshot =
     runtimeContext.WorkOsRuntimeSettings.readSnapshot(spreadsheet);
-  assert.strictEqual(snapshot.automation_max_messages_per_run, 4);
+  assert.strictEqual(snapshot.automation_max_messages_per_run, 1);
   assert.strictEqual(snapshot.manual_worker_soft_limit_ms, 60000);
   assert.strictEqual(snapshot.automation_worker_soft_limit_ms, 120000);
   assert.strictEqual(spreadsheet.dataReadCount(), 1);
@@ -614,7 +614,7 @@ test('R-UX-03_PAUSED_ACTION_DEPENDS_ON_OPERATION', () => {
 test('R-META-01_PHASE_BOUNDARY_AND_VERSIONS_ARE_CURRENT', () => {
   const config = source('00_Config.gs');
   const setup = source('02_Setup.gs');
-  assert.match(config, /CODE_VERSION:\s*'2\.8\.20-prepilot'/);
+  assert.match(config, /CODE_VERSION:\s*'2\.8\.21-prepilot'/);
   assert.match(config, /SCHEMA_VERSION:\s*'2\.6'/);
   assert.match(config, /AI_SCHEMA_VERSION:\s*'2\.0'/);
   assert.match(config, /MIGRATION_VERSION:\s*'3'/);
