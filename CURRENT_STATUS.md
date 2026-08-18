@@ -4,10 +4,13 @@ Last updated: 2026-08-18
 
 Candidate version: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+Overall status: `PERSONAL_GEMINI_E2E_PASS_CODE_FROZEN`
 
-Work 0032 highest permitted status: `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`
-Work 0033 highest permitted status: `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR`
+Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+
+Work 0033 implementation status: `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR` — historical pre-runtime boundary, now satisfied.
+
+Personal Gemini E2E: `PASS`
 
 Automation: `OFF`
 
@@ -29,13 +32,17 @@ candidate pinning. Completed response grammar remains strictly
 `thought* model_output`; thought signatures and summaries are opaque and never
 retained or exposed. The active transport remains `/v1beta/interactions`.
 
-The Gemini credential is never stored in this repository. The user has already
-configured it manually in the personal-synthetic Apps Script target, and
-network-free readiness returned READY. User-controlled real Gemini attempts
-have reached the provider outside Codex, but Gemini E2E has not yet passed
-because no real classification and Task were completed. Work 0032 itself made
-no real Gemini request and prepared the next attempt to return bounded,
-actionable diagnostics if it fails.
+The Gemini credential is never stored in this repository. The user configured
+it manually in the personal-synthetic Apps Script target. On 2026-08-18 the
+user then executed one fresh approved synthetic-message validation on Code
+`2.8.20-prepilot`, and the bounded result satisfied the pre-declared personal
+Gemini E2E completion condition. The reviewed evidence is recorded in
+`docs/handoffs/0033-live-e2e-review.md`.
+
+Code `2.8.20-prepilot` is now frozen for product-code changes. Documentation,
+GitHub consolidation, and company-environment qualification may proceed without
+reopening product development. Reopen source only for new material evidence of
+an environment-independent defect or a failed required qualification check.
 
 ## Historical lineage
 
@@ -58,7 +65,9 @@ actionable diagnostics if it fails.
   Gemini, or invoking an Apps Script function in Codex.
 - Work 0033: Code `2.8.20-prepilot`, source A20 and release B20. It adds the
   minimal provider-facing schema compatibility projection while preserving
-  canonical AI Schema 2.0 validation and all Work 0032 safety boundaries.
+  canonical AI Schema 2.0 validation and all Work 0032 safety boundaries. The
+  subsequent user-controlled personal Gemini E2E passed and triggered code
+  freeze; historical `0033-report.md` remains unchanged.
 
 Historical handoffs and reports are immutable evidence. They are not rewritten
 to change their original claims.
@@ -67,21 +76,19 @@ to change their original claims.
 
 | Boundary | Status |
 |---|---|
-| Local source/static/test/release validation | Required and machine-checked |
-| Pre-Google and final-head GitHub Actions validation | PASS |
-| Work 0032 real Gemini request by Codex | `0` |
-| Work 0032 Gmail/Task/Review/Calendar runtime by Codex | `0` |
+| Local source/static/test/release validation | PASS / machine-checked |
+| Pre-Google and final-head GitHub Actions validation before live E2E | PASS |
+| Work 0033 real Gemini request by Codex | `0` |
 | Personal-sandbox credential configuration by user | `CONFIGURED_OUTSIDE_REPOSITORY` |
-| Personal-sandbox real Gemini call | `EXECUTED`; E2E not yet PASS |
-| Latest pre-2.8.20 live attempt | Failed at provider request schema; historical state retained |
-| Next permitted action | One fresh exact synthetic-message retry on Code `2.8.20-prepilot` |
+| Personal-sandbox fresh Code `2.8.20-prepilot` Gemini E2E | `PASS` |
+| E2E result | `COMPLETE`; 1 processed; 1 Task; 1 Review; 0 errors; checkpoint `DONE` |
+| Calendar job for synthetic fixture | `0` |
+| Automation after E2E | `CONSISTENT`; disabled; zero scheduled/clock triggers |
+| Product-code state | `FROZEN` |
 | Company/production resource access | `NOT_AUTHORIZED` |
 
-The next boundary is not API-key entry. Use one fresh exact synthetic Gmail
-Message, ensure only that fresh Message carries `手動/取込`, and invoke
-`Gemini synthetic validation (one request)` once on Code `2.8.20-prepilot`.
-Prior failed or stuck Messages remain evidence and must not be reused. If the
-attempt succeeds, the personal-environment Gemini E2E completion condition is
-met and the candidate can move to code freeze. If it fails, the bounded Work
-OS code/stage, provider HTTP status and machine code, checkpoint, and
-failure-finalization state are the sole basis for one minimal follow-up repair.
+The personal version is practically complete. The next product boundary is
+company-PC / company-environment qualification, not further feature development.
+A company-specific permission, network, OAuth, policy, or runtime failure may
+create a new bounded qualification or repair Work; absent such evidence, do not
+reopen the frozen source.
