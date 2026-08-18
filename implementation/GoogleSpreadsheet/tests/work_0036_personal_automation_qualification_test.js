@@ -141,7 +141,7 @@ test('WORK_0036_QUERY_IS_EXACT_SUBJECT_AND_BOUNDARY_IS_RECHECKED', () => {
   );
   assert.match(
     gatewaySource,
-    /qualificationOnly \? WorkOsConfig\.AUTOMATION_GMAIL_QUERY/
+    /qualificationOnly\s*\n\s*\?\s*WorkOsConfig\.AUTOMATION_GMAIL_QUERY/
   );
 });
 
