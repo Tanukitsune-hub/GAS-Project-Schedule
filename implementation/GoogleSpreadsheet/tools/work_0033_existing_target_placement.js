@@ -54,7 +54,7 @@ const sourceStatePath = path.join(
 const previousPlacementStatePath = path.join(
   moduleRoot, '.clasp-work-0032', 'work-0032-execution-state.json'
 );
-const exactBranch = 'codex/0033-gemini-runtime-diagnostics-hardening';
+const exactBranch = 'codex/0033-gemini-invalid-request-schema-compatibility';
 const instructionHead = '020c20997288457e03fedc4a4c9aaed41886b8a4';
 
 class GateError extends Error {

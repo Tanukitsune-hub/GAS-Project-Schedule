@@ -112,7 +112,7 @@ test('WORK_0033_HAS_DISTINCT_ONE_USE_LOCAL_STATE', () => {
 });
 
 test('EXACT_BRANCH_AND_INSTRUCTION_HEAD_ARE_PINNED', () => {
-  assert.strictEqual(exactBranch, 'codex/0033-gemini-runtime-diagnostics-hardening');
+  assert.strictEqual(exactBranch, 'codex/0033-gemini-invalid-request-schema-compatibility');
   assert.strictEqual(instructionHead, '020c20997288457e03fedc4a4c9aaed41886b8a4');
   assert.strictEqual(isExactBranch(exactBranch), true);
   assert.strictEqual(isExactBranch('codex/0015-synthetic-gmail-mock-task-e2e'), false);
