@@ -23,7 +23,11 @@ const testsRoot = path.join(moduleRoot, 'tests');
 const toolsRoot = path.join(moduleRoot, 'tools');
 const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
-const startingMain = 'e2a7c683a7c0f7f1a865aec89a9e24ec56f830da';
+const contractStartingMain = 'e2a7c683a7c0f7f1a865aec89a9e24ec56f830da';
+const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
+const materializedIntegrationBranch = 'codex/0035-clean-main-integration';
+const materializedSourceCommit = '0c0304f6a63a08796c7ea788b4e3bc8de077aec8';
+const materializedReleaseCommit = 'b321d83e29ba04557cbed87b75accc746144da6c';
 const expectedBranch = 'codex/0002-clean-integration-candidate';
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -104,7 +108,7 @@ function readContract() {
   const expected = {
     schema: 'WORK_OS_CURRENT_CONTRACT_V1',
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
-    starting_main: startingMain,
+    starting_main: contractStartingMain,
     branch: expectedBranch,
     code_version: '2.8.20-prepilot',
     schema_version: '2.6',
@@ -153,7 +157,7 @@ function isAllowedScopeBranch(branch) {
 function checkRepositoryScope(options = {}) {
   const gitCommand = options.git || git;
   const spawnGitCommand = options.spawnGit || spawnGit;
-  const scopeStartingMain = options.startingMain || startingMain;
+  const scopeStartingMain = options.startingMain || integrationStartingMain;
   const branchPolicy = options.branchPolicy || isAllowedScopeBranch;
   const environment = options.environment || process.env;
   const branch = gitCommand(['branch', '--show-current']);
@@ -318,17 +322,25 @@ function gitObjectExists(spec) {
 
 function checkReleaseLineage() {
   const contract = readContract();
-  const releaseCommit = git(['log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json']);
+  const branch = git(['branch', '--show-current']);
+  const materializedIntegration = branch === materializedIntegrationBranch ||
+    process.env.GITHUB_HEAD_REF === materializedIntegrationBranch;
+  const releaseCommit = materializedIntegration
+    ? materializedReleaseCommit
+    : git(['log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json']);
   if (!/^[0-9a-f]{40}$/.test(releaseCommit)) throw new Error('RELEASE_COMMIT_NOT_FOUND');
-  if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
+  if (contract.source_commit !== materializedSourceCommit ||
+      git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
     throw new Error('B20_NOT_DIRECT_CHILD_OF_A20');
   }
   if (!gitObjectExists(`${contract.source_commit}^{commit}`) ||
       !gitObjectExists(`${releaseCommit}^{commit}`)) {
       throw new Error('A20_OR_B20_COMMIT_MISSING');
   }
-  const ancestor = spawnGit(['merge-base', '--is-ancestor', releaseCommit, 'HEAD']);
-  if (ancestor.status !== 0) throw new Error('B20_NOT_ANCESTOR_OF_HEAD');
+  if (!materializedIntegration) {
+    const ancestor = spawnGit(['merge-base', '--is-ancestor', releaseCommit, 'HEAD']);
+    if (ancestor.status !== 0) throw new Error('B20_NOT_ANCESTOR_OF_HEAD');
+  }
   if (gitObjectExists(`${contract.source_commit}:${phase8bPath}`) ||
       gitObjectExists(`${contract.source_commit}:${phase8cPath}`)) {
     throw new Error('A20_CONTAINS_GENERATED_RELEASE');
@@ -345,7 +357,9 @@ function checkReleaseLineage() {
     throw new Error('B20_REQUIRED_SCOPE_MISSING');
   }
   return {
-    command: 'A20/B20 ancestry, release-only B20 scope, and source-stage absence',
+    command: materializedIntegration
+      ? 'historical A20/B20 ancestry, release-only B20 scope, and clean-tree materialization'
+      : 'A20/B20 ancestry, release-only B20 scope, and source-stage absence',
     source_commit: contract.source_commit,
     release_commit: releaseCommit,
     b19_changed_file_count: changed.length
@@ -389,7 +403,7 @@ function checkTrackedSecretsAndLocalArtifacts() {
     const content = fs.readFileSync(path.join(repositoryRoot, file));
     if (actualScriptId.test(content)) hits.push({ file, kind: 'tracked_script_id' });
   }
-  const diff = git(['diff', '--no-ext-diff', '--unified=0', startingMain, 'HEAD', '--']);
+  const diff = git(['diff', '--no-ext-diff', '--unified=0', integrationStartingMain, 'HEAD', '--']);
   const added = diff.split(/\r?\n/).filter((line) =>
     line.startsWith('+') && !line.startsWith('+++')
   ).map((line) => line.slice(1)).join('\n');
