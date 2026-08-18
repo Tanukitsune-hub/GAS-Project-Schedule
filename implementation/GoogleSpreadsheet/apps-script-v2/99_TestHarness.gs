@@ -974,7 +974,7 @@ var WorkOsTestHarness = (function () {
       assertEqual(before, after, 'invalid output changed Task rows');
     }));
 
-    tests.push(runTest('P3-A19_INVALID_JSON_NO_TASK_SIDE_EFFECT', function () {
+    tests.push(runTest('P3-A20_INVALID_JSON_NO_TASK_SIDE_EFFECT', function () {
       var before = WorkOsTaskRepository.createContext(sheet).logicalRows.length;
       var rejected = false;
       try {

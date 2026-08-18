@@ -193,6 +193,44 @@ var WorkOsGeminiProvider = (function () {
     return WorkOsAiAdapter.getOutputJsonSchema();
   }
 
+  function providerOutputSchema() {
+    var canonical = outputSchema();
+    var providerOnlyConstraints = [
+      'additionalProperties',
+      'format',
+      'minimum',
+      'maximum',
+      'minItems',
+      'maxItems'
+    ];
+
+    function project(value) {
+      if (Array.isArray(value)) {
+        return value.map(project);
+      }
+      if (!value || typeof value !== 'object') {
+        return value;
+      }
+      var projected = {};
+      Object.keys(value).forEach(function (key) {
+        if (providerOnlyConstraints.indexOf(key) !== -1) {
+          return;
+        }
+        if (key === 'properties') {
+          projected.properties = {};
+          Object.keys(value.properties || {}).forEach(function (field) {
+            projected.properties[field] = project(value.properties[field]);
+          });
+          return;
+        }
+        projected[key] = project(value[key]);
+      });
+      return projected;
+    }
+
+    return project(canonical);
+  }
+
   function promptForInput(input) {
     var serialized;
     try {
@@ -224,7 +262,7 @@ var WorkOsGeminiProvider = (function () {
       response_format: {
         type: 'text',
         mime_type: 'application/json',
-        schema: outputSchema()
+        schema: providerOutputSchema()
       },
       generation_config: {
         thinking_level: 'low',

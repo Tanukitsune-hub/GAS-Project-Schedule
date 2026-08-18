@@ -7,27 +7,27 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.19-prepilot` |
+| Code | `2.8.20-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Machine gate | `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` |
-| Work 0032 highest permitted status | `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY` |
+| Work 0033 highest permitted status | `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR` |
 | Automation | `OFF` |
 | Environment | `LOCAL_NON_GOOGLE` plus separately controlled personal sandbox |
 
 The current payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and the release
-verifiers bind the source A19 and direct-child release B19.
+verifiers bind the source A20 and direct-child release B20.
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.19-prepilot/`: `TEST_MODE=true`,
+- `implementation/GoogleSpreadsheet/release/v2.8.20-prepilot/`: `TEST_MODE=true`,
   Automation OFF, harness included.
-- `implementation/GoogleSpreadsheet/release/v2.8.19-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.20-prepilot-phase8c/`:
   only the audited `TEST_MODE=false` transform, with the harness excluded.
 
-## Work 0032 Gemini runtime boundary
+## Work 0033 Gemini provider-schema boundary
 
 The source uses the Gemini Interactions creation endpoint
 `/v1beta/interactions` and preserves the strict `thought* model_output` grammar.
@@ -40,8 +40,10 @@ persisted.
 External-AI failure finalization is Message-only and reports `RECORDED` when
 the durable failure checkpoint is saved or an explicit safe `PENDING` state
 when that checkpoint cannot be confirmed. Synthetic validation pins one exact
-candidate and does not fall back to generic eligible rows. Work 0032 itself
-made no real Gemini request.
+candidate and does not fall back to generic eligible rows. Work 0033 projects
+the canonical AI Schema 2.0 into a smaller provider-facing schema while the
+strict application validator remains authoritative. Work 0033 itself made no
+real Gemini request.
 
 Work 0018 remains Code `2.8.14-prepilot` A14/B14. Work 0028 remains Code
 `2.8.15-prepilot` A15/B15. Work 0029 remains Code `2.8.16-prepilot` A16/B16.
@@ -58,7 +60,7 @@ pnpm run verify:local
 ```
 
 The gate validates JSON/YAML, Apps Script inventory and syntax, every current
-test suite, deterministic release packages, A19/B19 lineage, active document
+test suite, deterministic release packages, A20/B20 lineage, active document
 integrity, and secret/local-state exclusions. It performs no real Google,
 OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.
 

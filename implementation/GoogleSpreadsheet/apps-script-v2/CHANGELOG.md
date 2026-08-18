@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.8.20-prepilot - 2026-08-18 Gemini invalid-request schema compatibility
+
+- Add a deterministic provider-facing structured-output schema projection that
+  preserves the canonical output shape, required fields, primitive/null types,
+  and domain enums while removing provider-complexity constraints already
+  enforced by the strict application validator.
+- Preserve the `/v1beta/interactions` endpoint, `gemini-3.6-flash`, bounded
+  low-thinking generation settings, Work 0030 response parsing, Work 0032
+  diagnostics/finalization/candidate guards, one-call/no-retry behavior, and
+  Automation OFF.
+- Add structural schema metrics, canonical/provider drift, strict-validator,
+  and bounded `400 invalid_request` diagnostic regression coverage. No real
+  Gemini request or Apps Script runtime operation is executed.
+
 ## 2.8.19-prepilot - 2026-08-17 Gemini runtime diagnostics hardening
 
 - Preserve the confirmed `/v1beta/interactions` endpoint, Work 0029/0030

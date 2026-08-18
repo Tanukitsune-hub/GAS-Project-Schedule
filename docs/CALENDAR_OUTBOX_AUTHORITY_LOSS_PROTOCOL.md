@@ -1,4 +1,4 @@
-# Calendar Outbox and Authority-Loss Protocol - Code 2.8.19-prepilot
+# Calendar Outbox and Authority-Loss Protocol - Code 2.8.20-prepilot
 
 Sheets Task state is authoritative. Calendar is an auxiliary projection of
 eligible, important deadlines. Every action is derived from a versioned,
@@ -12,6 +12,6 @@ system's deterministic ownership markers; foreign or ambiguous events fail
 closed.
 
 Local failure-injection and recovery suites cover these rules. Real Calendar
-CRUD, Gmail, OAuth, triggers, locks, quotas, and Work 0032 runtime operations
-remain `NOT_EXECUTED`. Work 0032 does not invoke Calendar or any Apps Script
+CRUD, Gmail, OAuth, triggers, locks, quotas, and Work 0033 runtime operations
+remain `NOT_EXECUTED`. Work 0033 does not invoke Calendar or any Apps Script
 function.

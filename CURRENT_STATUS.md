@@ -2,11 +2,12 @@
 
 Last updated: 2026-08-18
 
-Candidate version: Code `2.8.19-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
 Work 0032 highest permitted status: `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`
+Work 0033 highest permitted status: `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR`
 
 Automation: `OFF`
 
@@ -19,11 +20,12 @@ only the established `TEST_MODE` transform with the harness excluded.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers bind the
 source and release commits.
 
-The source contains the isolated Gemini Interactions provider, strict AI
-Schema 2.0 post-response validation, exact synthetic fixture guards, bounded
-low-thinking generation settings, the actual runtime Automation-OFF guard,
-privacy-safe provider diagnostics, Message-only failure finalization, and
-exact synthetic candidate pinning. Completed response grammar remains strictly
+The source contains the isolated Gemini Interactions provider, a smaller
+provider-facing structured-output schema projection, strict AI Schema 2.0
+post-response validation, exact synthetic fixture guards, bounded low-thinking
+generation settings, the actual runtime Automation-OFF guard, privacy-safe
+provider diagnostics, Message-only failure finalization, and exact synthetic
+candidate pinning. Completed response grammar remains strictly
 `thought* model_output`; thought signatures and summaries are opaque and never
 retained or exposed. The active transport remains `/v1beta/interactions`.
 
@@ -54,6 +56,9 @@ actionable diagnostics if it fails.
   privacy-safe Gemini provider diagnostics, Message failure finalization, and
   exact synthetic candidate routing without configuring a key, requesting
   Gemini, or invoking an Apps Script function in Codex.
+- Work 0033: Code `2.8.20-prepilot`, source A20 and release B20. It adds the
+  minimal provider-facing schema compatibility projection while preserving
+  canonical AI Schema 2.0 validation and all Work 0032 safety boundaries.
 
 Historical handoffs and reports are immutable evidence. They are not rewritten
 to change their original claims.
@@ -68,15 +73,15 @@ to change their original claims.
 | Work 0032 Gmail/Task/Review/Calendar runtime by Codex | `0` |
 | Personal-sandbox credential configuration by user | `CONFIGURED_OUTSIDE_REPOSITORY` |
 | Personal-sandbox real Gemini call | `EXECUTED`; E2E not yet PASS |
-| Latest pre-2.8.19 live attempt | Failed before classification/Task; historical state retained |
-| Next permitted action | One fresh exact synthetic-message retry on Code `2.8.19-prepilot` |
+| Latest pre-2.8.20 live attempt | Failed at provider request schema; historical state retained |
+| Next permitted action | One fresh exact synthetic-message retry on Code `2.8.20-prepilot` |
 | Company/production resource access | `NOT_AUTHORIZED` |
 
 The next boundary is not API-key entry. Use one fresh exact synthetic Gmail
 Message, ensure only that fresh Message carries `手動/取込`, and invoke
-`Gemini synthetic validation (one request)` once. Prior failed or stuck
-Messages remain evidence and must not be reused. If the attempt succeeds, the
-personal-environment Gemini E2E completion condition is met and the candidate
-can move to code freeze. If it fails, the bounded Work OS code/stage, provider
-HTTP status and machine code, checkpoint, and failure-finalization state are
-the sole basis for one minimal follow-up repair.
+`Gemini synthetic validation (one request)` once on Code `2.8.20-prepilot`.
+Prior failed or stuck Messages remain evidence and must not be reused. If the
+attempt succeeds, the personal-environment Gemini E2E completion condition is
+met and the candidate can move to code freeze. If it fails, the bounded Work
+OS code/stage, provider HTTP status and machine code, checkpoint, and
+failure-finalization state are the sole basis for one minimal follow-up repair.

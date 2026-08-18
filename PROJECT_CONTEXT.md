@@ -6,11 +6,11 @@ Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.19-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0032 boundary: `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`
+Work 0033 boundary: `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR`
 
 ## Purpose
 
@@ -28,13 +28,15 @@ derived view. Automation is OFF.
 - Authority: protected hidden 21-column Task Authority Ledger.
 - AI Schema: provider-neutral `2.0`; strict application validation remains
   authoritative after any Provider response.
+- Provider-facing schema: deterministic compatibility projection of AI Schema
+  2.0; canonical application validation remains unchanged and authoritative.
 - Provider: Gemini is registered behind explicit approval and credential
   gates. The credential value exists only in the user's personal-synthetic
   Script Properties and is never stored or inspected by the repository or
   Codex. Work 0032 itself does not call the Provider.
-- Release: Code `2.8.19-prepilot`, Schema `2.6`, Migration `3`.
+- Release: Code `2.8.20-prepilot`, Schema `2.6`, Migration `3`.
 
-## Work 0032 Gemini transport surface
+## Work 0033 Gemini schema-compatibility transport surface
 
 The provider uses the Gemini Interactions creation endpoint
 `https://generativelanguage.googleapis.com/v1beta/interactions` and retains
@@ -58,10 +60,11 @@ validation pins the exact selected Message and does not fall through to an
 older eligible or resumable Message State row.
 
 Work 0030 remains the historical A17/B17 parser candidate. Work 0031 remains
-the historical A18/B18 endpoint candidate. Work 0032 is the active A19/B19
-diagnostics candidate. The existing personal-synthetic target was used only
-for the guarded Work 0032 source placement; no credential value or private
-identifier belongs in evidence.
+the historical A18/B18 endpoint candidate. Work 0032 remains the historical
+A19/B19 diagnostics candidate. Work 0033 is the active A20/B20 schema-
+compatibility candidate. The existing personal-synthetic target may be used
+only for the guarded Work 0033 source placement; no credential value or
+private identifier belongs in evidence.
 
 ## Current live validation boundary
 
@@ -69,8 +72,8 @@ The user has manually configured the Gemini key outside the repository and
 network-free readiness passed. User-controlled real Gemini calls have reached
 the Provider in the personal sandbox, but the classification-to-Task E2E has
 not yet completed. The latest live attempt occurred before Code
-`2.8.19-prepilot` diagnostics were available and is retained as historical
-failure evidence.
+`2.8.20-prepilot` schema compatibility is available; the prior
+`2.8.19-prepilot` diagnostics attempt remains historical failure evidence.
 
 The next permitted action is one fresh exact synthetic Gmail Message with
 `手動/取込`, followed by one invocation of
@@ -78,7 +81,7 @@ The next permitted action is one fresh exact synthetic Gmail Message with
 Messages are not reset or reused. A success completes the personal-environment
 Gemini E2E and moves the candidate to code freeze. A failure must be narrowed
 only from the bounded safe diagnostic and checkpoint fields returned by Work
-0032.
+0032 or a later authorized Work.
 
 ## Assurance and privacy
 

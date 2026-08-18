@@ -4,7 +4,7 @@ Last updated: 2026-08-18
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.19-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
@@ -48,6 +48,25 @@ These records remain historical and are not rewritten as current selectors.
 The highest permitted Work 0032 implementation status is
 `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`.
 
+## Work 0033: Gemini provider-schema compatibility repair
+
+1. Preserve the current Gemini Interactions `/v1beta/interactions` endpoint,
+   `gemini-3.6-flash`, strict `thought* model_output` parser, one-call/no-retry
+   boundary, no fallback, and Automation OFF.
+2. Project canonical AI Schema 2.0 into a smaller provider-facing schema that
+   retains the exact output shape, required fields, primitive/null types, and
+   domain enums while leaving strict application validation unchanged.
+3. Prove schema simplification and canonical/provider drift with local
+   synthetic tests, then generate Code `2.8.20-prepilot` A20/B20 packages.
+4. Run the complete non-Google validation gate and exact-head CI.
+5. After all gates, perform at most one existing-target source placement and
+   at most one independent parity pull. Do not invoke an Apps Script function,
+   Gmail, Task, Review, Calendar, Setup, Diagnostics, Dashboard, Automation,
+   or Gemini request in this Work.
+
+The highest permitted Work 0033 implementation status is
+`READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR`.
+
 ## Completion boundary
 
 The user has already configured the Gemini credential manually in the
@@ -56,7 +75,7 @@ GitHub, Codex, ChatGPT, source, tests, reports, and logs. Readiness has passed.
 
 The next and only required personal-environment qualification is one fresh
 exact synthetic Gmail Message processed through
-`Gemini synthetic validation (one request)` on Code `2.8.19-prepilot`.
+`Gemini synthetic validation (one request)` on Code `2.8.20-prepilot`.
 Prior failed or stuck Messages are immutable evidence and are not reused.
 
 The personal-environment Gemini E2E condition is met when the one invocation:

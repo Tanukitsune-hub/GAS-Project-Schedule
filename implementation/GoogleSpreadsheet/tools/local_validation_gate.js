@@ -28,11 +28,11 @@ const expectedBranch = 'codex/0002-clean-integration-candidate';
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.19-prepilot';
+  'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot';
 const phase8cPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.19-prepilot-phase8c';
+  'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot-phase8c';
 const releaseReportPath =
-  'implementation/GoogleSpreadsheet/WORK_0032_RELEASE_IMPLEMENTATION_REPORT.md';
+  'implementation/GoogleSpreadsheet/WORK_0033_RELEASE_IMPLEMENTATION_REPORT.md';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -106,7 +106,7 @@ function readContract() {
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
     starting_main: startingMain,
     branch: expectedBranch,
-    code_version: '2.8.19-prepilot',
+    code_version: '2.8.20-prepilot',
     schema_version: '2.6',
     ai_schema_version: '2.0',
     migration_version: '3',
@@ -293,15 +293,15 @@ function checkRelease() {
       resolvedTemporaryCheckout, 'implementation', 'GoogleSpreadsheet'
     );
     const outputs = [
-      runPowerShell('verify_v2_8_19_release.ps1', [
+      runPowerShell('verify_v2_8_20_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot),
-      runPowerShell('verify_v2_8_19_phase8c_release.ps1', [
+      runPowerShell('verify_v2_8_20_phase8c_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot)
     ];
     return {
-      command: 'v2.8.19 Phase 8B/8C package verifiers in committed LF checkout',
+      command: 'v2.8.20 Phase 8B/8C package verifiers in committed LF checkout',
       verifier_count: outputs.length,
       checkout: 'TEMP_LF_COMMITTED_HEAD',
       output_sha256: sha256(outputs.map((item) => item.output_sha256).join('\n'))
@@ -321,31 +321,31 @@ function checkReleaseLineage() {
   const releaseCommit = git(['log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json']);
   if (!/^[0-9a-f]{40}$/.test(releaseCommit)) throw new Error('RELEASE_COMMIT_NOT_FOUND');
   if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
-    throw new Error('B19_NOT_DIRECT_CHILD_OF_A19');
+    throw new Error('B20_NOT_DIRECT_CHILD_OF_A20');
   }
   if (!gitObjectExists(`${contract.source_commit}^{commit}`) ||
       !gitObjectExists(`${releaseCommit}^{commit}`)) {
-      throw new Error('A19_OR_B19_COMMIT_MISSING');
+      throw new Error('A20_OR_B20_COMMIT_MISSING');
   }
   const ancestor = spawnGit(['merge-base', '--is-ancestor', releaseCommit, 'HEAD']);
-  if (ancestor.status !== 0) throw new Error('B19_NOT_ANCESTOR_OF_HEAD');
+  if (ancestor.status !== 0) throw new Error('B20_NOT_ANCESTOR_OF_HEAD');
   if (gitObjectExists(`${contract.source_commit}:${phase8bPath}`) ||
       gitObjectExists(`${contract.source_commit}:${phase8cPath}`)) {
-    throw new Error('A19_CONTAINS_GENERATED_RELEASE');
+    throw new Error('A20_CONTAINS_GENERATED_RELEASE');
   }
   const changed = git(['diff-tree', '--no-commit-id', '--name-only', '-r', releaseCommit])
     .split(/\r?\n/).filter(Boolean).sort();
   const invalid = changed.filter((file) => file !== 'CURRENT_CONTRACT.json' &&
     file !== releaseReportPath && !file.startsWith(`${phase8bPath}/`) &&
     !file.startsWith(`${phase8cPath}/`));
-  if (invalid.length) throw new Error('B19_SCOPE_INVALID');
+  if (invalid.length) throw new Error('B20_SCOPE_INVALID');
   if (!changed.includes('CURRENT_CONTRACT.json') || !changed.includes(releaseReportPath) ||
       !changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
       !changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
-    throw new Error('B19_REQUIRED_SCOPE_MISSING');
+    throw new Error('B20_REQUIRED_SCOPE_MISSING');
   }
   return {
-    command: 'A19/B19 ancestry, release-only B19 scope, and source-stage absence',
+    command: 'A20/B20 ancestry, release-only B20 scope, and source-stage absence',
     source_commit: contract.source_commit,
     release_commit: releaseCommit,
     b19_changed_file_count: changed.length
@@ -371,6 +371,7 @@ function isForbiddenCredentialPath(file) {
     '.clasp-work-0030', '.clasp-pull-verify-work-0030',
     '.clasp-work-0031', '.clasp-pull-verify-work-0031',
     '.clasp-work-0032', '.clasp-pull-verify-work-0032',
+    '.clasp-work-0033', '.clasp-pull-verify-work-0033',
     '.local-validation'
   ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) return true;

@@ -223,7 +223,13 @@ test('GEMINI_INTERACTIONS_REQUEST_IS_ONE_POST_AND_STRUCTURED', () => {
   assert.strictEqual(body.background, false);
   assert.strictEqual(body.response_format.type, 'text');
   assert.strictEqual(body.response_format.mime_type, 'application/json');
-  assert.strictEqual(body.response_format.schema.additionalProperties, false);
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(
+      body.response_format.schema,
+      'additionalProperties'
+    ),
+    false
+  );
   assert.deepStrictEqual(body.generation_config, {
     thinking_level: 'low',
     thinking_summaries: 'none',

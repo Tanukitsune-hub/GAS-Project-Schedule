@@ -21,10 +21,10 @@ const activeFiles = [
   'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
   'implementation/GoogleSpreadsheet/docs/TASK_AUTHORITY_PROTOCOL.md',
   'implementation/GoogleSpreadsheet/docs/V2_REQUIREMENTS_TRACEABILITY.md',
-  'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_19.html',
-  'implementation/GoogleSpreadsheet/tools/v2_8_19/DEPLOYMENT_MANIFEST.template.md',
-  'implementation/GoogleSpreadsheet/tools/v2_8_19/MANUAL_ACCEPTANCE_GUIDE.md',
-  'implementation/GoogleSpreadsheet/tools/v2_8_19/SANDBOX_QUICKSTART.md'
+  'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_20.html',
+  'implementation/GoogleSpreadsheet/tools/v2_8_20/DEPLOYMENT_MANIFEST.template.md',
+  'implementation/GoogleSpreadsheet/tools/v2_8_20/MANUAL_ACCEPTANCE_GUIDE.md',
+  'implementation/GoogleSpreadsheet/tools/v2_8_20/SANDBOX_QUICKSTART.md'
 ];
 
 const mojibake = [
@@ -54,14 +54,14 @@ const decisions = read('DECISIONS.md');
 assert.match(status, /Work 0018: Code `2\.8\.14-prepilot`, source A14 and release B14/);
 assert.match(status, /Work 0028: Code `2\.8\.15-prepilot`, source A15 and release B15/);
 assert.match(status, /Work 0029: Code `2\.8\.16-prepilot`, source A16 and release B16/);
-assert.match(status, /Work 0032: Code `2\.8\.19-prepilot`, source A19 and release B19/);
+assert.match(status, /Work 0033: Code `2\.8\.20-prepilot`, source A20 and release B20/);
 assert.match(plan, /Work 0018 remains Code `2\.8\.14-prepilot`, source A14, release B14/);
 assert.match(plan, /Work 0028 remains Code `2\.8\.15-prepilot`, source A15, release B15/);
 assert.match(decisions, /historical release identities/i);
 assert.match(decisions, /Work 0018 is Code `2\.8\.14-prepilot` with A14\/B14/);
 assert.match(decisions, /Work 0028 is Code[\s\S]*?`2\.8\.15-prepilot` with A15\/B15/);
 assert.match(decisions, /Work 0029 remains Code `2\.8\.16-prepilot`[\s\S]*?A16\/B16/);
-assert.match(decisions, /Work\s+0032\s+is the successor Code `2\.8\.19-prepilot` with[\s\S]*?A19\/B19/);
+assert.match(decisions, /Work\s+0033\s+is the active Code `2\.8\.20-prepilot` with[\s\S]*?A20\/B20/);
 
 process.stdout.write(`${JSON.stringify({
   suite: 'work_0029_active_document_integrity',

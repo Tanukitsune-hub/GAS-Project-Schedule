@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-18
 
-This file records active decisions for the current Code `2.8.19-prepilot`
+This file records active decisions for the current Code `2.8.20-prepilot`
 candidate. Historical handoffs, reports, release packages, and audit records
 remain immutable evidence.
 
@@ -10,9 +10,10 @@ Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
 ## D-048: one active candidate
 
-The active source, tests, tools, documents, and generated packages form one
-linear A19/B19 candidate. Older release and transfer trees are historical and
-not deployment selectors.
+Work 0033 is the active Code `2.8.20-prepilot` with A20/B20. The active
+source, tests, tools, documents, and generated packages form one linear A20/B20
+candidate. Older release and transfer trees are historical and not deployment
+selectors.
 
 ## D-049: the Task ledger is the trust anchor
 
@@ -40,8 +41,8 @@ Workspace state.
 ## D-053: deterministic release lineage
 
 Phase 8B retains `TEST_MODE=true` and the harness. Phase 8C applies only the
-audited `TEST_MODE=false` transform and harness exclusion. B19 is a direct
-child of A19, and neither package is a deployment authorization.
+audited `TEST_MODE=false` transform and harness exclusion. B20 is a direct
+child of A20, and neither package is a deployment authorization.
 
 ## D-054: strict Gmail body decoding
 
@@ -66,8 +67,10 @@ not be overwritten.
 
 ## D-057: Gemini remains explicitly bounded
 
-The Gemini Interactions provider uses only the documented schema subset needed
-by the application and sends `thinking_level=low`,
+The Gemini Interactions provider uses a deterministic projection of the
+canonical AI Schema 2.0 that retains the output shape, required fields, types,
+and enums while omitting provider-complexity constraints already enforced by
+the application validator. It sends `thinking_level=low`,
 `thinking_summaries=none`, and `max_output_tokens=4096`. No tools, streaming,
 background execution, persistence, sampling, or fallback provider is used.
 Completed responses are accepted only as `thought* model_output`; thought
@@ -114,7 +117,7 @@ real Gemini request, invoke an Apps Script function, or access Gmail, Task,
 Review, Calendar, Setup, Diagnostics, Dashboard, triggers, or Automation
 runtime in Codex.
 
-## D-063: personal Gemini E2E convergence boundary
+## D-063: personal Gemini E2E convergence boundary after Work 0033
 
 The user has configured the Gemini credential in personal-synthetic Script
 Properties outside the repository. Readiness has passed and bounded
@@ -122,7 +125,7 @@ user-controlled real Gemini attempts have occurred, but no real
 classification-to-Task E2E has completed yet.
 
 The next live action is exactly one fresh approved synthetic Gmail Message on
-Code `2.8.19-prepilot`. Prior failed, stuck, or terminal Messages remain
+Code `2.8.20-prepilot`. Prior failed, stuck, or terminal Messages remain
 historical evidence and are never reset or reused. The selected Message is
 pinned exactly; no older resumable row may hijack the call.
 
