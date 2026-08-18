@@ -10,7 +10,7 @@ Current candidate: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Mig
 
 Machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
-Work 0033 boundary: `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR`
+Personal runtime status: `PERSONAL_GEMINI_E2E_PASS_CODE_FROZEN`
 
 ## Purpose
 
@@ -33,8 +33,9 @@ derived view. Automation is OFF.
 - Provider: Gemini is registered behind explicit approval and credential
   gates. The credential value exists only in the user's personal-synthetic
   Script Properties and is never stored or inspected by the repository or
-  Codex. Work 0032 itself does not call the Provider.
+  Codex.
 - Release: Code `2.8.20-prepilot`, Schema `2.6`, Migration `3`.
+- Product-code state: frozen after successful personal Gemini E2E.
 
 ## Work 0033 Gemini schema-compatibility transport surface
 
@@ -62,36 +63,53 @@ older eligible or resumable Message State row.
 Work 0030 remains the historical A17/B17 parser candidate. Work 0031 remains
 the historical A18/B18 endpoint candidate. Work 0032 remains the historical
 A19/B19 diagnostics candidate. Work 0033 is the active A20/B20 schema-
-compatibility candidate. The existing personal-synthetic target may be used
-only for the guarded Work 0033 source placement; no credential value or
-private identifier belongs in evidence.
+compatibility candidate. The historical Work 0033 Codex run made no real
+Gemini request. The later user-controlled runtime qualification is separately
+recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
-## Current live validation boundary
+## Personal live validation — PASS
 
-The user has manually configured the Gemini key outside the repository and
-network-free readiness passed. User-controlled real Gemini calls have reached
-the Provider in the personal sandbox, but the classification-to-Task E2E has
-not yet completed. The latest live attempt occurred before Code
-`2.8.20-prepilot` schema compatibility is available; the prior
-`2.8.19-prepilot` diagnostics attempt remains historical failure evidence.
+The user manually configured the Gemini key outside the repository and
+network-free readiness passed. On 2026-08-18 the user then executed one fresh
+approved synthetic Gmail Message through `Gemini synthetic validation (one
+request)` on Code `2.8.20-prepilot`.
 
-The next permitted action is one fresh exact synthetic Gmail Message with
-`手動/取込`, followed by one invocation of
-`Gemini synthetic validation (one request)`. Prior failed, stuck, or terminal
-Messages are not reset or reused. A success completes the personal-environment
-Gemini E2E and moves the candidate to code freeze. A failure must be narrowed
-only from the bounded safe diagnostic and checkpoint fields returned by Work
-0032 or a later authorized Work.
+The bounded result was `COMPLETE`, processed exactly one candidate, created one
+Task and one Review, recorded zero processing errors and zero Calendar jobs,
+reached checkpoint `DONE`, called AI, and left Automation `CONSISTENT`,
+disabled, with zero scheduled/clock triggers and no stored/canonical trigger
+presence.
+
+This satisfies the pre-declared personal-environment E2E completion condition.
+The remaining native boundary is no longer real-Gemini classification through
+Task creation; that boundary is closed. Code `2.8.20-prepilot` is now frozen.
+
+## Next boundary: company environment qualification
+
+Company-PC / company-environment setup is now environment qualification rather
+than a new feature-development phase. Qualification should prove the frozen
+candidate under the actual company Google Workspace permission model, network
+controls, OAuth policy, Apps Script restrictions, and allowed data-handling
+boundary.
+
+Environment-specific restrictions should be treated as qualification or
+configuration findings unless they demonstrate that the frozen product itself
+cannot satisfy a required use case. Product source should reopen only on new
+material evidence of an environment-independent defect or a failed required
+qualification check.
 
 ## Assurance and privacy
 
 The local gate runs the integrated source in Node fakes and covers authority,
 Review, Gmail policy, Calendar intent, diagnostics, Provider schema, release
 parity, secret scanning, and local-state exclusion. Earlier native sandbox
-work has separately exercised Gmail preprocessing, governed Task/Review,
-manual edits, and the managed Calendar CREATE/UPDATE/DELETE lifecycle. The
-remaining unclosed native boundary is successful real-Gemini classification
-through governed Task creation.
+work separately exercised Gmail preprocessing, governed Task/Review, manual
+edits, and the managed Calendar CREATE/UPDATE/DELETE lifecycle. The final
+personal Gemini classification-to-Task E2E has now also passed.
+
+The accepted live result is user-supplied bounded UI evidence; ChatGPT did not
+independently invoke Apps Script, access Gmail or Spreadsheet runtime, inspect
+the credential, or reproduce the Provider request.
 
 No credential, token, private URL, account identifier, message body, personal
 data, raw Provider response, real Workspace identifier, or machine path belongs
