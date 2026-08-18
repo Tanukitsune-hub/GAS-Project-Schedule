@@ -8,6 +8,8 @@ Current contract: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migr
 
 Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
 
+Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_CODE_FROZEN`
+
 ## Historical release chain
 
 - Work 0002 established the clean integration and deterministic local gate.
@@ -45,7 +47,7 @@ These records remain historical and are not rewritten as current selectors.
    Gmail, Task, Review, Calendar, Setup, Diagnostics, Dashboard, Automation,
    or Gemini request in this Work.
 
-The highest permitted Work 0032 implementation status is
+The highest permitted Work 0032 implementation status was
 `READY_FOR_USER_GEMINI_DIAGNOSTIC_ONE_MESSAGE_RETRY`.
 
 ## Work 0033: Gemini provider-schema compatibility repair
@@ -64,35 +66,48 @@ The highest permitted Work 0032 implementation status is
    Gmail, Task, Review, Calendar, Setup, Diagnostics, Dashboard, Automation,
    or Gemini request in this Work.
 
-The highest permitted Work 0033 implementation status is
+The highest permitted Work 0033 implementation status was
 `READY_FOR_USER_GEMINI_E2E_RETRY_AFTER_SCHEMA_COMPATIBILITY_REPAIR`.
+That implementation boundary was subsequently satisfied by the user-controlled
+live E2E described below.
 
-## Completion boundary
+## Personal-environment completion boundary — MET
 
-The user has already configured the Gemini credential manually in the
-personal-synthetic Apps Script target. The credential value remains outside
-GitHub, Codex, ChatGPT, source, tests, reports, and logs. Readiness has passed.
+The user configured the Gemini credential manually in the personal-synthetic
+Apps Script target outside the repository. The credential value remains outside
+GitHub, Codex, ChatGPT, source, tests, reports, and logs.
 
-The next and only required personal-environment qualification is one fresh
-exact synthetic Gmail Message processed through
-`Gemini synthetic validation (one request)` on Code `2.8.20-prepilot`.
-Prior failed or stuck Messages are immutable evidence and are not reused.
+On 2026-08-18 the user executed one fresh exact synthetic Gmail Message through
+`Gemini synthetic validation (one request)` on Code `2.8.20-prepilot`. The
+bounded user-visible result was reviewed against the pre-declared completion
+condition and is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
-The personal-environment Gemini E2E condition is met when the one invocation:
+The result satisfied every required condition:
 
-- calls Gemini once and receives an accepted strict classification;
-- persists the classification and creates the expected governed Task or valid
-  Review outcome from the fictional seven-day request;
-- completes with no processing error;
-- creates no Calendar job for the non-high-impact fixture; and
-- leaves Automation consistently OFF with no scheduled trigger.
+- Gemini was called and the synthetic path completed with `status=COMPLETE` and
+  checkpoint `DONE`;
+- exactly one candidate was processed;
+- one governed Task and one Review were created;
+- processing errors were zero;
+- Calendar jobs were zero for the non-high-impact fixture; and
+- Automation remained `CONSISTENT`, disabled, with zero scheduled/clock
+  triggers and no stored/canonical trigger presence.
 
-When this condition passes, the personal version is practically complete and
-moves to code freeze. Company-PC setup is then an environment qualification,
-not a new feature-development phase, unless a company-specific permission,
-network, OAuth, or policy BLOCKER is discovered.
+Therefore the personal version is practically complete and Code
+`2.8.20-prepilot` is in product-code freeze.
 
-If the live call fails, use only the bounded Work OS code/stage, provider HTTP
-status and machine code, checkpoint, and failure-finalization result to define
-one minimal follow-up repair. Do not reopen broad architecture, add fallback
-providers/endpoints, or expand test scope without material evidence.
+## Next phase: environment qualification
+
+The next phase is company-PC / company-environment qualification, not feature
+or architecture development. The objective is to prove that the frozen
+candidate can operate under the company's actual Google Workspace permissions,
+network controls, OAuth policy, Apps Script policy, and allowed data-handling
+boundary.
+
+Do not reopen source merely to add more tests, polish, fallback providers,
+alternate endpoints, retries, schema changes, or speculative hardening.
+A new product-code Work is justified only if company qualification or another
+required check produces material evidence of an environment-independent defect.
+Environment-specific permission, network, OAuth, or policy restrictions should
+be handled as qualification/configuration findings unless they prove a product
+change is necessary.
