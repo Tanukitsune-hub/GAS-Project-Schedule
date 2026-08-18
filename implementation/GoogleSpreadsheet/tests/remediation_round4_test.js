@@ -724,8 +724,8 @@ test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', (
   assert.ok(html.includes(`data-schema-version="${values.schema}"`));
   assert.ok(html.includes(`data-ai-schema-version="${values.ai}"`));
   assert.ok(html.includes(`data-migration-version="${values.migration}"`));
-  const gateMatch = currentStatus.match(/^Overall status:\s+`([^`]+)`/m);
-  assert.ok(gateMatch, 'CURRENT_STATUS overall gate missing');
+  const gateMatch = currentStatus.match(/^Machine gate:\s+`([^`]+)`/m);
+  assert.ok(gateMatch, 'CURRENT_STATUS machine gate missing');
   assert.strictEqual(gateMatch[1], 'READY_FOR_CONTROLLED_SANDBOX_VALIDATION');
   assert.ok(html.includes(`data-release-status="${gateMatch[1]}"`));
   assert.ok(html.includes('Task Authority Ledger'));
