@@ -952,6 +952,86 @@ var WorkOsSetup = (function () {
     );
   }
 
+  function preparePersonalAutomationQualification(options) {
+    var settings = options || {};
+    if (Object.keys(settings).length && !WorkOsConfig.TEST_MODE) {
+      throw new WorkOsAppError(
+        'E_TEST_MODE_DISABLED',
+        'QUALIFICATION_PREPARATION',
+        false,
+        '候補準備の依存注入はTest modeだけで利用できます。'
+      );
+    }
+    var spreadsheet = settings.spreadsheet || getBoundSpreadsheet();
+    var props = settings.properties || properties();
+    var completed = settings.completed_stages || getCompletedStages();
+    if (!Array.isArray(completed) ||
+        completed.indexOf('S99_COMPLETE') === -1) {
+      throw new WorkOsAppError(
+        'E_SETUP_NOT_COMPLETE',
+        'QUALIFICATION_PREPARATION',
+        false,
+        '候補準備には既存Setupの完了状態が必要です。'
+      );
+    }
+    if (props.getProperty(WorkOsConfig.PROPERTIES.SCHEMA_VERSION) !==
+          WorkOsConfig.SCHEMA_VERSION ||
+        props.getProperty(WorkOsConfig.PROPERTIES.MIGRATION_VERSION) !==
+          WorkOsConfig.MIGRATION_VERSION) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MIGRATION_INCOMPATIBLE',
+        'QUALIFICATION_PREPARATION',
+        false,
+        '既存schemaまたはmigrationの互換性を確認できません。'
+      );
+    }
+    var automationStatus = WorkOsAutomation.getDiagnosticAutomationStatus({
+      properties: props,
+      script_app: settings.script_app
+    });
+    if (automationStatus.status !== 'CONSISTENT' ||
+        automationStatus.enabled === true ||
+        automationStatus.desired_enabled === true ||
+        automationStatus.clock_trigger_count !== 0 ||
+        automationStatus.stored_trigger_id_present === true) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_NOT_DISABLED',
+        'QUALIFICATION_PREPARATION',
+        false,
+        '候補準備にはAutomation停止とowned clock Triggerゼロが必要です。'
+      );
+    }
+    var changed = [];
+    [
+      [WorkOsConfig.PROPERTIES.CODE_VERSION, WorkOsConfig.CODE_VERSION],
+      [WorkOsConfig.PROPERTIES.SCHEMA_VERSION, WorkOsConfig.SCHEMA_VERSION],
+      [WorkOsConfig.PROPERTIES.MIGRATION_VERSION, WorkOsConfig.MIGRATION_VERSION]
+    ].forEach(function (entry) {
+      if (props.getProperty(entry[0]) !== entry[1]) {
+        props.setProperty(entry[0], entry[1]);
+        changed.push(entry[0]);
+      }
+    });
+    if (completed.indexOf('S40_SEED_SAFE_SETTINGS') !== -1 &&
+        typeof WorkOsSheetBuilder !== 'undefined' &&
+        WorkOsSheetBuilder &&
+        typeof WorkOsSheetBuilder.refreshVersionMetadata === 'function') {
+      WorkOsSheetBuilder.refreshVersionMetadata(spreadsheet);
+    }
+    return {
+      status: 'READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION',
+      code_version: WorkOsConfig.CODE_VERSION,
+      schema_version: WorkOsConfig.SCHEMA_VERSION,
+      migration_version: WorkOsConfig.MIGRATION_VERSION,
+      property_keys_changed: changed,
+      automation_enabled: false,
+      desired_enabled: false,
+      clock_trigger_count: 0,
+      credential_value_read: false,
+      external_request_performed: false
+    };
+  }
+
   function getNextStagePreview() {
     var completed = getCompletedStagesSafely();
     var nextStage = WorkOsConfig.SETUP_STAGES.find(function (stage) {
@@ -993,7 +1073,9 @@ var WorkOsSetup = (function () {
     getNextStagePreview: getNextStagePreview,
     runStageForTest: runStageForTest,
     refreshCompletedVersionMetadataForTest:
-      refreshCompletedVersionMetadataForTest
+      refreshCompletedVersionMetadataForTest,
+    preparePersonalAutomationQualification:
+      preparePersonalAutomationQualification
   });
 }());
 
@@ -1003,4 +1085,8 @@ function setupSystem() {
 
 function continueSetup() {
   return WorkOsSetup.executeSetup();
+}
+
+function preparePersonalAutomationQualification() {
+  return WorkOsSetup.preparePersonalAutomationQualification();
 }

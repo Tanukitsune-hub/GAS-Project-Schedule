@@ -5,7 +5,7 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.20-prepilot',
+  CODE_VERSION: '2.8.21-prepilot',
   SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
   MIGRATION_VERSION: '3',
@@ -93,6 +93,10 @@ var WorkOsConfig = Object.freeze({
   EXTERNAL_AI_MODEL: 'gemini-3.6-flash',
   EXTERNAL_AI_PROMPT_VERSION: 'gemini-interactions-v1-work-os-v1',
   EXTERNAL_AI_CREDENTIAL_REFERENCE: 'WORK_OS_V2_GEMINI_API_KEY',
+  // Work 0036 uses personal-owner approval semantics.  The legacy company
+  // key remains only as an internal compatibility alias for historical tests;
+  // active readiness and runtime gates must use the operator flag below.
+  EXTERNAL_AI_OPERATOR_APPROVED: false,
   EXTERNAL_AI_COMPANY_APPROVED: false,
   EXTERNAL_AI_DATA_POLICY_APPROVED: false,
   EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED: false,
@@ -100,7 +104,7 @@ var WorkOsConfig = Object.freeze({
   AUTOMATION_ENABLED: false,
   AUTOMATION_INTERVAL_MINUTES: 5,
   AUTOMATION_OVERLAP_MS: 24 * 60 * 60 * 1000,
-  AUTOMATION_MAX_MESSAGES_PER_RUN: 10,
+  AUTOMATION_MAX_MESSAGES_PER_RUN: 1,
   AUTOMATION_MAX_SEARCH_THREADS: 100,
   AUTOMATION_SEARCH_PAGE_SIZE: 25,
   AUTOMATION_GMAIL_API_CALL_LIMIT: 160,
@@ -108,10 +112,21 @@ var WorkOsConfig = Object.freeze({
   AUTOMATION_WORKER_RESERVE_MS: 5000,
   AUTOMATION_HANDLER_FUNCTION: 'runScheduledWorker',
   EDIT_HANDLER_FUNCTION: 'handleTaskEdit',
-  AUTOMATION_NEWSLETTER_FILTER_APPROVED: false,
-  AUTOMATION_CALENDAR_NOTIFICATION_FILTER_APPROVED: false,
+  AUTOMATION_NEWSLETTER_FILTER_APPROVED: true,
+  AUTOMATION_CALENDAR_NOTIFICATION_FILTER_APPROVED: true,
+  AUTOMATION_QUALIFICATION_SCOPE:
+    'SYNTHETIC_AUTOMATION_QUALIFICATION_ONLY',
+  AUTOMATION_QUALIFICATION_SOURCE_MODE: 'AUTOMATIC_QUALIFICATION',
+  AUTOMATION_SYNTHETIC_SUBJECT: '[WORK_OS_AUTOMATION_SYNTHETIC_0036]',
+  AUTOMATION_SYNTHETIC_BODY: [
+    'WORK_OS_AUTOMATION_SYNTHETIC_BODY_0036',
+    'これは架空の自動処理検証メールです。個人情報、機密情報、実在の本番データを含みません。',
+    '架空の社内タスクとして、自動処理の動作確認メモを確認してください。',
+    '処理日から7日後までに確認してください。',
+    '外部提出、法律、税務、規制、契約、入札、その他の高影響なカレンダー予定ではありません。'
+  ].join('\n'),
   AUTOMATION_GMAIL_QUERY:
-    'in:inbox -in:spam -in:trash -label:手動/除外',
+    'in:inbox -in:spam -in:trash -label:手動/除外 subject:"[WORK_OS_AUTOMATION_SYNTHETIC_0036]"',
   RETRY_DELAYS_MINUTES: Object.freeze([5, 15, 60]),
   RETRY_MAX_ATTEMPTS: 4,
   RETRY_MAX_ITEMS_PER_RUN: 10,

@@ -8,6 +8,8 @@ function onOpen() {
     .addItem('Deep Diagnostic（明示・読取専用）', 'menuDeepDiagnostic')
     .addItem('運用Dashboardを更新', 'menuRefreshDashboard')
     .addItem('自動処理の状態を確認', 'menuAutomationStatus')
+    .addItem('個人用合成Automationの準備状態を確認',
+      'menuPersonalAutomationQualificationStatus')
     .addItem('自動処理を明示的に有効化', 'menuEnableAutomation')
     .addItem('自動処理を停止', 'menuDisableAutomation')
     .addItem('手動/取込を1件前処理', 'menuRunManualImport')
@@ -114,11 +116,18 @@ function menuAutomationStatus() {
   showSafeResult_('自動処理の状態', getAutomationStatus());
 }
 
+function menuPersonalAutomationQualificationStatus() {
+  showSafeResult_(
+    '個人用合成Automationの準備状態',
+    getPersonalAutomationQualificationStatus()
+  );
+}
+
 function menuEnableAutomation() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
     '自動処理を有効化',
-    '5分間隔の通常Inbox処理を有効化します。実Provider、会社承認、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否されます。Setupからは有効化されません。続行しますか。',
+    '個人用の合成検証メールだけを対象とする5分間隔Automationを有効化します。operator承認、データ取扱い、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否されます。Setupからは有効化されません。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {

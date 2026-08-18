@@ -175,6 +175,40 @@ var WorkOsWorker = (function () {
     };
   }
 
+  function assertAutomationQualificationContent(candidate, messageInput) {
+    var value = candidate || {};
+    var content = messageInput || {};
+    var provider = typeof WorkOsGeminiProvider !== 'undefined'
+      ? WorkOsGeminiProvider
+      : null;
+    var candidateValid = provider &&
+      typeof provider.isAutomationSyntheticCandidate === 'function' &&
+      provider.isAutomationSyntheticCandidate({
+        subject: content.subject,
+        source_mode: value.source_mode,
+        manual_decision: value.manual_decision
+      });
+    var bodyValid = provider &&
+      typeof provider.isAutomationSyntheticBody === 'function' &&
+      provider.isAutomationSyntheticBody(content.plain_body);
+    if (!candidateValid ||
+        content.body_transport_truncated === true ||
+        !bodyValid) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_SYNTHETIC_GUARD',
+        'GMAIL_MESSAGE_BODY',
+        false,
+        '自動処理の合成候補境界を確認できませんでした。'
+      );
+    }
+    return true;
+  }
+
+  function isAutomationQualificationRecord(record) {
+    return String(record && record.source_mode || '') ===
+      WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE;
+  }
+
   var WORKER_LEASE_PROPERTY = 'WORK_OS_V2_ACTIVE_WORKER_LEASE';
 
   function acquireWorkerLease(properties, runId, mode, clock, ttlMs) {
@@ -2401,6 +2435,15 @@ var WorkOsWorker = (function () {
             reserve_ms: reserveMs
           }
         );
+      if (internalScheduled && WorkOsConfig.TEST_MODE !== true &&
+          isAutomationQualificationRecord(
+            settings.candidate || stagePlan.record
+          )) {
+        assertAutomationQualificationContent(
+          settings.candidate || stagePlan.record,
+          messageInput
+        );
+      }
       cachedPreprocessed = preprocessor.preprocess(messageInput, {
         today: formatToday(clock()),
         timezone: WorkOsConfig.TIMEZONE,
@@ -4006,6 +4049,10 @@ var WorkOsWorker = (function () {
    */
   function processProductionClassificationOnce(options) {
     var settings = options || {};
+    // Production-shaped runs are always synthetic qualification-only; the
+    // explicit option exists for the local test harness and audit fixtures.
+    var qualificationOnly = WorkOsConfig.TEST_MODE !== true ||
+      settings.qualification_only === true;
     var internalProduction =
       settings.internal_production_capability ===
         INTERNAL_SCHEDULED_CAPABILITY;
@@ -4075,7 +4122,9 @@ var WorkOsWorker = (function () {
         clock()
       ).filter(function (record) {
         return record.resume_stage ===
-          WorkOsMessageStateRepository.RESUME_STAGES.CLASSIFY;
+          WorkOsMessageStateRepository.RESUME_STAGES.CLASSIFY &&
+          (!qualificationOnly || String(record.source_mode || '') ===
+            WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE);
       });
       if (settings.selected_message_id) {
         eligible = eligible.filter(function (record) {
@@ -4138,6 +4187,10 @@ var WorkOsWorker = (function () {
           reserve_ms: WorkOsConfig.AUTOMATION_WORKER_RESERVE_MS
         }
       );
+      if (qualificationOnly && WorkOsConfig.TEST_MODE !== true &&
+          isAutomationQualificationRecord(prepared.record)) {
+        assertAutomationQualificationContent(prepared.record, messageInput);
+      }
       preprocessed = preprocessor.preprocess(messageInput, {
         today: formatToday(clock()),
         timezone: WorkOsConfig.TIMEZONE,
@@ -4287,8 +4340,9 @@ var WorkOsWorker = (function () {
       runtimeSettings.automation_worker_soft_limit_ms,
       Date.now()
     );
-    var automaticMaxMessages =
-      runtimeSettings.automation_max_messages_per_run;
+    var automaticMaxMessages = WorkOsConfig.TEST_MODE
+      ? 10
+      : runtimeSettings.automation_max_messages_per_run;
     var adapter;
     if (settings.adapter) {
       adapter = WorkOsAiAdapter.createAdapter({
@@ -4364,7 +4418,8 @@ var WorkOsWorker = (function () {
             gmail_call_meter: gmailCallMeter,
             selected_message_id: settings.selected_message_id,
             internal_production_capability:
-              INTERNAL_SCHEDULED_CAPABILITY
+              INTERNAL_SCHEDULED_CAPABILITY,
+            qualification_only: WorkOsConfig.TEST_MODE !== true
           });
         summary.ai_classified_outside_lock_count = Number(
           productionClassification.classified_count || 0
@@ -4492,6 +4547,10 @@ var WorkOsWorker = (function () {
               );
             if (!ensureBudget()) {
               throw budgetError();
+            }
+            if (WorkOsConfig.TEST_MODE !== true &&
+                isAutomationQualificationRecord(metadata)) {
+              assertAutomationQualificationContent(metadata, messageInput);
             }
             var preprocessed = preprocessor.preprocess(
               messageInput,
@@ -5152,15 +5211,17 @@ var WorkOsWorker = (function () {
             adapter =
               WorkOsAiAdapter.createProductionExternalAdapter();
           }
-          var automaticMaxMessages = Math.max(
-            1,
-            Math.min(
-              WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN,
-              Number(
-                runtimeSettings.automation_max_messages_per_run
+          var automaticMaxMessages = WorkOsConfig.TEST_MODE
+            ? 10
+            : Math.max(
+              1,
+              Math.min(
+                WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN,
+                Number(
+                  runtimeSettings.automation_max_messages_per_run
+                )
               )
-            )
-          );
+            );
           var backlog = WorkOsUtilities.withScriptLock(
             function (lock) {
               var context =
@@ -5186,6 +5247,10 @@ var WorkOsWorker = (function () {
                   manual_decision: record.manual_decision,
                   resume_stage: record.resume_stage
                 };
+              }).filter(function (record) {
+                return WorkOsConfig.TEST_MODE === true ||
+                  String(record.source_mode || '') ===
+                    WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE;
               });
             },
             WorkOsConfig.LOCK_WAIT_MS

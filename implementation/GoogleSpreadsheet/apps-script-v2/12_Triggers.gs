@@ -440,7 +440,7 @@ var WorkOsAutomation = (function () {
     if (typeof WorkOsAiAdapter === 'undefined' ||
         typeof WorkOsAiAdapter.getProductionReadiness !== 'function') {
       reasons.push('EXTERNAL_AI_NOT_CONFIGURED');
-      reasons.push('COMPANY_APPROVAL_NOT_CONFIRMED');
+      reasons.push('OPERATOR_APPROVAL_NOT_CONFIRMED');
       reasons.push('DATA_POLICY_APPROVAL_NOT_CONFIRMED');
       reasons.push('CREDENTIAL_STORAGE_APPROVAL_NOT_CONFIRMED');
       reasons.push('AI_AUTH_NOT_CONFIGURED');
@@ -512,7 +512,7 @@ var WorkOsAutomation = (function () {
       ready: reasons.length === 0,
       reasons: reasons,
       real_provider_connection: 'NOT_EXECUTED',
-      company_approval: WorkOsConfig.EXTERNAL_AI_COMPANY_APPROVED
+      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
         ? 'CONFIRMED'
         : 'NOT_CONFIRMED',
       credential_storage_approval:
@@ -539,8 +539,9 @@ var WorkOsAutomation = (function () {
       real_provider_connection: String(
         result.real_provider_connection || 'NOT_EXECUTED'
       ),
-      company_approval: String(
-        result.company_approval || 'NOT_CONFIRMED'
+      operator_approval: String(
+        result.operator_approval || result.company_approval ||
+          'NOT_CONFIRMED'
       ),
       credential_storage_approval: String(
         result.credential_storage_approval || 'NOT_CONFIRMED'
@@ -559,7 +560,7 @@ var WorkOsAutomation = (function () {
     if (typeof WorkOsAiAdapter === 'undefined' ||
         typeof WorkOsAiAdapter.getProductionReadiness !== 'function') {
       reasons.push('EXTERNAL_AI_NOT_CONFIGURED');
-      reasons.push('COMPANY_APPROVAL_NOT_CONFIRMED');
+      reasons.push('OPERATOR_APPROVAL_NOT_CONFIRMED');
       reasons.push('DATA_POLICY_APPROVAL_NOT_CONFIRMED');
       reasons.push('CREDENTIAL_STORAGE_APPROVAL_NOT_CONFIRMED');
       reasons.push('AI_AUTH_NOT_CONFIGURED');
@@ -578,7 +579,7 @@ var WorkOsAutomation = (function () {
       ready: false,
       reasons: reasons,
       real_provider_connection: 'NOT_EXECUTED',
-      company_approval: WorkOsConfig.EXTERNAL_AI_COMPANY_APPROVED
+      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
         ? 'CONFIRMED'
         : 'NOT_CONFIRMED',
       credential_storage_approval:
@@ -650,6 +651,80 @@ var WorkOsAutomation = (function () {
 
   function getDiagnosticAutomationStatus(options) {
     return automationStatusInternal(injected(options), true);
+  }
+
+  function getPersonalAutomationQualificationStatus(options) {
+    var settings = injected(options);
+    var automation = getDiagnosticAutomationStatus(settings);
+    var productionReadiness = {
+      ready: false,
+      reasons: ['AI_READINESS_UNAVAILABLE'],
+      external_request_performed: false
+    };
+    if (typeof WorkOsAiAdapter !== 'undefined' &&
+        WorkOsAiAdapter &&
+        typeof WorkOsAiAdapter.getProductionReadiness === 'function') {
+      try {
+        productionReadiness = WorkOsAiAdapter.getProductionReadiness();
+      } catch (error) {
+        productionReadiness = {
+          ready: false,
+          reasons: ['AI_READINESS_UNAVAILABLE'],
+          external_request_performed: false
+        };
+      }
+    }
+    return {
+      status: automation.status === 'CONSISTENT' &&
+        automation.enabled === false &&
+        automation.desired_enabled === false &&
+        automation.clock_trigger_count === 0
+        ? 'READY_FOR_CONTROLLED_QUALIFICATION'
+        : 'BLOCKED',
+      qualification_scope: WorkOsConfig.AUTOMATION_QUALIFICATION_SCOPE,
+      candidate_mode: WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE,
+      exact_subject: WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT,
+      exact_body_guard_active: true,
+      exact_query_active: String(WorkOsConfig.AUTOMATION_GMAIL_QUERY)
+        .indexOf('subject:"' +
+          WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT + '"') !== -1,
+      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
+        ? 'CONFIRMED'
+        : 'NOT_CONFIRMED',
+      data_policy_approval: WorkOsConfig.EXTERNAL_AI_DATA_POLICY_APPROVED
+        ? 'CONFIRMED'
+        : 'NOT_CONFIRMED',
+      credential_storage_approval:
+        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
+          ? 'CONFIRMED'
+          : 'NOT_CONFIRMED',
+      auth_configured: WorkOsConfig.EXTERNAL_AI_AUTH_CONFIGURED
+        ? 'CONFIGURED'
+        : 'NOT_CONFIGURED',
+      provider: String(WorkOsConfig.EXTERNAL_AI_PROVIDER),
+      model: String(WorkOsConfig.EXTERNAL_AI_MODEL),
+      production_readiness: {
+        ready: productionReadiness.ready === true,
+        reasons: Array.isArray(productionReadiness.reasons)
+          ? productionReadiness.reasons.map(function (reason) {
+            return String(reason).slice(0, 80);
+          })
+          : [],
+        external_request_performed: false
+      },
+      automation: {
+        status: automation.status,
+        enabled: automation.enabled === true,
+        desired_enabled: automation.desired_enabled === true,
+        trigger_count: automation.trigger_count,
+        clock_trigger_count: automation.clock_trigger_count,
+        canonical_trigger_present:
+          automation.canonical_trigger_present === true
+      },
+      formal_labels: 'NOT_CHECKED',
+      calendar: 'NOT_CHECKED',
+      external_request_performed: false
+    };
   }
 
   function removeDuplicateAutomationTriggersUnlocked(settings) {
@@ -799,7 +874,7 @@ var WorkOsAutomation = (function () {
         reasons: prerequisites.reasons,
         real_provider_connection:
           prerequisites.real_provider_connection,
-        company_approval: prerequisites.company_approval,
+        operator_approval: prerequisites.operator_approval,
         credential_storage_approval:
           prerequisites.credential_storage_approval
       };
@@ -1109,6 +1184,8 @@ var WorkOsAutomation = (function () {
     ensureEditTrigger: ensureEditTrigger,
     getAutomationStatus: getAutomationStatus,
     getDiagnosticAutomationStatus: getDiagnosticAutomationStatus,
+    getPersonalAutomationQualificationStatus:
+      getPersonalAutomationQualificationStatus,
     removeDuplicateAutomationTriggers:
       removeDuplicateAutomationTriggers,
     ensureSingleAutomationTrigger: ensureSingleAutomationTrigger,
@@ -1132,6 +1209,10 @@ function disableAutomation() {
 
 function getAutomationStatus() {
   return WorkOsAutomation.getAutomationStatus();
+}
+
+function getPersonalAutomationQualificationStatus() {
+  return WorkOsAutomation.getPersonalAutomationQualificationStatus();
 }
 
 function ensureSingleAutomationTrigger() {

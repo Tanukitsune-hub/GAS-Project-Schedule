@@ -1,15 +1,15 @@
-# Task Authority Protocol - Code 2.8.20-prepilot
+# Task Authority Protocol - Code 2.8.21-prepilot
 
 ## Contract
 
 | Field | Value |
 |---|---|
-| Code | `2.8.20-prepilot` |
+| Code | `2.8.21-prepilot` |
 | Schema | `2.6` |
 | Migration | `3` |
 | Task columns | `50` |
 | Ledger columns | `21` |
-| Machine gate | `READY_FOR_CONTROLLED_SANDBOX_VALIDATION` |
+| Machine gate | `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` |
 
 The protected hidden `Task Authority Ledger` is the only trust anchor for
 persisted Tasks. The live row, `authoritative_snapshot_json`, cell notes, and

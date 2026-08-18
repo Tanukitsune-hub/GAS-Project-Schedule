@@ -473,7 +473,11 @@ var WorkOsGmailGateway = (function () {
     return candidates.slice(0, maxThreads);
   }
 
-  function automaticQuery(watermarkAt, upperBoundAt) {
+  function automaticQuery(watermarkAt, upperBoundAt, options) {
+    // The legacy broad query remains available only to local TEST_MODE
+    // fixtures.  A production-shaped payload cannot opt out of qualification.
+    var qualificationOnly = WorkOsConfig.TEST_MODE !== true ||
+      !!(options && options.qualification_only === true);
     var now = upperBoundAt instanceof Date
       ? upperBoundAt
       : WorkOsUtilities.now();
@@ -490,7 +494,9 @@ var WorkOsGmailGateway = (function () {
       watermark.getTime() - WorkOsConfig.AUTOMATION_OVERLAP_MS
     );
     return {
-      query: WorkOsConfig.AUTOMATION_GMAIL_QUERY +
+      query: (qualificationOnly
+        ? WorkOsConfig.AUTOMATION_GMAIL_QUERY
+        : 'in:inbox -in:spam -in:trash -label:手動/除外') +
         ' after:' + Math.floor(overlapStartMs / 1000) +
         ' before:' + (Math.floor(upperBound.getTime() / 1000) + 1),
       overlap_start: new Date(overlapStartMs),
@@ -561,9 +567,32 @@ var WorkOsGmailGateway = (function () {
     return { process: true, reason: 'NORMAL_INBOX', priority: 0 };
   }
 
+  function automationQualificationCandidatePolicy(labelNames, message) {
+    var value = message || {};
+    var subject = headerValue(value, 'Subject').trim();
+    if (subject !== WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT) {
+      return {
+        process: false,
+        reason: 'AUTOMATION_SUBJECT_MISMATCH',
+        priority: 0
+      };
+    }
+    var policy = automaticCandidatePolicy(labelNames, value);
+    if (!policy.process) {
+      return policy;
+    }
+    return {
+      process: true,
+      reason: 'AUTOMATION_SYNTHETIC_EXACT',
+      priority: 10
+    };
+  }
+
   function listAutomaticCandidates(options) {
     assertService();
     var settings = options || {};
+    var qualificationOnly = settings.qualification_only === true ||
+      WorkOsConfig.TEST_MODE !== true;
     var callMeter = settings.call_meter || createCallMeter(
       WorkOsConfig.AUTOMATION_GMAIL_API_CALL_LIMIT
     );
@@ -581,14 +610,20 @@ var WorkOsGmailGateway = (function () {
       Math.max(1, Number(settings.page_size ||
         WorkOsConfig.AUTOMATION_SEARCH_PAGE_SIZE))
     );
+    var defaultMaxMessages = qualificationOnly
+      ? WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN
+      : 10;
+    var requestedMaxMessages = settings.max_messages == null
+      ? defaultMaxMessages
+      : settings.max_messages;
     var maxMessages = Math.min(
-      WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN,
-      Math.max(1, Number(settings.max_messages ||
-        WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN))
+      qualificationOnly ? WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN : 10,
+      Math.max(1, Number(requestedMaxMessages))
     );
     var queryState = automaticQuery(
       settings.watermark_at,
-      settings.upper_bound_at || settings.now
+      settings.upper_bound_at || settings.now,
+      { qualification_only: qualificationOnly }
     );
     var knownIds = settings.known_message_ids || {};
     function exhausted() {
@@ -710,7 +745,12 @@ var WorkOsGmailGateway = (function () {
           [message],
           labelById
         );
-        var policy = automaticCandidatePolicy(
+        var policy = qualificationOnly
+          ? automationQualificationCandidatePolicy(
+            messageLabelNames,
+            message
+          )
+          : automaticCandidatePolicy(
           messageLabelNames,
           message
         );
@@ -739,7 +779,10 @@ var WorkOsGmailGateway = (function () {
             thread.id || summary.id
           ),
           received_at: new Date(timestamp),
-          source_mode: 'AUTOMATIC',
+          subject: headerValue(message, 'Subject').trim(),
+          source_mode: qualificationOnly
+            ? WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE
+            : 'AUTOMATIC',
           manual_decision: 'PROCESS',
           selection_reason: policy.reason,
           selection_priority: policy.priority,
@@ -768,6 +811,14 @@ var WorkOsGmailGateway = (function () {
       return timeDifference ||
         left.message_id.localeCompare(right.message_id);
     });
+    if (qualificationOnly && candidates.length > 1) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_SYNTHETIC_AMBIGUOUS',
+        'GMAIL_AUTOMATIC_SEARCH',
+        false,
+        '自動処理の合成候補が一意に確定できません。'
+      );
+    }
     var candidateOverflow = candidates.length > maxMessages;
     var replayCurrentPage = candidateOverflow || !metadataComplete;
     return {
@@ -1182,6 +1233,8 @@ var WorkOsGmailGateway = (function () {
     decideManualLabelAction: decideManualLabelAction,
     listManualCandidates: listManualCandidates,
     automaticQuery: automaticQuery,
+    automationQualificationCandidatePolicy:
+      automationQualificationCandidatePolicy,
     listAutomaticCandidates: listAutomaticCandidates,
     loadLabelCache: loadLabelCache,
     createCallMeter: createCallMeter,

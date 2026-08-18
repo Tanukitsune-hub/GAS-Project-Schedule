@@ -2,19 +2,19 @@
 
 Last updated: 2026-08-19
 
-This file records active decisions for Code `2.8.20-prepilot` and its successor
-personal Automation qualification. Historical handoffs, reports, releases, and
+This file records active decisions for Code `2.8.21-prepilot` and its frozen
+2.8.20 recovery baseline. Historical handoffs, reports, releases, and
 audit records remain immutable evidence.
 
-Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+Current machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
 
 ## D-048: one active candidate
 
-Work 0033 is the active Code `2.8.20-prepilot` with A20/B20. Work 0035
-materializes the qualified tree cleanly onto current `main`; older stacked
-branches and releases are historical, not current selectors.
+Work 0036 is the active Code `2.8.21-prepilot` with A21/B21. Work 0035
+materialized the qualified 2.8.20 tree cleanly onto current `main`; older
+stacked branches and releases are historical, not current selectors.
 
 ## D-049: the Task ledger is the trust anchor
 
@@ -56,7 +56,7 @@ Work 0018 is Code `2.8.14-prepilot` with A14/B14. Work 0028 is Code
 `2.8.15-prepilot` with A15/B15. Work 0029 remains Code `2.8.16-prepilot`
 with A16/B16. Work 0030 remains Code `2.8.17-prepilot` with A17/B17. Work
 0031 remains Code `2.8.18-prepilot` with A18/B18. Work 0032 remains Code
-`2.8.19-prepilot` with A19/B19. Work 0033 is the active Code
+`2.8.19-prepilot` with A19/B19. Work 0033 remains the frozen historical Code
 `2.8.20-prepilot` with A20/B20. These identities are not overwritten.
 
 ## D-057: Gemini remains explicitly bounded
@@ -98,3 +98,14 @@ Completion requires readiness, exactly one canonical trigger, unattended
 synthetic Inbox → Gemini → Task/Review processing, separately authorized
 Calendar behavior where applicable, and verified disable cleanup. Real personal
 mail remains out of scope until those checks pass.
+
+## D-067: Work 0036 is synthetic-only personal Automation qualification
+
+Code `2.8.21-prepilot` is the direct A21/B21 successor of frozen Code
+`2.8.20-prepilot`. Automatic discovery is restricted to the exact
+`[WORK_OS_AUTOMATION_SYNTHETIC_0036]` subject and normalized fixture body,
+with a maximum of one fresh Message per run. Personal owner/operator approval
+replaces active company wording; independent data, credential-storage,
+credential/auth, OAuth/service, target, and trigger gates remain fail-closed.
+Automation stays OFF until a later explicit user action, and no ordinary
+personal mail is admitted by this candidate.

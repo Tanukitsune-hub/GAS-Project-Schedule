@@ -4,9 +4,9 @@ Last updated: 2026-08-19
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+Current machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
 
@@ -58,7 +58,20 @@ The merge is permitted only after:
   0035 branch name; and
 - no blocker remains.
 
-## Next phase: personal Automation qualification
+## Work 0036: personal Automation qualification candidate
+
+Work 0036 is the direct 2.8.21 successor of the frozen 2.8.20 recovery
+baseline. Its automatic discovery scope is the single exact synthetic subject
+and normalized body `WORK_OS_AUTOMATION_SYNTHETIC_BODY_0036`; ordinary Inbox
+mail cannot reach the Gemini boundary. Automation remains OFF, readiness is
+read-only, and the later user-controlled E2E is the next runtime boundary.
+
+The candidate uses personal owner/operator approval semantics, independent
+data-policy, credential-storage, credential/auth, OAuth/service, and target
+readiness gates. A21/B21 release lineage and the exact committed regression
+inventory preserve the Work 0035 main integration evidence.
+
+## Next phase: personal Automation runtime qualification
 
 No company-PC or company-environment deployment is planned. After clean main
 integration, the next outcome is to prove controlled automatic operation in the

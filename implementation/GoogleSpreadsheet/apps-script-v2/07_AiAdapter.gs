@@ -949,8 +949,17 @@ var WorkOsAiAdapter = (function () {
       credential_reference: settings.credential_reference == null
         ? WorkOsConfig.EXTERNAL_AI_CREDENTIAL_REFERENCE
         : settings.credential_reference,
+      operator_approved: settings.operator_approved == null
+        ? (settings.company_approved == null
+          ? WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
+          : settings.company_approved)
+        : settings.operator_approved,
+      // Compatibility-only alias for historical local fixtures. Active gates
+      // and user-facing readiness use operator_approved.
       company_approved: settings.company_approved == null
-        ? WorkOsConfig.EXTERNAL_AI_COMPANY_APPROVED
+        ? (settings.operator_approved == null
+          ? WorkOsConfig.EXTERNAL_AI_COMPANY_APPROVED
+          : settings.operator_approved)
         : settings.company_approved,
       data_policy_approved: settings.data_policy_approved == null
         ? WorkOsConfig.EXTERNAL_AI_DATA_POLICY_APPROVED
@@ -984,8 +993,8 @@ var WorkOsAiAdapter = (function () {
         !metadataToken(config.prompt_version)) {
       reasons.push('EXTERNAL_AI_NOT_CONFIGURED');
     }
-    if (config.company_approved !== true) {
-      reasons.push('COMPANY_APPROVAL_NOT_CONFIRMED');
+    if (config.operator_approved !== true) {
+      reasons.push('OPERATOR_APPROVAL_NOT_CONFIRMED');
     }
     if (config.data_policy_approved !== true) {
       reasons.push('DATA_POLICY_APPROVAL_NOT_CONFIRMED');
@@ -1088,7 +1097,9 @@ var WorkOsAiAdapter = (function () {
         '外部AI AdapterのProviderまたは通信境界が未設定です。'
       );
     }
-    if (settings.company_approved !== true ||
+    var operatorApproved = settings.operator_approved === true ||
+      settings.company_approved === true;
+    if (operatorApproved !== true ||
         settings.data_policy_approved !== true ||
         settings.credential_storage_approved !== true) {
       externalConfigError(
@@ -1593,6 +1604,7 @@ var WorkOsAiAdapter = (function () {
       provider: String(config.provider).toUpperCase(),
       model: config.model,
       prompt_version: config.prompt_version,
+      operator_approved: true,
       company_approved: true,
       data_policy_approved: true,
       credential_storage_approved: true,

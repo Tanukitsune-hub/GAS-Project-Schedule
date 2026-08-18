@@ -23,20 +23,27 @@ const testsRoot = path.join(moduleRoot, 'tests');
 const toolsRoot = path.join(moduleRoot, 'tools');
 const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
-const contractStartingMain = 'e2a7c683a7c0f7f1a865aec89a9e24ec56f830da';
+const contractStartingMain = '4c28231dc08dc89ee7a529cb0a6192325263c810';
+const currentScopeStartingMain = contractStartingMain;
+// Retained only for the historical Work 0035 materialization regression;
+// current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
 const canonicalBranch = 'main';
 const materializedSourceCommit = '0c0304f6a63a08796c7ea788b4e3bc8de077aec8';
 const materializedReleaseCommit = 'b321d83e29ba04557cbed87b75accc746144da6c';
-const expectedBranch = 'codex/0002-clean-integration-candidate';
+const expectedBranch = 'codex/0036-personal-automation-qualification';
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot';
+  'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot';
 const phase8cPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot-phase8c';
+  'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c';
 const releaseReportPath =
-  'implementation/GoogleSpreadsheet/WORK_0033_RELEASE_IMPLEMENTATION_REPORT.md';
+  'docs/handoffs/0036-report.md';
+const testInventoryPath = path.join(
+  testsRoot,
+  'expected_test_inventory.json'
+);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -115,11 +122,11 @@ function readContract() {
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
     starting_main: contractStartingMain,
     branch: expectedBranch,
-    code_version: '2.8.20-prepilot',
+    code_version: '2.8.21-prepilot',
     schema_version: '2.6',
     ai_schema_version: '2.0',
     migration_version: '3',
-    highest_gate: 'READY_FOR_CONTROLLED_SANDBOX_VALIDATION',
+    highest_gate: 'READY_FOR_USER_PERSONAL_AUTOMATION_E2E',
     automation: false,
     active_transfer: null,
     active_deployment: null,
@@ -141,7 +148,7 @@ function readContract() {
   if (!contract.phase8c || contract.phase8c.path !== phase8cPath ||
       contract.phase8c.test_mode !== false ||
       contract.phase8c.test_harness !== false ||
-      contract.phase8c.transform !== 'TEST_MODE_ONLY') {
+      contract.phase8c.transform !== 'TEST_MODE_AND_APPROVED_PROVIDER_READINESS_FLAGS') {
     throw new Error('CURRENT_CONTRACT_PHASE8C_INVALID');
   }
   return contract;
@@ -174,7 +181,7 @@ function isAllowedScopeBranch(branch) {
 function checkRepositoryScope(options = {}) {
   const gitCommand = options.git || git;
   const spawnGitCommand = options.spawnGit || spawnGit;
-  const scopeStartingMain = options.startingMain || integrationStartingMain;
+  const scopeStartingMain = options.startingMain || currentScopeStartingMain;
   const branchPolicy = options.branchPolicy || isAllowedScopeBranch;
   const environment = options.environment || process.env;
   const branch = gitCommand(['branch', '--show-current']);
@@ -295,21 +302,89 @@ function checkAppsScriptStatic() {
   }));
 }
 
+function normalizeTestInventory(value) {
+  var names = Array.isArray(value)
+    ? value
+    : value && Array.isArray(value.suites)
+      ? value.suites
+      : null;
+  if (!names || names.some(function (name) {
+    return typeof name !== 'string' || !name.endsWith('_test.js');
+  })) {
+    throw new Error('REGRESSION_SUITE_INVENTORY_INVALID');
+  }
+  var sorted = names.slice().sort();
+  if (sorted.some(function (name, index) {
+    return index > 0 && sorted[index - 1] === name;
+  })) {
+    throw new Error('REGRESSION_SUITE_INVENTORY_DUPLICATE');
+  }
+  return sorted;
+}
+
+function testInventoryFingerprint(names) {
+  return sha256(normalizeTestInventory(names).join('\n'));
+}
+
+function readTestInventory(file = testInventoryPath) {
+  var value;
+  try {
+    value = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    throw new Error('REGRESSION_SUITE_INVENTORY_MISSING');
+  }
+  var names = normalizeTestInventory(value);
+  if (value.schema !== 'WORK_OS_TEST_INVENTORY_V1' ||
+      value.suite_count !== names.length ||
+      value.fingerprint !== testInventoryFingerprint(names)) {
+    throw new Error('REGRESSION_SUITE_INVENTORY_FINGERPRINT_INVALID');
+  }
+  return { schema: value.schema, suite_count: names.length, suites: names,
+    fingerprint: value.fingerprint };
+}
+
+function compareTestInventory(actual, expected) {
+  var actualNames = normalizeTestInventory(actual);
+  var expectedNames = normalizeTestInventory(expected);
+  var expectedSet = new Set(expectedNames);
+  var actualSet = new Set(actualNames);
+  var missing = expectedNames.filter(function (name) {
+    return !actualSet.has(name);
+  });
+  var extra = actualNames.filter(function (name) {
+    return !expectedSet.has(name);
+  });
+  return {
+    pass: missing.length === 0 && extra.length === 0,
+    missing: missing,
+    extra: extra,
+    actual_count: actualNames.length,
+    expected_count: expectedNames.length,
+    actual_fingerprint: testInventoryFingerprint(actualNames),
+    expected_fingerprint: testInventoryFingerprint(expectedNames)
+  };
+}
+
 function checkNodeSuites() {
-  const suites = fs.readdirSync(testsRoot)
+  const inventory = readTestInventory();
+  const actualSuites = fs.readdirSync(testsRoot)
     .filter((name) => name.endsWith('_test.js'))
     .sort();
-  if (suites.length < 49) {
-    throw new Error('REGRESSION_SUITE_COUNT_BELOW_BASELINE');
+  const comparison = compareTestInventory(actualSuites, inventory.suites);
+  if (!comparison.pass) {
+    throw new Error('REGRESSION_SUITE_INVENTORY_MISMATCH');
   }
-  for (const suite of suites) {
+  for (const suite of inventory.suites) {
     run(process.execPath, [path.join(testsRoot, suite)], {
       failureCode: `NODE_REGRESSION_SUITE_FAILED_${suite}`
     });
   }
   return {
     command: 'all current *_test.js suites',
-    suite_count: suites.length
+    suite_count: inventory.suite_count,
+    inventory_fingerprint: inventory.fingerprint,
+    missing_suite_count: comparison.missing.length,
+    extra_suite_count: comparison.extra.length
   };
 }
 
@@ -352,15 +427,15 @@ function checkRelease() {
       'implementation', 'GoogleSpreadsheet'
     );
     const outputs = [
-      runPowerShell('verify_v2_8_20_release.ps1', [
+      runPowerShell('verify_v2_8_21_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot),
-      runPowerShell('verify_v2_8_20_phase8c_release.ps1', [
+      runPowerShell('verify_v2_8_21_phase8c_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot)
     ];
     return {
-      command: 'v2.8.20 Phase 8B/8C package verifiers in committed LF checkout',
+      command: 'v2.8.21 Phase 8B/8C package verifiers in committed LF checkout',
       verifier_count: outputs.length,
       checkout: 'TEMP_LF_COMMITTED_HEAD',
       output_sha256: sha256(
@@ -403,54 +478,62 @@ function isCleanTreeMaterialization(options = {}) {
 
 function checkReleaseLineage() {
   const contract = readContract();
-  const cleanTreeMaterialization = isCleanTreeMaterialization();
-  const releaseCommit = cleanTreeMaterialization
-    ? materializedReleaseCommit
-    : git(['log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json']);
+  const releaseCommit = git([
+    'log', '-1', '--format=%H', '--', 'CURRENT_CONTRACT.json'
+  ]);
   if (!/^[0-9a-f]{40}$/.test(releaseCommit)) {
     throw new Error('RELEASE_COMMIT_NOT_FOUND');
   }
-  if (contract.source_commit !== materializedSourceCommit ||
+  if (git(['rev-parse', `${contract.source_commit}^`]) !==
+        currentScopeStartingMain ||
       git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
-    throw new Error('B20_NOT_DIRECT_CHILD_OF_A20');
+    throw new Error('B21_NOT_DIRECT_CHILD_OF_A21');
   }
   if (!gitObjectExists(`${contract.source_commit}^{commit}`) ||
       !gitObjectExists(`${releaseCommit}^{commit}`)) {
-    throw new Error('A20_OR_B20_COMMIT_MISSING');
+    throw new Error('A21_OR_B21_COMMIT_MISSING');
   }
-  if (!cleanTreeMaterialization) {
-    const ancestor = spawnGit([
-      'merge-base', '--is-ancestor', releaseCommit, 'HEAD'
-    ]);
-    if (ancestor.status !== 0) throw new Error('B20_NOT_ANCESTOR_OF_HEAD');
-  }
+  const ancestor = spawnGit([
+    'merge-base', '--is-ancestor', releaseCommit, 'HEAD'
+  ]);
+  if (ancestor.status !== 0) throw new Error('B21_NOT_ANCESTOR_OF_HEAD');
   if (gitObjectExists(`${contract.source_commit}:${phase8bPath}`) ||
       gitObjectExists(`${contract.source_commit}:${phase8cPath}`)) {
-    throw new Error('A20_CONTAINS_GENERATED_RELEASE');
+    throw new Error('A21_CONTAINS_GENERATED_RELEASE');
   }
   const changed = git([
     'diff-tree', '--no-commit-id', '--name-only', '-r', releaseCommit
   ]).split(/\r?\n/).filter(Boolean).sort();
   const invalid = changed.filter((file) =>
     file !== 'CURRENT_CONTRACT.json' &&
-    file !== releaseReportPath &&
     !file.startsWith(`${phase8bPath}/`) &&
     !file.startsWith(`${phase8cPath}/`)
   );
-  if (invalid.length) throw new Error('B20_SCOPE_INVALID');
+  if (invalid.length) throw new Error('B21_SCOPE_INVALID');
   if (!changed.includes('CURRENT_CONTRACT.json') ||
-      !changed.includes(releaseReportPath) ||
       !changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
       !changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
-    throw new Error('B20_REQUIRED_SCOPE_MISSING');
+    throw new Error('B21_REQUIRED_SCOPE_MISSING');
+  }
+  const historicalReleasePaths = [
+    'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot',
+    'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot-phase8c'
+  ];
+  if (historicalReleasePaths.some((releasePath) =>
+    !gitObjectExists(`${currentScopeStartingMain}:${releasePath}`))) {
+    throw new Error('HISTORICAL_2_8_20_RELEASE_MISSING');
+  }
+  if (git([
+    'diff', '--name-only', currentScopeStartingMain, 'HEAD', '--'
+  ].concat(historicalReleasePaths)).trim()) {
+    throw new Error('HISTORICAL_2_8_20_RELEASE_CHANGED');
   }
   return {
-    command: cleanTreeMaterialization
-      ? 'historical A20/B20 ancestry, release-only B20 scope, and clean-tree materialization'
-      : 'A20/B20 ancestry, release-only B20 scope, and source-stage absence',
+    command: 'A21/B21 direct ancestry, release-only B21 scope, historical 2.8.20 preservation, and source-stage absence',
     source_commit: contract.source_commit,
     release_commit: releaseCommit,
-    b19_changed_file_count: changed.length
+    b21_changed_file_count: changed.length,
+    historical_release_changed_file_count: 0
   };
 }
 
@@ -502,7 +585,7 @@ function checkTrackedSecretsAndLocalArtifacts() {
   }
   const diff = git([
     'diff', '--no-ext-diff', '--unified=0',
-    integrationStartingMain, 'HEAD', '--'
+    currentScopeStartingMain, 'HEAD', '--'
   ]);
   const added = diff.split(/\r?\n/)
     .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
@@ -619,6 +702,9 @@ module.exports = {
   checkRepositoryScope,
   isAllowedScopeBranch,
   isCleanTreeMaterialization,
+  readTestInventory,
+  compareTestInventory,
+  testInventoryFingerprint,
   contentHasSensitivePattern,
   isForbiddenCredentialPath
 };
