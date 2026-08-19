@@ -30,9 +30,10 @@ Diagnostics, or Dashboard action in Work 0036. Work 0036 does not configure or
 inspect a real API key, make a real Gemini request, access Gmail runtime, or
 invoke an Apps Script function.
 
-The user may manually enter a real Gemini key into the designated Script
-Property only in a later explicitly authorized Work. The key must never be
-pasted into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
+The existing personal-synthetic Apps Script target already has the Gemini
+credential configured outside the repository. Do not re-enter, rotate, inspect,
+or copy the credential for this qualification. The key must never be pasted
+into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
 
 ## Work 0036 qualification boundary
 
