@@ -4,15 +4,17 @@ Last updated: 2026-08-19
 
 Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Overall status: `HOLD_USER_AUTOMATION_E2E_RUNTIME_PREPARATION_DEFECT`
 
 Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-ChatGPT review disposition: `READY — FALSE_READINESS_SURFACE_REPAIRED`
+ChatGPT review disposition: `HOLD — LIVE_PREPARATION_TEST_MODE_INJECTION_DEFECT`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF`
+
+User Automation E2E: `HOLD`
 
 ## Current contract
 
@@ -53,29 +55,50 @@ planned.
 - Secret/local-state scan: 0 hits.
 - Existing personal-synthetic target review-fix replacement: one guarded Phase
   8C update and one independent pull-back, exact parity PASS.
-- Apps Script function, Gmail, Gemini, Calendar, trigger, Automation, Setup,
-  diagnostic, and user E2E execution: NOT EXECUTED.
+- Review-fix final CI `#400`: PASS.
+- ChatGPT docs-only clarification CI `#402`: PASS.
+- Automation remained OFF throughout the implementation/review work.
 
 ## Work 0036 review-fix result
 
-The review-fix makes the user-facing readiness surface authoritative and
-bounded. `getPersonalAutomationQualificationStatus()` now evaluates the same
-complete prerequisite boundary used by `enableAutomation()`, including Setup,
+The review-fix made the user-facing readiness surface authoritative and
+bounded. `getPersonalAutomationQualificationStatus()` evaluates the complete
+prerequisite boundary used by `enableAutomation()`, including Setup,
 candidate/version alignment, production-shaped synthetic scope, approvals,
 actual credential presence without value access, OAuth, production Gemini
 adapter health, formal Gmail labels, dedicated Calendar, and trigger/state
-residue. It returns READY only when every prerequisite is ready while
-Automation remains OFF.
+residue.
 
-The menu now provides a confirmed preparation action that calls the existing
-no-argument idempotent preparation path. The action remains Automation-OFF
-only and does not expose credentials or mutate business data.
+The menu also exposes the no-argument idempotent
+`preparePersonalAutomationQualification()` action.
 
-The repaired Phase 8C payload was placed once on the same existing
-personal-synthetic target under a fresh review-fix state and independently
-pulled back with exact byte/hash parity. No runtime function, Gmail message,
-Gemini request, Calendar write, trigger mutation, Setup, or Automation action
-was executed.
+## Live user evidence: preparation BLOCKER
+
+On 2026-08-19 the user began the authorized synthetic Automation E2E and ran
+`個人用合成Automationを準備` with Automation still OFF. The live action stopped
+immediately with the bounded error:
+
+`WorkOsAppError: Automation依存注入はTest modeだけで利用できます。`
+
+GitHub source review confirmed the root cause: the production no-argument
+preparation path obtains real services correctly, but then calls
+`WorkOsAutomation.getDiagnosticAutomationStatus({...})` with an injected options
+object. In Phase 8C (`TEST_MODE=false`), the Automation module correctly rejects
+any non-empty dependency-injection object. The defect is therefore the
+preparation caller, not the production injection guard.
+
+No Automation enable, scheduled trigger, Gmail processing, Gemini request,
+Task/Review mutation, or Calendar action occurred in this failed step. The
+system failed closed and Automation remains OFF.
+
+The user must not retry preparation or continue to readiness/enable until the
+same Work 0036 runtime-preparation repair is implemented, validated, regenerated,
+placed on the existing target, and independently reviewed.
+
+Authoritative continuation handoff:
+
+- `docs/handoffs/0036-runtime-preparation-fix-instruction.md`
+- `docs/handoffs/0036-runtime-preparation-fix-addendum.md`
 
 ## Historical lineage
 
@@ -88,16 +111,18 @@ was executed.
 - Work 0033: Code `2.8.20-prepilot`, source A20 and release B20; the subsequent
   user-controlled personal Gemini E2E passed.
 - Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; synthetic-only
-  automatic discovery, authoritative personal readiness/preparation gates,
-  deterministic test inventory, and exact existing-target replacement parity
-  are implemented. User-controlled Automation E2E remains unexecuted.
+  automatic discovery and authoritative readiness are implemented, but the live
+  production preparation caller requires the bounded repair recorded above.
 
 Historical handoffs and reports remain immutable evidence.
 
 ## Next boundary
 
-The bounded Work 0036 review repair, deterministic 2.8.21 regeneration,
-existing-target replacement, pull parity, final CI, and independent review are
-complete. The next boundary is the separately user-controlled synthetic
-Automation E2E. Real personal mail remains out of scope until that automatic
-synthetic E2E and disable rollback pass.
+Repair only the live production preparation caller under the same Work 0036,
+prove the regression and all existing safety boundaries, regenerate the exact
+2.8.21 Phase 8B/8C packages, replace the repaired Phase 8C source once on the
+same existing personal-synthetic target, and verify independent pull-back
+parity. Automation must remain OFF throughout that repair.
+
+Only after ChatGPT reviews that completion may the user retry the single
+preparation step. Real personal mail remains out of scope.
