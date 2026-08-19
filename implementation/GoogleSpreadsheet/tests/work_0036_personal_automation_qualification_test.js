@@ -101,6 +101,85 @@ function resetProperties(values = {}) {
   return sandbox.PropertiesService.getScriptProperties();
 }
 
+function makePreparationCallerHarness(testMode) {
+  const values = new Map([
+    [Config.PROPERTIES.SETUP_COMPLETED_STAGES,
+      JSON.stringify(Config.SETUP_STAGES)],
+    [Config.PROPERTIES.SCHEMA_VERSION, Config.SCHEMA_VERSION],
+    [Config.PROPERTIES.MIGRATION_VERSION, Config.MIGRATION_VERSION],
+    [Config.PROPERTIES.CODE_VERSION, '2.8.20-prepilot']
+  ]);
+  const props = {
+    getProperty(key) {
+      return values.has(key) ? values.get(key) : null;
+    },
+    setProperty(key, value) {
+      values.set(key, String(value));
+    }
+  };
+  const calls = [];
+  const fakeConfig = {
+    TEST_MODE: testMode,
+    CODE_VERSION: Config.CODE_VERSION,
+    SCHEMA_VERSION: Config.SCHEMA_VERSION,
+    MIGRATION_VERSION: Config.MIGRATION_VERSION,
+    SETUP_STAGES: Config.SETUP_STAGES.slice(),
+    PROPERTIES: Config.PROPERTIES
+  };
+  const fakeAutomation = {
+    getDiagnosticAutomationStatus() {
+      calls.push(arguments.length);
+      if (!testMode && arguments.length !== 0) {
+        throw new Error('PRODUCTION_STATUS_MUST_BE_NO_ARG');
+      }
+      return {
+        status: 'CONSISTENT',
+        enabled: false,
+        desired_enabled: false,
+        clock_trigger_count: 0,
+        stored_trigger_id_present: false
+      };
+    }
+  };
+  function FakeWorkOsAppError(code, stage, retryable, message) {
+    this.name = 'WorkOsAppError';
+    this.code = code;
+    this.stage = stage;
+    this.retryable = retryable;
+    this.message = message;
+  }
+  FakeWorkOsAppError.prototype = Object.create(Error.prototype);
+  const fakePropertiesService = {
+    getScriptProperties() {
+      return props;
+    }
+  };
+  const fakeSpreadsheetApp = {
+    getActiveSpreadsheet() {
+      return {};
+    }
+  };
+  const fakeSpreadsheet = {};
+  const context = {
+    WorkOsConfig: fakeConfig,
+    WorkOsAutomation: fakeAutomation,
+    WorkOsAppError: FakeWorkOsAppError,
+    PropertiesService: fakePropertiesService,
+    SpreadsheetApp: fakeSpreadsheetApp,
+    console
+  };
+  vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(
+      path.join(__dirname, '..', 'apps-script-v2', '02_Setup.gs'),
+      'utf8'
+    ),
+    context,
+    { filename: `work_0036_preparation_${testMode ? 'test' : 'production'}.gs` }
+  );
+  return { context, props, calls, fakeSpreadsheet };
+}
+
 function offScriptApp(status = 'NOT_REQUIRED') {
   return {
     AuthMode: { FULL: 'FULL' },
@@ -519,6 +598,45 @@ test('WORK_0036_PREPARATION_MENU_REQUIRES_CONFIRMATION_AND_NO_ARG_CALL', () => {
     /function menuPreparePersonalAutomationQualification\(\)/);
   assert.match(menuSource, /ui\.ButtonSet\.OK_CANCEL/);
   assert.match(menuSource, /preparePersonalAutomationQualification\(\)/);
+});
+
+test('WORK_0036_PRODUCTION_PREPARATION_USES_NO_ARG_AUTOMATION_STATUS', () => {
+  const harness = makePreparationCallerHarness(false);
+  const result = harness.context.WorkOsSetup
+    .preparePersonalAutomationQualification();
+  assert.strictEqual(result.status,
+    'READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION');
+  assert.deepStrictEqual(harness.calls, [0]);
+  assert.strictEqual(
+    harness.props.getProperty(Config.PROPERTIES.CODE_VERSION),
+    Config.CODE_VERSION
+  );
+});
+
+test('WORK_0036_TEST_MODE_PREPARATION_RETAINS_DEPENDENCY_INJECTION', () => {
+  const harness = makePreparationCallerHarness(true);
+  const result = harness.context.WorkOsSetup
+    .preparePersonalAutomationQualification({
+      properties: harness.props,
+      completed_stages: Config.SETUP_STAGES.slice(),
+      spreadsheet: harness.fakeSpreadsheet,
+      script_app: offScriptApp()
+    });
+  assert.strictEqual(result.status,
+    'READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION');
+  assert.deepStrictEqual(harness.calls, [1]);
+});
+
+test('WORK_0036_AUTOMATION_PRODUCTION_DI_GUARD_REMAINS_FAIL_CLOSED', () => {
+  const triggerSource = fs.readFileSync(
+    path.join(__dirname, '..', 'apps-script-v2', '12_Triggers.gs'),
+    'utf8'
+  );
+  assert.match(
+    triggerSource,
+    /Object\.keys\(settings\)\.length && !WorkOsConfig\.TEST_MODE/
+  );
+  assert.match(triggerSource, /E_TEST_MODE_DISABLED/);
 });
 
 test('WORK_0036_ENABLE_REMAINS_FAIL_CLOSED_AND_OFF', () => {

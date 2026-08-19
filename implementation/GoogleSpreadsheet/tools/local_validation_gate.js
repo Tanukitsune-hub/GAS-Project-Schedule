@@ -32,6 +32,8 @@ const inventoryContractCommit = 'd779bee2bdf7015a951bba16aff6b869d4d45aad';
 const sourceCorrectionCommit = 'c470ff80ab39c5d0c70d83a79b933040b7456cf8';
 const reviewFixParentRef =
   '41e0173ee81d36b786ca0d3ede8513c8c76ecd73';
+const runtimePreparationFixParentRef =
+  '90ad3a65155cc2f765de439f9b31e73707c0613d';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -544,6 +546,18 @@ function checkReleaseLineage() {
         JSON.stringify(expectedReviewFixFiles)
     ) {
       throw new Error('WORK_0036_REVIEW_FIX_SOURCE_SCOPE_INVALID');
+    }
+  } else if (sourceParent === runtimePreparationFixParentRef) {
+    const expectedRuntimePreparationFixFiles = [
+      'implementation/GoogleSpreadsheet/apps-script-v2/02_Setup.gs',
+      'implementation/GoogleSpreadsheet/tests/work_0036_personal_automation_qualification_test.js',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedRuntimePreparationFixFiles)
+    ) {
+      throw new Error('WORK_0036_RUNTIME_PREPARATION_FIX_SOURCE_SCOPE_INVALID');
     }
   } else {
     throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');
