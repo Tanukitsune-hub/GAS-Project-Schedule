@@ -309,6 +309,15 @@ function initialExecutionState(repairHead, inventory, binding) {
   };
 }
 
+function restagedExecutionState(state, repairHead, inventory, binding) {
+  assertStateBase(state);
+  if (state.phase !== 'STAGED' || state.push_attempt_count !== 0 ||
+      state.pull_attempt_count !== 0) {
+    fail('WORK_0036_EXECUTION_ALREADY_STARTED');
+  }
+  return initialExecutionState(repairHead, inventory, binding);
+}
+
 function assertStateBase(state) {
   const valid = state && state.schema === phase8cSchema &&
     state.work_id === '0036' && state.source_binding_work_id === '0010' &&
@@ -384,6 +393,67 @@ function stagePayload() {
     missing_file_count: 0,
     extra_file_count: 0,
     payload_sha256: staged.payload_sha256
+  };
+}
+
+function restagePayload() {
+  if (process.env.GAS_WORK_0036_CI_CONFIRMED !== 'true') {
+    fail('WORK_0036_REPAIR_CI_CONFIRMATION_REQUIRED');
+  }
+  const head = assertExactBranchCleanAndPublished();
+  if (!fs.existsSync(workspaceRoot) || fs.existsSync(pullRoot)) {
+    fail('WORK_0036_RESTAGE_STATE_MISSING');
+  }
+  const state = readJson(executionStatePath, 'WORK_0036_EXECUTION_STATE_INVALID');
+  assertStateBase(state);
+  const ancestry = childProcess.spawnSync('git', [
+    '-C', repositoryRoot, 'merge-base', '--is-ancestor',
+    state.repair_head, head
+  ], { windowsHide: true });
+  if (ancestry.error || ancestry.status !== 0) {
+    fail('WORK_0036_STALE_STATE_ANCESTRY_INVALID');
+  }
+  const binding = loadExistingBinding();
+  const names = phase8cPayloadNames();
+  const committed = assertPayloadInventory(
+    inventoryFromBuffers(names, committedPhase8cBuffer)
+  );
+  assertExactPayloadDirectory(
+    payloadRoot, 'WORK_0036_STAGED_PAYLOAD_UNEXPECTED_CONTENT', names
+  );
+  const staged = assertPayloadInventory(inventoryForDirectory(payloadRoot, names));
+  const saved = assertPayloadInventory(readJson(
+    inventoryPath, 'WORK_0036_STAGED_PAYLOAD_INVENTORY_INVALID'
+  ));
+  const config = readJson(configPath, 'WORK_0036_TARGET_CONFIG_MISSING');
+  if (JSON.stringify(saved) !== JSON.stringify(staged) ||
+      JSON.stringify(staged) !== JSON.stringify(committed) ||
+      state.payload_sha256 !== staged.payload_sha256 ||
+      config.scriptId !== binding.config.scriptId ||
+      config.rootDir !== 'payload' ||
+      JSON.stringify(config.scriptExtensions) !== JSON.stringify(['.gs', '.js']) ||
+      fs.readFileSync(ignorePath, 'utf8') !== phase8cIgnoreContents(names)) {
+    fail('WORK_0036_STAGED_PAYLOAD_MISMATCH');
+  }
+  try {
+    assertTargetObjects(config, binding.target, null);
+  } catch (error) {
+    if (error instanceof ClaspGateError) {
+      fail('WORK_0036_EXISTING_TARGET_BINDING_INVALID');
+    }
+    throw error;
+  }
+  const refreshed = restagedExecutionState(state, head, staged, binding);
+  writeJsonAtomic(inventoryPath, staged);
+  writeJsonAtomic(executionStatePath, refreshed);
+  return {
+    file_count: staged.file_count,
+    gs_file_count: 22,
+    manifest_file_count: 1,
+    missing_file_count: 0,
+    extra_file_count: 0,
+    payload_sha256: staged.payload_sha256,
+    restaged: true
   };
 }
 
@@ -624,7 +694,8 @@ function safeAttemptEvidence(statePath = executionStatePath) {
 
 function normalizeCommand(command) {
   return [
-    'auth-status', 'stage', 'inventory-check', 'push', 'pull-verify', 'evidence'
+    'auth-status', 'stage', 'restage', 'inventory-check', 'push', 'pull-verify',
+    'evidence'
   ].includes(command) ? command : 'UNKNOWN';
 }
 
@@ -642,6 +713,12 @@ async function main() {
       status: 'PASS',
       google_operation: 'NOT_EXECUTED'
     }, stagePayload()));
+    else if (command === 'restage') safeWrite(Object.assign({
+      lane: 'work_0036_existing_target_placement',
+      command,
+      status: 'PASS',
+      google_operation: 'NOT_EXECUTED'
+    }, restagePayload()));
     else if (command === 'inventory-check') safeWrite(Object.assign({
       lane: 'work_0036_existing_target_placement',
       command,
@@ -691,6 +768,7 @@ module.exports = {
   assertPreviousPlacement,
   assertPayloadInventory,
   initialExecutionState,
+  restagedExecutionState,
   assertStateBase,
   nextAttemptState,
   acquireOperationLock,

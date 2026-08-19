@@ -144,6 +144,20 @@ assert.strictEqual(serialized.includes(parentId), false);
 assert.strictEqual(serialized.includes(principal), false);
 assert.strictEqual(staged.payload_path, placement.phase8cReleaseRelativeRoot);
 assert.strictEqual(staged.previous_placement_work_id, '0033');
+const refreshed = placement.restagedExecutionState(
+  staged, '7'.repeat(40), inventory, { state: sourceState }
+);
+assert.strictEqual(refreshed.repair_head, '7'.repeat(40));
+assert.strictEqual(refreshed.push_attempt_count, 0);
+assert.strictEqual(refreshed.pull_attempt_count, 0);
+assert.throws(
+  () => placement.restagedExecutionState(
+    Object.assign({}, staged, { phase: 'PUSH_ATTEMPT_STARTED', push_attempt_count: 1 }),
+    '7'.repeat(40), inventory, { state: sourceState }
+  ),
+  (error) => error instanceof placement.GateError &&
+    error.code === 'WORK_0036_EXECUTION_ALREADY_STARTED'
+);
 
 const pushStarted = placement.nextAttemptState(staged, 'push');
 assert.strictEqual(pushStarted.push_attempt_count, 1);
@@ -180,6 +194,7 @@ assert.ok(pullMarker >= 0 && pullMarker < pullWorkspaceStart);
 assert.strictEqual(toolSource.includes("['run'"), false);
 assert.strictEqual(toolSource.includes("['functions"), false);
 assert.strictEqual(placement.normalizeCommand('run'), 'UNKNOWN');
+assert.strictEqual(placement.normalizeCommand('restage'), 'restage');
 
 const nativeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'work-0036-native-test-'));
 try {
@@ -222,7 +237,7 @@ try {
 process.stdout.write(`${JSON.stringify({
   suite: 'work_0036_existing_target_placement',
   environment: 'LOCAL_NON_GOOGLE_SYNTHETIC_ONLY',
-  passed: 12,
+  passed: 14,
   failed: 0,
   phase8c_file_count: 23,
   phase8c_gs_file_count: 22,
