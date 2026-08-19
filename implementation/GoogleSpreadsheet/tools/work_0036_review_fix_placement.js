@@ -32,18 +32,41 @@ const phase8cReleaseRelativeRoot =
 const phase8cReleaseRoot = path.join(
   repositoryRoot, phase8cReleaseRelativeRoot.replaceAll('/', path.sep)
 );
-const workspaceName = '.clasp-work-0036-review-fix';
-const pullWorkspaceName = '.clasp-pull-verify-work-0036-review-fix';
+const runtimePreparationFixLane =
+  process.env.GAS_WORK_0036_RUNTIME_PREPARATION_FIX_LANE === 'true';
+const laneName = runtimePreparationFixLane
+  ? 'work_0036_runtime_preparation_fix_replacement_placement'
+  : 'work_0036_review_fix_replacement_placement';
+const ciConfirmationRequiredEnv = runtimePreparationFixLane
+  ? 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_CI_CONFIRMED'
+  : 'GAS_WORK_0036_REVIEW_FIX_CI_CONFIRMED';
+const pushAllowedEnv = runtimePreparationFixLane
+  ? 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_PUSH_ALLOWED'
+  : 'GAS_WORK_0036_REVIEW_FIX_PUSH_ALLOWED';
+const pullAllowedEnv = runtimePreparationFixLane
+  ? 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_PULL_ALLOWED'
+  : 'GAS_WORK_0036_REVIEW_FIX_PULL_ALLOWED';
+const workspaceName = runtimePreparationFixLane
+  ? '.clasp-work-0036-runtime-preparation-fix'
+  : '.clasp-work-0036-review-fix';
+const pullWorkspaceName = runtimePreparationFixLane
+  ? '.clasp-pull-verify-work-0036-runtime-preparation-fix'
+  : '.clasp-pull-verify-work-0036-review-fix';
 const workspaceRoot = path.join(moduleRoot, workspaceName);
 const payloadRoot = path.join(workspaceRoot, 'payload');
 const pullRoot = path.join(moduleRoot, pullWorkspaceName);
 const inventoryPath = path.join(workspaceRoot, 'payload-inventory.json');
 const configPath = path.join(workspaceRoot, '.clasp.json');
 const ignorePath = path.join(workspaceRoot, '.claspignore');
-const executionStateFileName = 'work-0036-review-fix-execution-state.json';
+const executionStateFileName = runtimePreparationFixLane
+  ? 'work-0036-runtime-preparation-fix-execution-state.json'
+  : 'work-0036-review-fix-execution-state.json';
 const executionStatePath = path.join(workspaceRoot, executionStateFileName);
 const operationLockPath = path.join(
-  workspaceRoot, 'work-0036-review-fix-operation.lock'
+  workspaceRoot,
+  runtimePreparationFixLane
+    ? 'work-0036-runtime-preparation-fix-operation.lock'
+    : 'work-0036-review-fix-operation.lock'
 );
 const sourceWorkspaceRoot = path.join(moduleRoot, '.clasp-work-0010');
 const sourceConfigPath = path.join(sourceWorkspaceRoot, '.clasp.json');
@@ -52,11 +75,24 @@ const sourceStatePath = path.join(
   sourceWorkspaceRoot, 'work-0010-execution-state.json'
 );
 const previousPlacementStatePath = path.join(
-  moduleRoot, '.clasp-work-0036', 'work-0036-execution-state.json'
+  moduleRoot,
+  runtimePreparationFixLane
+    ? '.clasp-work-0036-review-fix'
+    : '.clasp-work-0036',
+  runtimePreparationFixLane
+    ? 'work-0036-review-fix-execution-state.json'
+    : 'work-0036-execution-state.json'
 );
 const exactBranch = 'codex/0036-personal-automation-qualification';
-const instructionHead = '41e0173ee81d36b786ca0d3ede8513c8c76ecd73';
-const phase8cSchema = 'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1';
+const instructionHead = runtimePreparationFixLane
+  ? '90ad3a65155cc2f765de439f9b31e73707c0613d'
+  : '41e0173ee81d36b786ca0d3ede8513c8c76ecd73';
+const phase8cSchema = runtimePreparationFixLane
+  ? 'WORK_OS_PERSONAL_AUTOMATION_RUNTIME_PREPARATION_FIX_REPLACEMENT_V1'
+  : 'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1';
+const previousPlacementWorkId = runtimePreparationFixLane
+  ? '0036-review-fix'
+  : '0036';
 
 class GateError extends Error {
   constructor(code) {
@@ -262,11 +298,15 @@ function assertExistingBindingObjects(config, target, state) {
 
 function assertPreviousPlacement(binding, previousPlacement) {
   const valid = previousPlacement &&
-    previousPlacement.schema ===
-      'WORK_OS_PERSONAL_AUTOMATION_QUALIFICATION_PLACEMENT_V1' &&
+    previousPlacement.schema === (runtimePreparationFixLane
+      ? 'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1'
+      : 'WORK_OS_PERSONAL_AUTOMATION_QUALIFICATION_PLACEMENT_V1') &&
     previousPlacement.work_id === '0036' &&
     previousPlacement.source_binding_work_id === '0010' &&
-    previousPlacement.previous_placement_work_id === '0033' &&
+    previousPlacement.previous_placement_work_id ===
+      (runtimePreparationFixLane ? '0036' : '0033') &&
+    (!runtimePreparationFixLane ||
+      previousPlacement.replacement_tranche === 'REVIEW_FIX_REPLACEMENT') &&
     previousPlacement.phase === 'PULL_PARITY_PASS' &&
     previousPlacement.push_attempt_count === 1 &&
     previousPlacement.pull_attempt_count === 1 &&
@@ -298,8 +338,10 @@ function initialExecutionState(repairHead, inventory, binding) {
     schema: phase8cSchema,
     work_id: '0036',
     source_binding_work_id: '0010',
-    previous_placement_work_id: '0036',
-    replacement_tranche: 'REVIEW_FIX_REPLACEMENT',
+    previous_placement_work_id: previousPlacementWorkId,
+    replacement_tranche: runtimePreparationFixLane
+      ? 'RUNTIME_PREPARATION_FIX_REPLACEMENT'
+      : 'REVIEW_FIX_REPLACEMENT',
     payload_path: phase8cReleaseRelativeRoot,
     repair_head: repairHead,
     payload_sha256: inventory.payload_sha256,
@@ -322,8 +364,10 @@ function restagedExecutionState(state, repairHead, inventory, binding) {
 function assertStateBase(state) {
   const valid = state && state.schema === phase8cSchema &&
     state.work_id === '0036' && state.source_binding_work_id === '0010' &&
-    state.previous_placement_work_id === '0036' &&
-    state.replacement_tranche === 'REVIEW_FIX_REPLACEMENT' &&
+    state.previous_placement_work_id === previousPlacementWorkId &&
+    state.replacement_tranche === (runtimePreparationFixLane
+      ? 'RUNTIME_PREPARATION_FIX_REPLACEMENT'
+      : 'REVIEW_FIX_REPLACEMENT') &&
     state.payload_path === phase8cReleaseRelativeRoot &&
     /^[0-9a-f]{40}$/.test(String(state.repair_head || '')) &&
     /^[0-9a-f]{64}$/.test(String(state.payload_sha256 || '')) &&
@@ -358,7 +402,7 @@ function nextAttemptState(state, command) {
 }
 
 function stagePayload() {
-  if (process.env.GAS_WORK_0036_REVIEW_FIX_CI_CONFIRMED !== 'true') {
+  if (process.env[ciConfirmationRequiredEnv] !== 'true') {
     fail('WORK_0036_REPAIR_CI_CONFIRMATION_REQUIRED');
   }
   const head = assertExactBranchCleanAndPublished();
@@ -399,7 +443,7 @@ function stagePayload() {
 }
 
 function restagePayload() {
-  if (process.env.GAS_WORK_0036_REVIEW_FIX_CI_CONFIRMED !== 'true') {
+  if (process.env[ciConfirmationRequiredEnv] !== 'true') {
     fail('WORK_0036_REPAIR_CI_CONFIRMATION_REQUIRED');
   }
   const head = assertExactBranchCleanAndPublished();
@@ -550,7 +594,7 @@ async function existingAuthStatus() {
     const auth = await authModule.initAuth({});
     if (!auth || !auth.credentials) fail('USER_ACTION_REQUIRED_BLOCKER');
     return {
-      lane: 'work_0036_review_fix_replacement_placement',
+      lane: laneName,
       command: 'auth-status',
       status: 'PASS',
       existing_clasp_auth: 'READY',
@@ -564,7 +608,7 @@ async function existingAuthStatus() {
 }
 
 function pushPayload() {
-  if (process.env.GAS_WORK_0036_REVIEW_FIX_PUSH_ALLOWED !== 'true' ||
+  if (process.env[pushAllowedEnv] !== 'true' ||
       process.env.GAS_DEV_CLASP_ALLOWED !== 'true') {
     fail('WORK_0036_PUSH_OPT_IN_REQUIRED');
   }
@@ -595,7 +639,7 @@ function pushPayload() {
   });
   writeJsonAtomic(executionStatePath, started);
   return {
-    lane: 'work_0036_review_fix_replacement_placement',
+    lane: laneName,
     command: 'push',
     status: 'PASS',
     push_attempt_count: 1,
@@ -623,7 +667,7 @@ function preparePullWorkspace(config, names) {
 }
 
 function pullVerify() {
-  if (process.env.GAS_WORK_0036_REVIEW_FIX_PULL_ALLOWED !== 'true' ||
+  if (process.env[pullAllowedEnv] !== 'true' ||
       process.env.GAS_DEV_CLASP_ALLOWED !== 'true') {
     fail('WORK_0036_PULL_OPT_IN_REQUIRED');
   }
@@ -652,7 +696,7 @@ function pullVerify() {
   });
   writeJsonAtomic(executionStatePath, started);
   return {
-    lane: 'work_0036_review_fix_replacement_placement',
+    lane: laneName,
     command: 'pull-verify',
     status: 'PASS',
     pull_attempt_count: 1,
@@ -710,19 +754,19 @@ async function main() {
     }
     if (command === 'auth-status') safeWrite(await existingAuthStatus());
     else if (command === 'stage') safeWrite(Object.assign({
-      lane: 'work_0036_review_fix_replacement_placement',
+      lane: laneName,
       command,
       status: 'PASS',
       google_operation: 'NOT_EXECUTED'
     }, stagePayload()));
     else if (command === 'restage') safeWrite(Object.assign({
-      lane: 'work_0036_review_fix_replacement_placement',
+      lane: laneName,
       command,
       status: 'PASS',
       google_operation: 'NOT_EXECUTED'
     }, restagePayload()));
     else if (command === 'inventory-check') safeWrite(Object.assign({
-      lane: 'work_0036_review_fix_replacement_placement',
+      lane: laneName,
       command,
       status: 'PASS',
       google_operation: 'NOT_EXECUTED'
@@ -730,7 +774,7 @@ async function main() {
     else if (command === 'push') safeWrite(pushPayload());
     else if (command === 'pull-verify') safeWrite(pullVerify());
     else if (command === 'evidence') safeWrite({
-      lane: 'work_0036_review_fix_replacement_placement',
+      lane: laneName,
       command,
       status: 'PASS',
       sensitive_output: 'SUPPRESSED',
@@ -740,7 +784,7 @@ async function main() {
   } catch (error) {
     const code = error && error.code || 'WORK_0036_OPERATION_FAILED';
     safeWrite({
-      lane: 'work_0036_review_fix_replacement_placement',
+      lane: laneName,
       command,
       status: code,
       sensitive_output: 'SUPPRESSED',
