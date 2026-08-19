@@ -985,10 +985,12 @@ var WorkOsSetup = (function () {
         '既存schemaまたはmigrationの互換性を確認できません。'
       );
     }
-    var automationStatus = WorkOsAutomation.getDiagnosticAutomationStatus({
-      properties: props,
-      script_app: settings.script_app
-    });
+    var automationStatus = WorkOsConfig.TEST_MODE
+      ? WorkOsAutomation.getDiagnosticAutomationStatus({
+        properties: props,
+        script_app: settings.script_app
+      })
+      : WorkOsAutomation.getDiagnosticAutomationStatus();
     if (automationStatus.status !== 'CONSISTENT' ||
         automationStatus.enabled === true ||
         automationStatus.desired_enabled === true ||

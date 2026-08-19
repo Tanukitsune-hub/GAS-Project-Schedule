@@ -6,7 +6,7 @@
 | Field | Value |
 |---|---|
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `fbfce52d734da921b725b2be5990082d24f36946` |
+| Source commit | `0f0b7eab0ed27b883ae25fb15af4371b42157662` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.21-prepilot` |
 | Schema Version | `2.6` |
@@ -35,13 +35,13 @@ and production operations remain unexecuted.
 |---|---|
 | Payload files | `24` |
 | `.gs` files | `23` |
-| Canonical payload-list SHA-256 | `573e273c2ca5b025ea32d998e6a48928dd715c0330839939b2b1b5e926ec7bde` |
+| Canonical payload-list SHA-256 | `10e9567b6e88b98673c90098fa2e20217412a62fdea1c2d75b6d2eb368648dcc` |
 
 | Relative path | SHA-256 |
 |---|---|
 | `apps-script/00_Config.gs` | `28bfc30ba7c3258b2e2a6638592ff717c8e428b0bcba1e18f5175461182cf60a` |
 | `apps-script/01_TypesAndSchemas.gs` | `1096aa80cd95fc4f4215072cdcdf88a059e1e36ce4c48c6521dfad9b6cf0f250` |
-| `apps-script/02_Setup.gs` | `66b5dcfb70904faf0826041e8875c13db7449dfb21354f77c582ac24f58b271c` |
+| `apps-script/02_Setup.gs` | `40f02263ecaa365628074ec666054aa60e0727986c942aaba34e97b059e07d93` |
 | `apps-script/03_SheetBuilder.gs` | `de99de32edb15b90a437788446bdb05a86a13e76853fa1a73347e0ae55fccbf6` |
 | `apps-script/04_MessageStateRepository.gs` | `c99a0d761613471f9a5b31d68824414b734a75ff33259beac0bdc812cd10ed77` |
 | `apps-script/05_GmailGateway.gs` | `48f2f7987722755ac610480365b90c8718c09c7e8e4acbb8d5c98001b95e569a` |
