@@ -10,6 +10,8 @@ function onOpen() {
     .addItem('自動処理の状態を確認', 'menuAutomationStatus')
     .addItem('個人用合成Automationの準備状態を確認',
       'menuPersonalAutomationQualificationStatus')
+    .addItem('個人用合成Automationを準備',
+      'menuPreparePersonalAutomationQualification')
     .addItem('自動処理を明示的に有効化', 'menuEnableAutomation')
     .addItem('自動処理を停止', 'menuDisableAutomation')
     .addItem('手動/取込を1件前処理', 'menuRunManualImport')
@@ -120,6 +122,22 @@ function menuPersonalAutomationQualificationStatus() {
   showSafeResult_(
     '個人用合成Automationの準備状態',
     getPersonalAutomationQualificationStatus()
+  );
+}
+
+function menuPreparePersonalAutomationQualification() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    '個人用合成Automationを準備',
+    '既存Setupの完了状態と互換性を確認し、候補のversion metadataだけを整えます。Task、Review、Message State、Calendar、正式Gmailラベル、credential、Triggerは変更せず、Automationは停止したままです。続行しますか。',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_(
+    '個人用合成Automationを準備',
+    preparePersonalAutomationQualification()
   );
 }
 

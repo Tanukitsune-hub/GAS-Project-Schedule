@@ -29,6 +29,9 @@ const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
 const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
 const inventoryContractCommit = 'd779bee2bdf7015a951bba16aff6b869d4d45aad';
+const sourceCorrectionCommit = 'c470ff80ab39c5d0c70d83a79b933040b7456cf8';
+const reviewFixParentRef =
+  '41e0173ee81d36b786ca0d3ede8513c8c76ecd73';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -520,12 +523,29 @@ function checkReleaseLineage() {
     if (sourceParent !== sourceParentRef) {
       throw new Error('A21_NOT_DIRECT_CHILD_OF_WORK_0036_REF');
     }
-  } else if (
-    sourceParent !== inventoryContractCommit ||
-    sourceCorrectionChanged.length !== 1 ||
-    sourceCorrectionChanged[0] !==
-      'implementation/GoogleSpreadsheet/apps-script-v2/99_TestHarness.gs'
-  ) {
+  } else if (contract.source_commit === sourceCorrectionCommit) {
+    if (
+      sourceParent !== inventoryContractCommit ||
+      sourceCorrectionChanged.length !== 1 ||
+      sourceCorrectionChanged[0] !==
+        'implementation/GoogleSpreadsheet/apps-script-v2/99_TestHarness.gs'
+    ) {
+      throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');
+    }
+  } else if (sourceParent === reviewFixParentRef) {
+    const expectedReviewFixFiles = [
+      'implementation/GoogleSpreadsheet/apps-script-v2/12_Triggers.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/Menu.gs',
+      'implementation/GoogleSpreadsheet/tests/work_0036_personal_automation_qualification_test.js',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedReviewFixFiles)
+    ) {
+      throw new Error('WORK_0036_REVIEW_FIX_SOURCE_SCOPE_INVALID');
+    }
+  } else {
     throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');
   }
   if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {

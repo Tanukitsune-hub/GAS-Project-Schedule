@@ -93,6 +93,121 @@ function test(id, body) {
   }
 }
 
+function resetProperties(values = {}) {
+  scriptProperties.clear();
+  Object.entries(values).forEach(([key, value]) => {
+    scriptProperties.set(key, value);
+  });
+  return sandbox.PropertiesService.getScriptProperties();
+}
+
+function offScriptApp(status = 'NOT_REQUIRED') {
+  return {
+    AuthMode: { FULL: 'FULL' },
+    triggers: [],
+    getProjectTriggers() {
+      return this.triggers.slice();
+    },
+    getAuthorizationInfo() {
+      return { getAuthorizationStatus: () => status };
+    }
+  };
+}
+
+function completeFakeReadiness() {
+  return {
+    test_mode: false,
+    external_request_performed: false,
+    automation: {
+      status: 'CONSISTENT',
+      enabled: false,
+      desired_enabled: false,
+      trigger_count: 0,
+      clock_trigger_count: 0,
+      stored_trigger_id_present: false,
+      canonical_trigger_present: false
+    },
+    prerequisites: { ready: true, reasons: [] },
+    details: {
+      candidate: {
+        ready: true,
+        setup_complete: true,
+        stored_versions_aligned: true,
+        code_version: Config.CODE_VERSION,
+        stored_code_version: Config.CODE_VERSION,
+        schema_version: Config.SCHEMA_VERSION,
+        stored_schema_version: Config.SCHEMA_VERSION,
+        ai_schema_version: Config.AI_SCHEMA_VERSION,
+        migration_version: Config.MIGRATION_VERSION,
+        stored_migration_version: Config.MIGRATION_VERSION
+      },
+      setup: { complete: true },
+      test_mode: { enabled: false, production_shaped: true },
+      scope: {
+        ready: true,
+        scope: Config.AUTOMATION_QUALIFICATION_SCOPE,
+        source_mode: Config.AUTOMATION_QUALIFICATION_SOURCE_MODE,
+        exact_subject: Config.AUTOMATION_SYNTHETIC_SUBJECT,
+        exact_query_active: true,
+        exact_body_guard_active: true
+      },
+      provider: {
+        status: 'READY',
+        ready: true,
+        provider: 'GEMINI',
+        model: Config.EXTERNAL_AI_MODEL,
+        adapter_status: 'READY',
+        credential_configured: true,
+        provider_registered: true,
+        credential_reference_present: true
+      },
+      oauth: { status: 'READY', ready: true },
+      formal_labels: {
+        status: 'READY',
+        ready: true,
+        checked: true,
+        expected_count: Config.GMAIL_LABELS.length,
+        present_count: Config.GMAIL_LABELS.length,
+        missing_count: 0
+      },
+      calendar: {
+        status: 'READY',
+        ready: true,
+        checked: true,
+        property_present: true,
+        instance_marker_ok: true,
+        remotely_verified: true
+      }
+    }
+  };
+}
+
+function evaluateFake(overrides = {}) {
+  const input = completeFakeReadiness();
+  if (overrides.automation) {
+    Object.assign(input.automation, overrides.automation);
+  }
+  if (overrides.details) {
+    Object.entries(overrides.details).forEach(([key, value]) => {
+      Object.assign(input.details[key], value);
+    });
+  }
+  if (overrides.prerequisites) {
+    Object.assign(input.prerequisites, overrides.prerequisites);
+  }
+  if (Object.prototype.hasOwnProperty.call(overrides, 'test_mode')) {
+    input.test_mode = overrides.test_mode;
+  }
+  if (Object.prototype.hasOwnProperty.call(
+    overrides, 'external_request_performed'
+  )) {
+    input.external_request_performed = overrides.external_request_performed;
+  }
+  return sandbox.WorkOsAutomation.evaluatePersonalQualificationReadiness(
+    input
+  );
+}
+
 test('WORK_0036_CANDIDATE_VERSION_AND_DEFAULT_OFF', () => {
   assert.strictEqual(Config.CODE_VERSION, '2.8.21-prepilot');
   assert.strictEqual(Config.SCHEMA_VERSION, '2.6');
@@ -185,6 +300,245 @@ test('WORK_0036_CANDIDATE_REQUIRES_EXACT_SOURCE_AND_PROCESS_DECISION', () => {
   }), false);
 });
 
+test('WORK_0036_READINESS_REJECTS_MISSING_SETUP', () => {
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: resetProperties(),
+    script_app: offScriptApp()
+  });
+  assert.strictEqual(result.status, 'BLOCKED');
+  assert.ok(result.readiness_reasons.includes(
+    'AUTOMATION_PREREQUISITES_INCOMPLETE'
+  ));
+  assert.ok(result.prerequisites.reasons.includes('SETUP_NOT_COMPLETE'));
+});
+
+test('WORK_0036_READINESS_REJECTS_HISTORICAL_CODE_VERSION', () => {
+  const props = resetProperties({
+    [Config.PROPERTIES.SETUP_COMPLETED_STAGES]: '[]',
+    [Config.PROPERTIES.CODE_VERSION]: '2.8.20-prepilot',
+    [Config.PROPERTIES.SCHEMA_VERSION]: Config.SCHEMA_VERSION,
+    [Config.PROPERTIES.MIGRATION_VERSION]: Config.MIGRATION_VERSION
+  });
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: props,
+    script_app: offScriptApp()
+  });
+  assert.strictEqual(result.status, 'BLOCKED');
+  assert.ok(result.prerequisites.reasons.includes('CODE_VERSION_MISMATCH'));
+  assert.strictEqual(result.candidate.stored_code_version,
+    '2.8.20-prepilot');
+});
+
+test('WORK_0036_READINESS_REJECTS_SCHEMA_AND_MIGRATION_MISMATCH', () => {
+  const props = resetProperties({
+    [Config.PROPERTIES.SETUP_COMPLETED_STAGES]:
+      JSON.stringify(['S99_COMPLETE']),
+    [Config.PROPERTIES.CODE_VERSION]: Config.CODE_VERSION,
+    [Config.PROPERTIES.SCHEMA_VERSION]: '2.5',
+    [Config.PROPERTIES.MIGRATION_VERSION]: '2'
+  });
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: props,
+    script_app: offScriptApp()
+  });
+  assert.strictEqual(result.status, 'BLOCKED');
+  assert.ok(result.prerequisites.reasons.includes('SCHEMA_VERSION_MISMATCH'));
+  assert.ok(result.prerequisites.reasons.includes('MIGRATION_VERSION_MISMATCH'));
+});
+
+test('WORK_0036_READINESS_REJECTS_TEST_MODE_PRODUCTION_CLAIM', () => {
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: resetProperties({
+      [Config.PROPERTIES.SETUP_COMPLETED_STAGES]:
+        JSON.stringify(['S99_COMPLETE']),
+      [Config.PROPERTIES.CODE_VERSION]: Config.CODE_VERSION,
+      [Config.PROPERTIES.SCHEMA_VERSION]: Config.SCHEMA_VERSION,
+      [Config.PROPERTIES.MIGRATION_VERSION]: Config.MIGRATION_VERSION
+    }),
+    script_app: offScriptApp()
+  });
+  assert.strictEqual(result.status, 'BLOCKED');
+  assert.strictEqual(result.test_mode.enabled, true);
+  assert.ok(result.prerequisites.reasons.includes('TEST_MODE_ENABLED'));
+});
+
+test('WORK_0036_READINESS_REJECTS_MISSING_CALENDAR', () => {
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: resetProperties({
+      [Config.PROPERTIES.SETUP_COMPLETED_STAGES]:
+        JSON.stringify(['S99_COMPLETE']),
+      [Config.PROPERTIES.CODE_VERSION]: Config.CODE_VERSION,
+      [Config.PROPERTIES.SCHEMA_VERSION]: Config.SCHEMA_VERSION,
+      [Config.PROPERTIES.MIGRATION_VERSION]: Config.MIGRATION_VERSION
+    }),
+    script_app: offScriptApp()
+  });
+  assert.strictEqual(result.status, 'BLOCKED');
+  assert.strictEqual(result.calendar.status, 'NOT_CONFIGURED');
+  assert.ok(result.prerequisites.reasons.includes('CALENDAR_NOT_CONFIGURED'));
+});
+
+test('WORK_0036_READINESS_REJECTS_MISSING_FORMAL_LABEL', () => {
+  const result = evaluateFake({
+    details: {
+      formal_labels: {
+        status: 'BLOCKED',
+        ready: false,
+        checked: true,
+        present_count: Config.GMAIL_LABELS.length - 1,
+        missing_count: 1
+      }
+    }
+  });
+  assert.strictEqual(result.ready, false);
+  assert.ok(result.reasons.includes('FORMAL_GMAIL_LABEL_MISSING'));
+});
+
+test('WORK_0036_READINESS_REJECTS_POLICY_APPROVALS', () => {
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: resetProperties({
+      [Config.PROPERTIES.SETUP_COMPLETED_STAGES]:
+        JSON.stringify(['S99_COMPLETE']),
+      [Config.PROPERTIES.CODE_VERSION]: Config.CODE_VERSION,
+      [Config.PROPERTIES.SCHEMA_VERSION]: Config.SCHEMA_VERSION,
+      [Config.PROPERTIES.MIGRATION_VERSION]: Config.MIGRATION_VERSION,
+      [Config.PROPERTIES.DEADLINE_CALENDAR_ID]: 'synthetic-calendar'
+    }),
+    script_app: offScriptApp()
+  });
+  assert.strictEqual(result.status, 'BLOCKED');
+  assert.ok(result.prerequisites.reasons.includes(
+    'OPERATOR_APPROVAL_NOT_CONFIRMED'
+  ));
+  assert.ok(result.prerequisites.reasons.includes(
+    'DATA_POLICY_APPROVAL_NOT_CONFIRMED'
+  ));
+  assert.ok(result.prerequisites.reasons.includes(
+    'CREDENTIAL_STORAGE_APPROVAL_NOT_CONFIRMED'
+  ));
+  assert.ok(result.prerequisites.reasons.includes('AI_AUTH_NOT_CONFIGURED'));
+});
+
+test('WORK_0036_READINESS_REJECTS_MISSING_OR_MOCK_PROVIDER', () => {
+  const result = evaluateFake({
+    details: {
+      provider: {
+        status: 'BLOCKED',
+        ready: false,
+        provider: 'MOCK',
+        adapter_status: 'BLOCKED',
+        credential_configured: false
+      }
+    }
+  });
+  assert.strictEqual(result.ready, false);
+  assert.ok(result.reasons.includes('REAL_AI_ADAPTER_NOT_READY'));
+  assert.ok(result.reasons.includes('AI_CREDENTIAL_NOT_READY'));
+  assert.ok(result.reasons.includes('AI_PROVIDER_NOT_GEMINI'));
+});
+
+test('WORK_0036_READINESS_REJECTS_OAUTH_REQUIRED_OR_UNAVAILABLE', () => {
+  const required = evaluateFake({
+    details: { oauth: { status: 'AUTHORIZATION_REQUIRED', ready: false } }
+  });
+  const unavailable = evaluateFake({
+    details: { oauth: { status: 'UNAVAILABLE', ready: false } }
+  });
+  assert.strictEqual(required.ready, false);
+  assert.strictEqual(unavailable.ready, false);
+  assert.ok(required.reasons.includes('OAUTH_NOT_READY'));
+  assert.ok(unavailable.reasons.includes('OAUTH_NOT_READY'));
+});
+
+test('WORK_0036_READINESS_REJECTS_TRIGGER_RESIDUE_AND_STATE_DRIFT', () => {
+  [
+    { status: 'INCONSISTENT' },
+    { enabled: true },
+    { desired_enabled: true },
+    { stored_trigger_id_present: true },
+    { canonical_trigger_present: true },
+    { trigger_count: 1 },
+    { clock_trigger_count: 1 }
+  ].forEach((state) => {
+    const result = evaluateFake({ automation: state });
+    assert.strictEqual(result.ready, false);
+    assert.ok(result.reasons.includes('AUTOMATION_STATE_NOT_READY'));
+  });
+});
+
+test('WORK_0036_COMPLETE_SYNTHETIC_FAKE_PREREQUISITES_RETURN_READY', () => {
+  const result = evaluateFake();
+  assert.strictEqual(result.ready, true);
+  assert.strictEqual(result.reasons.length, 0);
+});
+
+test('WORK_0036_READINESS_HAS_NO_EXTERNAL_OR_MUTATING_SIDE_EFFECTS', () => {
+  const props = sandbox.PropertiesService.getScriptProperties();
+  let labelCalls = 0;
+  let bodyCalls = 0;
+  let credentialReads = 0;
+  sandbox.Gmail.Users.Labels.list = () => {
+    labelCalls += 1;
+    throw new Error('LABEL_READ_MUST_NOT_RUN_IN_TEST_MODE');
+  };
+  sandbox.Gmail.Users.Messages.get = () => {
+    bodyCalls += 1;
+    throw new Error('BODY_READ_MUST_NOT_RUN');
+  };
+  const guardedProperties = {
+    getProperty(key) {
+      if (String(key) === Config.PROPERTIES.GEMINI_API_KEY) {
+        credentialReads += 1;
+      }
+      return props.getProperty(key);
+    }
+  };
+  const scriptApp = offScriptApp();
+  const beforeTriggers = scriptApp.triggers.length;
+  const result = sandbox.WorkOsAutomation.getPersonalAutomationQualificationStatus({
+    properties: guardedProperties,
+    script_app: scriptApp
+  });
+  assert.strictEqual(result.external_request_performed, false);
+  assert.strictEqual(labelCalls, 0);
+  assert.strictEqual(bodyCalls, 0);
+  assert.strictEqual(credentialReads, 0);
+  assert.strictEqual(scriptApp.triggers.length, beforeTriggers);
+});
+
+test('WORK_0036_PREPARATION_MENU_REQUIRES_CONFIRMATION_AND_NO_ARG_CALL', () => {
+  const menuSource = fs.readFileSync(
+    path.join(__dirname, '..', 'apps-script-v2', 'Menu.gs'),
+    'utf8'
+  );
+  assert.match(
+    menuSource,
+    /addItem\('個人用合成Automationを準備',\s*'menuPreparePersonalAutomationQualification'\)/
+  );
+  assert.match(menuSource,
+    /function menuPreparePersonalAutomationQualification\(\)/);
+  assert.match(menuSource, /ui\.ButtonSet\.OK_CANCEL/);
+  assert.match(menuSource, /preparePersonalAutomationQualification\(\)/);
+});
+
+test('WORK_0036_ENABLE_REMAINS_FAIL_CLOSED_AND_OFF', () => {
+  const props = resetProperties();
+  const scriptApp = offScriptApp();
+  assert.throws(
+    () => sandbox.WorkOsAutomation.enableAutomation({
+      properties: props,
+      script_app: scriptApp
+    }),
+    (error) => error && error.code === 'E_LOCK_UNAVAILABLE'
+  );
+  assert.strictEqual(props.getProperty(Config.PROPERTIES.AUTOMATION_ENABLED),
+    null);
+  assert.strictEqual(props.getProperty(
+    Config.PROPERTIES.AUTOMATION_DESIRED_STATE
+  ), null);
+  assert.strictEqual(scriptApp.triggers.length, 0);
+});
+
 test('WORK_0036_READINESS_IS_BOUNDED_AND_NON_MUTATING', () => {
   const fixture = sandbox.PropertiesService.getScriptProperties();
   const scriptApp = {
@@ -197,12 +551,15 @@ test('WORK_0036_READINESS_IS_BOUNDED_AND_NON_MUTATING', () => {
       properties: fixture,
       script_app: scriptApp
     });
+  assert.strictEqual(result.status, 'BLOCKED');
   assert.strictEqual(result.qualification_scope,
     'SYNTHETIC_AUTOMATION_QUALIFICATION_ONLY');
   assert.strictEqual(result.exact_body_guard_active, true);
   assert.strictEqual(result.exact_query_active, true);
   assert.strictEqual(result.external_request_performed, false);
   assert.strictEqual(result.automation.clock_trigger_count, 0);
+  assert.notStrictEqual(result.formal_labels, 'NOT_CHECKED');
+  assert.notStrictEqual(result.calendar, 'NOT_CHECKED');
   assert.strictEqual(scriptApp.triggers.length, before);
   assert.ok(!JSON.stringify(result).includes('GEMINI_API_KEY'));
 });
