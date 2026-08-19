@@ -26,11 +26,11 @@ The defect is in the caller, not in the test-only injection guard. Do not weaken
 
 ## Route and model
 
-Route: `B` — ChatGPT makes the bounded source correction; Codex verifies, adds regression coverage if needed, regenerates releases, and repairs the already-existing target payload.
+Route: `C` — ChatGPT confirmed the root cause and completed the GitHub status/handoff work. Codex implements the bounded caller correction, adds/extends regression coverage, regenerates releases, validates them, and performs the authorized repaired-target parity sequence.
 
 Recommended Codex model: `Luna Max`.
 
-Rationale: root cause, design, scope, and acceptance criteria are resolved; residual work is bounded executable validation, release regeneration, and exact existing-target parity.
+Rationale: root cause, design, scope, and acceptance criteria are resolved; residual work is bounded implementation, executable validation, release regeneration, and exact existing-target parity.
 
 ## Repository / branch / PR
 
@@ -46,7 +46,7 @@ Use the exact ref supplied in the execution request. Do not rebase, force-push, 
 
 Before starting, read all applicable `AGENTS.md` files and follow the repository-specific delegation policy. Use subagents actively and proportionately, including at least one independent review of the production/Test-mode boundary and one independent final source/release/placement audit.
 
-## ChatGPT-owned design decision
+## Decided repair design
 
 The production preparation path must call the real no-argument Automation status path. Test-mode dependency injection may remain available for local tests.
 
