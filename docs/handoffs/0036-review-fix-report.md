@@ -157,10 +157,10 @@ readiness/fail-closed boundary, release and frozen-2.8.20 preservation,
 non-mutation, privacy scan, and absence of runtime operations. No blocker was
 reported.
 
-The final report-head CI was requested after this report and the active-document
-review-fix updates were pushed. The final branch/commit and CI result are the
-publication values recorded in Draft PR `#51`; the PR remains Draft/Open/
-Unmerged and no merge was performed.
+The final report-head GitHub Actions CI completed `SUCCESS` after this report
+and the active-document review-fix updates were pushed. Its run, final branch
+head, and validation evidence are recorded in Draft PR `#51`; the PR remains
+Draft/Open/Unmerged and no merge was performed.
 
 Required next action is a separately authorized user-controlled personal
 Automation E2E using one fresh exact synthetic fixture. Work 0036 review-fix
