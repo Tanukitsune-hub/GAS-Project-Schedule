@@ -6,7 +6,7 @@ Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Mig
 
 Overall status: `WORK_0036_REVIEW_REPAIR_REQUIRED`
 
-Candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 ChatGPT review disposition: `HOLD — FALSE_READINESS_SURFACE_REPAIR_REQUIRED`
 
