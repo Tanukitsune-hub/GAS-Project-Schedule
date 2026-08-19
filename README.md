@@ -12,7 +12,7 @@ Workspace Personal Work OS.
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Candidate machine gate | `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` |
-| ChatGPT review disposition | `READY — FALSE_READINESS_SURFACE_REPAIRED` |
+| ChatGPT review disposition | `READY — RUNTIME_PREPARATION_FIX_VALIDATED_AND_PLACED` |
 | Personal Gemini E2E | `PASS` |
 | Product-code state | synthetic-only personal Automation qualification candidate |
 | Automation | `OFF` |
@@ -76,8 +76,9 @@ existing personal-synthetic target and independently pulled back with exact
 byte/hash parity. Automation, Apps Script functions, Gmail, Gemini, Calendar,
 triggers, Setup, diagnostics, and user E2E remained unexecuted.
 
-The pre-placement CI passed at head `097a2aa188e2faf13d30a5ca3f2382d10903d8f1`;
-the final report-head CI is the publication gate for this review-fix report.
+The runtime-preparation-fix pre-placement CI passed at head
+`dab94362c34e837bb236186ace7c0cf9c0f63e40`; the final report-head CI is the
+publication gate for `docs/handoffs/0036-runtime-preparation-fix-report.md`.
 No company-PC rollout is planned. Real personal mail remains out of scope.
 
 Do not paste credentials, private Workspace identifiers, raw mail, or provider

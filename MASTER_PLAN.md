@@ -1,6 +1,6 @@
 # Master Plan
 
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
@@ -56,11 +56,14 @@ baseline. Its automatic discovery scope is the single exact synthetic subject
 and normalized body `WORK_OS_AUTOMATION_SYNTHETIC_BODY_0036`; ordinary Inbox
 mail cannot reach the Gemini boundary. Automation remains OFF.
 
-Codex completed the source review-fix, deterministic A21/B21 release packages,
-exact 78-suite inventory, complete non-Google validation, one guarded Phase 8C
-replacement to the existing personal-synthetic target, and one independent
-pull-back parity check. Pre-placement CI `#396` passed; final report-head CI
-is the publication gate for this report.
+Codex completed the source review-fix and the bounded runtime-preparation fix,
+regenerated the deterministic A21/B21 release packages, passed the exact
+78-suite inventory and complete non-Google validation, and performed the
+authorized one-use replacement tranche for the runtime-preparation repair on
+the same existing personal-synthetic target. One independent pull-back reached
+exact parity. Runtime-fix pre-placement CI passed at head
+`dab94362c34e837bb236186ace7c0cf9c0f63e40`; final report-head CI is the
+publication gate for this report.
 
 ## Work 0036 review repair complete
 
@@ -88,7 +91,22 @@ The same Work ID continues. The completed review repair provides:
    tranche on the same target.
 5. Final CI and independent source/release/placement review.
 
-## Next phase after the review repair
+## Work 0036 runtime-preparation fix complete
+
+The production no-argument `preparePersonalAutomationQualification()` caller
+now invokes the real no-argument Automation status path. Test-mode callers
+retain dependency injection, and the production `E_TEST_MODE_DISABLED` guard
+is unchanged. The repair is covered by focused production-shaped and Test-mode
+regressions, with Automation-OFF, zero-clock-trigger, bounded-metadata, and
+non-runtime side-effect checks preserved.
+
+The 2.8.21 Phase 8B/8C packages were regenerated and verified. The same
+existing personal-synthetic target received exactly one guarded Phase 8C
+source update; one isolated pull-back verified 23-file byte/hash parity. No
+Apps Script function, preparation, readiness, enablement, Gmail, Gemini,
+Calendar, trigger, Setup, diagnostic, or user E2E action was executed.
+
+## Next phase after the runtime-preparation fix
 
 No company-PC or company-environment deployment is planned. Once the repaired
 candidate is placed and all gates pass, the shortest safe user sequence is:

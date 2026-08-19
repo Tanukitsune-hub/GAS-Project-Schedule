@@ -1,20 +1,20 @@
 # Current Status
 
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `HOLD_USER_AUTOMATION_E2E_RUNTIME_PREPARATION_DEFECT`
+Overall status: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-ChatGPT review disposition: `HOLD — LIVE_PREPARATION_TEST_MODE_INJECTION_DEFECT`
+ChatGPT review disposition: `READY — RUNTIME_PREPARATION_FIX_VALIDATED_AND_PLACED`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF`
 
-User Automation E2E: `HOLD`
+User Automation E2E: `READY_FOR_EXPLICIT_USER_ACTION`
 
 ## Current contract
 
@@ -45,9 +45,10 @@ planned.
 ## Work 0036 implementation evidence
 
 - Draft PR `#51` remains Open / Unmerged.
-- Codex completion head: `a056b088238dda93a41529e0b125a1306673de7d`.
-- Review-fix pre-placement head: `097a2aa188e2faf13d30a5ca3f2382d10903d8f1`.
-- Review-fix pre-placement CI `#396`: PASS.
+- Runtime-preparation-fix source repair commit: `0f0b7eab0ed27b883ae25fb15af4371b42157662`.
+- Runtime-preparation-fix release commit: `3a4c053ba9775659d5bb902ff0f7cd0bcffba531`.
+- Runtime-preparation-fix pre-placement head: `dab94362c34e837bb236186ace7c0cf9c0f63e40`.
+- Runtime-preparation-fix pre-placement push/PR CI: `#32268303659` / `#32268311064`, both PASS.
 - Complete non-Google gate: 11/11 PASS.
 - Deterministic regression inventory: 78 suites, missing 0, extra 0.
 - Phase 8B/8C release verification and A21/B21 lineage: PASS.
@@ -57,6 +58,11 @@ planned.
   8C update and one independent pull-back, exact parity PASS.
 - Review-fix final CI `#400`: PASS.
 - ChatGPT docs-only clarification CI `#402`: PASS.
+- Production preparation caller regression: production no-argument status path
+  and Test-mode dependency injection are both covered; the production guard
+  remains fail-closed.
+- Runtime-preparation-fix replacement lane: one guarded Phase 8C update and
+  one independent pull-back, exact parity PASS.
 - Automation remained OFF throughout the implementation/review work.
 
 ## Work 0036 review-fix result
@@ -91,9 +97,11 @@ No Automation enable, scheduled trigger, Gmail processing, Gemini request,
 Task/Review mutation, or Calendar action occurred in this failed step. The
 system failed closed and Automation remains OFF.
 
-The user must not retry preparation or continue to readiness/enable until the
-same Work 0036 runtime-preparation repair is implemented, validated, regenerated,
-placed on the existing target, and independently reviewed.
+The runtime-preparation repair is now implemented, validated, regenerated,
+placed on the same existing personal-synthetic target, independently pulled
+back with exact parity, and reviewed. The user-controlled E2E remains a
+separate explicit action; this Work did not execute preparation, readiness,
+enablement, or runtime processing.
 
 Authoritative continuation handoff:
 
@@ -111,18 +119,19 @@ Authoritative continuation handoff:
 - Work 0033: Code `2.8.20-prepilot`, source A20 and release B20; the subsequent
   user-controlled personal Gemini E2E passed.
 - Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; synthetic-only
-  automatic discovery and authoritative readiness are implemented, but the live
-  production preparation caller requires the bounded repair recorded above.
+  automatic discovery, authoritative readiness, and the bounded production
+  preparation caller repair are implemented and placed. The user E2E remains
+  separately authorized and unexecuted.
 
 Historical handoffs and reports remain immutable evidence.
 
 ## Next boundary
 
-Repair only the live production preparation caller under the same Work 0036,
-prove the regression and all existing safety boundaries, regenerate the exact
-2.8.21 Phase 8B/8C packages, replace the repaired Phase 8C source once on the
-same existing personal-synthetic target, and verify independent pull-back
-parity. Automation must remain OFF throughout that repair.
+The next boundary is the separately authorized user-controlled personal
+Automation E2E. It must remain limited to one fresh exact Work 0036 synthetic
+fixture, with Automation OFF before preparation, no ordinary personal Inbox
+mail, and the existing fail-closed enable/disable and trigger-cleanup rules.
+Automation remained OFF throughout the runtime-preparation repair.
 
-Only after ChatGPT reviews that completion may the user retry the single
-preparation step. Real personal mail remains out of scope.
+The user may proceed only under the dedicated runbook after this completion
+review. Real personal mail remains out of scope.

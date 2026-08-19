@@ -2,7 +2,7 @@
 
 ## Status
 
-`HOLD — DO NOT CONTINUE`
+`READY — WAITING FOR EXPLICIT USER ACTION`
 
 The first live preparation attempt on 2026-08-19 stopped safely with:
 
@@ -10,7 +10,11 @@ The first live preparation attempt on 2026-08-19 stopped safely with:
 
 GitHub source review confirmed a production preparation caller defect. Automation remains OFF and no scheduled trigger, Gmail processing, Gemini request, Task/Review mutation, or Calendar action occurred.
 
-Do not rerun `個人用合成Automationを準備`, do not run readiness, and do not enable Automation until the repaired Phase 8C payload has been implemented, validated, placed on the same existing personal-synthetic target, independently pulled back with exact parity, and reviewed by ChatGPT.
+The bounded runtime-preparation repair has now been implemented, validated,
+placed on the same existing personal-synthetic target, independently pulled
+back with exact parity, and reviewed by ChatGPT. Codex did not run preparation,
+readiness, enablement, or any Apps Script function. The user may continue only
+with the explicit synthetic-only E2E action below.
 
 Authoritative repair handoff:
 
@@ -31,6 +35,10 @@ followed by a verified Automation disable/trigger-cleanup rollback.
 
 ## Resume condition
 
-This runbook may resume only after ChatGPT explicitly confirms that the runtime-preparation repair is complete and authorizes retry of the preparation step. At that time the remaining original bounded sequence continues under the exact synthetic-only scope and one-attempt rules already established for Work 0036.
+ChatGPT has confirmed that the runtime-preparation repair is complete. The
+remaining bounded sequence continues only under the exact synthetic-only scope
+and one-attempt rules already established for Work 0036. Keep Automation OFF
+before preparation, do not use ordinary personal Inbox mail, and stop on any
+committed fail-closed condition.
 
-Until then, no user runtime action is authorized.
+No runtime action was performed by Codex in Work 0036 runtime-preparation fix.

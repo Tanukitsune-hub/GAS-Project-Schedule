@@ -134,3 +134,16 @@ at `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` after local gates, deterministic
 2.8.21 release verification, one fresh replacement placement, one pull-back
 parity check, final CI, and independent review. The user E2E itself remains a
 separate explicit action and real personal mail remains out of scope.
+
+## D-069: production preparation caller repair is complete
+
+The live Work 0036 preparation stop was caused by the production caller passing
+an injected options object into the Automation status boundary. The caller now
+uses the real no-argument status path when `TEST_MODE=false`; Test-mode
+dependency injection remains available and `E_TEST_MODE_DISABLED` remains
+fail-closed. Code `2.8.21-prepilot` Phase 8B/8C was regenerated and verified,
+and one fresh guarded Phase 8C replacement plus one independent pull-back
+reached exact 23-file parity on the same existing personal-synthetic target.
+Automation remains OFF. The user-controlled synthetic E2E is still a separate
+explicit action; ordinary personal Inbox mail and production rollout remain
+out of scope.
