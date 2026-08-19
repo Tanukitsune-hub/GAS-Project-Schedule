@@ -110,7 +110,15 @@
     "gas:inventory:work-0036": "node tools/work_0036_existing_target_placement.js inventory-check",
     "gas:push:work-0036": "node tools/work_0036_existing_target_placement.js push",
     "gas:pull-verify:work-0036": "node tools/work_0036_existing_target_placement.js pull-verify",
-    "gas:evidence:work-0036": "node tools/work_0036_existing_target_placement.js evidence"
+    "gas:evidence:work-0036": "node tools/work_0036_existing_target_placement.js evidence",
+    "verify:work-0036-review-fix": "node tests/work_0036_review_fix_placement_test.js && node tests/work_0036_personal_automation_qualification_test.js",
+    "gas:auth-status:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js auth-status",
+    "gas:stage:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js stage",
+    "gas:restage:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js restage",
+    "gas:inventory:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js inventory-check",
+    "gas:push:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js push",
+    "gas:pull-verify:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js pull-verify",
+    "gas:evidence:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js evidence"
   },
   "devDependencies": {
     "@google/clasp": "3.3.0",
