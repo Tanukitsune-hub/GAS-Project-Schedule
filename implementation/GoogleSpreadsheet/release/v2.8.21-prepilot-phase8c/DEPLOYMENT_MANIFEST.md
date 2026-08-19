@@ -7,7 +7,7 @@
 |---|---|
 | Package | `v2.8.21-prepilot-phase8c` |
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `c470ff80ab39c5d0c70d83a79b933040b7456cf8` |
+| Source commit | `fbfce52d734da921b725b2be5990082d24f36946` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.21-prepilot` |
 | Schema Version | `2.6` |
@@ -42,7 +42,7 @@ Provider fails closed.
 
 - Payload files: `23`
 - `.gs` files: `22`
-- Canonical payload-list SHA-256: `5a53f98d1080d08c7a3c6f416b111292cc831c59934b212c0cb39a9901cdb689`
+- Canonical payload-list SHA-256: `4728aa278712bdf39fb4d209a13655db89a2f045a9983b5fd4bbae6ca57d28f5`
 - `99_TestHarness.gs`: `EXCLUDED`
 - `.clasp.json`: `EXCLUDED`
 
@@ -60,7 +60,7 @@ Provider fails closed.
 | `apps-script/09_TaskReviewPolicy.gs` | `47d036409127dc96cdace40cf61428fdc002c5c48d963eeb004e721d8720c23c` |
 | `apps-script/10_CalendarSync.gs` | `7ec0be9c1a18f99913dcab3f657fe737f6f2e6321a5661bd3c46e43f15232975` |
 | `apps-script/11_EditHandler.gs` | `244b8424f8ffce15f436721484aeffa7b890d086926bd6530ce934b0e94f2297` |
-| `apps-script/12_Triggers.gs` | `717d989a454bd2151025758b5372794ff69b2fd9e94f48319693310f986c0dfb` |
+| `apps-script/12_Triggers.gs` | `62c66877502f0efa9a8a6f7facf5ebb30a199cabd35d6f1872c9c5a9ed99ecc0` |
 | `apps-script/13_LogAndDeadLetter.gs` | `84df90d249e8f215ffceda6301b1bd362637f72a2812154618990c4f5c058f67` |
 | `apps-script/14_Migrations.gs` | `4d93d8b336893a8d71392fbe7b5cf8222925d44cdd854b5b6df86e2ceea3e568` |
 | `apps-script/15_Dashboard.gs` | `c18be435239c3468493971baab82fe746de4210f7513b1677eadff3b00405353` |
@@ -70,7 +70,7 @@ Provider fails closed.
 | `apps-script/19_RuntimeSettings.gs` | `106370ebf78c81266d061f690b3448902d40bf177f283d880fe3965ac6fc618f` |
 | `apps-script/20_GeminiProvider.gs` | `cebbe4842d4dae61457cca3440f23f4f3a6dd5195184fcba2232e66aa130dc1b` |
 | `apps-script/appsscript.json` | `e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe` |
-| `apps-script/Menu.gs` | `bfa8fd5efe5dfc554ae06eef3d8246164a92e1b5c3c80d63a6d2007fc9392989` |
+| `apps-script/Menu.gs` | `d8cb8a2337acdd27e87753f4ce1fcf97b5098d98ce7532c1bc0bd517d0155912` |
 
 ## Boundaries
 

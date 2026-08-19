@@ -399,6 +399,353 @@ var WorkOsAutomation = (function () {
     };
   }
 
+  function addUniqueReason(reasons, reason) {
+    var value = String(reason || '');
+    if (value && reasons.indexOf(value) === -1) {
+      reasons.push(value);
+    }
+  }
+
+  function safeReadinessToken(value, fallback) {
+    var text = String(value == null ? '' : value);
+    return /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(text)
+      ? text
+      : (text ? 'INVALID' : String(fallback || 'MISSING'));
+  }
+
+  function safeVersionToken(value) {
+    var text = String(value == null ? '' : value);
+    return /^\d+(?:\.\d+){0,3}(?:-[A-Za-z0-9]+)?$/.test(text)
+      ? text
+      : (text ? 'INVALID' : 'MISSING');
+  }
+
+  function safeCount(value, maximum) {
+    var count = Number(value);
+    return Number.isInteger(count) && count >= 0 && count <= maximum
+      ? count
+      : 0;
+  }
+
+  function qualificationScopeSnapshot() {
+    var query = String(WorkOsConfig.AUTOMATION_GMAIL_QUERY || '');
+    var subject = String(WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT || '');
+    var exactQuery = Boolean(
+      query.indexOf('in:inbox') !== -1 &&
+      query.indexOf('-in:spam') !== -1 &&
+      query.indexOf('-in:trash') !== -1 &&
+      query.indexOf('-label:手動/除外') !== -1 &&
+      query.indexOf('subject:"' + subject + '"') !== -1
+    );
+    var exactSubject = Boolean(
+      subject &&
+      typeof WorkOsGeminiProvider !== 'undefined' &&
+      WorkOsGeminiProvider &&
+      String(WorkOsGeminiProvider.AUTOMATION_SYNTHETIC_SUBJECT || '') ===
+        subject
+    );
+    var bodyGuard = Boolean(
+      typeof WorkOsGeminiProvider !== 'undefined' &&
+      WorkOsGeminiProvider &&
+      typeof WorkOsGeminiProvider.isAutomationSyntheticBody === 'function' &&
+      String(WorkOsGeminiProvider.AUTOMATION_SYNTHETIC_BODY || '') ===
+        String(WorkOsConfig.AUTOMATION_SYNTHETIC_BODY || '')
+    );
+    var scopeExact =
+      WorkOsConfig.AUTOMATION_QUALIFICATION_SCOPE ===
+        'SYNTHETIC_AUTOMATION_QUALIFICATION_ONLY' &&
+      WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE ===
+        'AUTOMATIC_QUALIFICATION';
+    return {
+      ready: scopeExact && exactQuery && exactSubject && bodyGuard,
+      scope: String(WorkOsConfig.AUTOMATION_QUALIFICATION_SCOPE || ''),
+      source_mode: safeReadinessToken(
+        WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE,
+        'MISSING'
+      ),
+      exact_subject: subject,
+      exact_query_active: exactQuery,
+      exact_body_guard_active: bodyGuard
+    };
+  }
+
+  function candidateSnapshot(props, completed) {
+    var storedCode = props.getProperty(WorkOsConfig.PROPERTIES.CODE_VERSION);
+    var storedSchema = props.getProperty(
+      WorkOsConfig.PROPERTIES.SCHEMA_VERSION
+    );
+    var storedMigration = props.getProperty(
+      WorkOsConfig.PROPERTIES.MIGRATION_VERSION
+    );
+    var setupComplete = completed.indexOf('S99_COMPLETE') !== -1;
+    var versionsAligned = storedCode === WorkOsConfig.CODE_VERSION &&
+      storedSchema === WorkOsConfig.SCHEMA_VERSION &&
+      storedMigration === WorkOsConfig.MIGRATION_VERSION;
+    return {
+      ready: setupComplete && versionsAligned &&
+        WorkOsConfig.TEST_MODE !== true,
+      setup_complete: setupComplete,
+      stored_versions_aligned: versionsAligned,
+      code_version: String(WorkOsConfig.CODE_VERSION),
+      stored_code_version: safeVersionToken(storedCode),
+      schema_version: String(WorkOsConfig.SCHEMA_VERSION),
+      stored_schema_version: safeVersionToken(storedSchema),
+      ai_schema_version: String(WorkOsConfig.AI_SCHEMA_VERSION),
+      migration_version: String(WorkOsConfig.MIGRATION_VERSION),
+      stored_migration_version: safeVersionToken(storedMigration)
+    };
+  }
+
+  function blockedLabelSnapshot(reason) {
+    var expected = WorkOsConfig.GMAIL_LABELS.length;
+    return {
+      status: 'BLOCKED',
+      ready: false,
+      checked: false,
+      expected_count: expected,
+      present_count: 0,
+      missing_count: expected,
+      reason: String(reason || 'FORMAL_GMAIL_LABEL_NOT_CHECKED')
+    };
+  }
+
+  function safeLabelSnapshot(value) {
+    var result = value || {};
+    var expected = WorkOsConfig.GMAIL_LABELS.length;
+    var present = safeCount(result.present_count, expected);
+    var complete = result.complete === true && present === expected;
+    return {
+      status: complete ? 'READY' : 'BLOCKED',
+      ready: complete,
+      checked: true,
+      expected_count: expected,
+      present_count: present,
+      missing_count: Math.max(0, expected - present),
+      reason: complete ? '' : 'FORMAL_GMAIL_LABEL_MISSING'
+    };
+  }
+
+  function blockedCalendarSnapshot(properties, reason) {
+    var saved = String(properties.getProperty(
+      WorkOsConfig.PROPERTIES.DEADLINE_CALENDAR_ID
+    ) || '').trim();
+    return {
+      status: saved ? 'BLOCKED' : 'NOT_CONFIGURED',
+      ready: false,
+      checked: false,
+      property_present: Boolean(saved),
+      instance_marker_ok: false,
+      remotely_verified: false,
+      reason: String(reason || (saved
+        ? 'DEDICATED_CALENDAR_NOT_CHECKED'
+        : 'CALENDAR_NOT_CONFIGURED'))
+    };
+  }
+
+  function safeCalendarSnapshot(value) {
+    var result = value || {};
+    var ready = result.status === 'CONFIGURED' &&
+      result.property_present === true &&
+      result.instance_marker_ok === true &&
+      result.remotely_verified === true;
+    return {
+      status: ready ? 'READY' : 'BLOCKED',
+      ready: ready,
+      checked: true,
+      property_present: result.property_present === true,
+      instance_marker_ok: result.instance_marker_ok === true,
+      remotely_verified: result.remotely_verified === true,
+      reason: ready ? '' : 'DEDICATED_CALENDAR_NOT_READY'
+    };
+  }
+
+  function providerSnapshot(readiness) {
+    var value = readiness || {};
+    return {
+      status: value.ready === true ? 'READY' : 'BLOCKED',
+      ready: value.ready === true,
+      provider: safeReadinessToken(value.provider, 'MISSING'),
+      model: safeReadinessToken(
+        value.model || WorkOsConfig.EXTERNAL_AI_MODEL,
+        'MISSING'
+      ),
+      adapter_status: 'NOT_CHECKED',
+      credential_configured: 'NOT_CHECKED',
+      provider_registered: value.registry_entry_present === true,
+      credential_reference_present:
+        value.credential_reference_present === true,
+      external_request_performed: false
+    };
+  }
+
+  function safeCredentialState(value) {
+    if (value === true || value === false) {
+      return value;
+    }
+    return 'NOT_CHECKED';
+  }
+
+  function safePrerequisiteDetails(value) {
+    var details = value || {};
+    var candidate = details.candidate || {};
+    var setup = details.setup || {};
+    var testMode = details.test_mode || {};
+    var scope = details.scope || {};
+    var provider = details.provider || {};
+    var oauth = details.oauth || {};
+    var labels = details.formal_labels || {};
+    var calendar = details.calendar || {};
+    return {
+      candidate: {
+        ready: candidate.ready === true,
+        setup_complete: candidate.setup_complete === true,
+        stored_versions_aligned:
+          candidate.stored_versions_aligned === true,
+        code_version: safeVersionToken(candidate.code_version),
+        stored_code_version: safeVersionToken(candidate.stored_code_version),
+        schema_version: safeVersionToken(candidate.schema_version),
+        stored_schema_version: safeVersionToken(
+          candidate.stored_schema_version
+        ),
+        ai_schema_version: safeVersionToken(candidate.ai_schema_version),
+        migration_version: safeVersionToken(candidate.migration_version),
+        stored_migration_version: safeVersionToken(
+          candidate.stored_migration_version
+        )
+      },
+      setup: {
+        complete: setup.complete === true,
+        required_stage: 'S99_COMPLETE'
+      },
+      test_mode: {
+        enabled: testMode.enabled === true,
+        production_shaped: testMode.production_shaped === true
+      },
+      scope: {
+        ready: scope.ready === true,
+        status: scope.ready === true ? 'READY' : 'BLOCKED',
+        scope: safeReadinessToken(scope.scope, 'MISSING'),
+        source_mode: safeReadinessToken(scope.source_mode, 'MISSING'),
+        exact_subject: String(scope.exact_subject || ''),
+        exact_query_active: scope.exact_query_active === true,
+        exact_body_guard_active: scope.exact_body_guard_active === true
+      },
+      provider: {
+        status: provider.status === 'READY' ? 'READY' : 'BLOCKED',
+        ready: provider.ready === true,
+        provider: safeReadinessToken(provider.provider, 'MISSING'),
+        model: safeReadinessToken(provider.model, 'MISSING'),
+        adapter_status: safeReadinessToken(
+          provider.adapter_status,
+          'NOT_CHECKED'
+        ),
+        credential_configured: safeCredentialState(
+          provider.credential_configured
+        ),
+        provider_registered: provider.provider_registered === true,
+        credential_reference_present:
+          provider.credential_reference_present === true,
+        external_request_performed: false
+      },
+      oauth: {
+        status: safeReadinessToken(oauth.status, 'UNAVAILABLE'),
+        ready: oauth.ready === true
+      },
+      formal_labels: {
+        status: safeReadinessToken(labels.status, 'BLOCKED'),
+        ready: labels.ready === true,
+        checked: labels.checked === true,
+        expected_count: safeCount(
+          labels.expected_count,
+          WorkOsConfig.GMAIL_LABELS.length
+        ),
+        present_count: safeCount(
+          labels.present_count,
+          WorkOsConfig.GMAIL_LABELS.length
+        ),
+        missing_count: safeCount(
+          labels.missing_count,
+          WorkOsConfig.GMAIL_LABELS.length
+        ),
+        reason: safeReadinessToken(labels.reason, '')
+      },
+      calendar: {
+        status: safeReadinessToken(calendar.status, 'BLOCKED'),
+        ready: calendar.ready === true,
+        checked: calendar.checked === true,
+        property_present: calendar.property_present === true,
+        instance_marker_ok: calendar.instance_marker_ok === true,
+        remotely_verified: calendar.remotely_verified === true,
+        reason: safeReadinessToken(calendar.reason, '')
+      },
+      external_request_performed: false
+    };
+  }
+
+  function evaluatePersonalQualificationReadiness(input) {
+    var value = input || {};
+    var automation = value.automation || {};
+    var prerequisites = value.prerequisites || {};
+    var details = safePrerequisiteDetails(value.details);
+    var reasons = [];
+    var requireReady = function (condition, reason) {
+      if (!condition) {
+        addUniqueReason(reasons, reason);
+      }
+    };
+    requireReady(value.test_mode === false, 'TEST_MODE_ENABLED');
+    requireReady(prerequisites.ready === true,
+      'AUTOMATION_PREREQUISITES_INCOMPLETE');
+    requireReady(details.candidate.ready === true,
+      'CANDIDATE_VERSION_OR_SETUP_NOT_READY');
+    requireReady(details.candidate.setup_complete === true,
+      'SETUP_NOT_COMPLETE');
+    requireReady(details.candidate.stored_versions_aligned === true,
+      'STORED_VERSION_ALIGNMENT_FAILED');
+    requireReady(details.candidate.ai_schema_version ===
+      WorkOsConfig.AI_SCHEMA_VERSION, 'AI_SCHEMA_VERSION_MISMATCH');
+    requireReady(details.test_mode.production_shaped === true,
+      'TEST_MODE_ENABLED');
+    requireReady(details.scope.ready === true,
+      'QUALIFICATION_SCOPE_NOT_EXACT');
+    requireReady(details.scope.scope ===
+      'SYNTHETIC_AUTOMATION_QUALIFICATION_ONLY',
+    'QUALIFICATION_SCOPE_NOT_EXACT');
+    requireReady(details.scope.source_mode === 'AUTOMATIC_QUALIFICATION',
+      'QUALIFICATION_SCOPE_NOT_EXACT');
+    requireReady(details.scope.exact_query_active === true,
+      'QUALIFICATION_QUERY_NOT_EXACT');
+    requireReady(details.scope.exact_body_guard_active === true,
+      'QUALIFICATION_BODY_GUARD_NOT_ACTIVE');
+    requireReady(details.provider.ready === true,
+      'REAL_AI_ADAPTER_NOT_READY');
+    requireReady(details.provider.credential_configured === true,
+      'AI_CREDENTIAL_NOT_READY');
+    requireReady(details.provider.adapter_status === 'READY',
+      'REAL_AI_ADAPTER_NOT_READY');
+    requireReady(details.provider.provider === 'GEMINI',
+      'AI_PROVIDER_NOT_GEMINI');
+    requireReady(details.oauth.ready === true, 'OAUTH_NOT_READY');
+    requireReady(details.formal_labels.ready === true,
+      'FORMAL_GMAIL_LABEL_MISSING');
+    requireReady(details.calendar.ready === true,
+      'DEDICATED_CALENDAR_NOT_READY');
+    requireReady(automation.status === 'CONSISTENT' &&
+      automation.enabled === false &&
+      automation.desired_enabled === false &&
+      automation.trigger_count === 0 &&
+      automation.clock_trigger_count === 0 &&
+      automation.stored_trigger_id_present === false &&
+      automation.canonical_trigger_present === false,
+    'AUTOMATION_STATE_NOT_READY');
+    requireReady(value.external_request_performed === false,
+      'EXTERNAL_REQUEST_PERFORMED');
+    return {
+      ready: reasons.length === 0,
+      reasons: reasons
+    };
+  }
+
   function defaultPrerequisiteCheck(settings) {
     var props = properties(settings);
     var reasons = [];
@@ -413,54 +760,70 @@ var WorkOsAutomation = (function () {
     } catch (error) {
       completed = [];
     }
-    if (completed.indexOf('S99_COMPLETE') === -1) {
-      reasons.push('SETUP_NOT_COMPLETE');
+    var setupComplete = completed.indexOf('S99_COMPLETE') !== -1;
+    var candidate = candidateSnapshot(props, completed);
+    var scope = qualificationScopeSnapshot();
+    var provider = providerSnapshot(null);
+    var oauth = {
+      status: 'UNAVAILABLE',
+      ready: false
+    };
+    var labels = blockedLabelSnapshot('POLICY_PREREQUISITES_INCOMPLETE');
+    var calendar = blockedCalendarSnapshot(
+      props,
+      'POLICY_PREREQUISITES_INCOMPLETE'
+    );
+    if (!setupComplete) {
+      addUniqueReason(reasons, 'SETUP_NOT_COMPLETE');
     }
     if (WorkOsConfig.TEST_MODE === true) {
-      reasons.push('TEST_MODE_ENABLED');
+      addUniqueReason(reasons, 'TEST_MODE_ENABLED');
+    }
+    if (!scope.ready) {
+      addUniqueReason(reasons, 'QUALIFICATION_SCOPE_NOT_EXACT');
     }
     if (!props.getProperty(WorkOsConfig.PROPERTIES.DEADLINE_CALENDAR_ID)) {
-      reasons.push('CALENDAR_NOT_CONFIGURED');
+      addUniqueReason(reasons, 'CALENDAR_NOT_CONFIGURED');
     }
     appendScopeDecisionReasons(reasons);
     var sharedPreflight =
       appendSharedPreflightReasons(settings, reasons);
     if (props.getProperty(WorkOsConfig.PROPERTIES.CODE_VERSION) !==
         WorkOsConfig.CODE_VERSION) {
-      reasons.push('CODE_VERSION_MISMATCH');
+      addUniqueReason(reasons, 'CODE_VERSION_MISMATCH');
     }
     if (props.getProperty(WorkOsConfig.PROPERTIES.SCHEMA_VERSION) !==
         WorkOsConfig.SCHEMA_VERSION) {
-      reasons.push('SCHEMA_VERSION_MISMATCH');
+      addUniqueReason(reasons, 'SCHEMA_VERSION_MISMATCH');
     }
     if (props.getProperty(WorkOsConfig.PROPERTIES.MIGRATION_VERSION) !==
         WorkOsConfig.MIGRATION_VERSION) {
-      reasons.push('MIGRATION_VERSION_MISMATCH');
+      addUniqueReason(reasons, 'MIGRATION_VERSION_MISMATCH');
     }
     if (typeof WorkOsAiAdapter === 'undefined' ||
         typeof WorkOsAiAdapter.getProductionReadiness !== 'function') {
-      reasons.push('EXTERNAL_AI_NOT_CONFIGURED');
-      reasons.push('OPERATOR_APPROVAL_NOT_CONFIRMED');
-      reasons.push('DATA_POLICY_APPROVAL_NOT_CONFIRMED');
-      reasons.push('CREDENTIAL_STORAGE_APPROVAL_NOT_CONFIRMED');
-      reasons.push('AI_AUTH_NOT_CONFIGURED');
-      reasons.push('REAL_AI_TRANSPORT_NOT_IMPLEMENTED');
-      reasons.push('AI_PRODUCTION_BOUNDARY_UNAVAILABLE');
+      [
+        'EXTERNAL_AI_NOT_CONFIGURED',
+        'OPERATOR_APPROVAL_NOT_CONFIRMED',
+        'DATA_POLICY_APPROVAL_NOT_CONFIRMED',
+        'CREDENTIAL_STORAGE_APPROVAL_NOT_CONFIRMED',
+        'AI_AUTH_NOT_CONFIGURED',
+        'REAL_AI_TRANSPORT_NOT_IMPLEMENTED',
+        'AI_PRODUCTION_BOUNDARY_UNAVAILABLE'
+      ].forEach(function (reason) { addUniqueReason(reasons, reason); });
     } else {
-      WorkOsAiAdapter.getProductionReadiness().reasons.forEach(
-        function (reason) {
-          if (reasons.indexOf(reason) === -1) {
-            reasons.push(reason);
-          }
-        }
-      );
+      var aiReadiness = WorkOsAiAdapter.getProductionReadiness();
+      provider = providerSnapshot(aiReadiness);
+      (aiReadiness.reasons || []).forEach(function (reason) {
+        addUniqueReason(reasons, reason);
+      });
     }
     var scriptApp = scriptService(settings);
     if (!scriptApp ||
         typeof scriptApp.getAuthorizationInfo !== 'function' ||
         !scriptApp.AuthMode ||
         !scriptApp.AuthMode.FULL) {
-      reasons.push('OAUTH_STATUS_UNAVAILABLE');
+      addUniqueReason(reasons, 'OAUTH_STATUS_UNAVAILABLE');
     } else {
       try {
         var authorization = scriptApp.getAuthorizationInfo(
@@ -472,42 +835,104 @@ var WorkOsAutomation = (function () {
             : ''
         );
         if (!status) {
-          reasons.push('OAUTH_STATUS_UNAVAILABLE');
+          addUniqueReason(reasons, 'OAUTH_STATUS_UNAVAILABLE');
         } else if (status !== 'NOT_REQUIRED') {
-          reasons.push('OAUTH_AUTHORIZATION_REQUIRED');
+          addUniqueReason(reasons, 'OAUTH_AUTHORIZATION_REQUIRED');
+          oauth = { status: 'AUTHORIZATION_REQUIRED', ready: false };
+        } else {
+          oauth = { status: 'READY', ready: true };
         }
       } catch (error) {
-        reasons.push('OAUTH_STATUS_UNAVAILABLE');
+        addUniqueReason(reasons, 'OAUTH_STATUS_UNAVAILABLE');
       }
     }
     /*
-     * Run the service-backed readiness checks only after every policy and
-     * credential prerequisite has passed. In the current Phase 6 baseline
-     * those approvals are deliberately false, so status remains read-only and
-     * does not touch Gmail or construct an external Adapter.
+     * Service-backed checks run only after policy and configuration checks
+     * pass, and never in the test-shaped source. They are read-only: label
+     * listing, dedicated-calendar inspection, and adapter healthCheck only.
      */
-    if (!reasons.length) {
+    if (!reasons.length && WorkOsConfig.TEST_MODE !== true) {
       try {
-        var labelStatus = WorkOsGmailGateway.inspectFormalLabels();
-        if (!labelStatus.complete) {
-          reasons.push('FORMAL_GMAIL_LABEL_MISSING');
+        var labelStatus = typeof settings.label_inspector === 'function'
+          ? settings.label_inspector()
+          : WorkOsGmailGateway.inspectFormalLabels();
+        labels = safeLabelSnapshot(labelStatus);
+        if (!labels.ready) {
+          addUniqueReason(reasons, 'FORMAL_GMAIL_LABEL_MISSING');
         }
       } catch (labelError) {
-        reasons.push('GMAIL_LABEL_READINESS_UNAVAILABLE');
+        labels = blockedLabelSnapshot('GMAIL_LABEL_READINESS_UNAVAILABLE');
+        addUniqueReason(reasons, 'GMAIL_LABEL_READINESS_UNAVAILABLE');
+      }
+      try {
+        var calendarStatus = typeof settings.calendar_inspector ===
+          'function'
+          ? settings.calendar_inspector()
+          : WorkOsCalendarSync.inspectDedicatedCalendarConfiguration({
+            properties: props,
+            verify_remote: true
+          });
+        calendar = safeCalendarSnapshot(calendarStatus);
+        if (!calendar.ready) {
+          addUniqueReason(reasons, 'DEDICATED_CALENDAR_NOT_READY');
+        }
+      } catch (calendarError) {
+        calendar = blockedCalendarSnapshot(
+          props,
+          'DEDICATED_CALENDAR_NOT_READY'
+        );
+        addUniqueReason(reasons, 'DEDICATED_CALENDAR_NOT_READY');
       }
       try {
         var productionAdapter =
           WorkOsAiAdapter.createProductionExternalAdapter();
         var health = productionAdapter.healthCheck();
         var metadata = WorkOsAiAdapter.getMetadata(productionAdapter);
-        if (!health || health.status !== 'READY' ||
-            String(metadata.provider || '').toUpperCase() === 'MOCK') {
-          reasons.push('REAL_AI_ADAPTER_NOT_READY');
+        var providerIsGemini =
+          String(metadata.provider || '').toUpperCase() === 'GEMINI';
+        provider = {
+          status: health && health.status === 'READY' && providerIsGemini
+            ? 'READY'
+            : 'BLOCKED',
+          ready: Boolean(health && health.status === 'READY' &&
+            providerIsGemini),
+          provider: safeReadinessToken(metadata.provider, 'MISSING'),
+          model: safeReadinessToken(metadata.model, 'MISSING'),
+          adapter_status: health && health.status === 'READY'
+            ? 'READY'
+            : 'BLOCKED',
+          credential_configured: health &&
+            health.credential_configured === true,
+          provider_registered: true,
+          credential_reference_present: true,
+          external_request_performed: false
+        };
+        if (!provider.ready || provider.credential_configured !== true) {
+          addUniqueReason(reasons, 'REAL_AI_ADAPTER_NOT_READY');
         }
       } catch (adapterError) {
-        reasons.push('REAL_AI_ADAPTER_NOT_READY');
+        provider = {
+          status: 'BLOCKED',
+          ready: false,
+          provider: safeReadinessToken(
+            WorkOsConfig.EXTERNAL_AI_PROVIDER,
+            'MISSING'
+          ),
+          model: safeReadinessToken(
+            WorkOsConfig.EXTERNAL_AI_MODEL,
+            'MISSING'
+          ),
+          adapter_status: 'BLOCKED',
+          credential_configured: false,
+          provider_registered: false,
+          credential_reference_present: false,
+          external_request_performed: false
+        };
+        addUniqueReason(reasons, 'REAL_AI_ADAPTER_NOT_READY');
       }
     }
+    candidate.ready = setupComplete && candidate.stored_versions_aligned &&
+      WorkOsConfig.TEST_MODE !== true;
     return {
       ready: reasons.length === 0,
       reasons: reasons,
@@ -521,7 +946,21 @@ var WorkOsAutomation = (function () {
           : 'NOT_CONFIRMED',
       shared_preflight_ready:
         Boolean(sharedPreflight && sharedPreflight.ready),
-      runtime_settings: safeRuntimeSettings(sharedPreflight)
+      runtime_settings: safeRuntimeSettings(sharedPreflight),
+      details: safePrerequisiteDetails({
+        candidate: candidate,
+        setup: { complete: setupComplete },
+        test_mode: {
+          enabled: WorkOsConfig.TEST_MODE === true,
+          production_shaped: WorkOsConfig.TEST_MODE !== true
+        },
+        scope: scope,
+        provider: provider,
+        oauth: oauth,
+        formal_labels: labels,
+        calendar: calendar,
+        external_request_performed: false
+      })
     };
   }
 
@@ -533,7 +972,10 @@ var WorkOsAutomation = (function () {
       ready: result.ready === true,
       reasons: Array.isArray(result.reasons)
         ? result.reasons.map(function (reason) {
-          return String(reason).slice(0, 80);
+          var value = String(reason || '');
+          return /^[A-Z0-9_]{1,80}$/.test(value)
+            ? value
+            : 'UNSAFE_PREREQUISITE_REASON';
         })
         : [],
       real_provider_connection: String(
@@ -548,7 +990,8 @@ var WorkOsAutomation = (function () {
       ),
       shared_preflight_ready:
         result.shared_preflight_ready === true,
-      runtime_settings: result.runtime_settings || null
+      runtime_settings: result.runtime_settings || null,
+      details: safePrerequisiteDetails(result.details)
     };
   }
 
@@ -655,39 +1098,41 @@ var WorkOsAutomation = (function () {
 
   function getPersonalAutomationQualificationStatus(options) {
     var settings = injected(options);
-    var automation = getDiagnosticAutomationStatus(settings);
-    var productionReadiness = {
-      ready: false,
-      reasons: ['AI_READINESS_UNAVAILABLE'],
+    var automation = getAutomationStatus(settings);
+    var prerequisites = automation.prerequisites || {};
+    var details = safePrerequisiteDetails(prerequisites.details);
+    var decision = evaluatePersonalQualificationReadiness({
+      test_mode: WorkOsConfig.TEST_MODE === true,
+      automation: automation,
+      prerequisites: prerequisites,
+      details: details,
       external_request_performed: false
-    };
-    if (typeof WorkOsAiAdapter !== 'undefined' &&
-        WorkOsAiAdapter &&
-        typeof WorkOsAiAdapter.getProductionReadiness === 'function') {
-      try {
-        productionReadiness = WorkOsAiAdapter.getProductionReadiness();
-      } catch (error) {
-        productionReadiness = {
-          ready: false,
-          reasons: ['AI_READINESS_UNAVAILABLE'],
-          external_request_performed: false
-        };
-      }
-    }
+    });
+    var safeReasons = Array.isArray(prerequisites.reasons)
+      ? prerequisites.reasons.slice(0, 40)
+      : [];
+    var providerReady = details.provider.ready === true &&
+      details.provider.adapter_status === 'READY' &&
+      details.provider.credential_configured === true;
     return {
-      status: automation.status === 'CONSISTENT' &&
-        automation.enabled === false &&
-        automation.desired_enabled === false &&
-        automation.clock_trigger_count === 0
+      status: decision.ready
         ? 'READY_FOR_CONTROLLED_QUALIFICATION'
         : 'BLOCKED',
+      readiness_reasons: decision.reasons,
+      prerequisites: {
+        ready: prerequisites.ready === true,
+        reasons: safeReasons,
+        external_request_performed: false
+      },
       qualification_scope: WorkOsConfig.AUTOMATION_QUALIFICATION_SCOPE,
       candidate_mode: WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE,
       exact_subject: WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT,
-      exact_body_guard_active: true,
-      exact_query_active: String(WorkOsConfig.AUTOMATION_GMAIL_QUERY)
-        .indexOf('subject:"' +
-          WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT + '"') !== -1,
+      exact_body_guard_active: details.scope.exact_body_guard_active,
+      exact_query_active: details.scope.exact_query_active,
+      candidate: details.candidate,
+      setup: details.setup,
+      test_mode: details.test_mode,
+      scope: details.scope,
       operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
         ? 'CONFIRMED'
         : 'NOT_CONFIRMED',
@@ -703,26 +1148,26 @@ var WorkOsAutomation = (function () {
         : 'NOT_CONFIGURED',
       provider: String(WorkOsConfig.EXTERNAL_AI_PROVIDER),
       model: String(WorkOsConfig.EXTERNAL_AI_MODEL),
+      provider_readiness: details.provider,
       production_readiness: {
-        ready: productionReadiness.ready === true,
-        reasons: Array.isArray(productionReadiness.reasons)
-          ? productionReadiness.reasons.map(function (reason) {
-            return String(reason).slice(0, 80);
-          })
-          : [],
+        ready: providerReady,
+        reasons: safeReasons,
         external_request_performed: false
       },
+      oauth: details.oauth,
       automation: {
         status: automation.status,
         enabled: automation.enabled === true,
         desired_enabled: automation.desired_enabled === true,
         trigger_count: automation.trigger_count,
         clock_trigger_count: automation.clock_trigger_count,
+        stored_trigger_id_present:
+          automation.stored_trigger_id_present === true,
         canonical_trigger_present:
           automation.canonical_trigger_present === true
       },
-      formal_labels: 'NOT_CHECKED',
-      calendar: 'NOT_CHECKED',
+      formal_labels: details.formal_labels,
+      calendar: details.calendar,
       external_request_performed: false
     };
   }
@@ -1186,6 +1631,8 @@ var WorkOsAutomation = (function () {
     getDiagnosticAutomationStatus: getDiagnosticAutomationStatus,
     getPersonalAutomationQualificationStatus:
       getPersonalAutomationQualificationStatus,
+    evaluatePersonalQualificationReadiness:
+      evaluatePersonalQualificationReadiness,
     removeDuplicateAutomationTriggers:
       removeDuplicateAutomationTriggers,
     ensureSingleAutomationTrigger: ensureSingleAutomationTrigger,
