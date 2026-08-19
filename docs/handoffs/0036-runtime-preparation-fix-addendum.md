@@ -15,3 +15,7 @@ Recommended model remains `Luna Max` because the defect and repair design are fu
 ## Live stop boundary
 
 The user's first production-shaped preparation attempt failed before Automation enablement with the bounded `Automation依存注入はTest modeだけで利用できます。` error. That attempt is complete evidence of the defect and is not authorization to retry the same buggy payload. Automation remains OFF. The user must not rerun preparation until the repaired Phase 8C payload has been placed and ChatGPT has reviewed the repair completion.
+
+## Exact execution boundary
+
+Use the branch head supplied by ChatGPT in the execution request as the authoritative ref. It must contain this addendum, `docs/handoffs/0036-runtime-preparation-fix-instruction.md`, and the active `CURRENT_STATUS.md` HOLD record. Do not begin from an earlier Work 0036 completion head.
