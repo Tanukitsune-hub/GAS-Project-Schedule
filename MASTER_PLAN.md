@@ -8,7 +8,7 @@ Current contract: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migr
 
 Candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-ChatGPT review disposition: `HOLD — FALSE_READINESS_SURFACE_REPAIR_REQUIRED`
+ChatGPT review disposition: `READY — FALSE_READINESS_SURFACE_REPAIRED`
 
 ## Historical release chain
 
@@ -56,38 +56,37 @@ baseline. Its automatic discovery scope is the single exact synthetic subject
 and normalized body `WORK_OS_AUTOMATION_SYNTHETIC_BODY_0036`; ordinary Inbox
 mail cannot reach the Gemini boundary. Automation remains OFF.
 
-Codex completed the source, deterministic A21/B21 release packages, exact
-77-suite inventory, complete non-Google validation, one guarded Phase 8C
-placement to the existing personal-synthetic target, and one independent
-pull-back parity check. Final report-head CI `#390` passed.
+Codex completed the source review-fix, deterministic A21/B21 release packages,
+exact 78-suite inventory, complete non-Google validation, one guarded Phase 8C
+replacement to the existing personal-synthetic target, and one independent
+pull-back parity check. Pre-placement CI `#396` passed; final report-head CI
+is the publication gate for this report.
 
-## Work 0036 review hold
+## Work 0036 review repair complete
 
-Final ChatGPT review found one acceptance blocker in the user-facing readiness
-surface. `getPersonalAutomationQualificationStatus()` can report READY from a
-consistent Automation-OFF state even when AI, Setup/version, formal-label,
-Calendar, credential, or OAuth prerequisites are not ready. Formal labels and
-Calendar are returned as `NOT_CHECKED`.
+The repaired `getPersonalAutomationQualificationStatus()` is authoritative,
+bounded, and read-only: it shares the complete prerequisite boundary with
+`enableAutomation()` and requires candidate/version, Setup, exact synthetic
+scope, approvals, actual credential presence, OAuth, production Gemini adapter,
+formal Gmail labels, dedicated Calendar, and clean Automation/trigger state.
+The menu provides a confirmed call to the existing no-argument idempotent
+preparation path.
 
-The actual enable path remains fail-closed and ordinary Inbox mail remains
-excluded. The candidate is therefore safe to keep disabled, but it is not yet
-ready for the user-controlled E2E because the advertised readiness result is
-not authoritative.
+The actual enable path remains fail-closed, Automation remains OFF, and
+ordinary Inbox mail remains excluded. The Phase 8C replacement and independent
+pull-back reached exact 23-file parity on the same existing synthetic target.
+No Apps Script function, Gmail, Gemini, Calendar, trigger, Setup, diagnostic,
+or user E2E action was executed.
 
-The same Work ID continues. The bounded review repair must:
+The same Work ID continues. The completed review repair provides:
 
-1. Make the readiness decision use the same complete prerequisite set as
-   `enableAutomation()`, or a read-only equivalent with identical decision
-   semantics.
-2. Report bounded Setup/version, provider, credential, OAuth, formal-label,
-   dedicated-Calendar, qualification-scope, and trigger readiness.
-3. Add an explicit menu action for the existing idempotent
-   `preparePersonalAutomationQualification()` path.
-4. Preserve Automation OFF, exact synthetic-only discovery, Gemini no-fallback,
-   and all durable-state protections.
-5. Regenerate and verify affected 2.8.21 packages and replace the Phase 8C
-   payload on the same target under a new one-use review-repair tranche.
-6. Obtain final-head CI and independent review before the user E2E.
+1. An authoritative readiness decision and bounded diagnostic details.
+2. An explicit confirmation-gated preparation menu action.
+3. Automation OFF, exact synthetic-only discovery, Gemini no-fallback, and all
+   durable-state protections.
+4. Deterministic 2.8.21 package verification and a fresh one-use replacement
+   tranche on the same target.
+5. Final CI and independent source/release/placement review.
 
 ## Next phase after the review repair
 

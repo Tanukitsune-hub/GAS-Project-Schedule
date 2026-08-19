@@ -12,7 +12,7 @@ Workspace Personal Work OS.
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Candidate machine gate | `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` |
-| ChatGPT review disposition | `HOLD — FALSE_READINESS_SURFACE_REPAIR_REQUIRED` |
+| ChatGPT review disposition | `READY — FALSE_READINESS_SURFACE_REPAIRED` |
 | Personal Gemini E2E | `PASS` |
 | Product-code state | synthetic-only personal Automation qualification candidate |
 | Automation | `OFF` |
@@ -54,26 +54,30 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 77-suite regression manifest, deterministic 2.8.21 release packages,
+committed 78-suite regression manifest, deterministic 2.8.21 release packages,
 A21/B21 provenance, historical 2.8.20 preservation, current-main integration
 scope, and secret/local-state exclusions. It performs no real Google, Gmail,
 Calendar, Apps Script function, or Gemini operation.
 
-## Current review hold
+## Work 0036 review-fix result
 
-The Work 0036 source, release packages, existing-target placement, pull-back
-parity, and final CI passed. Final ChatGPT review nevertheless found that
-`getPersonalAutomationQualificationStatus()` can return
-`READY_FOR_CONTROLLED_QUALIFICATION` from Automation-OFF state alone while AI,
-version, formal-label, Calendar, or OAuth prerequisites are not ready. It also
-returns `NOT_CHECKED` for formal labels and Calendar.
+The review-fix makes `getPersonalAutomationQualificationStatus()` use the
+complete fail-closed prerequisite boundary shared with `enableAutomation()`.
+The bounded result now includes candidate/version and Setup alignment,
+production-shaped exact synthetic scope, approval and actual credential
+readiness without credential-value access, OAuth, production Gemini adapter
+health, formal Gmail labels, dedicated Calendar, and trigger/state residue.
+READY is impossible unless all required checks pass while Automation remains
+OFF.
 
-The actual `enableAutomation()` path remains fail-closed, so this finding does
-not expose ordinary Inbox mail or enable Automation. It does prevent the
-readiness screen from being trusted as the user-side E2E gate. Do not begin the
-personal Automation E2E until the bounded Work 0036 review repair is completed,
-placed on the same target, and independently revalidated.
+The menu exposes a confirmed, no-argument call to the existing idempotent
+preparation path. The repaired Phase 8C payload was updated once on the same
+existing personal-synthetic target and independently pulled back with exact
+byte/hash parity. Automation, Apps Script functions, Gmail, Gemini, Calendar,
+triggers, Setup, diagnostics, and user E2E remained unexecuted.
 
+The pre-placement CI passed at head `097a2aa188e2faf13d30a5ca3f2382d10903d8f1`;
+the final report-head CI is the publication gate for this review-fix report.
 No company-PC rollout is planned. Real personal mail remains out of scope.
 
 Do not paste credentials, private Workspace identifiers, raw mail, or provider

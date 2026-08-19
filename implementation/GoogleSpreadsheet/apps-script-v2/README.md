@@ -32,6 +32,13 @@ with one fresh Message per run and no broad-Inbox fallback. The candidate
 preparation and readiness surfaces preserve Automation OFF and use personal
 owner/operator approval semantics.
 
+`getPersonalAutomationQualificationStatus()` now requires the complete
+fail-closed readiness boundary shared with `enableAutomation()`. It reports
+bounded candidate, Setup, exact synthetic scope, provider/OAuth, formal-label,
+Calendar, and trigger-state details without reading a credential value or
+performing a runtime request. The menu's confirmed preparation action invokes
+the existing no-argument idempotent preparation path and leaves Automation OFF.
+
 `checkGeminiSyntheticReadiness()` performs no Gmail or Gemini request.
 `runGeminiSyntheticValidationOnce()` is test-mode only, checks actual runtime
 Automation state before external access, accepts one exact manual synthetic

@@ -9,7 +9,7 @@ records remain immutable evidence.
 Current candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 Current ChatGPT review disposition:
-`HOLD — FALSE_READINESS_SURFACE_REPAIR_REQUIRED`
+`READY — FALSE_READINESS_SURFACE_REPAIRED`
 
 ## D-048: one active candidate
 
@@ -114,24 +114,23 @@ credential/auth, OAuth/service, target, and trigger gates remain fail-closed.
 Automation stays OFF until a later explicit user action, and no ordinary
 personal mail is admitted by this candidate.
 
-## D-068: a false readiness claim is a blocker
+## D-068: readiness repair completed before the user E2E
 
-Final ChatGPT review of Work 0036 found that
-`getPersonalAutomationQualificationStatus()` can report
+Final ChatGPT review of the original Work 0036 completion found that
+`getPersonalAutomationQualificationStatus()` could report
 `READY_FOR_CONTROLLED_QUALIFICATION` from Automation-OFF state alone while
 production AI, Setup/version, formal-label, Calendar, credential, or OAuth
-prerequisites remain unready. The function also reports formal labels and
+prerequisites remained unready. The function also reported formal labels and
 Calendar as `NOT_CHECKED`.
 
-The actual `enableAutomation()` path still performs the broader authoritative
-checks and refuses unsafe enablement. Therefore this is not evidence of a live
-permission broadening or ordinary-Inbox exposure. It is nevertheless a false
-readiness claim and blocks the primary user E2E handoff under the repository
-review rules.
+The review-fix now evaluates the complete read-only prerequisite boundary used
+by `enableAutomation()`, returns bounded reason/details fields, and exposes a
+confirmed menu path to the existing idempotent preparation action. The actual
+enable path remains fail-closed, Automation remains OFF, and no ordinary-Inbox
+or runtime permission was broadened.
 
-Work 0036 remains the same outcome and Work ID. Before user execution, the
-readiness surface must use the same authoritative prerequisite set, or a
-read-only equivalent with identical decision semantics; expose bounded reasons
-for every failed prerequisite; and return READY only when preparation, provider,
-OAuth, labels, Calendar, version, and Automation/trigger state are all ready.
-An accessible, explicit, idempotent preparation menu action must be provided.
+Work 0036 remains the same outcome and Work ID. Its repaired candidate is now
+at `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` after local gates, deterministic
+2.8.21 release verification, one fresh replacement placement, one pull-back
+parity check, final CI, and independent review. The user E2E itself remains a
+separate explicit action and real personal mail remains out of scope.
