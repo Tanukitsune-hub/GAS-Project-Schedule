@@ -3,12 +3,13 @@
 Last updated: 2026-08-19
 
 This file records active decisions for Code `2.8.21-prepilot` and its frozen
-2.8.20 recovery baseline. Historical handoffs, reports, releases, and
-audit records remain immutable evidence.
+2.8.20 recovery baseline. Historical handoffs, reports, releases, and audit
+records remain immutable evidence.
 
-Current machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Current candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
+Current ChatGPT review disposition:
+`HOLD — FALSE_READINESS_SURFACE_REPAIR_REQUIRED`
 
 ## D-048: one active candidate
 
@@ -40,10 +41,14 @@ Workspace state.
 
 ## D-053: deterministic release lineage
 
-Phase 8B retains `TEST_MODE=true` and the harness. Phase 8C applies only the
-audited `TEST_MODE=false` transform and harness exclusion. Historical B20 is a
-direct child of A20; clean-main materialization preserves this evidence without
-replaying the stacked history.
+Phase 8B retains `TEST_MODE=true`, the test harness, provider-readiness flags
+disabled, and Automation OFF. Phase 8C applies the audited production transform:
+`TEST_MODE=false`, test-harness exclusion, and only the bounded external-provider
+readiness flags explicitly listed by the 2.8.21 builder. Automation remains OFF
+and the legacy company-approval compatibility alias remains false.
+
+Historical B20 is a direct child of A20. The 2.8.21 A21/B21 lineage and current
+release regeneration preserve historical 2.8.20 package bytes.
 
 ## D-054: strict Gmail body decoding
 
@@ -80,24 +85,23 @@ freezes 2.8.20 as the known-good manual-plus-Gemini recovery point.
 
 ## D-065: clean main integration precedes Automation work
 
-Work 0035 must preserve current-main governance, exact 2.8.20 product and
-release bytes, and a canonical validation gate that also works after the branch
-becomes `main`. The stacked Draft PRs are closed only after the clean main merge
-and post-merge CI succeed; their branches and historical evidence are retained.
+Work 0035 preserves current-main governance, exact 2.8.20 product and release
+bytes, and a canonical validation gate that works after the branch becomes
+`main`. Superseded Draft PR branches and historical evidence remain retained.
 
-## D-066: next deployment boundary is personal Automation only
+## D-066: the next deployment boundary is personal Automation only
 
-No company-PC or company-environment rollout is planned. The next Work performs
-controlled Automation qualification in the same personal Google Workspace
-environment, beginning OFF and using synthetic mail. Newsletter and
-Calendar-generated notification mail are excluded from automatic task creation
-unless a later evidence-backed decision explicitly changes that policy.
+No company-PC or company-environment rollout is planned. Controlled Automation
+qualification occurs in the same personal Google Workspace environment,
+beginning OFF and using synthetic mail. Newsletter and Calendar-generated
+notification mail remain excluded from automatic task creation unless a later
+evidence-backed decision explicitly changes that policy.
 
 Automation is not considered ready merely because `enableAutomation()` exists.
-Completion requires readiness, exactly one canonical trigger, unattended
-synthetic Inbox → Gemini → Task/Review processing, separately authorized
-Calendar behavior where applicable, and verified disable cleanup. Real personal
-mail remains out of scope until those checks pass.
+Completion requires truthful readiness, exactly one canonical trigger,
+unattended synthetic Inbox → Gemini → Task/Review processing, separately
+authorized Calendar behavior where applicable, and verified disable cleanup.
+Real personal mail remains out of scope until those checks pass.
 
 ## D-067: Work 0036 is synthetic-only personal Automation qualification
 
@@ -109,3 +113,25 @@ replaces active company wording; independent data, credential-storage,
 credential/auth, OAuth/service, target, and trigger gates remain fail-closed.
 Automation stays OFF until a later explicit user action, and no ordinary
 personal mail is admitted by this candidate.
+
+## D-068: a false readiness claim is a blocker
+
+Final ChatGPT review of Work 0036 found that
+`getPersonalAutomationQualificationStatus()` can report
+`READY_FOR_CONTROLLED_QUALIFICATION` from Automation-OFF state alone while
+production AI, Setup/version, formal-label, Calendar, credential, or OAuth
+prerequisites remain unready. The function also reports formal labels and
+Calendar as `NOT_CHECKED`.
+
+The actual `enableAutomation()` path still performs the broader authoritative
+checks and refuses unsafe enablement. Therefore this is not evidence of a live
+permission broadening or ordinary-Inbox exposure. It is nevertheless a false
+readiness claim and blocks the primary user E2E handoff under the repository
+review rules.
+
+Work 0036 remains the same outcome and Work ID. Before user execution, the
+readiness surface must use the same authoritative prerequisite set, or a
+read-only equivalent with identical decision semantics; expose bounded reasons
+for every failed prerequisite; and return READY only when preparation, provider,
+OAuth, labels, Calendar, version, and Automation/trigger state are all ready.
+An accessible, explicit, idempotent preparation menu action must be provided.
