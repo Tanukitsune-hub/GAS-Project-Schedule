@@ -88,7 +88,7 @@ test('STAGING_USES_EXACT_COMMITTED_PRODUCT_CANDIDATE_BYTES', () => {
   assert.strictEqual(inventory.file_count, 24);
   assert.strictEqual(
     inventory.payload_sha256,
-    '9df7bd1e229f2afecfc2cdfd56332d936577de32e5a1acfc9323f448fca4a5f1'
+    'e0f57788977dbaea38225ecd0b4335ddcded11d86411da14b7a5e81c2610b7bc'
   );
 });
 
