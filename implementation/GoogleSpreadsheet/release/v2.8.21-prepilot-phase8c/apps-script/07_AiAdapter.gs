@@ -1201,6 +1201,35 @@ var WorkOsAiAdapter = (function () {
     );
   }
 
+  function canonicalSchemaRule(error) {
+    // Validation messages are static implementation details.  Only their
+    // allowlisted rule class is retained; the provider output is never
+    // included in the diagnostic envelope.
+    var message = String(error && error.message || '');
+    if (/fieldがSchema|Objectではありません/.test(message)) {
+      return 'EXACT_FIELDS';
+    }
+    if (/changes/.test(message)) {
+      return 'CHANGES_FIELDS';
+    }
+    if (/期限|deadline|suggested_deadline/.test(message)) {
+      return 'DEADLINE_SEMANTICS';
+    }
+    if (/Enum|Boolean|String|日付|範囲/.test(message)) {
+      return 'TYPE_ENUM_RANGE';
+    }
+    if (/Action数|warning/.test(message)) {
+      return 'OUTPUT_LIMIT';
+    }
+    if (/task_title|reason/.test(message)) {
+      return 'REQUIRED_VALUE';
+    }
+    if (/target_task_id|Calendar属性|waiting_for_reply|指定できません/.test(message)) {
+      return 'ACTION_SEMANTICS';
+    }
+    return 'CANONICAL_SCHEMA_INVALID';
+  }
+
   function classifyTransportFailure(error) {
     if (error instanceof WorkOsAppError &&
         /^E_AI_[A-Z0-9_]+$/.test(String(error.code || ''))) {
@@ -1401,7 +1430,8 @@ var WorkOsAiAdapter = (function () {
         'E_AI_SCHEMA',
         'AI_RESPONSE',
         false,
-        'AI responseが厳密なSchemaと一致しません。'
+        'AI responseが厳密なSchemaと一致しません。',
+        { canonical_schema_rule: canonicalSchemaRule(error) }
       );
     }
   }

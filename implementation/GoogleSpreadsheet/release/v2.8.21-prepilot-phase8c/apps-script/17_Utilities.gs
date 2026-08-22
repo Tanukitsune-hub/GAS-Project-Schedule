@@ -160,6 +160,20 @@ var WorkOsUtilities = (function () {
     ].indexOf(text) >= 0 ? text : '';
   }
 
+  function safeCanonicalSchemaRule(value) {
+    var text = String(value || '');
+    return [
+      'EXACT_FIELDS',
+      'CHANGES_FIELDS',
+      'DEADLINE_SEMANTICS',
+      'TYPE_ENUM_RANGE',
+      'OUTPUT_LIMIT',
+      'REQUIRED_VALUE',
+      'ACTION_SEMANTICS',
+      'CANONICAL_SCHEMA_INVALID'
+    ].indexOf(text) >= 0 ? text : '';
+  }
+
   function safeProviderDiagnostic(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return null;
@@ -179,6 +193,12 @@ var WorkOsUtilities = (function () {
     );
     if (interactionStatus) {
       safe.provider_interaction_status = interactionStatus;
+    }
+    var canonicalRule = safeCanonicalSchemaRule(
+      value.canonical_schema_rule
+    );
+    if (canonicalRule) {
+      safe.canonical_schema_rule = canonicalRule;
     }
     return Object.keys(safe).length ? safe : null;
   }
@@ -411,6 +431,7 @@ var WorkOsUtilities = (function () {
     safeIdentifier: safeIdentifier,
     safeError: safeError,
     safeProviderDiagnostic: safeProviderDiagnostic,
+    safeCanonicalSchemaRule: safeCanonicalSchemaRule,
     safeProviderErrorCode: safeProviderErrorCode,
     safeInteractionStatus: safeInteractionStatus,
     createSoftBudget: createSoftBudget,

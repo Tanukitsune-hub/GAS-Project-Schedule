@@ -2080,6 +2080,7 @@ var WorkOsWorker = (function () {
       provider_http_status: null,
       provider_error_code: '',
       provider_interaction_status: '',
+      canonical_schema_rule: '',
       failure_finalization: 'NOT_APPLICABLE',
       failure_finalization_code: ''
     };
@@ -2121,6 +2122,12 @@ var WorkOsWorker = (function () {
         summary.provider_interaction_status = String(
           diagnostic.provider_interaction_status
         );
+      }
+      if (diagnostic.canonical_schema_rule) {
+        summary.canonical_schema_rule =
+          WorkOsUtilities.safeCanonicalSchemaRule(
+            diagnostic.canonical_schema_rule
+          );
       }
     }
 
@@ -3158,6 +3165,7 @@ var WorkOsWorker = (function () {
       provider_http_status: summary.provider_http_status,
       provider_error_code: summary.provider_error_code,
       provider_interaction_status: summary.provider_interaction_status,
+      canonical_schema_rule: summary.canonical_schema_rule,
       failure_finalization: summary.failure_finalization,
       failure_finalization_code: summary.failure_finalization_code,
       external_services: {
@@ -3437,6 +3445,7 @@ var WorkOsWorker = (function () {
       provider_interaction_status: String(
         result.provider_interaction_status || ''
       ),
+      canonical_schema_rule: String(result.canonical_schema_rule || ''),
       automation_status: automationStatus.status,
       automation_enabled: automationStatus.enabled,
       automation_desired_enabled: automationStatus.desired_enabled,
@@ -5071,7 +5080,8 @@ var WorkOsWorker = (function () {
       search_saturated: false,
       watermark_advanced: false,
       ai_classified_outside_lock_count: 0,
-      ai_transport_outside_lock: true
+      ai_transport_outside_lock: true,
+      canonical_schema_rule: ''
     };
     var workerLease = null;
     var adapter = null;
@@ -5098,6 +5108,12 @@ var WorkOsWorker = (function () {
         result.calendar_job_count || 0
       );
       summary.error_count += Number(result.error_count || 0);
+      if (result.canonical_schema_rule) {
+        summary.canonical_schema_rule =
+          WorkOsUtilities.safeCanonicalSchemaRule(
+            result.canonical_schema_rule
+          );
+      }
       if (source === 'BACKLOG') {
         summary.backlog_processed_count += Number(
           result.processed_count || 0
@@ -5608,6 +5624,7 @@ var WorkOsWorker = (function () {
       ai_classified_outside_lock_count:
         summary.ai_classified_outside_lock_count,
       ai_transport_outside_lock: true,
+      canonical_schema_rule: summary.canonical_schema_rule,
       duration_ms: summary.duration_ms,
       log_recorded: logRecorded,
       external_services: {

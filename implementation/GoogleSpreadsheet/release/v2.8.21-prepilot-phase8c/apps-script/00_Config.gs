@@ -91,7 +91,7 @@ var WorkOsConfig = Object.freeze({
   EXTERNAL_AI_ENABLED: true,
   EXTERNAL_AI_PROVIDER: 'GEMINI',
   EXTERNAL_AI_MODEL: 'gemini-3.6-flash',
-  EXTERNAL_AI_PROMPT_VERSION: 'gemini-interactions-v1-work-os-v1',
+  EXTERNAL_AI_PROMPT_VERSION: 'gemini-interactions-v1-work-os-v2',
   EXTERNAL_AI_CREDENTIAL_REFERENCE: 'WORK_OS_V2_GEMINI_API_KEY',
   // Work 0036 uses personal-owner approval semantics.  The legacy company
   // key remains only as an internal compatibility alias for historical tests;
