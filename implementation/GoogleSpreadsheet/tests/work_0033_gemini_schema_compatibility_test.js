@@ -448,7 +448,7 @@ test('PROJECTED_SCHEMA_VALID_CANONICAL_INVALID_RESPONSE_FAILS_WITH_BOUNDED_RULE'
         fetchCalls += 1;
         const invalid = validOutput();
         invalid.actions[0].changes = {
-          task_title: 'private raw provider output sk-secret-12345678901234567890'
+          task_title: 'private raw provider output marker-0036-schema-failure'
         };
         return {
           getResponseCode: () => 200,
@@ -484,7 +484,9 @@ test('PROJECTED_SCHEMA_VALID_CANONICAL_INVALID_RESPONSE_FAILS_WITH_BOUNDED_RULE'
     'ACTION_SEMANTICS',
     'CANONICAL_SCHEMA_INVALID'
   ].includes(safe.diagnostic.canonical_schema_rule));
-  assert.strictEqual(JSON.stringify(safe).includes('sk-secret'), false);
+  assert.strictEqual(
+    JSON.stringify(safe).includes('marker-0036-schema-failure'), false
+  );
   assert.strictEqual(JSON.stringify(safe).includes('private raw provider'), false);
   assert.strictEqual(fetchCalls, 1);
 });

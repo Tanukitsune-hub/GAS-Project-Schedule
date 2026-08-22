@@ -465,7 +465,7 @@ test('CANONICAL_SCHEMA_FAILURE_FINALIZES_MESSAGE_WITH_ONE_CALL_AND_NO_DOWNSTREAM
   const canonicalResponse = successfulResponse(bundle.preprocessed);
   const invalidOutput = JSON.parse(canonicalResponse.body);
   invalidOutput.actions[0].changes = {
-    task_title: 'private provider output sk-secret-12345678901234567890'
+    task_title: 'private provider output marker-0036-schema-failure'
   };
   const external = externalAdapter([{
     status: 200,
@@ -491,7 +491,7 @@ test('CANONICAL_SCHEMA_FAILURE_FINALIZES_MESSAGE_WITH_ONE_CALL_AND_NO_DOWNSTREAM
   assert.strictEqual(Number(result.review_count || 0), 0);
   assert.strictEqual(Number(result.calendar_job_count || 0), 0);
   assert.strictEqual(external.transport.calls.length, 1);
-  assert.strictEqual(serialized.includes('sk-secret'), false);
+  assert.strictEqual(serialized.includes('marker-0036-schema-failure'), false);
   assert.strictEqual(serialized.includes('private provider output'), false);
 });
 
