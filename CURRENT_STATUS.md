@@ -38,40 +38,87 @@ fresh approved synthetic-message E2E on Code `2.8.20-prepilot`. The reviewed
 bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
 Code `2.8.20-prepilot` remains the frozen manual-plus-Gemini recovery baseline.
-Work 0036 remains its direct 2.8.21 successor for synthetic-only personal
+Work 0036 is its direct 2.8.21 successor for synthetic-only personal
 Automation qualification. No company-PC or company-environment rollout is
 planned.
 
-## Work 0036 live Automation evidence
+## Work 0036 implementation evidence
 
-The user completed the preparation/readiness boundary and enabled exactly one
-canonical 5-minute Automation trigger. The first scheduled run after one exact
-synthetic fixture reached the real Gemini response boundary and failed closed:
+- Draft PR `#51` remains Open / Unmerged.
+- Runtime-preparation-fix source repair commit: `0f0b7eab0ed27b883ae25fb15af4371b42157662`.
+- Runtime-preparation-fix release commit: `3a4c053ba9775659d5bb902ff0f7cd0bcffba531`.
+- Runtime-preparation-fix pre-placement head: `dab94362c34e837bb236186ace7c0cf9c0f63e40`.
+- Runtime-preparation-fix pre-placement push/PR CI: `#32268303659` / `#32268311064`, both PASS.
+- Complete non-Google gate: 11/11 PASS.
+- Deterministic regression inventory: 78 suites, missing 0, extra 0.
+- Phase 8B/8C release verification and A21/B21 lineage: PASS.
+- Historical 2.8.20 release preservation: PASS.
+- Secret/local-state scan: 0 hits.
+- Existing personal-synthetic target review-fix replacement: one guarded Phase
+  8C update and one independent pull-back, exact parity PASS.
+- Review-fix final CI `#400`: PASS.
+- ChatGPT docs-only clarification CI `#402`: PASS.
+- Production preparation caller regression: production no-argument status path
+  and Test-mode dependency injection are both covered; the production guard
+  remains fail-closed.
+- Runtime-preparation-fix replacement lane: one guarded Phase 8C update and
+  one independent pull-back, exact parity PASS.
 
-- trigger type: `TIME_DRIVEN`
+## Work 0036 preparation/readiness/enable live checkpoints
+
+The repaired preparation path subsequently passed live on the existing
+personal-synthetic target. The candidate version metadata aligned to Code
+`2.8.21-prepilot` while Automation remained OFF and no external request was
+performed.
+
+The authoritative readiness check then returned
+`READY_FOR_CONTROLLED_QUALIFICATION` with Setup/version, production-shaped exact
+synthetic scope, approvals, Gemini credential/adapter, OAuth, all seven formal
+Gmail labels, dedicated Calendar, and zero-trigger Automation-OFF state ready.
+
+The user explicitly enabled Automation once. The immediate live status was
+`CONSISTENT` with enabled/desired enabled `true`, exactly one canonical
+5-minute clock trigger, zero duplicates, and prerequisites ready.
+
+## Live user evidence: scheduled Automation AI-schema failure
+
+On 2026-08-23 the normal scheduled trigger discovered exactly one fresh exact
+Work 0036 synthetic candidate. The run reached the real Gemini classification
+boundary, then failed before Task/Review/Calendar output.
+
+Bounded evidence:
+
+- trigger: `TIME_DRIVEN`
 - mode: `AUTO_PHASE6`
 - candidate count: `1`
 - processed count: `0`
-- created task count: `0`
-- updated task count: `0`
-- review count: `0`
+- created/updated/review counts: `0`
 - error count: `1`
 - run status: `FAILED`
 - run note: `MESSAGE_FAILED`
 - error stage: `AI_RESPONSE`
 - error code: `E_AI_SCHEMA`
 - error category: `INVALID_RESPONSE`
+- message state: `AUTOMATIC_QUALIFICATION -> CLASSIFY -> DEAD`
 - retry count: `0`
-- no Task/Review/Calendar output was created
 
-The exact provider output was intentionally not persisted, so the precise
-violating canonical field cannot be recovered from the completed run. This is
-consistent with the repository privacy contract and must not be bypassed by
-logging raw provider material.
+The provider response and email content were not persisted. Source review shows
+that the provider-facing structured-output schema cannot express all of the
+stricter action-type-dependent semantic rules enforced by canonical AI Schema
+2.0 validation. `parseCanonicalResponse()` also collapses the specific safe
+canonical validation reason into generic `E_AI_SCHEMA`, so the exact violating
+field cannot be recovered from this completed run without violating the privacy
+boundary.
 
-After the failure, the user explicitly stopped Automation and immediately
-verified the live state as `CONSISTENT` with:
+This is a Work 0036 BLOCKER for the user Automation E2E. Do not retry the
+synthetic candidate or Dead Letter and do not re-enable Automation.
 
+## Live user evidence: disable rollback after failure
+
+After the failed scheduled run, the user explicitly disabled Automation and
+immediately verified the real trigger state:
+
+- status: `CONSISTENT`
 - enabled: `false`
 - desired enabled: `false`
 - trigger count: `0`
@@ -83,23 +130,56 @@ verified the live state as `CONSISTENT` with:
 - watermark present: `true`
 - last run present: `true`
 
-The remaining watermark/last-run markers are expected evidence that the
-scheduled run occurred; they are not trigger residue.
+The watermark and last-run markers are expected evidence that the scheduled run
+occurred and are not trigger residue. The exact Automation-OFF/zero-trigger
+prerequisite required before a repaired target placement is now satisfied.
 
-## Active continuation
-
-The user E2E is HOLD. Do not retry the synthetic candidate, dead-letter item,
-Automation enablement, or provider call until the live AI-schema failure repair
-is implemented, regenerated, placed, and independently reviewed.
-
-Authoritative handoff:
+Authoritative continuation handoffs:
 
 - `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md`
 - `docs/handoffs/0036-live-ai-schema-failure-fix-addendum.md`
 
-The exact OFF/zero-trigger prerequisite required by the handoff is now
-satisfied. One fresh repaired Phase 8C placement tranche may be used by Codex
-only after all required local gates and exact-head CI pass, and only under the
-handoff's one-update/one-pull-back limits.
+The required repair must preserve strict validation, one Gemini call, no
+provider retry/fallback, exact synthetic-only scope, and privacy-safe logging.
+It must harden the Gemini semantic output instructions and add bounded
+allowlisted schema-violation diagnostics without storing raw provider output.
 
-Real personal Inbox mail remains out of scope. PR #51 remains Draft/Open/Unmerged.
+## Historical preparation defect and repair
+
+Earlier in Work 0036, the first live `個人用合成Automationを準備` action stopped
+fail-closed with `WorkOsAppError: Automation依存注入はTest modeだけで利用できます。`
+The root cause was a production caller passing an injected options object into
+the Automation status boundary. The runtime-preparation repair changed the
+production caller to the real no-argument status path while preserving Test-mode
+injection and the production guard. That repair was regenerated, placed on the
+same target, and independently pulled back with exact parity before the later
+live checkpoints above.
+
+Historical handoffs and reports remain immutable evidence.
+
+## Historical lineage
+
+- Work 0018: Code `2.8.14-prepilot`, source A14 and release B14.
+- Work 0028: Code `2.8.15-prepilot`, source A15 and release B15.
+- Work 0029: Code `2.8.16-prepilot`, source A16 and release B16.
+- Work 0030: Code `2.8.17-prepilot`, source A17 and release B17.
+- Work 0031: Code `2.8.18-prepilot`, source A18 and release B18.
+- Work 0032: Code `2.8.19-prepilot`, source A19 and release B19.
+- Work 0033: Code `2.8.20-prepilot`, source A20 and release B20; the subsequent
+  user-controlled personal Gemini E2E passed.
+- Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; automatic
+  discovery, readiness, preparation, and trigger enablement reached live PASS,
+  but the first scheduled exact synthetic candidate failed at strict Gemini
+  response validation with `E_AI_SCHEMA`; the subsequent disable rollback
+  reached consistent OFF with zero trigger residue.
+
+## Next boundary
+
+Implement and validate the bounded Work 0036 Gemini-response contract hardening
+under `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md` and its
+mandatory addendum. After required local gates and exact-head CI pass, one fresh
+repaired Phase 8C update to the same personal-synthetic target and one
+independent pull-back parity check are authorized. Automation must remain OFF.
+
+The user-controlled E2E retry remains separately explicit and ordinary personal
+Inbox mail remains out of scope.
