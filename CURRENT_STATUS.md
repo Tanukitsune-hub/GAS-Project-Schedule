@@ -1,20 +1,20 @@
 # Current Status
 
-Last updated: 2026-08-20
+Last updated: 2026-08-23
 
 Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Overall status: `HOLD_USER_AUTOMATION_E2E_LIVE_AI_SCHEMA_FAILURE`
 
 Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-ChatGPT review disposition: `READY — RUNTIME_PREPARATION_FIX_VALIDATED_AND_PLACED`
+ChatGPT review disposition: `HOLD — LIVE_GEMINI_RESPONSE_FAILED_STRICT_AI_SCHEMA_2_0`
 
 Personal Gemini E2E: `PASS`
 
-Automation: `OFF`
+Automation: `STOP_REQUESTED_AFTER_LIVE_FAILURE — USER_OFF_CONFIRMATION_PENDING`
 
-User Automation E2E: `READY_FOR_EXPLICIT_USER_ACTION`
+User Automation E2E: `FAILED_AT_AI_RESPONSE_SCHEMA_VALIDATION`
 
 ## Current contract
 
@@ -63,50 +63,77 @@ planned.
   remains fail-closed.
 - Runtime-preparation-fix replacement lane: one guarded Phase 8C update and
   one independent pull-back, exact parity PASS.
-- Automation remained OFF throughout the implementation/review work.
 
-## Work 0036 review-fix result
+## Work 0036 preparation/readiness/enable live checkpoints
 
-The review-fix made the user-facing readiness surface authoritative and
-bounded. `getPersonalAutomationQualificationStatus()` evaluates the complete
-prerequisite boundary used by `enableAutomation()`, including Setup,
-candidate/version alignment, production-shaped synthetic scope, approvals,
-actual credential presence without value access, OAuth, production Gemini
-adapter health, formal Gmail labels, dedicated Calendar, and trigger/state
-residue.
+The repaired preparation path subsequently passed live on the existing
+personal-synthetic target. The candidate version metadata aligned to Code
+`2.8.21-prepilot` while Automation remained OFF and no external request was
+performed.
 
-The menu also exposes the no-argument idempotent
-`preparePersonalAutomationQualification()` action.
+The authoritative readiness check then returned
+`READY_FOR_CONTROLLED_QUALIFICATION` with Setup/version, production-shaped exact
+synthetic scope, approvals, Gemini credential/adapter, OAuth, all seven formal
+Gmail labels, dedicated Calendar, and zero-trigger Automation-OFF state ready.
 
-## Live user evidence: preparation BLOCKER
+The user explicitly enabled Automation once. The immediate live status was
+`CONSISTENT` with enabled/desired enabled `true`, exactly one canonical
+5-minute clock trigger, zero duplicates, and prerequisites ready.
 
-On 2026-08-19 the user began the authorized synthetic Automation E2E and ran
-`個人用合成Automationを準備` with Automation still OFF. The live action stopped
-immediately with the bounded error:
+## Live user evidence: scheduled Automation AI-schema failure
 
-`WorkOsAppError: Automation依存注入はTest modeだけで利用できます。`
+On 2026-08-23 the normal scheduled trigger discovered exactly one fresh exact
+Work 0036 synthetic candidate. The run reached the real Gemini classification
+boundary, then failed before Task/Review/Calendar output.
 
-GitHub source review confirmed the root cause: the production no-argument
-preparation path obtains real services correctly, but then calls
-`WorkOsAutomation.getDiagnosticAutomationStatus({...})` with an injected options
-object. In Phase 8C (`TEST_MODE=false`), the Automation module correctly rejects
-any non-empty dependency-injection object. The defect is therefore the
-preparation caller, not the production injection guard.
+Bounded evidence:
 
-No Automation enable, scheduled trigger, Gmail processing, Gemini request,
-Task/Review mutation, or Calendar action occurred in this failed step. The
-system failed closed and Automation remains OFF.
+- trigger: `TIME_DRIVEN`
+- mode: `AUTO_PHASE6`
+- candidate count: `1`
+- processed count: `0`
+- created/updated/review counts: `0`
+- error count: `1`
+- run status: `FAILED`
+- run note: `MESSAGE_FAILED`
+- error stage: `AI_RESPONSE`
+- error code: `E_AI_SCHEMA`
+- error category: `INVALID_RESPONSE`
+- message state: `AUTOMATIC_QUALIFICATION -> CLASSIFY -> DEAD`
+- retry count: `0`
 
-The runtime-preparation repair is now implemented, validated, regenerated,
-placed on the same existing personal-synthetic target, independently pulled
-back with exact parity, and reviewed. The user-controlled E2E remains a
-separate explicit action; this Work did not execute preparation, readiness,
-enablement, or runtime processing.
+The provider response and email content were not persisted. Source review shows
+that the provider-facing structured-output schema cannot express all of the
+stricter action-type-dependent semantic rules enforced by canonical AI Schema
+2.0 validation. `parseCanonicalResponse()` also collapses the specific safe
+canonical validation reason into generic `E_AI_SCHEMA`, so the exact violating
+field cannot be recovered from this completed run without violating the privacy
+boundary.
+
+This is a Work 0036 BLOCKER for the user Automation E2E. Do not retry the
+synthetic candidate or Dead Letter and do not re-enable Automation.
 
 Authoritative continuation handoff:
 
-- `docs/handoffs/0036-runtime-preparation-fix-instruction.md`
-- `docs/handoffs/0036-runtime-preparation-fix-addendum.md`
+- `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md`
+
+The required repair must preserve strict validation, one Gemini call, no
+provider retry/fallback, exact synthetic-only scope, and privacy-safe logging.
+It must harden the Gemini semantic output instructions and add bounded
+allowlisted schema-violation diagnostics without storing raw provider output.
+
+## Historical preparation defect and repair
+
+Earlier in Work 0036, the first live `個人用合成Automationを準備` action stopped
+fail-closed with `WorkOsAppError: Automation依存注入はTest modeだけで利用できます。`
+The root cause was a production caller passing an injected options object into
+the Automation status boundary. The runtime-preparation repair changed the
+production caller to the real no-argument status path while preserving Test-mode
+injection and the production guard. That repair was regenerated, placed on the
+same target, and independently pulled back with exact parity before the later
+live checkpoints above.
+
+Historical handoffs and reports remain immutable evidence.
 
 ## Historical lineage
 
@@ -118,20 +145,19 @@ Authoritative continuation handoff:
 - Work 0032: Code `2.8.19-prepilot`, source A19 and release B19.
 - Work 0033: Code `2.8.20-prepilot`, source A20 and release B20; the subsequent
   user-controlled personal Gemini E2E passed.
-- Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; synthetic-only
-  automatic discovery, authoritative readiness, and the bounded production
-  preparation caller repair are implemented and placed. The user E2E remains
-  separately authorized and unexecuted.
-
-Historical handoffs and reports remain immutable evidence.
+- Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; automatic
+  discovery, readiness, preparation, and trigger enablement reached live PASS,
+  but the first scheduled exact synthetic candidate failed at strict Gemini
+  response validation with `E_AI_SCHEMA`.
 
 ## Next boundary
 
-The next boundary is the separately authorized user-controlled personal
-Automation E2E. It must remain limited to one fresh exact Work 0036 synthetic
-fixture, with Automation OFF before preparation, no ordinary personal Inbox
-mail, and the existing fail-closed enable/disable and trigger-cleanup rules.
-Automation remained OFF throughout the runtime-preparation repair.
+First confirm Automation is disabled after the failed live run: enabled false,
+desired false, zero owned clock triggers, no stored trigger ID, and no canonical
+trigger residue.
 
-The user may proceed only under the dedicated runbook after this completion
-review. Real personal mail remains out of scope.
+Then implement and validate the bounded Work 0036 Gemini-response contract
+hardening under `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md`.
+No repaired Apps Script target placement is allowed until the Automation-OFF
+confirmation is recorded. The user-controlled E2E retry remains separately
+explicit and ordinary personal Inbox mail remains out of scope.
