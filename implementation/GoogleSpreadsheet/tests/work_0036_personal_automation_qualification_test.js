@@ -361,6 +361,26 @@ test('WORK_0036_BODY_NORMALIZATION_IS_EXACT_AND_ATTACHMENT_FREE', () => {
   assert.ok(source.includes('body_transport_truncated'));
 });
 
+test('WORK_0036_PROVIDER_INPUT_GUARD_IS_EXACT_AND_PROMPT_SCOPED', () => {
+  const exact = {
+    schema_version: Config.AI_SCHEMA_VERSION,
+    message: {
+      subject: Config.AUTOMATION_SYNTHETIC_SUBJECT,
+      plain_body: exactBody()
+    }
+  };
+  assert.strictEqual(Provider.isAutomationSyntheticInput(exact), true);
+  assert.strictEqual(Provider.isAutomationSyntheticInput({
+    message: {
+      subject: Config.AUTOMATION_SYNTHETIC_SUBJECT,
+      plain_body: `${exactBody()}\nextra`
+    }
+  }), false);
+  assert.strictEqual(Provider.isAutomationSyntheticInput({
+    message: { subject: 'ordinary personal mail', plain_body: exactBody() }
+  }), false);
+});
+
 test('WORK_0036_CANDIDATE_REQUIRES_EXACT_SOURCE_AND_PROCESS_DECISION', () => {
   assert.strictEqual(Provider.isAutomationSyntheticCandidate({
     subject: Config.AUTOMATION_SYNTHETIC_SUBJECT,

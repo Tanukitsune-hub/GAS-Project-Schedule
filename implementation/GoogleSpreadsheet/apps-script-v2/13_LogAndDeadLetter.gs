@@ -960,6 +960,12 @@ var WorkOsLogAndDeadLetter = (function () {
     var noteParts = [
       WorkOsUtilities.redact(String(value.note || 'Worker summary'))
     ];
+    var canonicalSchemaRule = WorkOsUtilities.safeCanonicalSchemaRule(
+      value.canonical_schema_rule
+    );
+    if (canonicalSchemaRule) {
+      noteParts.push('AI_SCHEMA_RULE=' + canonicalSchemaRule);
+    }
     var gmailCallLimit = Number(value.gmail_api_call_limit || 0);
     if (gmailCallLimit > 0) {
       noteParts.push(

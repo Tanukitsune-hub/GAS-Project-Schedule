@@ -34,6 +34,8 @@ const reviewFixParentRef =
   '41e0173ee81d36b786ca0d3ede8513c8c76ecd73';
 const runtimePreparationFixParentRef =
   '90ad3a65155cc2f765de439f9b31e73707c0613d';
+const liveAiSchemaFailureFixParentRef =
+  'd330d94f9202d3a8bbb13cf2536fadb8cd031293';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -558,6 +560,30 @@ function checkReleaseLineage() {
         JSON.stringify(expectedRuntimePreparationFixFiles)
     ) {
       throw new Error('WORK_0036_RUNTIME_PREPARATION_FIX_SOURCE_SCOPE_INVALID');
+    }
+  } else if (sourceParent === liveAiSchemaFailureFixParentRef) {
+    const expectedLiveAiSchemaFailureFixFiles = [
+      '.gitignore',
+      'implementation/GoogleSpreadsheet/apps-script-v2/00_Config.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/07_AiAdapter.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/13_LogAndDeadLetter.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/17_Utilities.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/18_Worker.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/20_GeminiProvider.gs',
+      'implementation/GoogleSpreadsheet/tests/work_0028_gemini_provider_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0032_gemini_runtime_diagnostics_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0033_gemini_schema_compatibility_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0036_personal_automation_qualification_test.js',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js',
+      'implementation/GoogleSpreadsheet/tools/work_0036_review_fix_placement.js'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedLiveAiSchemaFailureFixFiles)
+    ) {
+      throw new Error(
+        'WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_SOURCE_SCOPE_INVALID'
+      );
     }
   } else {
     throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');

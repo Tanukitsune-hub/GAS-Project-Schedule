@@ -460,6 +460,41 @@ test('FAILURE_FINALIZATION_USES_MESSAGE_CONTEXT_ONLY', () => {
   }
 });
 
+test('CANONICAL_SCHEMA_FAILURE_FINALIZES_MESSAGE_WITH_ONE_CALL_AND_NO_DOWNSTREAM_WRITES', () => {
+  const bundle = makeBundle('synthetic-work-0036-schema-rule');
+  const canonicalResponse = successfulResponse(bundle.preprocessed);
+  const invalidOutput = JSON.parse(canonicalResponse.body);
+  invalidOutput.actions[0].changes = {
+    task_title: 'private provider output sk-secret-12345678901234567890'
+  };
+  const external = externalAdapter([{
+    status: 200,
+    body: JSON.stringify(invalidOutput)
+  }]);
+  const gateway = fixture.makeVerticalGateway(bundle.message);
+  const result = Worker.runGeminiSyntheticValidation(
+    syntheticOptions(bundle, external.adapter, gateway)
+  );
+  const state = stateFor(bundle, bundle.message.message_id);
+  const serialized = JSON.stringify(result);
+  assert.strictEqual(result.status, 'FAILED');
+  assert.strictEqual(result.error_code, 'E_AI_SCHEMA');
+  assert.strictEqual(result.error_stage, 'AI_RESPONSE');
+  assert.strictEqual(result.failure_finalization, 'RECORDED');
+  assert.strictEqual(result.canonical_schema_rule, 'CHANGES_FIELDS');
+  assert.strictEqual(state.processing_status, State.STATUSES.DEAD);
+  assert.strictEqual(Number(state.retry_count), 0);
+  assert.strictEqual(String(state.next_retry_at || ''), '');
+  assert.strictEqual(fixture.allTasks(fixture.taskSheet(bundle.spreadsheet)).length, 0);
+  assert.strictEqual(Number(result.created_task_count || 0), 0);
+  assert.strictEqual(Number(result.updated_task_count || 0), 0);
+  assert.strictEqual(Number(result.review_count || 0), 0);
+  assert.strictEqual(Number(result.calendar_job_count || 0), 0);
+  assert.strictEqual(external.transport.calls.length, 1);
+  assert.strictEqual(serialized.includes('sk-secret'), false);
+  assert.strictEqual(serialized.includes('private provider output'), false);
+});
+
 test('FAILURE_FINALIZATION_FAULT_IS_EXPLICIT_PENDING', () => {
   const bundle = makeBundle('synthetic-work-0032-pending');
   const external = externalAdapter([{ error_kind: 'TIMEOUT' }]);

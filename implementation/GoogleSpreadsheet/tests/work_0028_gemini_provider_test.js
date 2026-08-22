@@ -189,7 +189,7 @@ test('GEMINI_REGISTRY_AND_READINESS_ARE_PROVIDER_SPECIFIC_BUT_SAFE', () => {
   }, {
     provider: 'GEMINI',
     model: 'gemini-3.6-flash',
-    prompt_version: 'gemini-interactions-v1-work-os-v1',
+    prompt_version: 'gemini-interactions-v1-work-os-v2',
     credential_configured: false,
     provider_registered: true,
     external_request_performed: false,

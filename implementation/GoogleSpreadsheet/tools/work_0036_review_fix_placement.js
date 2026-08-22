@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Work 0036 review-fix-only Phase 8C replacement lane.
+ * Work 0036 bounded Phase 8C replacement lanes.
  *
  * This lane reuses only the completed Work 0010 personal-synthetic binding and reads the consumed Work 0036 placement only as historical evidence.
  * The consumed Work 0036 placement is checked as historical evidence, never
@@ -32,41 +32,101 @@ const phase8cReleaseRelativeRoot =
 const phase8cReleaseRoot = path.join(
   repositoryRoot, phase8cReleaseRelativeRoot.replaceAll('/', path.sep)
 );
-const runtimePreparationFixLane =
+const liveAiSchemaFailureFixLane =
+  process.env.GAS_WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_LANE === 'true';
+const runtimePreparationFixLane = !liveAiSchemaFailureFixLane &&
   process.env.GAS_WORK_0036_RUNTIME_PREPARATION_FIX_LANE === 'true';
-const laneName = runtimePreparationFixLane
-  ? 'work_0036_runtime_preparation_fix_replacement_placement'
-  : 'work_0036_review_fix_replacement_placement';
-const ciConfirmationRequiredEnv = runtimePreparationFixLane
-  ? 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_CI_CONFIRMED'
-  : 'GAS_WORK_0036_REVIEW_FIX_CI_CONFIRMED';
-const pushAllowedEnv = runtimePreparationFixLane
-  ? 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_PUSH_ALLOWED'
-  : 'GAS_WORK_0036_REVIEW_FIX_PUSH_ALLOWED';
-const pullAllowedEnv = runtimePreparationFixLane
-  ? 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_PULL_ALLOWED'
-  : 'GAS_WORK_0036_REVIEW_FIX_PULL_ALLOWED';
-const workspaceName = runtimePreparationFixLane
-  ? '.clasp-work-0036-runtime-preparation-fix'
-  : '.clasp-work-0036-review-fix';
-const pullWorkspaceName = runtimePreparationFixLane
-  ? '.clasp-pull-verify-work-0036-runtime-preparation-fix'
-  : '.clasp-pull-verify-work-0036-review-fix';
+const laneConfig = liveAiSchemaFailureFixLane
+  ? {
+    laneName: 'work_0036_live_ai_schema_failure_fix_replacement_placement',
+    ciConfirmationRequiredEnv:
+      'GAS_WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_CI_CONFIRMED',
+    pushAllowedEnv: 'GAS_WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_PUSH_ALLOWED',
+    pullAllowedEnv: 'GAS_WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_PULL_ALLOWED',
+    workspaceName: '.clasp-work-0036-live-ai-schema-failure-fix',
+    pullWorkspaceName:
+      '.clasp-pull-verify-work-0036-live-ai-schema-failure-fix',
+    executionStateFileName:
+      'work-0036-live-ai-schema-failure-fix-execution-state.json',
+    operationLockFileName:
+      'work-0036-live-ai-schema-failure-fix-operation.lock',
+    previousPlacementDirectory: '.clasp-work-0036-runtime-preparation-fix',
+    previousPlacementFile:
+      'work-0036-runtime-preparation-fix-execution-state.json',
+    instructionHead: 'd330d94f9202d3a8bbb13cf2536fadb8cd031293',
+    phase8cSchema:
+      'WORK_OS_PERSONAL_AUTOMATION_LIVE_AI_SCHEMA_FAILURE_FIX_REPLACEMENT_V1',
+    previousPlacementWorkId: '0036-runtime-preparation-fix',
+    replacementTranche: 'LIVE_AI_SCHEMA_FAILURE_FIX_REPLACEMENT',
+    previousPlacementSchema:
+      'WORK_OS_PERSONAL_AUTOMATION_RUNTIME_PREPARATION_FIX_REPLACEMENT_V1',
+    previousPreviousPlacementWorkId: '0036-review-fix',
+    previousReplacementTranche: 'RUNTIME_PREPARATION_FIX_REPLACEMENT'
+  }
+  : runtimePreparationFixLane
+    ? {
+      laneName: 'work_0036_runtime_preparation_fix_replacement_placement',
+      ciConfirmationRequiredEnv:
+        'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_CI_CONFIRMED',
+      pushAllowedEnv: 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_PUSH_ALLOWED',
+      pullAllowedEnv: 'GAS_WORK_0036_RUNTIME_PREPARATION_FIX_PULL_ALLOWED',
+      workspaceName: '.clasp-work-0036-runtime-preparation-fix',
+      pullWorkspaceName:
+        '.clasp-pull-verify-work-0036-runtime-preparation-fix',
+      executionStateFileName:
+        'work-0036-runtime-preparation-fix-execution-state.json',
+      operationLockFileName:
+        'work-0036-runtime-preparation-fix-operation.lock',
+      previousPlacementDirectory: '.clasp-work-0036-review-fix',
+      previousPlacementFile: 'work-0036-review-fix-execution-state.json',
+      instructionHead: '90ad3a65155cc2f765de439f9b31e73707c0613d',
+      phase8cSchema:
+        'WORK_OS_PERSONAL_AUTOMATION_RUNTIME_PREPARATION_FIX_REPLACEMENT_V1',
+      previousPlacementWorkId: '0036-review-fix',
+      replacementTranche: 'RUNTIME_PREPARATION_FIX_REPLACEMENT',
+      previousPlacementSchema:
+        'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1',
+      previousPreviousPlacementWorkId: '0036',
+      previousReplacementTranche: 'REVIEW_FIX_REPLACEMENT'
+    }
+    : {
+      laneName: 'work_0036_review_fix_replacement_placement',
+      ciConfirmationRequiredEnv: 'GAS_WORK_0036_REVIEW_FIX_CI_CONFIRMED',
+      pushAllowedEnv: 'GAS_WORK_0036_REVIEW_FIX_PUSH_ALLOWED',
+      pullAllowedEnv: 'GAS_WORK_0036_REVIEW_FIX_PULL_ALLOWED',
+      workspaceName: '.clasp-work-0036-review-fix',
+      pullWorkspaceName: '.clasp-pull-verify-work-0036-review-fix',
+      executionStateFileName: 'work-0036-review-fix-execution-state.json',
+      operationLockFileName: 'work-0036-review-fix-operation.lock',
+      previousPlacementDirectory: '.clasp-work-0036',
+      previousPlacementFile: 'work-0036-execution-state.json',
+      instructionHead: '41e0173ee81d36b786ca0d3ede8513c8c76ecd73',
+      phase8cSchema:
+        'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1',
+      previousPlacementWorkId: '0036',
+      replacementTranche: 'REVIEW_FIX_REPLACEMENT',
+      previousPlacementSchema:
+        'WORK_OS_PERSONAL_AUTOMATION_QUALIFICATION_PLACEMENT_V1',
+      previousPreviousPlacementWorkId: '0033',
+      previousReplacementTranche: ''
+    };
+const laneName = laneConfig.laneName;
+const ciConfirmationRequiredEnv = laneConfig.ciConfirmationRequiredEnv;
+const pushAllowedEnv = laneConfig.pushAllowedEnv;
+const pullAllowedEnv = laneConfig.pullAllowedEnv;
+const workspaceName = laneConfig.workspaceName;
+const pullWorkspaceName = laneConfig.pullWorkspaceName;
 const workspaceRoot = path.join(moduleRoot, workspaceName);
 const payloadRoot = path.join(workspaceRoot, 'payload');
 const pullRoot = path.join(moduleRoot, pullWorkspaceName);
 const inventoryPath = path.join(workspaceRoot, 'payload-inventory.json');
 const configPath = path.join(workspaceRoot, '.clasp.json');
 const ignorePath = path.join(workspaceRoot, '.claspignore');
-const executionStateFileName = runtimePreparationFixLane
-  ? 'work-0036-runtime-preparation-fix-execution-state.json'
-  : 'work-0036-review-fix-execution-state.json';
+const executionStateFileName = laneConfig.executionStateFileName;
 const executionStatePath = path.join(workspaceRoot, executionStateFileName);
 const operationLockPath = path.join(
   workspaceRoot,
-  runtimePreparationFixLane
-    ? 'work-0036-runtime-preparation-fix-operation.lock'
-    : 'work-0036-review-fix-operation.lock'
+  laneConfig.operationLockFileName
 );
 const sourceWorkspaceRoot = path.join(moduleRoot, '.clasp-work-0010');
 const sourceConfigPath = path.join(sourceWorkspaceRoot, '.clasp.json');
@@ -76,23 +136,14 @@ const sourceStatePath = path.join(
 );
 const previousPlacementStatePath = path.join(
   moduleRoot,
-  runtimePreparationFixLane
-    ? '.clasp-work-0036-review-fix'
-    : '.clasp-work-0036',
-  runtimePreparationFixLane
-    ? 'work-0036-review-fix-execution-state.json'
-    : 'work-0036-execution-state.json'
+  laneConfig.previousPlacementDirectory,
+  laneConfig.previousPlacementFile
 );
 const exactBranch = 'codex/0036-personal-automation-qualification';
-const instructionHead = runtimePreparationFixLane
-  ? '90ad3a65155cc2f765de439f9b31e73707c0613d'
-  : '41e0173ee81d36b786ca0d3ede8513c8c76ecd73';
-const phase8cSchema = runtimePreparationFixLane
-  ? 'WORK_OS_PERSONAL_AUTOMATION_RUNTIME_PREPARATION_FIX_REPLACEMENT_V1'
-  : 'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1';
-const previousPlacementWorkId = runtimePreparationFixLane
-  ? '0036-review-fix'
-  : '0036';
+const instructionHead = laneConfig.instructionHead;
+const phase8cSchema = laneConfig.phase8cSchema;
+const previousPlacementWorkId = laneConfig.previousPlacementWorkId;
+const replacementTranche = laneConfig.replacementTranche;
 
 class GateError extends Error {
   constructor(code) {
@@ -298,15 +349,14 @@ function assertExistingBindingObjects(config, target, state) {
 
 function assertPreviousPlacement(binding, previousPlacement) {
   const valid = previousPlacement &&
-    previousPlacement.schema === (runtimePreparationFixLane
-      ? 'WORK_OS_PERSONAL_AUTOMATION_REVIEW_FIX_REPLACEMENT_V1'
-      : 'WORK_OS_PERSONAL_AUTOMATION_QUALIFICATION_PLACEMENT_V1') &&
+    previousPlacement.schema === laneConfig.previousPlacementSchema &&
     previousPlacement.work_id === '0036' &&
     previousPlacement.source_binding_work_id === '0010' &&
     previousPlacement.previous_placement_work_id ===
-      (runtimePreparationFixLane ? '0036' : '0033') &&
-    (!runtimePreparationFixLane ||
-      previousPlacement.replacement_tranche === 'REVIEW_FIX_REPLACEMENT') &&
+      laneConfig.previousPreviousPlacementWorkId &&
+    (!laneConfig.previousReplacementTranche ||
+      previousPlacement.replacement_tranche ===
+        laneConfig.previousReplacementTranche) &&
     previousPlacement.phase === 'PULL_PARITY_PASS' &&
     previousPlacement.push_attempt_count === 1 &&
     previousPlacement.pull_attempt_count === 1 &&
@@ -339,9 +389,7 @@ function initialExecutionState(repairHead, inventory, binding) {
     work_id: '0036',
     source_binding_work_id: '0010',
     previous_placement_work_id: previousPlacementWorkId,
-    replacement_tranche: runtimePreparationFixLane
-      ? 'RUNTIME_PREPARATION_FIX_REPLACEMENT'
-      : 'REVIEW_FIX_REPLACEMENT',
+    replacement_tranche: replacementTranche,
     payload_path: phase8cReleaseRelativeRoot,
     repair_head: repairHead,
     payload_sha256: inventory.payload_sha256,
@@ -365,9 +413,7 @@ function assertStateBase(state) {
   const valid = state && state.schema === phase8cSchema &&
     state.work_id === '0036' && state.source_binding_work_id === '0010' &&
     state.previous_placement_work_id === previousPlacementWorkId &&
-    state.replacement_tranche === (runtimePreparationFixLane
-      ? 'RUNTIME_PREPARATION_FIX_REPLACEMENT'
-      : 'REVIEW_FIX_REPLACEMENT') &&
+    state.replacement_tranche === replacementTranche &&
     state.payload_path === phase8cReleaseRelativeRoot &&
     /^[0-9a-f]{40}$/.test(String(state.repair_head || '')) &&
     /^[0-9a-f]{64}$/.test(String(state.payload_sha256 || '')) &&
@@ -801,6 +847,8 @@ if (require.main === module) main();
 
 module.exports = {
   GateError,
+  laneName,
+  replacementTranche,
   workspaceName,
   pullWorkspaceName,
   executionStateFileName,
