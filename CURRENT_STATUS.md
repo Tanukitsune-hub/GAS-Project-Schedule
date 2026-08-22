@@ -4,17 +4,17 @@ Last updated: 2026-08-23
 
 Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `HOLD_USER_AUTOMATION_E2E_LIVE_AI_SCHEMA_FAILURE`
+Overall status: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-ChatGPT review disposition: `HOLD — LIVE_GEMINI_RESPONSE_FAILED_STRICT_AI_SCHEMA_2_0`
+ChatGPT review disposition: `REPAIRED — LIVE_AI_SCHEMA_FAILURE_BOUNDARY_HARDENED`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
 
-User Automation E2E: `FAILED_AT_AI_RESPONSE_SCHEMA_VALIDATION`
+User Automation E2E: `NOT_RETRIED — EXPLICITLY USER-CONTROLLED`
 
 ## Current contract
 
@@ -110,8 +110,9 @@ canonical validation reason into generic `E_AI_SCHEMA`, so the exact violating
 field cannot be recovered from this completed run without violating the privacy
 boundary.
 
-This is a Work 0036 BLOCKER for the user Automation E2E. Do not retry the
-synthetic candidate or Dead Letter and do not re-enable Automation.
+This remains historical evidence for the stopped user Automation E2E. The
+synthetic candidate and Dead Letter were not retried by Codex and Automation
+was not re-enabled.
 
 ## Live user evidence: disable rollback after failure
 
@@ -139,10 +140,12 @@ Authoritative continuation handoffs:
 - `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md`
 - `docs/handoffs/0036-live-ai-schema-failure-fix-addendum.md`
 
-The required repair must preserve strict validation, one Gemini call, no
-provider retry/fallback, exact synthetic-only scope, and privacy-safe logging.
-It must harden the Gemini semantic output instructions and add bounded
-allowlisted schema-violation diagnostics without storing raw provider output.
+The required repair was completed in the current Work 0036 continuation. It
+preserves strict validation, one Gemini call, no provider retry/fallback,
+exact synthetic-only scope, and privacy-safe logging. It hardens the Gemini
+semantic output instructions and adds bounded allowlisted schema-violation
+diagnostics without storing raw provider output. Evidence is recorded in
+`docs/handoffs/0036-live-ai-schema-failure-fix-report.md`.
 
 ## Historical preparation defect and repair
 
@@ -173,13 +176,26 @@ Historical handoffs and reports remain immutable evidence.
   response validation with `E_AI_SCHEMA`; the subsequent disable rollback
   reached consistent OFF with zero trigger residue.
 
+## Work 0036 live AI-schema repair evidence
+
+- Source repair commit: `25e32a0a4a2c51a7d347534659299d5523b3477f`.
+- Release regeneration commit: `bda4df2ec8a21b5e4ece64609e2e50b7be12dcb5`.
+- Pre-placement tooling/test head: `78a27bc2cddd42eb7af826d42443006cab332c1c`.
+- Complete non-Google gate: 11/11 PASS; deterministic inventory 78 suites,
+  missing 0, extra 0.
+- Phase 8B/8C release verification, A21/B21 lineage, and historical 2.8.20
+  preservation: PASS.
+- Fresh existing-target replacement: one guarded Phase 8C update and one
+  independent pull-back; exact 23-file parity PASS.
+- Automation remains OFF with zero owned clock triggers and no stored/canonical
+  trigger residue.
+
 ## Next boundary
 
-Implement and validate the bounded Work 0036 Gemini-response contract hardening
-under `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md` and its
-mandatory addendum. After required local gates and exact-head CI pass, one fresh
-repaired Phase 8C update to the same personal-synthetic target and one
-independent pull-back parity check are authorized. Automation must remain OFF.
+The user-controlled personal Automation E2E is the next separately explicit
+boundary. It must use one fresh exact synthetic fixture only, with Automation
+remaining OFF until the user-controlled run is explicitly authorized. No
+ordinary personal Inbox mail, historical failed candidate, Dead Letter retry,
+or additional Codex placement is in scope.
 
-The user-controlled E2E retry remains separately explicit and ordinary personal
-Inbox mail remains out of scope.
+The live AI-schema repair itself does not authorize that E2E retry.
