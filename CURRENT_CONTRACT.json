@@ -1,33 +1,33 @@
 {
   "schema": "WORK_OS_CURRENT_CONTRACT_V1",
   "repository": "Tanukitsune-hub/GAS-Project-Schedule",
-  "starting_main": "4c28231dc08dc89ee7a529cb0a6192325263c810",
-  "branch": "codex/0036-personal-automation-qualification",
-  "code_version": "2.8.21-prepilot",
+  "starting_main": "ca70607cba047b340b8009a03448b8d8128dc68e",
+  "branch": "codex/0037-personal-shadow-pilot",
+  "code_version": "2.8.22-prepilot",
   "schema_version": "2.6",
   "ai_schema_version": "2.0",
   "migration_version": "3",
-  "highest_gate": "READY_FOR_USER_PERSONAL_AUTOMATION_E2E",
+  "highest_gate": "READY_FOR_USER_PERSONAL_SHADOW_PILOT",
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "25e32a0a4a2c51a7d347534659299d5523b3477f",
+  "source_commit": "d4eae96be7c7d9a1976f86ab51db36dc4e41acdb",
   "release_commit": "SELF",
   "phase8b": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.21-prepilot",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.22-prepilot",
     "test_mode": true,
     "test_harness": true,
     "payload_files": 24,
     "package_files": 28,
-    "payload_sha256": "42ffdc6ada448e4dcacc0b8050048d994f212069dfe6657498bb9c3a20cb5cd2"
+    "payload_sha256": "edb4a077a6468d30c2044c4d8a79a4ce8cc10033eb0e232365320569c058bb28"
   },
   "phase8c": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c",
     "test_mode": false,
     "test_harness": false,
     "transform": "TEST_MODE_AND_APPROVED_PROVIDER_READINESS_FLAGS",
     "payload_files": 23,
     "package_files": 26,
-    "payload_sha256": "37feb8cb615ee3caa8af51e83b354a1b6cbbbbe7f03460052ac73ca499b77479"
+    "payload_sha256": "038d9bfb5f767778a79f8c1255233fb644c4d3799d86f07e2e233cbc64a3b1af"
   }
 }
