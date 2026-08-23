@@ -8,13 +8,13 @@ Overall status: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-ChatGPT review disposition: `REPAIRED — LIVE_AI_SCHEMA_FAILURE_BOUNDARY_HARDENED`
+ChatGPT review disposition: `READY — LIVE_AI_SCHEMA_REPAIR_INDEPENDENTLY_REVIEWED`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
 
-User Automation E2E: `NOT_RETRIED — EXPLICITLY USER-CONTROLLED`
+User Automation E2E: `READY_FOR_FRESH_EXPLICIT_RETRY`
 
 ## Current contract
 
@@ -105,14 +105,11 @@ Bounded evidence:
 The provider response and email content were not persisted. Source review shows
 that the provider-facing structured-output schema cannot express all of the
 stricter action-type-dependent semantic rules enforced by canonical AI Schema
-2.0 validation. `parseCanonicalResponse()` also collapses the specific safe
-canonical validation reason into generic `E_AI_SCHEMA`, so the exact violating
-field cannot be recovered from this completed run without violating the privacy
-boundary.
+2.0 validation. The historical run therefore could not identify the exact
+violating field without weakening the privacy boundary.
 
-This remains historical evidence for the stopped user Automation E2E. The
-synthetic candidate and Dead Letter were not retried by Codex and Automation
-was not re-enabled.
+The historical failed candidate and Dead Letter remain un-retried and out of
+scope for the next qualification attempt.
 
 ## Live user evidence: disable rollback after failure
 
@@ -131,21 +128,50 @@ immediately verified the real trigger state:
 - watermark present: `true`
 - last run present: `true`
 
-The watermark and last-run markers are expected evidence that the scheduled run
-occurred and are not trigger residue. The exact Automation-OFF/zero-trigger
-prerequisite required before a repaired target placement is now satisfied.
+The watermark and last-run markers are expected historical run evidence and are
+not trigger residue.
 
-Authoritative continuation handoffs:
+## Work 0036 live AI-schema repair evidence
+
+The repair is recorded in:
 
 - `docs/handoffs/0036-live-ai-schema-failure-fix-instruction.md`
 - `docs/handoffs/0036-live-ai-schema-failure-fix-addendum.md`
+- `docs/handoffs/0036-live-ai-schema-failure-fix-report.md`
 
-The required repair was completed in the current Work 0036 continuation. It
-preserves strict validation, one Gemini call, no provider retry/fallback,
-exact synthetic-only scope, and privacy-safe logging. It hardens the Gemini
-semantic output instructions and adds bounded allowlisted schema-violation
-diagnostics without storing raw provider output. Evidence is recorded in
-`docs/handoffs/0036-live-ai-schema-failure-fix-report.md`.
+Observed completion evidence:
+
+- Source repair commit: `25e32a0a4a2c51a7d347534659299d5523b3477f`.
+- Release regeneration commit: `bda4df2ec8a21b5e4ece64609e2e50b7be12dcb5`.
+- Pre-placement tooling/test head: `78a27bc2cddd42eb7af826d42443006cab332c1c`.
+- Product/report head: `ecce57b39b7543ab37ee8b2a3f6201c298f59ddc`.
+- Prompt contract advanced to `gemini-interactions-v1-work-os-v2` while Code,
+  Schema, AI Schema, and Migration versions remain unchanged.
+- Strict canonical `validateOutput()` remains authoritative; unknown fields,
+  invalid types/enums/dates, conflicting semantics, and invalid `changes`
+  remain fail-closed.
+- Gemini receives explicit canonical action semantics plus an exact-fixture-only
+  qualification instruction for one internal NEW_TASK with a relative seven-day
+  deadline, `changes:{}`, no invented ID, and no high-impact Calendar category.
+- Future `E_AI_SCHEMA` failures can retain only an allowlisted bounded
+  `canonical_schema_rule` class; provider output and email content remain
+  unpersisted.
+- One-call/no-retry/no-fallback behavior is preserved.
+- Complete local gate: 11/11 PASS; deterministic inventory 78 suites, missing
+  0, extra 0.
+- Final product/report CI `#450`: SUCCESS.
+- Phase 8B/8C release verification, A21/B21 lineage, secret scan, and historical
+  2.8.20 preservation: PASS.
+- Fresh existing-target replacement: one guarded Phase 8C update and one
+  independent pull-back; exact 23-file parity PASS.
+- Automation remained OFF throughout Codex repair/placement work.
+- Independent Codex audits reported no BLOCKER.
+
+ChatGPT independently reviewed the final source, repair diff, report, tests,
+final CI, release/lineage evidence, and placement result. No BLOCKER was found.
+The user E2E runbook was then updated at docs-only head
+`260a52ea2eae3ea4240aab7f70e402494a738db6` and CI `#452` passed. Product/release
+payload is unchanged by that runbook update.
 
 ## Historical preparation defect and repair
 
@@ -171,31 +197,21 @@ Historical handoffs and reports remain immutable evidence.
 - Work 0033: Code `2.8.20-prepilot`, source A20 and release B20; the subsequent
   user-controlled personal Gemini E2E passed.
 - Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; automatic
-  discovery, readiness, preparation, and trigger enablement reached live PASS,
-  but the first scheduled exact synthetic candidate failed at strict Gemini
-  response validation with `E_AI_SCHEMA`; the subsequent disable rollback
-  reached consistent OFF with zero trigger residue.
-
-## Work 0036 live AI-schema repair evidence
-
-- Source repair commit: `25e32a0a4a2c51a7d347534659299d5523b3477f`.
-- Release regeneration commit: `bda4df2ec8a21b5e4ece64609e2e50b7be12dcb5`.
-- Pre-placement tooling/test head: `78a27bc2cddd42eb7af826d42443006cab332c1c`.
-- Complete non-Google gate: 11/11 PASS; deterministic inventory 78 suites,
-  missing 0, extra 0.
-- Phase 8B/8C release verification, A21/B21 lineage, and historical 2.8.20
-  preservation: PASS.
-- Fresh existing-target replacement: one guarded Phase 8C update and one
-  independent pull-back; exact 23-file parity PASS.
-- Automation remains OFF with zero owned clock triggers and no stored/canonical
-  trigger residue.
+  discovery, readiness, preparation, and trigger enablement reached live PASS;
+  the first scheduled exact synthetic candidate exposed the strict AI-schema
+  response mismatch; the subsequent repair was independently reviewed and is
+  ready for one fresh user-controlled retry.
 
 ## Next boundary
 
-The user-controlled personal Automation E2E is the next separately explicit
-boundary. It must use one fresh exact synthetic fixture only, with Automation
-remaining OFF until the user-controlled run is explicitly authorized. No
-ordinary personal Inbox mail, historical failed candidate, Dead Letter retry,
-or additional Codex placement is in scope.
+Proceed only under `docs/handoffs/0036-user-automation-e2e-runbook.md`.
 
-The live AI-schema repair itself does not authorize that E2E retry.
+The next user-controlled sequence is: authoritative readiness re-check while
+Automation is OFF; exactly one Automation enable; exactly one **fresh** exact
+Work 0036 synthetic Gmail fixture; unattended scheduled processing; bounded
+outcome inspection; and explicit disable/zero-trigger rollback.
+
+Do not retry the historical failed candidate or Dead Letter. Do not create a
+second fresh synthetic message after a failure. Ordinary personal Inbox mail,
+manual worker invocation, broader Calendar testing, credential changes,
+alternate targets, and PR merge remain out of scope.
