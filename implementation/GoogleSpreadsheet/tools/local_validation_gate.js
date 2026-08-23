@@ -24,7 +24,15 @@ const toolsRoot = path.join(moduleRoot, 'tools');
 const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const contractStartingMain = '4c28231dc08dc89ee7a529cb0a6192325263c810';
-const currentScopeStartingMain = contractStartingMain;
+const work0036MainMaterializedCommit =
+  'ca70607cba047b340b8009a03448b8d8128dc68e';
+const work0036ValidatedFinalHead =
+  '1b4c6d9fbdb3bc8fea96f07c5b0ff456a4010a90';
+const work0036MaterializedSourceCommit =
+  '25e32a0a4a2c51a7d347534659299d5523b3477f';
+const work0036MaterializedReleaseCommit =
+  'bda4df2ec8a21b5e4ece64609e2e50b7be12dcb5';
+const currentScopeStartingMain = work0036MainMaterializedCommit;
 const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
 const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
@@ -466,6 +474,45 @@ function gitObjectExists(spec) {
   return result.status === 0;
 }
 
+function verifyWork0036SquashMaterialization(options = {}) {
+  const gitCommand = options.git || git;
+  const spawnGitCommand = options.spawnGit || spawnGit;
+  const mainCommit = options.mainCommit || work0036MainMaterializedCommit;
+  const validatedHead = options.validatedHead || work0036ValidatedFinalHead;
+  const expectedParent = options.expectedParent || contractStartingMain;
+  const historicalReleaseCommit =
+    options.historicalReleaseCommit || work0036MaterializedReleaseCommit;
+  const mainParent = gitCommand(['rev-parse', `${mainCommit}^`]);
+  if (mainParent !== expectedParent) {
+    throw new Error('WORK_0036_SQUASH_MAIN_PARENT_INVALID');
+  }
+  const materializedTree = gitCommand([
+    'rev-parse', `${mainCommit}^{tree}`
+  ]);
+  const validatedTree = gitCommand([
+    'rev-parse', `${validatedHead}^{tree}`
+  ]);
+  if (materializedTree !== validatedTree) {
+    throw new Error('WORK_0036_SQUASH_TREE_MISMATCH');
+  }
+  const historicalReleaseAncestry = spawnGitCommand([
+    'merge-base', '--is-ancestor',
+    historicalReleaseCommit, validatedHead
+  ]);
+  if (historicalReleaseAncestry.error ||
+      historicalReleaseAncestry.status !== 0) {
+    throw new Error('WORK_0036_SQUASH_HISTORICAL_RELEASE_INVALID');
+  }
+  return {
+    materialized_main_commit: mainCommit,
+    validated_final_head: validatedHead,
+    main_parent: mainParent,
+    exact_tree_equality: true,
+    historical_release_commit: historicalReleaseCommit,
+    historical_release_is_ancestor: true
+  };
+}
+
 function isCleanTreeMaterialization(options = {}) {
   const spawnGitCommand = options.spawnGit || spawnGit;
   const releaseAncestry = spawnGitCommand([
@@ -588,8 +635,17 @@ function checkReleaseLineage() {
   } else {
     throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');
   }
+  let squashMaterialization = null;
   if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
-    throw new Error('CURRENT_RELEASE_NOT_DIRECT_CHILD_OF_SOURCE');
+    if (releaseCommit !== work0036MainMaterializedCommit ||
+        contract.source_commit !== work0036MaterializedSourceCommit ||
+        contract.code_version !== '2.8.21-prepilot' ||
+        contract.schema_version !== '2.6' ||
+        contract.ai_schema_version !== '2.0' ||
+        contract.migration_version !== '3') {
+      throw new Error('CURRENT_RELEASE_NOT_DIRECT_CHILD_OF_SOURCE');
+    }
+    squashMaterialization = verifyWork0036SquashMaterialization();
   }
   if (!gitObjectExists(`${a21SourceCommit}^{commit}`) ||
       !gitObjectExists(`${b21ReleaseCommit}^{commit}`) ||
@@ -604,17 +660,19 @@ function checkReleaseLineage() {
   const changed = git([
     'diff-tree', '--no-commit-id', '--name-only', '-r', releaseCommit
   ]).split(/\r?\n/).filter(Boolean).sort();
-  const invalid = changed.filter((file) =>
-    file !== 'CURRENT_CONTRACT.json' &&
-    file !== 'implementation/GoogleSpreadsheet/tools/local_validation_gate.js' &&
-    !file.startsWith(`${phase8bPath}/`) &&
-    !file.startsWith(`${phase8cPath}/`)
-  );
-  if (invalid.length) throw new Error('CURRENT_RELEASE_SCOPE_INVALID');
-  if (!changed.includes('CURRENT_CONTRACT.json') ||
-      !changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
-      !changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
-    throw new Error('CURRENT_RELEASE_REQUIRED_SCOPE_MISSING');
+  if (!squashMaterialization) {
+    const invalid = changed.filter((file) =>
+      file !== 'CURRENT_CONTRACT.json' &&
+      file !== 'implementation/GoogleSpreadsheet/tools/local_validation_gate.js' &&
+      !file.startsWith(`${phase8bPath}/`) &&
+      !file.startsWith(`${phase8cPath}/`)
+    );
+    if (invalid.length) throw new Error('CURRENT_RELEASE_SCOPE_INVALID');
+    if (!changed.includes('CURRENT_CONTRACT.json') ||
+        !changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
+        !changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
+      throw new Error('CURRENT_RELEASE_REQUIRED_SCOPE_MISSING');
+    }
   }
   const historicalReleasePaths = [
     'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot',
@@ -641,7 +699,8 @@ function checkReleaseLineage() {
     release_commit: releaseCommit,
     b21_changed_file_count: b21Changed.length,
     current_release_changed_file_count: changed.length,
-    historical_release_changed_file_count: 0
+    historical_release_changed_file_count: 0,
+    squash_materialization: squashMaterialization
   };
 }
 
@@ -810,6 +869,7 @@ module.exports = {
   checkRepositoryScope,
   isAllowedScopeBranch,
   isCleanTreeMaterialization,
+  verifyWork0036SquashMaterialization,
   readTestInventory,
   compareTestInventory,
   testInventoryFingerprint,
