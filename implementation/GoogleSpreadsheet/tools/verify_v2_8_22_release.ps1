@@ -20,7 +20,11 @@ $expectedModuleContractId = 'WORK_OS_V2_S90_CONTRACT_2_8_11'
 $expectedPilotScope = 'LABEL_GATED_PERSONAL_SHADOW_PILOT'
 $expectedPilotAdmissionMode = 'LABEL_GATED'
 $expectedPilotSourceMode = 'AUTOMATIC_PILOT'
-$expectedPilotQuery = 'in:inbox -in:spam -in:trash label:手動/取込 -label:手動/除外'
+$manualImportLabel = ([char]0x624b) + ([char]0x52d5) + '/' +
+  ([char]0x53d6) + ([char]0x8fbc)
+$manualExcludeLabel = ([char]0x624b) + ([char]0x52d5) + '/' +
+  ([char]0x9664) + ([char]0x5916)
+$expectedPilotQuery = "in:inbox -in:spam -in:trash label:$manualImportLabel -label:$manualExcludeLabel"
 $expectedPilotMaxMessages = 1
 $expectedGsNames = @(
   '00_Config.gs',
