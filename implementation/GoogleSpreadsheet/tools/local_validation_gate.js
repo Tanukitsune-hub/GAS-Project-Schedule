@@ -37,6 +37,8 @@ const work0037SourceParentRef =
   'a1fbad8c193a4be104e2064f753fe0a6d95091af';
 const work0037ReleaseToolCorrectionParentRef =
   'b24e2297250d518dc634e270f5fe3236b871d091';
+const work0037TemplatePathCorrectionParentRef =
+  '4dfaa8b7ec90775b6feba0ea9b215440499b9a5b';
 const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
 const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
@@ -694,6 +696,17 @@ function checkReleaseLineage() {
         JSON.stringify(expectedWork0037ReleaseToolCorrectionFiles)
     ) {
       throw new Error('WORK_0037_RELEASE_TOOL_SCOPE_INVALID');
+    }
+  } else if (sourceParent === work0037TemplatePathCorrectionParentRef) {
+    const expectedWork0037TemplatePathCorrectionFiles = [
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_22_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedWork0037TemplatePathCorrectionFiles)
+    ) {
+      throw new Error('WORK_0037_TEMPLATE_PATH_SCOPE_INVALID');
     }
   } else {
     throw new Error('WORK_0037_SOURCE_SCOPE_INVALID');

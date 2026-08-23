@@ -84,7 +84,7 @@ $repoRoot = [System.IO.Path]::GetFullPath(
   (Join-Path $moduleRoot '../..')
 )
 $sourceRoot = Join-Path $moduleRoot 'apps-script-v2'
-$templateRoot = Join-Path $PSScriptRoot 'v2_8_21'
+$templateRoot = Join-Path $PSScriptRoot 'v2_8_22'
 $releaseRoot = Join-Path $moduleRoot "release\$releaseVersion"
 $payloadRoot = Join-Path $releaseRoot 'apps-script'
 
