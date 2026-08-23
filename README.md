@@ -7,29 +7,31 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.21-prepilot` |
+| Code | `2.8.22-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Candidate machine gate | `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` |
-| ChatGPT review disposition | `READY — RUNTIME_PREPARATION_FIX_VALIDATED_AND_PLACED` |
+| Candidate machine gate | `READY_FOR_USER_PERSONAL_SHADOW_PILOT` |
+| ChatGPT review disposition | `READY — LABEL_GATED_PERSONAL_SHADOW_PILOT_IMPLEMENTED` |
 | Personal Gemini E2E | `PASS` |
-| Product-code state | synthetic-only personal Automation qualification candidate |
+| Product-code state | label-gated personal shadow-pilot candidate |
 | Automation | `OFF` |
 | Intended environment | personal Google Workspace only |
 
 The canonical payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers preserve
-the historical A20/B20 source and release evidence. The active successor uses
-A21/B21 lineage and preserves the 2.8.20 recovery bytes.
+the historical A20/B20 and Work 0036 A21/B21 evidence. The active successor
+uses the canonical-main Work 0037 lineage and preserves the frozen 2.8.20 and
+2.8.21 release bytes.
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.21-prepilot/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.22-prepilot/`:
   `TEST_MODE=true`, harness included, Automation OFF.
-- `implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c/`:
   the audited production-mode transform with the harness excluded, bounded
-  provider-readiness flags enabled, and Automation still OFF.
+  provider-readiness flags enabled, label-gated pilot admission, and
+  Automation still OFF.
 
 Neither package authorizes deployment or Automation enablement by itself.
 
@@ -54,10 +56,24 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 78-suite regression manifest, deterministic 2.8.21 release packages,
-A21/B21 provenance, historical 2.8.20 preservation, current-main integration
-scope, and secret/local-state exclusions. It performs no real Google, Gmail,
-Calendar, Apps Script function, or Gemini operation.
+committed 80-suite regression manifest, deterministic 2.8.22 release packages,
+canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
+current-main integration scope, and secret/local-state exclusions. It performs
+no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
+
+## Work 0037 personal shadow-pilot boundary
+
+Code `2.8.22-prepilot` replaces the historical synthetic-only automatic
+admission with a label-gated personal shadow pilot. Scheduled discovery is
+limited to fresh Inbox messages carrying `手動/取込`, excludes `手動/除外`,
+spam, and trash, and processes at most one message per five-minute run.
+Ordinary unlabeled Inbox mail is rejected, the pilot source mode is
+`AUTOMATIC_PILOT`, and the manual worker fails closed while pilot Automation
+is active. Automation remains OFF in both packages.
+
+The later user-controlled pilot is not executed by Codex. Its bounded steps
+and stop criteria are recorded in
+`docs/handoffs/0037-personal-shadow-pilot-runbook.md`.
 
 ## Work 0036 review-fix result
 

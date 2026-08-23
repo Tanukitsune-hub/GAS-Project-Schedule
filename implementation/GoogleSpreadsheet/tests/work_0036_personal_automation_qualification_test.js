@@ -288,7 +288,7 @@ function evaluateFake(overrides = {}) {
 }
 
 test('WORK_0036_CANDIDATE_VERSION_AND_DEFAULT_OFF', () => {
-  assert.strictEqual(Config.CODE_VERSION, '2.8.21-prepilot');
+  assert.strictEqual(Config.CODE_VERSION, '2.8.22-prepilot');
   assert.strictEqual(Config.SCHEMA_VERSION, '2.6');
   assert.strictEqual(Config.AI_SCHEMA_VERSION, '2.0');
   assert.strictEqual(Config.MIGRATION_VERSION, '3');
@@ -612,7 +612,7 @@ test('WORK_0036_PREPARATION_MENU_REQUIRES_CONFIRMATION_AND_NO_ARG_CALL', () => {
   );
   assert.match(
     menuSource,
-    /addItem\('個人用合成Automationを準備',\s*'menuPreparePersonalAutomationQualification'\)/
+    /addItem\('個人用Shadow Pilotを準備',\s*'menuPreparePersonalShadowPilot'\)/
   );
   assert.match(menuSource,
     /function menuPreparePersonalAutomationQualification\(\)/);

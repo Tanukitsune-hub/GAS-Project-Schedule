@@ -478,6 +478,10 @@ var WorkOsGmailGateway = (function () {
     // fixtures.  A production-shaped payload cannot opt out of qualification.
     var qualificationOnly = WorkOsConfig.TEST_MODE !== true ||
       !!(options && options.qualification_only === true);
+    var pilotOnly = !!(options && options.pilot_only === true);
+    if (pilotOnly) {
+      qualificationOnly = false;
+    }
     var now = upperBoundAt instanceof Date
       ? upperBoundAt
       : WorkOsUtilities.now();
@@ -493,10 +497,13 @@ var WorkOsGmailGateway = (function () {
       0,
       watermark.getTime() - WorkOsConfig.AUTOMATION_OVERLAP_MS
     );
-    return {
-      query: (qualificationOnly
+    var baseQuery = pilotOnly
+      ? WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY
+      : qualificationOnly
         ? WorkOsConfig.AUTOMATION_GMAIL_QUERY
-        : 'in:inbox -in:spam -in:trash -label:手動/除外') +
+        : 'in:inbox -in:spam -in:trash -label:手動/除外';
+    return {
+      query: baseQuery +
         ' after:' + Math.floor(overlapStartMs / 1000) +
         ' before:' + (Math.floor(upperBound.getTime() / 1000) + 1),
       overlap_start: new Date(overlapStartMs),
@@ -588,11 +595,33 @@ var WorkOsGmailGateway = (function () {
     };
   }
 
+  function automationPilotCandidatePolicy(labelNames, message) {
+    var names = labelNames || [];
+    var value = message || {};
+    var system = {};
+    (value.labelIds || []).forEach(function (labelId) {
+      system[String(labelId)] = true;
+    });
+    if (names.indexOf('手動/除外') !== -1) {
+      return { process: false, reason: 'MANUAL_EXCLUDE', priority: 0 };
+    }
+    if (system.SPAM || system.TRASH || !system.INBOX) {
+      return { process: false, reason: 'SYSTEM_SCOPE', priority: 0 };
+    }
+    if (names.indexOf('手動/取込') === -1) {
+      return { process: false, reason: 'PILOT_LABEL_REQUIRED', priority: 0 };
+    }
+    return { process: true, reason: 'PILOT_MANUAL_IMPORT', priority: 10 };
+  }
+
   function listAutomaticCandidates(options) {
     assertService();
     var settings = options || {};
-    var qualificationOnly = settings.qualification_only === true ||
-      WorkOsConfig.TEST_MODE !== true;
+    var pilotOnly = settings.pilot_only === true ||
+      String(settings.admission_mode || '') ===
+        WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE;
+    var qualificationOnly = !pilotOnly &&
+      (settings.qualification_only === true || WorkOsConfig.TEST_MODE !== true);
     var callMeter = settings.call_meter || createCallMeter(
       WorkOsConfig.AUTOMATION_GMAIL_API_CALL_LIMIT
     );
@@ -610,20 +639,29 @@ var WorkOsGmailGateway = (function () {
       Math.max(1, Number(settings.page_size ||
         WorkOsConfig.AUTOMATION_SEARCH_PAGE_SIZE))
     );
-    var defaultMaxMessages = qualificationOnly
-      ? WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN
-      : 10;
+    var defaultMaxMessages = pilotOnly
+      ? WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN
+      : qualificationOnly
+        ? WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN
+        : 10;
     var requestedMaxMessages = settings.max_messages == null
       ? defaultMaxMessages
       : settings.max_messages;
     var maxMessages = Math.min(
-      qualificationOnly ? WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN : 10,
+      pilotOnly
+        ? WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN
+        : qualificationOnly
+          ? WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN
+          : 10,
       Math.max(1, Number(requestedMaxMessages))
     );
     var queryState = automaticQuery(
       settings.watermark_at,
       settings.upper_bound_at || settings.now,
-      { qualification_only: qualificationOnly }
+      {
+        qualification_only: qualificationOnly,
+        pilot_only: pilotOnly
+      }
     );
     var knownIds = settings.known_message_ids || {};
     function exhausted() {
@@ -745,8 +783,13 @@ var WorkOsGmailGateway = (function () {
           [message],
           labelById
         );
-        var policy = qualificationOnly
-          ? automationQualificationCandidatePolicy(
+        var policy = pilotOnly
+          ? automationPilotCandidatePolicy(
+            messageLabelNames,
+            message
+          )
+          : qualificationOnly
+            ? automationQualificationCandidatePolicy(
             messageLabelNames,
             message
           )
@@ -780,9 +823,11 @@ var WorkOsGmailGateway = (function () {
           ),
           received_at: new Date(timestamp),
           subject: headerValue(message, 'Subject').trim(),
-          source_mode: qualificationOnly
-            ? WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE
-            : 'AUTOMATIC',
+          source_mode: pilotOnly
+            ? WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE
+            : qualificationOnly
+              ? WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE
+              : 'AUTOMATIC',
           manual_decision: 'PROCESS',
           selection_reason: policy.reason,
           selection_priority: policy.priority,
@@ -1235,6 +1280,7 @@ var WorkOsGmailGateway = (function () {
     automaticQuery: automaticQuery,
     automationQualificationCandidatePolicy:
       automationQualificationCandidatePolicy,
+    automationPilotCandidatePolicy: automationPilotCandidatePolicy,
     listAutomaticCandidates: listAutomaticCandidates,
     loadLabelCache: loadLabelCache,
     createCallMeter: createCallMeter,

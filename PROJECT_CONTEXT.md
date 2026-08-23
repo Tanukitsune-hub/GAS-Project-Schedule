@@ -6,11 +6,11 @@ Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.22-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
 
-Personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
+Personal runtime status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
 ## Purpose
 
@@ -30,9 +30,9 @@ deployment is planned.
 - Authority: hidden protected 21-column Task Authority Ledger.
 - AI Schema: provider-neutral `2.0`; application validation is authoritative.
 - Provider: Gemini Interactions `/v1beta/interactions`, behind explicit gates.
-- Release: Code `2.8.21-prepilot`, Schema `2.6`, Migration `3`.
-- Product state: synthetic-only personal Automation qualification candidate;
-  frozen 2.8.20 remains the recovery baseline.
+- Release: Code `2.8.22-prepilot`, Schema `2.6`, Migration `3`.
+- Product state: label-gated personal shadow-pilot candidate; frozen 2.8.20
+  and 2.8.21 remain recovery baselines.
 
 ## Qualified behavior
 
@@ -49,24 +49,22 @@ remain outside GitHub and ChatGPT.
 ## Current repository boundary
 
 Work 0035 cleanly integrated the qualified Code `2.8.20-prepilot` state into
-current `main`. Work 0036 is the direct 2.8.21 successor, preserving current-
-main governance and historical A20/B20 release evidence without replaying the
-stacked Draft-PR history.
+current `main`. Work 0036 is the frozen 2.8.21 successor, and Work 0037 is the
+direct label-gated 2.8.22 pilot successor, preserving current-main governance
+and historical release evidence without replaying stacked Draft-PR history.
 
 The canonical non-Google gate must work on `main` itself as well as on numbered
 Work branches and PR merge refs. A branch-name-only validation exception is not
 an acceptable completion state.
 
-## Next boundary
+## Work 0037 boundary
 
-The Work 0036 candidate restricts automatic discovery to the exact
-`[WORK_OS_AUTOMATION_SYNTHETIC_0036]` subject/body and keeps Automation OFF.
-The next outcome is controlled personal Automation qualification. It begins
-with Automation OFF and synthetic data only, then proves readiness, one
-canonical time trigger, unattended Inbox → Gemini → Task/Review processing,
-any separately authorized Calendar projection, and complete disable cleanup.
-Real personal mail remains out of scope until the automatic synthetic E2E and
-rollback path pass.
+The Work 0037 candidate requires `手動/取込` for scheduled admission, gives
+`手動/除外` precedence, excludes spam/trash, rejects ordinary unlabeled Inbox
+mail, uses `AUTOMATIC_PILOT`, and processes one message per five-minute run.
+Automation remains OFF. The next outcome is a separately user-controlled
+24-hour shadow pilot with at least 12 explicitly labeled work-like messages;
+Codex does not run it or invoke any Apps Script runtime function.
 
 ## Assurance and privacy
 

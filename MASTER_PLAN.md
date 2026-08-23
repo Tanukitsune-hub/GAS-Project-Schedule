@@ -4,9 +4,9 @@ Last updated: 2026-08-20
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.22-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Candidate machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
 
 ChatGPT review disposition: `READY — FALSE_READINESS_SURFACE_REPAIRED`
 
@@ -106,20 +106,35 @@ source update; one isolated pull-back verified 23-file byte/hash parity. No
 Apps Script function, preparation, readiness, enablement, Gmail, Gemini,
 Calendar, trigger, Setup, diagnostic, or user E2E action was executed.
 
-## Next phase after the runtime-preparation fix
+## Work 0037: label-gated personal shadow pilot
+
+Work 0037 advances the frozen 2.8.21 candidate to Code `2.8.22-prepilot`.
+Scheduled discovery requires the explicit `手動/取込` label on an Inbox
+message, rejects `手動/除外` even when both labels are present, excludes
+spam/trash, and rejects ordinary unlabeled Inbox mail. It uses the distinct
+`AUTOMATIC_PILOT` source mode and remains bounded to one message per existing
+five-minute run. The manual worker fails closed while pilot Automation is
+active, and all Task/Review/Calendar/idempotency and strict Gemini boundaries
+remain unchanged.
+
+The repaired canonical-main squash lineage gate, 80-suite local inventory,
+2.8.22 Phase 8B/8C packages, frozen 2.8.20/2.8.21 preservation, and the
+bounded existing-target placement are recorded in the Work 0037 report. The
+later 24-hour shadow pilot is user-controlled and is not executed by Codex.
+
+## Next phase after Work 0037
 
 No company-PC or company-environment deployment is planned. Once the repaired
 candidate is placed and all gates pass, the shortest safe user sequence is:
 
-1. Keep Automation OFF and use the new preparation menu action once.
-2. Run the repaired readiness/status action and require a truthful all-ready
-   result with zero owned clock triggers.
-3. Create one fresh exact Work 0036 synthetic Gmail fixture; do not use real
-   personal mail or a prior terminal fixture.
-4. Explicitly enable Automation once and verify exactly one canonical 5-minute
-   trigger.
-5. Allow the unattended synthetic Gmail → Gemini → governed Task/Review flow to
-   complete once, with no ordinary Inbox candidate admitted.
+1. Keep Automation OFF and use the Work 0037 preparation/status surfaces.
+2. Confirm label readiness and zero owned clock triggers.
+3. Select at least 12 bounded, non-sensitive work-like messages by applying
+   `手動/取込`; do not use ordinary unlabeled Inbox mail.
+4. Explicitly enable Automation once and verify exactly one canonical
+   five-minute trigger.
+5. Allow the bounded label-gated Inbox → Gemini → governed Task/Review flow
+   to run for at least 24 hours, with no unlabeled candidate admitted.
 6. Disable Automation and prove zero effective running state and zero owned
    triggers while unrelated triggers remain untouched.
 7. Record the bounded result before deciding whether a later Work may broaden

@@ -469,6 +469,50 @@ var WorkOsAutomation = (function () {
     };
   }
 
+  function pilotScopeSnapshot() {
+    var query = String(
+      WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY || ''
+    );
+    var exactQuery = query === String(
+      WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY || ''
+    ) &&
+      query.indexOf('in:inbox') !== -1 &&
+      query.indexOf('-in:spam') !== -1 &&
+      query.indexOf('-in:trash') !== -1 &&
+      query.indexOf('label:手動/取込') !== -1 &&
+      query.indexOf('-label:手動/除外') !== -1;
+    var scopeExact =
+      WorkOsConfig.AUTOMATION_PILOT_SCOPE ===
+        'LABEL_GATED_PERSONAL_SHADOW_PILOT' &&
+      WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE === 'LABEL_GATED' &&
+      WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE === 'AUTOMATIC_PILOT';
+    return {
+      ready: scopeExact && exactQuery &&
+        WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN === 1 &&
+        WorkOsConfig.AUTOMATION_INTERVAL_MINUTES === 5,
+      scope: String(WorkOsConfig.AUTOMATION_PILOT_SCOPE || ''),
+      source_mode: safeReadinessToken(
+        WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
+        'MISSING'
+      ),
+      admission_mode: safeReadinessToken(
+        WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
+        'MISSING'
+      ),
+      exact_subject: '',
+      exact_query_active: exactQuery,
+      exact_body_guard_active: false,
+      pilot_query_active: exactQuery,
+      label_gate_active: query.indexOf('label:手動/取込') !== -1,
+      manual_exclude_wins: query.indexOf('-label:手動/除外') !== -1,
+      spam_trash_excluded: query.indexOf('-in:spam') !== -1 &&
+        query.indexOf('-in:trash') !== -1,
+      one_message_per_run:
+        WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN === 1,
+      interval_minutes: Number(WorkOsConfig.AUTOMATION_INTERVAL_MINUTES || 0)
+    };
+  }
+
   function candidateSnapshot(props, completed) {
     var storedCode = props.getProperty(WorkOsConfig.PROPERTIES.CODE_VERSION);
     var storedSchema = props.getProperty(
@@ -626,9 +670,19 @@ var WorkOsAutomation = (function () {
         status: scope.ready === true ? 'READY' : 'BLOCKED',
         scope: safeReadinessToken(scope.scope, 'MISSING'),
         source_mode: safeReadinessToken(scope.source_mode, 'MISSING'),
+        admission_mode: safeReadinessToken(
+          scope.admission_mode,
+          'NOT_APPLICABLE'
+        ),
         exact_subject: String(scope.exact_subject || ''),
         exact_query_active: scope.exact_query_active === true,
-        exact_body_guard_active: scope.exact_body_guard_active === true
+        exact_body_guard_active: scope.exact_body_guard_active === true,
+        pilot_query_active: scope.pilot_query_active === true,
+        label_gate_active: scope.label_gate_active === true,
+        manual_exclude_wins: scope.manual_exclude_wins === true,
+        spam_trash_excluded: scope.spam_trash_excluded === true,
+        one_message_per_run: scope.one_message_per_run === true,
+        interval_minutes: Number(scope.interval_minutes || 0)
       },
       provider: {
         status: provider.status === 'READY' ? 'READY' : 'BLOCKED',
@@ -746,8 +800,84 @@ var WorkOsAutomation = (function () {
     };
   }
 
-  function defaultPrerequisiteCheck(settings) {
+  function evaluatePersonalShadowPilotReadiness(input) {
+    var value = input || {};
+    var automation = value.automation || {};
+    var prerequisites = value.prerequisites || {};
+    var details = safePrerequisiteDetails(value.details);
+    var reasons = [];
+    var requireReady = function (condition, reason) {
+      if (!condition) {
+        addUniqueReason(reasons, reason);
+      }
+    };
+    requireReady(value.test_mode === false, 'TEST_MODE_ENABLED');
+    requireReady(prerequisites.ready === true,
+      'AUTOMATION_PREREQUISITES_INCOMPLETE');
+    requireReady(details.candidate.ready === true,
+      'CANDIDATE_VERSION_OR_SETUP_NOT_READY');
+    requireReady(details.candidate.setup_complete === true,
+      'SETUP_NOT_COMPLETE');
+    requireReady(details.candidate.stored_versions_aligned === true,
+      'STORED_VERSION_ALIGNMENT_FAILED');
+    requireReady(details.candidate.ai_schema_version ===
+      WorkOsConfig.AI_SCHEMA_VERSION, 'AI_SCHEMA_VERSION_MISMATCH');
+    requireReady(details.test_mode.production_shaped === true,
+      'TEST_MODE_ENABLED');
+    requireReady(details.scope.ready === true,
+      'PILOT_SCOPE_NOT_EXACT');
+    requireReady(details.scope.scope === WorkOsConfig.AUTOMATION_PILOT_SCOPE,
+      'PILOT_SCOPE_NOT_EXACT');
+    requireReady(details.scope.admission_mode ===
+      WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
+      'PILOT_ADMISSION_MODE_NOT_LABEL_GATED');
+    requireReady(details.scope.source_mode ===
+      WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
+      'PILOT_SOURCE_MODE_NOT_EXACT');
+    requireReady(details.scope.pilot_query_active === true &&
+      details.scope.exact_query_active === true,
+      'PILOT_QUERY_NOT_EXACT');
+    requireReady(details.scope.label_gate_active === true,
+      'PILOT_LABEL_GATE_NOT_ACTIVE');
+    requireReady(details.scope.manual_exclude_wins === true,
+      'PILOT_MANUAL_EXCLUDE_NOT_ACTIVE');
+    requireReady(details.scope.spam_trash_excluded === true,
+      'PILOT_SPAM_TRASH_BOUNDARY_NOT_ACTIVE');
+    requireReady(details.scope.one_message_per_run === true &&
+      details.scope.interval_minutes === 5,
+      'PILOT_RUN_BOUND_NOT_EXACT');
+    requireReady(details.provider.ready === true,
+      'REAL_AI_ADAPTER_NOT_READY');
+    requireReady(details.provider.credential_configured === true,
+      'AI_CREDENTIAL_NOT_READY');
+    requireReady(details.provider.adapter_status === 'READY',
+      'REAL_AI_ADAPTER_NOT_READY');
+    requireReady(details.provider.provider === 'GEMINI',
+      'AI_PROVIDER_NOT_GEMINI');
+    requireReady(details.oauth.ready === true, 'OAUTH_NOT_READY');
+    requireReady(details.formal_labels.ready === true,
+      'FORMAL_GMAIL_LABEL_MISSING');
+    requireReady(details.calendar.ready === true,
+      'DEDICATED_CALENDAR_NOT_READY');
+    requireReady(automation.status === 'CONSISTENT' &&
+      automation.enabled === false &&
+      automation.desired_enabled === false &&
+      automation.trigger_count === 0 &&
+      automation.clock_trigger_count === 0 &&
+      automation.stored_trigger_id_present === false &&
+      automation.canonical_trigger_present === false,
+    'AUTOMATION_STATE_NOT_READY');
+    requireReady(value.external_request_performed === false,
+      'EXTERNAL_REQUEST_PERFORMED');
+    return {
+      ready: reasons.length === 0,
+      reasons: reasons
+    };
+  }
+
+  function defaultPrerequisiteCheck(settings, scopeMode) {
     var props = properties(settings);
+    var pilotMode = scopeMode !== 'QUALIFICATION';
     var reasons = [];
     var completed = [];
     try {
@@ -762,7 +892,12 @@ var WorkOsAutomation = (function () {
     }
     var setupComplete = completed.indexOf('S99_COMPLETE') !== -1;
     var candidate = candidateSnapshot(props, completed);
-    var scope = qualificationScopeSnapshot();
+    var scope = pilotMode
+      ? pilotScopeSnapshot()
+      : qualificationScopeSnapshot();
+    var scopeReason = pilotMode
+      ? 'PILOT_SCOPE_NOT_EXACT'
+      : 'QUALIFICATION_SCOPE_NOT_EXACT';
     var provider = providerSnapshot(null);
     var oauth = {
       status: 'UNAVAILABLE',
@@ -780,7 +915,7 @@ var WorkOsAutomation = (function () {
       addUniqueReason(reasons, 'TEST_MODE_ENABLED');
     }
     if (!scope.ready) {
-      addUniqueReason(reasons, 'QUALIFICATION_SCOPE_NOT_EXACT');
+      addUniqueReason(reasons, scopeReason);
     }
     if (!props.getProperty(WorkOsConfig.PROPERTIES.DEADLINE_CALENDAR_ID)) {
       addUniqueReason(reasons, 'CALENDAR_NOT_CONFIGURED');
@@ -964,9 +1099,11 @@ var WorkOsAutomation = (function () {
     };
   }
 
-  function prerequisiteStatus(settings) {
+  function prerequisiteStatus(settings, scopeMode) {
     var checker = settings.prerequisite_checker ||
-      defaultPrerequisiteCheck;
+      function (value) {
+        return defaultPrerequisiteCheck(value, scopeMode);
+      };
     var result = checker(settings) || {};
     return {
       ready: result.ready === true,
@@ -1035,7 +1172,11 @@ var WorkOsAutomation = (function () {
     };
   }
 
-  function automationStatusInternal(settings, diagnosticOnly) {
+  function automationStatusInternal(
+    settings,
+    diagnosticOnly,
+    scopeMode
+  ) {
     var props = properties(settings);
     var scriptApp = scriptService(settings);
     var allHandlerTriggers = handlerTriggers(scriptApp);
@@ -1080,8 +1221,8 @@ var WorkOsAutomation = (function () {
         WorkOsConfig.PROPERTIES.AUTOMATION_LAST_RUN_AT
       )),
       prerequisites: diagnosticOnly
-        ? diagnosticPrerequisiteStatus(settings)
-        : prerequisiteStatus(settings),
+        ? diagnosticPrerequisiteStatus(settings, scopeMode)
+        : prerequisiteStatus(settings, scopeMode),
       google_workspace_trigger_list: settings.script_app
         ? 'LOCAL_FAKE'
         : 'REAL_READ'
@@ -1089,16 +1230,20 @@ var WorkOsAutomation = (function () {
   }
 
   function getAutomationStatus(options) {
-    return automationStatusInternal(injected(options), false);
+    return automationStatusInternal(injected(options), false, 'PILOT');
   }
 
   function getDiagnosticAutomationStatus(options) {
-    return automationStatusInternal(injected(options), true);
+    return automationStatusInternal(injected(options), true, 'PILOT');
   }
 
   function getPersonalAutomationQualificationStatus(options) {
     var settings = injected(options);
-    var automation = getAutomationStatus(settings);
+    var automation = automationStatusInternal(
+      settings,
+      false,
+      'QUALIFICATION'
+    );
     var prerequisites = automation.prerequisites || {};
     var details = safePrerequisiteDetails(prerequisites.details);
     var decision = evaluatePersonalQualificationReadiness({
@@ -1129,6 +1274,86 @@ var WorkOsAutomation = (function () {
       exact_subject: WorkOsConfig.AUTOMATION_SYNTHETIC_SUBJECT,
       exact_body_guard_active: details.scope.exact_body_guard_active,
       exact_query_active: details.scope.exact_query_active,
+      candidate: details.candidate,
+      setup: details.setup,
+      test_mode: details.test_mode,
+      scope: details.scope,
+      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
+        ? 'CONFIRMED'
+        : 'NOT_CONFIRMED',
+      data_policy_approval: WorkOsConfig.EXTERNAL_AI_DATA_POLICY_APPROVED
+        ? 'CONFIRMED'
+        : 'NOT_CONFIRMED',
+      credential_storage_approval:
+        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
+          ? 'CONFIRMED'
+          : 'NOT_CONFIRMED',
+      auth_configured: WorkOsConfig.EXTERNAL_AI_AUTH_CONFIGURED
+        ? 'CONFIGURED'
+        : 'NOT_CONFIGURED',
+      provider: String(WorkOsConfig.EXTERNAL_AI_PROVIDER),
+      model: String(WorkOsConfig.EXTERNAL_AI_MODEL),
+      provider_readiness: details.provider,
+      production_readiness: {
+        ready: providerReady,
+        reasons: safeReasons,
+        external_request_performed: false
+      },
+      oauth: details.oauth,
+      automation: {
+        status: automation.status,
+        enabled: automation.enabled === true,
+        desired_enabled: automation.desired_enabled === true,
+        trigger_count: automation.trigger_count,
+        clock_trigger_count: automation.clock_trigger_count,
+        stored_trigger_id_present:
+          automation.stored_trigger_id_present === true,
+        canonical_trigger_present:
+          automation.canonical_trigger_present === true
+      },
+      formal_labels: details.formal_labels,
+      calendar: details.calendar,
+      external_request_performed: false
+    };
+  }
+
+  function getPersonalShadowPilotStatus(options) {
+    var settings = injected(options);
+    var automation = getAutomationStatus(settings);
+    var prerequisites = automation.prerequisites || {};
+    var details = safePrerequisiteDetails(prerequisites.details);
+    var decision = evaluatePersonalShadowPilotReadiness({
+      test_mode: WorkOsConfig.TEST_MODE === true,
+      automation: automation,
+      prerequisites: prerequisites,
+      details: details,
+      external_request_performed: false
+    });
+    var safeReasons = Array.isArray(prerequisites.reasons)
+      ? prerequisites.reasons.slice(0, 40)
+      : [];
+    var providerReady = details.provider.ready === true &&
+      details.provider.adapter_status === 'READY' &&
+      details.provider.credential_configured === true;
+    return {
+      status: decision.ready
+        ? 'READY_FOR_USER_PERSONAL_SHADOW_PILOT'
+        : 'BLOCKED',
+      readiness_reasons: decision.reasons,
+      prerequisites: {
+        ready: prerequisites.ready === true,
+        reasons: safeReasons,
+        external_request_performed: false
+      },
+      pilot_scope: WorkOsConfig.AUTOMATION_PILOT_SCOPE,
+      admission_mode: WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
+      candidate_mode: WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
+      pilot_query: WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY,
+      label_gate_active: details.scope.label_gate_active,
+      manual_exclude_wins: details.scope.manual_exclude_wins,
+      spam_trash_excluded: details.scope.spam_trash_excluded,
+      one_message_per_run: details.scope.one_message_per_run,
+      interval_minutes: details.scope.interval_minutes,
       candidate: details.candidate,
       setup: details.setup,
       test_mode: details.test_mode,
@@ -1631,8 +1856,11 @@ var WorkOsAutomation = (function () {
     getDiagnosticAutomationStatus: getDiagnosticAutomationStatus,
     getPersonalAutomationQualificationStatus:
       getPersonalAutomationQualificationStatus,
+    getPersonalShadowPilotStatus: getPersonalShadowPilotStatus,
     evaluatePersonalQualificationReadiness:
       evaluatePersonalQualificationReadiness,
+    evaluatePersonalShadowPilotReadiness:
+      evaluatePersonalShadowPilotReadiness,
     removeDuplicateAutomationTriggers:
       removeDuplicateAutomationTriggers,
     ensureSingleAutomationTrigger: ensureSingleAutomationTrigger,
@@ -1660,6 +1888,10 @@ function getAutomationStatus() {
 
 function getPersonalAutomationQualificationStatus() {
   return WorkOsAutomation.getPersonalAutomationQualificationStatus();
+}
+
+function getPersonalShadowPilotStatus() {
+  return WorkOsAutomation.getPersonalShadowPilotStatus();
 }
 
 function ensureSingleAutomationTrigger() {

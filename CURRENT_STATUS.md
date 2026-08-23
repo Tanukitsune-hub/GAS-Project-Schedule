@@ -2,19 +2,19 @@
 
 Last updated: 2026-08-23
 
-Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.22-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `PERSONAL_SYNTHETIC_AUTOMATION_E2E_PASS`
+Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
-Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
 
-ChatGPT review disposition: `PASS — CONTROLLED_SYNTHETIC_AUTOMATION_E2E_COMPLETE`
+ChatGPT review disposition: `READY — LABEL_GATED_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
 
-User Automation E2E: `PASS`
+User Automation E2E: `NOT EXECUTED — Work 0037 prepares only the later user-controlled pilot`
 
 ## Current contract
 
@@ -26,10 +26,10 @@ and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
 verifiers bind the A21/B21 candidate while preserving historical A20/B20 source
 and release evidence.
 
-The canonical Code `2.8.21-prepilot` release gate remains
-`READY_FOR_USER_PERSONAL_AUTOMATION_E2E`; the successful live qualification
-recorded below is runtime evidence that the controlled user E2E passed, not a
-renaming of that release contract.
+The canonical Code `2.8.22-prepilot` release gate is
+`READY_FOR_USER_PERSONAL_SHADOW_PILOT`. The historical Work 0036 live
+qualification remains evidence for the frozen 2.8.21 baseline and is not
+reinterpreted as Work 0037 pilot execution.
 
 The source includes the Gemini Interactions provider, provider-facing schema
 projection, strict AI Schema 2.0 post-response validation, exact synthetic
@@ -43,9 +43,25 @@ fresh approved synthetic-message E2E on Code `2.8.20-prepilot`. The reviewed
 bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
 Code `2.8.20-prepilot` remains the frozen manual-plus-Gemini recovery baseline.
-Work 0036 is its direct 2.8.21 successor for synthetic-only personal
-Automation qualification. No company-PC or company-environment rollout is
-planned.
+Work 0036 remains the frozen 2.8.21 synthetic Automation recovery baseline.
+Work 0037 is the label-gated 2.8.22 personal shadow-pilot successor; no
+company-PC or company-environment rollout is planned.
+
+## Work 0037 implementation status
+
+- Canonical baseline: merged `main` Work 0036 completion `ca70607...`; the
+  repaired gate proves exact squash materialization and historical A21/B21
+  ancestry without weakening lineage checks.
+- Pilot admission: `手動/取込` is required; `手動/除外` wins; Inbox, spam, and
+  trash bounds are explicit; ordinary unlabeled Inbox mail is rejected.
+- Scheduled source mode: `AUTOMATIC_PILOT`; maximum one candidate per
+  five-minute run; manual processing fails closed while pilot Automation is
+  active.
+- Automation: `OFF` by default and throughout Codex work. User-controlled
+  24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar
+  mutation, trigger changes, and runtime functions are `NOT EXECUTED`.
+- Code `2.8.22-prepilot` Phase 8B/8C packages and the 80-suite deterministic
+  local inventory are regenerated/validated by the Work 0037 delivery gate.
 
 ## Work 0036 implementation evidence
 

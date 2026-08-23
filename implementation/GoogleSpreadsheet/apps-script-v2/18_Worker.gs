@@ -209,6 +209,40 @@ var WorkOsWorker = (function () {
       WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE;
   }
 
+  function isAutomationPilotMode(settings) {
+    return Boolean(settings && settings.pilot_only === true) ||
+      (WorkOsConfig.TEST_MODE !== true &&
+        WorkOsConfig.AUTOMATION_PILOT_SCOPE ===
+          'LABEL_GATED_PERSONAL_SHADOW_PILOT');
+  }
+
+  function isAutomationPilotRecord(record) {
+    return String(record && record.source_mode || '') ===
+      WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE;
+  }
+
+  function assertManualWorkerPilotBoundary() {
+    if (WorkOsConfig.TEST_MODE === true ||
+        WorkOsConfig.AUTOMATION_PILOT_SCOPE !==
+          'LABEL_GATED_PERSONAL_SHADOW_PILOT') {
+      return;
+    }
+    var status = WorkOsAutomation.getDiagnosticAutomationStatus();
+    if (status.status !== 'CONSISTENT' ||
+        status.enabled === true ||
+        status.desired_enabled === true ||
+        Number(status.clock_trigger_count || 0) !== 0 ||
+        status.stored_trigger_id_present === true ||
+        status.canonical_trigger_present === true) {
+      throw new WorkOsAppError(
+        'E_MANUAL_PILOT_AUTOMATION_ACTIVE',
+        'MANUAL_IMPORT',
+        false,
+        'Personal Shadow Pilot稼働中は手動取込を実行できません。'
+      );
+    }
+  }
+
   var WORKER_LEASE_PROPERTY = 'WORK_OS_V2_ACTIVE_WORKER_LEASE';
 
   function acquireWorkerLease(properties, runId, mode, clock, ttlMs) {
@@ -569,6 +603,7 @@ var WorkOsWorker = (function () {
       spreadsheet,
       settings
     );
+    assertManualWorkerPilotBoundary();
     var gateway = settings.gateway || WorkOsGmailGateway;
     var preprocessor = settings.preprocessor || WorkOsEmailPreprocessor;
     var properties = workerProperties(settings);
@@ -4058,10 +4093,11 @@ var WorkOsWorker = (function () {
    */
   function processProductionClassificationOnce(options) {
     var settings = options || {};
-    // Production-shaped runs are always synthetic qualification-only; the
-    // explicit option exists for the local test harness and audit fixtures.
-    var qualificationOnly = WorkOsConfig.TEST_MODE !== true ||
-      settings.qualification_only === true;
+    var pilotOnly = isAutomationPilotMode(settings);
+    // Production-shaped runs use the label-gated pilot. The explicit options
+    // remain available only to local test harnesses and audit fixtures.
+    var qualificationOnly = !pilotOnly && (WorkOsConfig.TEST_MODE !== true ||
+      settings.qualification_only === true);
     var internalProduction =
       settings.internal_production_capability ===
         INTERNAL_SCHEDULED_CAPABILITY;
@@ -4126,14 +4162,17 @@ var WorkOsWorker = (function () {
         );
       var taskContext =
         WorkOsTaskRepository.createContextForHeldLock(taskSheet, lock);
+      var acceptedSourceMode = pilotOnly
+        ? WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE
+        : WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE;
       var eligible = eligiblePhase3Records(
         messageContext,
         clock()
       ).filter(function (record) {
         return record.resume_stage ===
           WorkOsMessageStateRepository.RESUME_STAGES.CLASSIFY &&
-          (!qualificationOnly || String(record.source_mode || '') ===
-            WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE);
+          (!qualificationOnly && !pilotOnly ||
+            String(record.source_mode || '') === acceptedSourceMode);
       });
       if (settings.selected_message_id) {
         eligible = eligible.filter(function (record) {
@@ -4196,7 +4235,7 @@ var WorkOsWorker = (function () {
           reserve_ms: WorkOsConfig.AUTOMATION_WORKER_RESERVE_MS
         }
       );
-      if (qualificationOnly && WorkOsConfig.TEST_MODE !== true &&
+      if (!pilotOnly && qualificationOnly && WorkOsConfig.TEST_MODE !== true &&
           isAutomationQualificationRecord(prepared.record)) {
         assertAutomationQualificationContent(prepared.record, messageInput);
       }
@@ -5031,6 +5070,7 @@ var WorkOsWorker = (function () {
       spreadsheet,
       settings
     );
+    var pilotOnly = isAutomationPilotMode(settings);
     var gateway = settings.gateway || WorkOsGmailGateway;
     var properties = workerProperties(settings);
     var clock = typeof settings.now === 'function'
@@ -5063,7 +5103,7 @@ var WorkOsWorker = (function () {
     }
     var summary = {
       run_id: runId,
-      mode: 'AUTO_PHASE6',
+      mode: pilotOnly ? 'AUTO_PILOT' : 'AUTO_PHASE6',
       started_at: startedAt,
       candidate_count: 0,
       processed_count: 0,
@@ -5227,8 +5267,18 @@ var WorkOsWorker = (function () {
             adapter =
               WorkOsAiAdapter.createProductionExternalAdapter();
           }
-          var automaticMaxMessages = WorkOsConfig.TEST_MODE
-            ? 10
+          var automaticMaxMessages = pilotOnly
+            ? Math.max(
+              1,
+              Math.min(
+                WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN,
+                Number(
+                  runtimeSettings.automation_max_messages_per_run
+                )
+              )
+            )
+            : WorkOsConfig.TEST_MODE
+              ? 10
             : Math.max(
               1,
               Math.min(
@@ -5264,6 +5314,9 @@ var WorkOsWorker = (function () {
                   resume_stage: record.resume_stage
                 };
               }).filter(function (record) {
+                if (pilotOnly) {
+                  return isAutomationPilotRecord(record);
+                }
                 return WorkOsConfig.TEST_MODE === true ||
                   String(record.source_mode || '') ===
                     WorkOsConfig.AUTOMATION_QUALIFICATION_SOURCE_MODE;
@@ -5403,7 +5456,11 @@ var WorkOsWorker = (function () {
               reserve_ms:
                 WorkOsConfig.AUTOMATION_WORKER_RESERVE_MS,
               label_cache: getGmailLabelCache(),
-              call_meter: callMeter
+              call_meter: callMeter,
+              pilot_only: pilotOnly,
+              qualification_only: !pilotOnly &&
+                (WorkOsConfig.TEST_MODE !== true ||
+                  settings.qualification_only === true)
             });
             systemFailureSubsystem = 'STATE_WRITE';
             summary.candidate_count = search.candidates.length;

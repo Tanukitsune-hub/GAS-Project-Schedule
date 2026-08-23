@@ -1034,6 +1034,93 @@ var WorkOsSetup = (function () {
     };
   }
 
+  function preparePersonalShadowPilot(options) {
+    var settings = options || {};
+    if (Object.keys(settings).length && !WorkOsConfig.TEST_MODE) {
+      throw new WorkOsAppError(
+        'E_TEST_MODE_DISABLED',
+        'SHADOW_PILOT_PREPARATION',
+        false,
+        '候補準備の依存注入はTest modeだけで利用できます。'
+      );
+    }
+    var spreadsheet = settings.spreadsheet || getBoundSpreadsheet();
+    var props = settings.properties || properties();
+    var completed = settings.completed_stages || getCompletedStages();
+    if (!Array.isArray(completed) ||
+        completed.indexOf('S99_COMPLETE') === -1) {
+      throw new WorkOsAppError(
+        'E_SETUP_NOT_COMPLETE',
+        'SHADOW_PILOT_PREPARATION',
+        false,
+        'Shadow Pilot準備には既存Setupの完了状態が必要です。'
+      );
+    }
+    if (props.getProperty(WorkOsConfig.PROPERTIES.SCHEMA_VERSION) !==
+          WorkOsConfig.SCHEMA_VERSION ||
+        props.getProperty(WorkOsConfig.PROPERTIES.MIGRATION_VERSION) !==
+          WorkOsConfig.MIGRATION_VERSION) {
+      throw new WorkOsAppError(
+        'E_SCHEMA_MIGRATION_INCOMPATIBLE',
+        'SHADOW_PILOT_PREPARATION',
+        false,
+        '既存schemaまたはmigrationの互換性を確認できません。'
+      );
+    }
+    var automationStatus = WorkOsConfig.TEST_MODE
+      ? WorkOsAutomation.getDiagnosticAutomationStatus({
+        properties: props,
+        script_app: settings.script_app
+      })
+      : WorkOsAutomation.getDiagnosticAutomationStatus();
+    if (automationStatus.status !== 'CONSISTENT' ||
+        automationStatus.enabled === true ||
+        automationStatus.desired_enabled === true ||
+        automationStatus.clock_trigger_count !== 0 ||
+        automationStatus.stored_trigger_id_present === true ||
+        automationStatus.canonical_trigger_present === true) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_NOT_DISABLED',
+        'SHADOW_PILOT_PREPARATION',
+        false,
+        'Shadow Pilot準備にはAutomation停止とowned clock Triggerゼロが必要です。'
+      );
+    }
+    var changed = [];
+    [
+      [WorkOsConfig.PROPERTIES.CODE_VERSION, WorkOsConfig.CODE_VERSION],
+      [WorkOsConfig.PROPERTIES.SCHEMA_VERSION, WorkOsConfig.SCHEMA_VERSION],
+      [WorkOsConfig.PROPERTIES.MIGRATION_VERSION, WorkOsConfig.MIGRATION_VERSION]
+    ].forEach(function (entry) {
+      if (props.getProperty(entry[0]) !== entry[1]) {
+        props.setProperty(entry[0], entry[1]);
+        changed.push(entry[0]);
+      }
+    });
+    if (completed.indexOf('S40_SEED_SAFE_SETTINGS') !== -1 &&
+        typeof WorkOsSheetBuilder !== 'undefined' &&
+        WorkOsSheetBuilder &&
+        typeof WorkOsSheetBuilder.refreshVersionMetadata === 'function') {
+      WorkOsSheetBuilder.refreshVersionMetadata(spreadsheet);
+    }
+    return {
+      status: 'READY_FOR_PERSONAL_SHADOW_PILOT',
+      code_version: WorkOsConfig.CODE_VERSION,
+      schema_version: WorkOsConfig.SCHEMA_VERSION,
+      migration_version: WorkOsConfig.MIGRATION_VERSION,
+      property_keys_changed: changed,
+      pilot_scope: WorkOsConfig.AUTOMATION_PILOT_SCOPE,
+      admission_mode: WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
+      candidate_mode: WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
+      pilot_query: WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY,
+      automation_enabled: false,
+      desired_enabled: false,
+      clock_trigger_count: 0,
+      credential_value_read: false,
+      external_request_performed: false
+    };
+  }
+
   function getNextStagePreview() {
     var completed = getCompletedStagesSafely();
     var nextStage = WorkOsConfig.SETUP_STAGES.find(function (stage) {
@@ -1077,7 +1164,8 @@ var WorkOsSetup = (function () {
     refreshCompletedVersionMetadataForTest:
       refreshCompletedVersionMetadataForTest,
     preparePersonalAutomationQualification:
-      preparePersonalAutomationQualification
+      preparePersonalAutomationQualification,
+    preparePersonalShadowPilot: preparePersonalShadowPilot
   });
 }());
 
@@ -1091,4 +1179,8 @@ function continueSetup() {
 
 function preparePersonalAutomationQualification() {
   return WorkOsSetup.preparePersonalAutomationQualification();
+}
+
+function preparePersonalShadowPilot() {
+  return WorkOsSetup.preparePersonalShadowPilot();
 }

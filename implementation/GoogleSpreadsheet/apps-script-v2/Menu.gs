@@ -8,10 +8,10 @@ function onOpen() {
     .addItem('Deep Diagnostic（明示・読取専用）', 'menuDeepDiagnostic')
     .addItem('運用Dashboardを更新', 'menuRefreshDashboard')
     .addItem('自動処理の状態を確認', 'menuAutomationStatus')
-    .addItem('個人用合成Automationの準備状態を確認',
-      'menuPersonalAutomationQualificationStatus')
-    .addItem('個人用合成Automationを準備',
-      'menuPreparePersonalAutomationQualification')
+    .addItem('個人用Shadow Pilotの準備状態を確認',
+      'menuPersonalShadowPilotStatus')
+    .addItem('個人用Shadow Pilotを準備',
+      'menuPreparePersonalShadowPilot')
     .addItem('自動処理を明示的に有効化', 'menuEnableAutomation')
     .addItem('自動処理を停止', 'menuDisableAutomation')
     .addItem('手動/取込を1件前処理', 'menuRunManualImport')
@@ -125,6 +125,13 @@ function menuPersonalAutomationQualificationStatus() {
   );
 }
 
+function menuPersonalShadowPilotStatus() {
+  showSafeResult_(
+    '個人用Shadow Pilotの準備状態',
+    getPersonalShadowPilotStatus()
+  );
+}
+
 function menuPreparePersonalAutomationQualification() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
@@ -141,11 +148,26 @@ function menuPreparePersonalAutomationQualification() {
   );
 }
 
+function menuPreparePersonalShadowPilot() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    '個人用Shadow Pilotを準備',
+    '既存Setupの完了状態と互換性を確認し、2.8.22のpilot version metadataだけを整えます。' +
+      'Task、Review、Message State、Calendar、正式Gmailラベル、credential、Triggerは変更せず、Automationは停止したままです。' +
+      '通常Inboxは対象にせず、手動/取込ラベル付きMessageだけが後続pilotの候補です。続行しますか。',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_('個人用Shadow Pilotを準備', preparePersonalShadowPilot());
+}
+
 function menuEnableAutomation() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
     '自動処理を有効化',
-    '個人用の合成検証メールだけを対象とする5分間隔Automationを有効化します。operator承認、データ取扱い、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否されます。Setupからは有効化されません。続行しますか。',
+    '手動/取込ラベル付きInboxだけを対象とする5分間隔の個人用Shadow Pilot Automationを有効化します。手動/除外、spam、trash、通常の未ラベルInboxは対象外です。operator承認、データ取扱い、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否され、手動取込も稼働中は停止します。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {

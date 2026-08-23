@@ -23,7 +23,6 @@ const testsRoot = path.join(moduleRoot, 'tests');
 const toolsRoot = path.join(moduleRoot, 'tools');
 const reportRoot = path.join(moduleRoot, '.local-validation');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
-const contractStartingMain = '4c28231dc08dc89ee7a529cb0a6192325263c810';
 const work0036MainMaterializedCommit =
   'ca70607cba047b340b8009a03448b8d8128dc68e';
 const work0036ValidatedFinalHead =
@@ -32,7 +31,10 @@ const work0036MaterializedSourceCommit =
   '25e32a0a4a2c51a7d347534659299d5523b3477f';
 const work0036MaterializedReleaseCommit =
   'bda4df2ec8a21b5e4ece64609e2e50b7be12dcb5';
+const contractStartingMain = work0036MainMaterializedCommit;
 const currentScopeStartingMain = work0036MainMaterializedCommit;
+const work0037SourceParentRef =
+  'a1fbad8c193a4be104e2064f753fe0a6d95091af';
 const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
 const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
@@ -50,15 +52,15 @@ const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
 const canonicalBranch = 'main';
 const materializedSourceCommit = '0c0304f6a63a08796c7ea788b4e3bc8de077aec8';
 const materializedReleaseCommit = 'b321d83e29ba04557cbed87b75accc746144da6c';
-const expectedBranch = 'codex/0036-personal-automation-qualification';
+const expectedBranch = 'codex/0037-personal-shadow-pilot';
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot';
+  'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot';
 const phase8cPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c';
+  'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c';
 const releaseReportPath =
-  'docs/handoffs/0036-report.md';
+  'docs/handoffs/0037-report.md';
 const testInventoryPath = path.join(
   testsRoot,
   'expected_test_inventory.json'
@@ -141,11 +143,11 @@ function readContract() {
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
     starting_main: contractStartingMain,
     branch: expectedBranch,
-    code_version: '2.8.21-prepilot',
+    code_version: '2.8.22-prepilot',
     schema_version: '2.6',
     ai_schema_version: '2.0',
     migration_version: '3',
-    highest_gate: 'READY_FOR_USER_PERSONAL_AUTOMATION_E2E',
+    highest_gate: 'READY_FOR_USER_PERSONAL_SHADOW_PILOT',
     automation: false,
     active_transfer: null,
     active_deployment: null,
@@ -446,15 +448,15 @@ function checkRelease() {
       'implementation', 'GoogleSpreadsheet'
     );
     const outputs = [
-      runPowerShell('verify_v2_8_21_release.ps1', [
+      runPowerShell('verify_v2_8_22_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot),
-      runPowerShell('verify_v2_8_21_phase8c_release.ps1', [
+      runPowerShell('verify_v2_8_22_phase8c_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot)
     ];
     return {
-      command: 'v2.8.21 Phase 8B/8C package verifiers in committed LF checkout',
+      command: 'v2.8.22 Phase 8B/8C package verifiers in committed LF checkout',
       verifier_count: outputs.length,
       checkout: 'TEMP_LF_COMMITTED_HEAD',
       output_sha256: sha256(
@@ -632,14 +634,59 @@ function checkReleaseLineage() {
         'WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_SOURCE_SCOPE_INVALID'
       );
     }
+  } else if (sourceParent === work0037SourceParentRef) {
+    const expectedWork0037SourceFiles = [
+      'CURRENT_STATUS.md',
+      'DECISIONS.md',
+      'MASTER_PLAN.md',
+      'PROJECT_CONTEXT.md',
+      'README.md',
+      'docs/R4_VERIFICATION_MATRIX.md',
+      'docs/TASK_AUTHORITY_PROTOCOL.md',
+      'docs/handoffs/0037-personal-shadow-pilot-runbook.md',
+      'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html',
+      'docs/visualizations/index.html',
+      'implementation/GoogleSpreadsheet/apps-script-v2/00_Config.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/02_Setup.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/05_GmailGateway.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/12_Triggers.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/18_Worker.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/Menu.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
+      'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tests/canonical_document_consistency_test.js',
+      'implementation/GoogleSpreadsheet/tests/expected_test_inventory.json',
+      'implementation/GoogleSpreadsheet/tests/phase7_schema_extension_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_round3_provenance_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_round4_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_runtime_dashboard_reliability_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0036_personal_automation_qualification_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_lineage_materialization_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_personal_shadow_pilot_test.js',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_22_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_22_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js',
+      'implementation/GoogleSpreadsheet/tools/v2_8_22/DEPLOYMENT_MANIFEST.template.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_22/MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_22/SANDBOX_QUICKSTART.md',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_22_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_22_release.ps1',
+      'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_22.html'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedWork0037SourceFiles)
+    ) {
+      throw new Error('WORK_0037_SOURCE_SCOPE_INVALID');
+    }
   } else {
-    throw new Error('WORK_0036_SOURCE_CORRECTION_SCOPE_INVALID');
+    throw new Error('WORK_0037_SOURCE_SCOPE_INVALID');
   }
   let squashMaterialization = null;
   if (git(['rev-parse', `${releaseCommit}^`]) !== contract.source_commit) {
     if (releaseCommit !== work0036MainMaterializedCommit ||
         contract.source_commit !== work0036MaterializedSourceCommit ||
-        contract.code_version !== '2.8.21-prepilot' ||
+        contract.code_version !== '2.8.22-prepilot' ||
         contract.schema_version !== '2.6' ||
         contract.ai_schema_version !== '2.0' ||
         contract.migration_version !== '3') {
@@ -676,7 +723,9 @@ function checkReleaseLineage() {
   }
   const historicalReleasePaths = [
     'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot',
-    'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot-phase8c'
+    'implementation/GoogleSpreadsheet/release/v2.8.20-prepilot-phase8c',
+    'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot',
+    'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c'
   ];
   if (historicalReleasePaths.some((releasePath) =>
     !gitObjectExists(`${currentScopeStartingMain}:${releasePath}`))) {
@@ -688,7 +737,7 @@ function checkReleaseLineage() {
     throw new Error('HISTORICAL_2_8_20_RELEASE_CHANGED');
   }
   return {
-    command: 'A21/B21 direct ancestry, bounded Work 0036 source correction, current release-only scope, and historical 2.8.20 preservation',
+    command: 'A21/B21 direct ancestry, bounded Work 0037 source scope, current release-only scope, and historical 2.8.20/2.8.21 preservation',
     a21_source_commit: a21SourceCommit,
     b21_release_commit: b21ReleaseCommit,
     source_correction_commit: contract.source_commit === a21SourceCommit
