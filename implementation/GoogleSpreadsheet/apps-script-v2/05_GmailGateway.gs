@@ -497,6 +497,21 @@ var WorkOsGmailGateway = (function () {
       0,
       watermark.getTime() - WorkOsConfig.AUTOMATION_OVERLAP_MS
     );
+    var pilotStartAt = options && options.pilot_start_at instanceof Date &&
+      !isNaN(options.pilot_start_at.getTime())
+      ? options.pilot_start_at
+      : null;
+    if (pilotOnly && !pilotStartAt) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_PILOT_START_BOUNDARY_MISSING',
+        'GMAIL_AUTOMATIC_SEARCH',
+        false,
+        'Automatic Inbox Pilotの開始境界がありません。'
+      );
+    }
+    var effectiveStartMs = pilotOnly
+      ? Math.max(overlapStartMs, pilotStartAt.getTime())
+      : overlapStartMs;
     var baseQuery = pilotOnly
       ? WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY
       : qualificationOnly
@@ -504,10 +519,11 @@ var WorkOsGmailGateway = (function () {
         : 'in:inbox -in:spam -in:trash -label:手動/除外';
     return {
       query: baseQuery +
-        ' after:' + Math.floor(overlapStartMs / 1000) +
+        ' after:' + Math.floor(effectiveStartMs / 1000) +
         ' before:' + (Math.floor(upperBound.getTime() / 1000) + 1),
-      overlap_start: new Date(overlapStartMs),
-      upper_bound: upperBound
+      overlap_start: new Date(effectiveStartMs),
+      upper_bound: upperBound,
+      pilot_start_at: pilotStartAt
     };
   }
 
@@ -549,9 +565,6 @@ var WorkOsGmailGateway = (function () {
     if (system.SPAM || system.TRASH || !system.INBOX) {
       return { process: false, reason: 'SYSTEM_SCOPE', priority: 0 };
     }
-    if (names.indexOf('手動/取込') !== -1) {
-      return { process: true, reason: 'MANUAL_IMPORT', priority: 1 };
-    }
     if (system.CATEGORY_PROMOTIONS) {
       return { process: false, reason: 'CATEGORY_PROMOTIONS', priority: 0 };
     }
@@ -570,6 +583,9 @@ var WorkOsGmailGateway = (function () {
         reason: 'GOOGLE_CALENDAR_NOTIFICATION',
         priority: 0
       };
+    }
+    if (names.indexOf('手動/取込') !== -1) {
+      return { process: true, reason: 'MANUAL_IMPORT', priority: 10 };
     }
     return { process: true, reason: 'NORMAL_INBOX', priority: 0 };
   }
@@ -595,23 +611,8 @@ var WorkOsGmailGateway = (function () {
     };
   }
 
-  function automationPilotCandidatePolicy(labelNames, message) {
-    var names = labelNames || [];
-    var value = message || {};
-    var system = {};
-    (value.labelIds || []).forEach(function (labelId) {
-      system[String(labelId)] = true;
-    });
-    if (names.indexOf('手動/除外') !== -1) {
-      return { process: false, reason: 'MANUAL_EXCLUDE', priority: 0 };
-    }
-    if (system.SPAM || system.TRASH || !system.INBOX) {
-      return { process: false, reason: 'SYSTEM_SCOPE', priority: 0 };
-    }
-    if (names.indexOf('手動/取込') === -1) {
-      return { process: false, reason: 'PILOT_LABEL_REQUIRED', priority: 0 };
-    }
-    return { process: true, reason: 'PILOT_MANUAL_IMPORT', priority: 10 };
+  function automaticInboxPilotCandidatePolicy(labelNames, message) {
+    return automaticCandidatePolicy(labelNames, message);
   }
 
   function listAutomaticCandidates(options) {
@@ -660,7 +661,8 @@ var WorkOsGmailGateway = (function () {
       settings.upper_bound_at || settings.now,
       {
         qualification_only: qualificationOnly,
-        pilot_only: pilotOnly
+        pilot_only: pilotOnly,
+        pilot_start_at: settings.pilot_start_at
       }
     );
     var knownIds = settings.known_message_ids || {};
@@ -784,7 +786,7 @@ var WorkOsGmailGateway = (function () {
           labelById
         );
         var policy = pilotOnly
-          ? automationPilotCandidatePolicy(
+          ? automaticInboxPilotCandidatePolicy(
             messageLabelNames,
             message
           )
@@ -799,8 +801,16 @@ var WorkOsGmailGateway = (function () {
         );
         if (!messageId || candidatesByMessageId[messageId] ||
             knownIds[messageId] ||
-            timestamp < queryState.overlap_start.getTime() ||
             timestamp >= queryState.upper_bound.getTime()) {
+          return;
+        }
+        if (pilotOnly && queryState.pilot_start_at &&
+            timestamp < queryState.pilot_start_at.getTime()) {
+          filterCounts.PILOT_START_BOUNDARY =
+            Number(filterCounts.PILOT_START_BOUNDARY || 0) + 1;
+          return;
+        }
+        if (timestamp < queryState.overlap_start.getTime()) {
           return;
         }
         if (!policy.process) {
@@ -1280,7 +1290,9 @@ var WorkOsGmailGateway = (function () {
     automaticQuery: automaticQuery,
     automationQualificationCandidatePolicy:
       automationQualificationCandidatePolicy,
-    automationPilotCandidatePolicy: automationPilotCandidatePolicy,
+    automationPilotCandidatePolicy: automaticInboxPilotCandidatePolicy,
+    automaticInboxPilotCandidatePolicy:
+      automaticInboxPilotCandidatePolicy,
     listAutomaticCandidates: listAutomaticCandidates,
     loadLabelCache: loadLabelCache,
     createCallMeter: createCallMeter,

@@ -301,7 +301,7 @@ function seedEligibleTask(spreadsheet, options = {}) {
 }
 
 function seedInformationMessage(spreadsheet, options = {}) {
-  const message = harness.rawMessage('INFORMATION_ONLY', {
+  const message = harness.rawMessage(options.marker || 'INFORMATION_ONLY', {
     message_id: options.message_id || 'synthetic-phase4-message',
     thread_id: options.thread_id || 'synthetic-phase4-thread',
     stable_thread_key: options.stable_thread_key ||
@@ -391,7 +391,7 @@ function test(id, body) {
   }
 }
 
-test('P4-I01_FINALIZE_CALENDAR_DONE_VERTICAL_FLOW', () => {
+test('P4-I01_INFORMATION_ONLY_FINALIZE_HAS_NO_CALENDAR_SIDE_EFFECT', () => {
   const spreadsheet = harness.makeOperationalSpreadsheet();
   harness.setActiveSpreadsheet(spreadsheet);
   const stableThreadKey = 'root:phase4-finalize-done';
@@ -419,8 +419,8 @@ test('P4-I01_FINALIZE_CALENDAR_DONE_VERTICAL_FLOW', () => {
 
   assert.strictEqual(run.result.status, 'COMPLETE');
   assert.strictEqual(run.result.checkpoint, 'DONE');
-  assert.strictEqual(calendarGateway.events.size, 1);
-  assert.strictEqual(calendarGateway.calls.eventInsert, 1);
+  assert.strictEqual(calendarGateway.events.size, 0);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
   assert.strictEqual(run.pipeline.counts.classify, 1);
   assert.strictEqual(run.pipeline.gateway.calls.refetch, 1);
   assert.strictEqual(
@@ -428,19 +428,16 @@ test('P4-I01_FINALIZE_CALENDAR_DONE_VERTICAL_FLOW', () => {
     'DONE'
   );
   const synced = harness.readTask(harness.taskSheet(spreadsheet), task.task_id);
-  assert.strictEqual(synced.calendar_sync_status, 'SYNCED');
-  assert.match(
-    String(synced.calendar_event_id),
-    /^[a-v0-9]{5,1024}$/
-  );
-  assert.match(String(synced.calendar_event_id), /^v2d[0-9a-f]{40}$/);
+  assert.strictEqual(synced.calendar_sync_status, 'NOT_REQUIRED');
+  assert.strictEqual(synced.calendar_event_id, '');
+  assert.strictEqual(synced.calendar_sync_status, 'NOT_REQUIRED');
   assert.deepStrictEqual(
     Array.from(outboxRecords(spreadsheet), (record) => record.status),
-    ['DONE']
+    []
   );
 });
 
-test('P4-I02_CALENDAR_RETRY_SKIPS_GMAIL_AI_AND_TASK_BUSINESS_WRITE', () => {
+test('P4-I02_INFORMATION_ONLY_DOES_NOT_ENTER_CALENDAR_RETRY', () => {
   const spreadsheet = harness.makeOperationalSpreadsheet();
   harness.setActiveSpreadsheet(spreadsheet);
   const stableThreadKey = 'root:phase4-calendar-retry';
@@ -469,11 +466,11 @@ test('P4-I02_CALENDAR_RETRY_SKIPS_GMAIL_AI_AND_TASK_BUSINESS_WRITE', () => {
     clock,
     { pipeline }
   ).result;
-  assert.strictEqual(first.status, 'FAILED');
+  assert.strictEqual(first.status, 'COMPLETE');
   let state = messageRecord(spreadsheet, message.message_id);
-  assert.strictEqual(state.processing_status, 'RETRY');
-  assert.strictEqual(state.resume_stage, 'CALENDAR');
-  assert.strictEqual(outboxRecords(spreadsheet)[0].status, 'RETRY');
+  assert.strictEqual(state.processing_status, 'DONE');
+  assert.strictEqual(state.resume_stage, 'DONE');
+  assert.strictEqual(outboxRecords(spreadsheet).length, 0);
   const businessBefore = harness.readTask(
     harness.taskSheet(spreadsheet),
     task.task_id
@@ -494,7 +491,7 @@ test('P4-I02_CALENDAR_RETRY_SKIPS_GMAIL_AI_AND_TASK_BUSINESS_WRITE', () => {
   ).result;
 
   assert.strictEqual(second.status, 'COMPLETE');
-  assert.strictEqual(second.checkpoint, 'DONE');
+  assert.strictEqual(second.processed_count, 0);
   assert.deepStrictEqual(
     {
       refetch: pipeline.gateway.calls.refetch,
@@ -526,9 +523,9 @@ test('P4-I02_CALENDAR_RETRY_SKIPS_GMAIL_AI_AND_TASK_BUSINESS_WRITE', () => {
       `Calendar retry changed Task business field ${field}`
     );
   });
-  assert.strictEqual(calendarGateway.events.size, 1);
-  assert.strictEqual(calendarGateway.calls.eventInsert, 2);
-  assert.strictEqual(outboxRecords(spreadsheet)[0].status, 'DONE');
+  assert.strictEqual(calendarGateway.events.size, 0);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
+  assert.strictEqual(outboxRecords(spreadsheet).length, 0);
 });
 
 test('P4-I03_ZERO_TASK_MESSAGE_DOES_NOT_CONSUME_UNRELATED_OUTBOX', () => {
@@ -572,7 +569,7 @@ test('P4-I03_ZERO_TASK_MESSAGE_DOES_NOT_CONSUME_UNRELATED_OUTBOX', () => {
   );
 });
 
-test('P4-I04_VERTICAL_WORKER_PROCESSES_AT_MOST_ONE_JOB_PER_RUN', () => {
+test('P4-I04_INFORMATION_ONLY_WITH_MULTIPLE_TASKS_HAS_NO_CALENDAR_SIDE_EFFECT', () => {
   const spreadsheet = harness.makeOperationalSpreadsheet();
   harness.setActiveSpreadsheet(spreadsheet);
   const stableThreadKey = 'root:phase4-two-jobs';
@@ -606,13 +603,10 @@ test('P4-I04_VERTICAL_WORKER_PROCESSES_AT_MOST_ONE_JOB_PER_RUN', () => {
     clock,
     { pipeline }
   ).result;
-  assert.strictEqual(first.status, 'PAUSED');
-  assert.strictEqual(first.checkpoint, 'CALENDAR');
-  assert.strictEqual(calendarGateway.calls.eventInsert, 1);
-  assert.deepStrictEqual(
-    Array.from(outboxRecords(spreadsheet), (record) => record.status).sort(),
-    ['DONE', 'PENDING']
-  );
+  assert.strictEqual(first.status, 'COMPLETE');
+  assert.strictEqual(first.checkpoint, 'DONE');
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
+  assert.strictEqual(outboxRecords(spreadsheet).length, 0);
 
   const second = runVertical(
     spreadsheet,
@@ -622,14 +616,11 @@ test('P4-I04_VERTICAL_WORKER_PROCESSES_AT_MOST_ONE_JOB_PER_RUN', () => {
     { pipeline }
   ).result;
   assert.strictEqual(second.status, 'COMPLETE');
-  assert.strictEqual(second.checkpoint, 'DONE');
-  assert.strictEqual(calendarGateway.calls.eventInsert, 2);
+  assert.strictEqual(second.processed_count, 0);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
   assert.strictEqual(pipeline.counts.classify, 1);
   assert.strictEqual(pipeline.gateway.calls.refetch, 1);
-  assert.deepStrictEqual(
-    Array.from(outboxRecords(spreadsheet), (record) => record.status).sort(),
-    ['DONE', 'DONE']
-  );
+  assert.strictEqual(outboxRecords(spreadsheet).length, 0);
 });
 
 test('P4-I05_STANDALONE_SYNC_CALLS_NO_GMAIL_OR_AI_AND_MAX_ONE_JOB', () => {

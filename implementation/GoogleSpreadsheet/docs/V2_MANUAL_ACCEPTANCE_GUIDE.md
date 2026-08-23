@@ -1,6 +1,6 @@
-# Controlled Personal Shadow Pilot Guide - 2.8.22-prepilot
+# Controlled Personal Shadow Pilot Guide - 2.8.23-prepilot
 
-Code Version: `2.8.22-prepilot`
+Code Version: `2.8.23-prepilot`
 
 Schema Version: `2.6`
 
@@ -8,15 +8,17 @@ AI Schema Version: `2.0`
 
 Migration Version: `3`
 
-Highest machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
+Highest machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-Work 0037 scope: `LABEL_GATED_PERSONAL_SHADOW_PILOT`; automatic discovery
-requires `手動/取込` on an Inbox message, gives `手動/除外` precedence, and
-excludes spam, trash, and ordinary unlabeled Inbox mail. Automation remains
-`OFF` until a later explicit user action.
+Work 0037 scope: `AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT`; automatic discovery
+admits ordinary eligible personal Inbox mail, gives `手動/除外` Thread-wide
+precedence, and excludes spam, trash, non-Inbox, Promotions, Social, clear
+newsletter/list mail, and Google Calendar notifications. `手動/取込` is
+optional priority only. Automation remains `OFF` until a later explicit user
+action.
 
 Work 0037 highest permitted status:
-`READY_FOR_USER_PERSONAL_SHADOW_PILOT`
+`READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Automation: `OFF`
 
@@ -39,10 +41,11 @@ into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
 ## Work 0037 shadow-pilot boundary
 
 - The existing five-minute schedule processes at most one admitted message per
-  run and records the distinct `AUTOMATIC_PILOT` source mode.
-- The user-controlled run lasts at least 24 hours and uses at least 12
-  explicitly selected, non-sensitive work-like messages. Apply `手動/取込`
-  only to those messages; do not process ordinary unlabeled Inbox mail.
+  run and records the distinct `AUTOMATIC_INBOX_PILOT` source mode.
+- The first successful explicit enable establishes the durable pilot-start
+  boundary. Messages older than that boundary are never admitted, including
+  through overlap search. A refused or failed enable leaves no misleading new
+  boundary.
 - Include a `手動/取込` plus `手動/除外` conflict case and verify it does not
   process. Do not retry historical Work 0036 failures or Dead Letters.
 - Do not invoke the manual worker while pilot Automation is enabled. Stop on

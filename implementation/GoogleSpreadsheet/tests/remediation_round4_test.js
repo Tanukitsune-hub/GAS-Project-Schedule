@@ -726,7 +726,7 @@ test('R4-09_CURRENT_WORKFLOW_VISUALIZATION_METADATA_MATCHES_CANONICAL_CONFIG', (
   assert.ok(html.includes(`data-migration-version="${values.migration}"`));
   const gateMatch = currentStatus.match(/^Machine gate:\s+`([^`]+)`/m);
   assert.ok(gateMatch, 'CURRENT_STATUS machine gate missing');
-  assert.strictEqual(gateMatch[1], 'READY_FOR_USER_PERSONAL_SHADOW_PILOT');
+  assert.strictEqual(gateMatch[1], 'READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT');
   assert.ok(html.includes(`data-release-status="${gateMatch[1]}"`));
   assert.ok(html.includes('Task Authority Ledger'));
   assert.ok(html.includes('PHASE8B-SETUP-01'));

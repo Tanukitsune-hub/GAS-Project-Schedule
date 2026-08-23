@@ -469,25 +469,55 @@ var WorkOsAutomation = (function () {
     };
   }
 
+  function pilotStartBoundarySnapshot(props) {
+    var raw = String(props.getProperty(
+      WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT
+    ) || '');
+    if (!raw) {
+      return {
+        status: 'NOT_ESTABLISHED',
+        present: false,
+        valid: false
+      };
+    }
+    var value = new Date(raw);
+    var valid = !isNaN(value.getTime());
+    return {
+      status: valid ? 'ESTABLISHED' : 'INVALID',
+      present: true,
+      valid: valid
+    };
+  }
+
   function pilotScopeSnapshot() {
     var query = String(
       WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY || ''
     );
-    var exactQuery = query === String(
-      WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY || ''
-    ) &&
-      query.indexOf('in:inbox') !== -1 &&
-      query.indexOf('-in:spam') !== -1 &&
-      query.indexOf('-in:trash') !== -1 &&
-      query.indexOf('label:手動/取込') !== -1 &&
-      query.indexOf('-label:手動/除外') !== -1;
+    var expectedQuery =
+      'in:inbox -in:spam -in:trash -category:promotions ' +
+      '-category:social -label:手動/除外';
+    var exactQuery = query === expectedQuery;
     var scopeExact =
       WorkOsConfig.AUTOMATION_PILOT_SCOPE ===
-        'LABEL_GATED_PERSONAL_SHADOW_PILOT' &&
-      WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE === 'LABEL_GATED' &&
-      WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE === 'AUTOMATIC_PILOT';
+        'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT' &&
+      WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE === 'AUTOMATIC_INBOX' &&
+      WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE ===
+        'AUTOMATIC_INBOX_PILOT';
+    var ordinaryInbox = scopeExact &&
+      WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE === 'AUTOMATIC_INBOX' &&
+      query.indexOf('label:手動/取込') === -1;
+    var promotionsSocial = query.indexOf('-category:promotions') !== -1 &&
+      query.indexOf('-category:social') !== -1;
+    var newsletter =
+      WorkOsConfig.AUTOMATION_NEWSLETTER_FILTER_APPROVED === true;
+    var calendarNotification =
+      WorkOsConfig.AUTOMATION_CALENDAR_NOTIFICATION_FILTER_APPROVED === true;
+    var hardExclusions = promotionsSocial && newsletter &&
+      calendarNotification && query.indexOf('-label:手動/除外') !== -1 &&
+      query.indexOf('-in:spam') !== -1 &&
+      query.indexOf('-in:trash') !== -1;
     return {
-      ready: scopeExact && exactQuery &&
+      ready: scopeExact && exactQuery && ordinaryInbox && hardExclusions &&
         WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN === 1 &&
         WorkOsConfig.AUTOMATION_INTERVAL_MINUTES === 5,
       scope: String(WorkOsConfig.AUTOMATION_PILOT_SCOPE || ''),
@@ -503,10 +533,17 @@ var WorkOsAutomation = (function () {
       exact_query_active: exactQuery,
       exact_body_guard_active: false,
       pilot_query_active: exactQuery,
-      label_gate_active: query.indexOf('label:手動/取込') !== -1,
+      ordinary_inbox_admission_active: ordinaryInbox,
+      manual_import_optional: ordinaryInbox &&
+        query.indexOf('label:手動/取込') === -1,
+      label_gate_active: false,
       manual_exclude_wins: query.indexOf('-label:手動/除外') !== -1,
       spam_trash_excluded: query.indexOf('-in:spam') !== -1 &&
         query.indexOf('-in:trash') !== -1,
+      promotions_social_excluded: promotionsSocial,
+      newsletter_exclusion_active: newsletter,
+      calendar_notification_exclusion_active: calendarNotification,
+      hard_exclusions_active: hardExclusions,
       one_message_per_run:
         WorkOsConfig.AUTOMATION_PILOT_MAX_MESSAGES_PER_RUN === 1,
       interval_minutes: Number(WorkOsConfig.AUTOMATION_INTERVAL_MINUTES || 0)
@@ -678,9 +715,27 @@ var WorkOsAutomation = (function () {
         exact_query_active: scope.exact_query_active === true,
         exact_body_guard_active: scope.exact_body_guard_active === true,
         pilot_query_active: scope.pilot_query_active === true,
+        ordinary_inbox_admission_active:
+          scope.ordinary_inbox_admission_active === true,
+        manual_import_optional: scope.manual_import_optional === true,
         label_gate_active: scope.label_gate_active === true,
         manual_exclude_wins: scope.manual_exclude_wins === true,
         spam_trash_excluded: scope.spam_trash_excluded === true,
+        promotions_social_excluded:
+          scope.promotions_social_excluded === true,
+        newsletter_exclusion_active:
+          scope.newsletter_exclusion_active === true,
+        calendar_notification_exclusion_active:
+          scope.calendar_notification_exclusion_active === true,
+        hard_exclusions_active: scope.hard_exclusions_active === true,
+        pilot_start_boundary_status: safeReadinessToken(
+          scope.pilot_start_boundary_status,
+          'NOT_ESTABLISHED'
+        ),
+        pilot_start_boundary_present:
+          scope.pilot_start_boundary_present === true,
+        pilot_start_boundary_valid:
+          scope.pilot_start_boundary_valid === true,
         one_message_per_run: scope.one_message_per_run === true,
         interval_minutes: Number(scope.interval_minutes || 0)
       },
@@ -830,19 +885,31 @@ var WorkOsAutomation = (function () {
       'PILOT_SCOPE_NOT_EXACT');
     requireReady(details.scope.admission_mode ===
       WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
-      'PILOT_ADMISSION_MODE_NOT_LABEL_GATED');
+      'PILOT_ADMISSION_MODE_NOT_AUTOMATIC_INBOX');
     requireReady(details.scope.source_mode ===
       WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
       'PILOT_SOURCE_MODE_NOT_EXACT');
     requireReady(details.scope.pilot_query_active === true &&
       details.scope.exact_query_active === true,
       'PILOT_QUERY_NOT_EXACT');
-    requireReady(details.scope.label_gate_active === true,
-      'PILOT_LABEL_GATE_NOT_ACTIVE');
+    requireReady(details.scope.ordinary_inbox_admission_active === true &&
+      details.scope.manual_import_optional === true &&
+      details.scope.label_gate_active === false,
+      'PILOT_ORDINARY_INBOX_NOT_ACTIVE');
     requireReady(details.scope.manual_exclude_wins === true,
       'PILOT_MANUAL_EXCLUDE_NOT_ACTIVE');
     requireReady(details.scope.spam_trash_excluded === true,
       'PILOT_SPAM_TRASH_BOUNDARY_NOT_ACTIVE');
+    requireReady(details.scope.promotions_social_excluded === true,
+      'PILOT_CATEGORY_EXCLUSIONS_NOT_ACTIVE');
+    requireReady(details.scope.newsletter_exclusion_active === true,
+      'PILOT_NEWSLETTER_EXCLUSION_NOT_ACTIVE');
+    requireReady(
+      details.scope.calendar_notification_exclusion_active === true,
+      'PILOT_CALENDAR_NOTIFICATION_EXCLUSION_NOT_ACTIVE'
+    );
+    requireReady(details.scope.hard_exclusions_active === true,
+      'PILOT_HARD_EXCLUSIONS_NOT_ACTIVE');
     requireReady(details.scope.one_message_per_run === true &&
       details.scope.interval_minutes === 5,
       'PILOT_RUN_BOUND_NOT_EXACT');
@@ -895,6 +962,12 @@ var WorkOsAutomation = (function () {
     var scope = pilotMode
       ? pilotScopeSnapshot()
       : qualificationScopeSnapshot();
+    if (pilotMode) {
+      var startBoundary = pilotStartBoundarySnapshot(props);
+      scope.pilot_start_boundary_status = startBoundary.status;
+      scope.pilot_start_boundary_present = startBoundary.present;
+      scope.pilot_start_boundary_valid = startBoundary.valid;
+    }
     var scopeReason = pilotMode
       ? 'PILOT_SCOPE_NOT_EXACT'
       : 'QUALIFICATION_SCOPE_NOT_EXACT';
@@ -1337,7 +1410,7 @@ var WorkOsAutomation = (function () {
       details.provider.credential_configured === true;
     return {
       status: decision.ready
-        ? 'READY_FOR_USER_PERSONAL_SHADOW_PILOT'
+        ? 'READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT'
         : 'BLOCKED',
       readiness_reasons: decision.reasons,
       prerequisites: {
@@ -1349,9 +1422,24 @@ var WorkOsAutomation = (function () {
       admission_mode: WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
       candidate_mode: WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
       pilot_query: WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY,
+      ordinary_inbox_admission_active:
+        details.scope.ordinary_inbox_admission_active,
+      manual_import_optional: details.scope.manual_import_optional,
       label_gate_active: details.scope.label_gate_active,
       manual_exclude_wins: details.scope.manual_exclude_wins,
       spam_trash_excluded: details.scope.spam_trash_excluded,
+      promotions_social_excluded:
+        details.scope.promotions_social_excluded,
+      newsletter_exclusion_active:
+        details.scope.newsletter_exclusion_active,
+      calendar_notification_exclusion_active:
+        details.scope.calendar_notification_exclusion_active,
+      hard_exclusions_active: details.scope.hard_exclusions_active,
+      pilot_start_boundary: {
+        status: details.scope.pilot_start_boundary_status,
+        present: details.scope.pilot_start_boundary_present,
+        valid: details.scope.pilot_start_boundary_valid
+      },
       one_message_per_run: details.scope.one_message_per_run,
       interval_minutes: details.scope.interval_minutes,
       candidate: details.candidate,
@@ -1516,6 +1604,83 @@ var WorkOsAutomation = (function () {
     });
   }
 
+  function establishAutomaticPilotStartBoundary(settings, props) {
+    var key = WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT;
+    var existing = String(props.getProperty(key) || '');
+    if (existing) {
+      var existingDate = new Date(existing);
+      if (isNaN(existingDate.getTime())) {
+        throw new WorkOsAppError(
+          'E_AUTOMATION_PILOT_START_BOUNDARY_INVALID',
+          'AUTOMATION_ENABLE',
+          false,
+          'Automatic Inbox Pilotの開始境界が不正です。'
+        );
+      }
+      return { created: false, status: 'ESTABLISHED' };
+    }
+    var now = WorkOsConfig.TEST_MODE === true && settings &&
+      typeof settings.now === 'function'
+      ? settings.now()
+      : WorkOsUtilities.now();
+    var boundary = now instanceof Date ? now : new Date(now);
+    if (isNaN(boundary.getTime())) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_PILOT_START_BOUNDARY_INVALID',
+        'AUTOMATION_ENABLE',
+        false,
+        'Automatic Inbox Pilotの開始境界を確定できません。'
+      );
+    }
+    try {
+      props.setProperty(key, boundary.toISOString());
+    } catch (error) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_PILOT_START_BOUNDARY_WRITE',
+        'AUTOMATION_ENABLE',
+        false,
+        'Automatic Inbox Pilotの開始境界を安全に保存できませんでした。'
+      );
+    }
+    return { created: true, status: 'ESTABLISHED' };
+  }
+
+  function rollbackPilotEnable(settings, props, removeStartBoundary) {
+    try {
+      props.setProperty(
+        WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE,
+        'false'
+      );
+      props.setProperty(
+        WorkOsConfig.PROPERTIES.AUTOMATION_ENABLED,
+        'false'
+      );
+    } catch (flagRollbackError) {
+      // Preserve the original safe enable failure.
+    }
+    handlerTriggers(scriptService(settings)).forEach(function (trigger) {
+      try {
+        scriptService(settings).deleteTrigger(trigger);
+      } catch (triggerRollbackError) {
+        // A disabled worker remains gated even if physical cleanup is delayed.
+      }
+    });
+    try {
+      props.deleteProperty(WorkOsConfig.PROPERTIES.AUTOMATION_TRIGGER_ID);
+    } catch (idRollbackError) {
+      // A stale identifier cannot execute without an enabled worker.
+    }
+    if (removeStartBoundary) {
+      try {
+        props.deleteProperty(
+          WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT
+        );
+      } catch (boundaryRollbackError) {
+        // The disabled flag is authoritative if boundary cleanup is delayed.
+      }
+    }
+  }
+
   function enableAutomationUnlocked(settings) {
     var props = properties(settings);
     props.setProperty(
@@ -1583,7 +1748,33 @@ var WorkOsAutomation = (function () {
         cleanup_status: cancelled.status
       };
     }
+    var startBoundary = null;
+    var pilotStartBoundaryExisted =
+      Boolean(props.getProperty(
+        WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT
+      ));
     try {
+      if (WorkOsConfig.AUTOMATION_PILOT_SCOPE ===
+          'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT') {
+        startBoundary = establishAutomaticPilotStartBoundary(settings, props);
+      }
+      if (props.getProperty(
+        WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE
+      ) !== 'true') {
+        if (startBoundary && startBoundary.created) {
+          props.deleteProperty(
+            WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT
+          );
+        }
+        var cancelled = disableAutomationUnlocked(settings);
+        return {
+          status: 'REFUSED',
+          enabled: false,
+          created_trigger: ensured.created === true,
+          reasons: ['DISABLE_REQUESTED_DURING_ENABLE'],
+          cleanup_status: cancelled.status
+        };
+      }
       props.setProperty(
         WorkOsConfig.PROPERTIES.AUTOMATION_ENABLED,
         'true'
@@ -1595,31 +1786,16 @@ var WorkOsAutomation = (function () {
        * module's handler Trigger(s). Even if cleanup fails, the worker stays a
        * no-op because the enabled flag was written before Trigger creation.
        */
-      try {
-        props.setProperty(
-          WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE,
-          'false'
-        );
-        props.setProperty(
-          WorkOsConfig.PROPERTIES.AUTOMATION_ENABLED,
-          'false'
-        );
-      } catch (flagRollbackError) {
-        // Preserve the original commit failure as the public safe error.
-      }
-      handlerTriggers(scriptService(settings)).forEach(function (trigger) {
-        try {
-          scriptService(settings).deleteTrigger(trigger);
-        } catch (triggerRollbackError) {
-          // A leftover Trigger is still gated by the false enabled flag.
-        }
-      });
-      try {
-        props.deleteProperty(
-          WorkOsConfig.PROPERTIES.AUTOMATION_TRIGGER_ID
-        );
-      } catch (idRollbackError) {
-        // The stored identifier is not authority to run the disabled worker.
+      rollbackPilotEnable(
+        settings,
+        props,
+        Boolean(startBoundary && startBoundary.created) ||
+          (WorkOsConfig.AUTOMATION_PILOT_SCOPE ===
+            'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT' &&
+            !pilotStartBoundaryExisted)
+      );
+      if (error instanceof WorkOsAppError) {
+        throw error;
       }
       throw new WorkOsAppError(
         'E_AUTOMATION_ENABLE_COMMIT',
@@ -1631,6 +1807,11 @@ var WorkOsAutomation = (function () {
     if (props.getProperty(
       WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE
     ) !== 'true') {
+      if (startBoundary && startBoundary.created) {
+        props.deleteProperty(
+          WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT
+        );
+      }
       var postCommitCancelled = disableAutomationUnlocked(settings);
       return {
         status: 'REFUSED',

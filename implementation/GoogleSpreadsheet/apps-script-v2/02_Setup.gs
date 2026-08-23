@@ -1104,7 +1104,7 @@ var WorkOsSetup = (function () {
       WorkOsSheetBuilder.refreshVersionMetadata(spreadsheet);
     }
     return {
-      status: 'READY_FOR_PERSONAL_SHADOW_PILOT',
+      status: 'READY_FOR_AUTOMATIC_INBOX_SHADOW_PILOT',
       code_version: WorkOsConfig.CODE_VERSION,
       schema_version: WorkOsConfig.SCHEMA_VERSION,
       migration_version: WorkOsConfig.MIGRATION_VERSION,
@@ -1113,6 +1113,15 @@ var WorkOsSetup = (function () {
       admission_mode: WorkOsConfig.AUTOMATION_PILOT_ADMISSION_MODE,
       candidate_mode: WorkOsConfig.AUTOMATION_PILOT_SOURCE_MODE,
       pilot_query: WorkOsConfig.AUTOMATION_PILOT_GMAIL_QUERY,
+      admission_policy: 'ORDINARY_ELIGIBLE_PERSONAL_INBOX',
+      hard_exclusions: [
+        'MANUAL_EXCLUDE_THREAD_WIDE',
+        'SPAM_TRASH_NON_INBOX',
+        'PROMOTIONS_SOCIAL',
+        'NEWSLETTER',
+        'GOOGLE_CALENDAR_NOTIFICATION'
+      ],
+      pilot_start_boundary_status: 'NOT_ESTABLISHED',
       automation_enabled: false,
       desired_enabled: false,
       clock_trigger_count: 0,

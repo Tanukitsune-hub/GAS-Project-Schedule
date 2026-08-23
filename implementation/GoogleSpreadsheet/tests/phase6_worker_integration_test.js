@@ -399,6 +399,10 @@ test('P6-I00B_PRODUCTION_SHAPED_INTERNAL_VERTICAL_BYPASSES_ONLY_PRIVATE_GUARD', 
   });
   const gateway = automaticGateway([message]);
   const props = properties();
+  props.setProperty(
+    Config.PROPERTIES.AUTOMATION_PILOT_STARTED_AT,
+    '2026-07-24T00:00:00.000Z'
+  );
   const mockClassifier = new sandbox.WorkOsAiAdapter.MockAiAdapter();
   const productionAdapter = {
     healthCheck: () => ({
@@ -517,6 +521,28 @@ test('P6-I00C_PRODUCTION_AI_TRANSPORT_RUNS_OUTSIDE_LOCK_WITH_CAS_COMMIT', () => 
   assert.ok(fixture.getLockAttempts() >= 2);
 });
 
+test('P6-I00D_AUTOMATIC_PILOT_REQUIRES_START_BOUNDARY_BEFORE_SERVICES', () => {
+  const spreadsheet = fixture.makeOperationalSpreadsheet();
+  const message = fixture.rawMessage('INFORMATION_ONLY', {
+    message_id: 'synthetic-pilot-missing-start'
+  });
+  const gateway = automaticGateway([message]);
+  const result = Worker.processAutomaticBatch({
+    spreadsheet,
+    gateway,
+    properties: properties(),
+    pilot_only: true,
+    adapter: new sandbox.WorkOsAiAdapter.MockAiAdapter(),
+    now: clockAt('2026-07-24T12:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  assert.strictEqual(result.status, 'FAILED');
+  assert.strictEqual(result.note, 'E_AUTOMATION_PILOT_START_BOUNDARY_MISSING');
+  assert.strictEqual(gateway.calls.list, 0);
+  assert.deepStrictEqual(gateway.calls.fetch, []);
+  assert.deepStrictEqual(gateway.calls.refetch, []);
+});
+
 test('P6-I01_NEW_INBOX_MESSAGE_REACHES_DONE_AND_ADVANCES_WATERMARK', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const message = fixture.rawMessage('INFORMATION_ONLY', {
@@ -573,7 +599,39 @@ test('P6-I02_REPLAY_IS_MESSAGE_ID_IDEMPOTENT', () => {
   assert.strictEqual(fixture.allTasks(fixture.taskSheet(spreadsheet)).length, 0);
 });
 
-test('P6-I02B_AUTOMATIC_CALENDAR_REACHES_DONE_AND_REPLAY_IS_IDEMPOTENT', () => {
+test('P6-I02A_HISTORICAL_AUTOMATIC_PILOT_BACKLOG_IS_NOT_CONSUMED', () => {
+  const spreadsheet = fixture.makeOperationalSpreadsheet();
+  const message = fixture.rawMessage('INFORMATION_ONLY', {
+    message_id: 'synthetic-historical-pilot',
+    source_mode: 'AUTOMATIC_PILOT',
+    received_at: '2026-07-24T00:30:00.000Z'
+  });
+  fixture.seedPreprocessed(spreadsheet, message);
+  const gateway = automaticGateway([message]);
+  const props = properties();
+  props.setProperty(
+    Config.PROPERTIES.AUTOMATION_PILOT_STARTED_AT,
+    '2026-07-24T01:00:00.000Z'
+  );
+  const result = Worker.processAutomaticBatch({
+    spreadsheet,
+    gateway,
+    properties: props,
+    pilot_only: true,
+    adapter: new sandbox.WorkOsAiAdapter.MockAiAdapter(),
+    now: clockAt('2026-07-24T12:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(result.processed_count, 0);
+  assert.deepStrictEqual(gateway.calls.refetch, []);
+  assert.strictEqual(
+    allStates(spreadsheet)[0].processing_status,
+    'PREPROCESSED'
+  );
+});
+
+test('P6-I02B_INFORMATION_ONLY_HAS_NO_TASK_OR_CALENDAR_SIDE_EFFECT', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const stableThreadKey = 'root:synthetic-auto-calendar-success';
   const threadId = 'synthetic-thread-auto-calendar-success';
@@ -610,14 +668,55 @@ test('P6-I02B_AUTOMATIC_CALENDAR_REACHES_DONE_AND_REPLAY_IS_IDEMPOTENT', () => {
   });
   assert.strictEqual(first.status, 'COMPLETE');
   assert.strictEqual(first.processed_count, 1);
-  assert.strictEqual(first.calendar_job_count, 1);
+  assert.strictEqual(first.calendar_job_count, 0,
+    `information-only calendar_job_count=${first.calendar_job_count}`);
   assert.strictEqual(allStates(spreadsheet)[0].processing_status, 'DONE');
+  assert.strictEqual(
+    fixture.allTasks(fixture.taskSheet(spreadsheet)).length,
+    1
+  );
+  assert.strictEqual(
+    fixture.allTasks(fixture.taskSheet(spreadsheet))[0].calendar_sync_status,
+    'NOT_REQUIRED',
+    `information-only task calendar status=${fixture.allTasks(
+      fixture.taskSheet(spreadsheet)
+    )[0].calendar_sync_status}`
+  );
   assert.strictEqual(second.processed_count, 0);
-  assert.strictEqual(calendarGateway.calls.eventInsert, 1);
-  assert.strictEqual(calendarGateway.events.size, 1);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0,
+    `information-only eventInsert=${calendarGateway.calls.eventInsert}`);
+  assert.strictEqual(calendarGateway.calls.eventUpdate, 0);
+  assert.strictEqual(calendarGateway.calls.eventDelete, 0);
+  assert.strictEqual(calendarGateway.events.size, 0);
 });
 
-test('P6-I02C_INVALID_CALENDAR_LIMIT_FAILS_CLOSED_WITHOUT_WORK_MUTATION', () => {
+test('P6-I02C_UNCLEAR_FOLLOWS_GOVERNED_REVIEW_WITHOUT_CALENDAR', () => {
+  const spreadsheet = fixture.makeOperationalSpreadsheet();
+  const message = fixture.rawMessage('UNCLEAR', {
+    message_id: 'synthetic-auto-unclear'
+  });
+  const calendarGateway = new AutomaticCalendarGateway();
+  const result = Worker.processAutomaticBatch({
+    spreadsheet,
+    gateway: automaticGateway([message]),
+    properties: properties(),
+    calendar_gateway: calendarGateway,
+    adapter: new sandbox.WorkOsAiAdapter.MockAiAdapter(),
+    now: clockAt('2026-07-24T12:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  const tasks = fixture.allTasks(fixture.taskSheet(spreadsheet));
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(result.processed_count, 1);
+  assert.strictEqual(result.review_count, 1);
+  assert.strictEqual(result.calendar_job_count, 0);
+  assert.strictEqual(tasks.length, 1);
+  assert.strictEqual(tasks[0].status, 'REVIEW');
+  assert.strictEqual(tasks[0].needs_review, true);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
+});
+
+test('P6-I02D_INVALID_CALENDAR_LIMIT_FAILS_CLOSED_WITHOUT_WORK_MUTATION', () => {
   [
     { value: undefined, omit: true },
     { value: '1', omit: false },

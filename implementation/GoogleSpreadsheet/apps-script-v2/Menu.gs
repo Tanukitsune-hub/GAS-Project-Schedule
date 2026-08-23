@@ -152,9 +152,9 @@ function menuPreparePersonalShadowPilot() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
     '個人用Shadow Pilotを準備',
-    '既存Setupの完了状態と互換性を確認し、2.8.22のpilot version metadataだけを整えます。' +
+    '既存Setupの完了状態と互換性を確認し、2.8.23のpilot version metadataだけを整えます。' +
       'Task、Review、Message State、Calendar、正式Gmailラベル、credential、Triggerは変更せず、Automationは停止したままです。' +
-      '通常Inboxは対象にせず、手動/取込ラベル付きMessageだけが後続pilotの候補です。続行しますか。',
+      '通常の個人Inboxから、手動/除外、spam、trash、非Inbox、Promotions、Social、明確なnewsletter、Google Calendar通知を除外したMessageだけが後続pilotの候補です。手動/取込は優先シグナルに留まり、Automationは明示的な有効化まで停止したままです。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {
@@ -167,7 +167,7 @@ function menuEnableAutomation() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
     '自動処理を有効化',
-    '手動/取込ラベル付きInboxだけを対象とする5分間隔の個人用Shadow Pilot Automationを有効化します。手動/除外、spam、trash、通常の未ラベルInboxは対象外です。operator承認、データ取扱い、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否され、手動取込も稼働中は停止します。続行しますか。',
+    '通常の個人Inboxからhard exclusionを除外し、手動/取込は任意の優先シグナルとして扱う5分間隔の個人用Shadow Pilot Automationを有効化します。手動/除外、spam、trash、非Inbox、Promotions、Social、明確なnewsletter、Google Calendar通知は対象外です。operator承認、データ取扱い、credential保管、OAuth、専用Calendarの全条件が未完了なら安全に拒否され、手動取込も稼働中は停止します。続行しますか。',
     ui.ButtonSet.OK_CANCEL
   );
   if (response !== ui.Button.OK) {

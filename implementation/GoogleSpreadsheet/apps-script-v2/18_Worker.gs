@@ -213,7 +213,7 @@ var WorkOsWorker = (function () {
     return Boolean(settings && settings.pilot_only === true) ||
       (WorkOsConfig.TEST_MODE !== true &&
         WorkOsConfig.AUTOMATION_PILOT_SCOPE ===
-          'LABEL_GATED_PERSONAL_SHADOW_PILOT');
+          'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT');
   }
 
   function isAutomationPilotRecord(record) {
@@ -224,7 +224,7 @@ var WorkOsWorker = (function () {
   function assertManualWorkerPilotBoundary() {
     if (WorkOsConfig.TEST_MODE === true ||
         WorkOsConfig.AUTOMATION_PILOT_SCOPE !==
-          'LABEL_GATED_PERSONAL_SHADOW_PILOT') {
+          'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT') {
       return;
     }
     var status = WorkOsAutomation.getDiagnosticAutomationStatus();
@@ -1580,11 +1580,18 @@ var WorkOsWorker = (function () {
             selected.message_id
           );
           if (current.resume_stage ===
-              WorkOsMessageStateRepository.RESUME_STAGES.FINALIZE) {
+                WorkOsMessageStateRepository.RESUME_STAGES.FINALIZE) {
             phase3BudgetCheck(budget);
             var threadTasks = WorkOsTaskRepository.findByStableThreadKey(
               taskContext,
               selected.stable_thread_key
+            );
+            var informationOnly = Boolean(
+              classification && Array.isArray(classification.actions) &&
+              classification.actions.length > 0 &&
+              classification.actions.every(function (action) {
+                return action && action.action_type === 'INFORMATION_ONLY';
+              })
             );
             summary.gmail_called = true;
             gateway.syncAiLabels(
@@ -1597,38 +1604,74 @@ var WorkOsWorker = (function () {
                 reserve_ms: gmailBudgetReserve
               }
             );
-            enqueueCalendarTasksInContext(
-              threadTasks,
-              taskContext,
-              outboxContext,
-              clock(),
-              true,
-              budget
-            );
-            WorkOsMessageStateRepository
-              .checkpointCalendarPendingInContext(
+            if (informationOnly) {
+              WorkOsLogAndDeadLetter.resolveErrorsForMessage(
+                selected.message_id,
+                spreadsheet,
+                clock(),
+                errorContext
+              );
+              summary.gmail_called = true;
+              gateway.setSystemFailureLabel(
+                selected.thread_id,
+                threadHasUnresolvedFailure(
+                  messageContext,
+                  selected.thread_id,
+                  selected.message_id
+                ) ||
+                  WorkOsLogAndDeadLetter.hasUnresolvedThreadError(
+                    selected.thread_id,
+                    spreadsheet,
+                    errorContext
+                  ),
+                {
+                  label_cache: settings.gmail_label_cache || null,
+                  call_meter: gmailCallMeter,
+                  budget: budget,
+                  reserve_ms: gmailBudgetReserve
+                }
+              );
+              WorkOsMessageStateRepository.checkpointDoneInContext(
                 selected.message_id,
                 runId,
                 messageContext,
                 clock()
               );
-            var calendarClaim =
-              WorkOsMessageStateRepository.claimForResumeInContext(
-                selected.message_id,
-                runId,
-                messageContext,
-                clock()
-              );
-            if (!calendarClaim.claimed) {
-              throw new WorkOsAppError(
-                'E_MESSAGE_CLAIM_CONFLICT',
-                'CALENDAR_CHECKPOINT',
+              summary.checkpoint = 'DONE';
+            } else {
+              enqueueCalendarTasksInContext(
+                threadTasks,
+                taskContext,
+                outboxContext,
+                clock(),
                 true,
-                'Calendar checkpointを再開できませんでした。'
+                budget
               );
+              WorkOsMessageStateRepository
+                .checkpointCalendarPendingInContext(
+                  selected.message_id,
+                  runId,
+                  messageContext,
+                  clock()
+                );
+              var calendarClaim =
+                WorkOsMessageStateRepository.claimForResumeInContext(
+                  selected.message_id,
+                  runId,
+                  messageContext,
+                  clock()
+                );
+              if (!calendarClaim.claimed) {
+                throw new WorkOsAppError(
+                  'E_MESSAGE_CLAIM_CONFLICT',
+                  'CALENDAR_CHECKPOINT',
+                  true,
+                  'Calendar checkpointを再開できませんでした。'
+                );
+              }
+              current = calendarClaim.record;
+              summary.checkpoint = 'CALENDAR';
             }
-            current = calendarClaim.record;
-            summary.checkpoint = 'CALENDAR';
           }
 
           current = WorkOsMessageStateRepository.getByMessageId(
@@ -2676,6 +2719,16 @@ var WorkOsWorker = (function () {
           }
           if (plan.stage === 'FINALIZE') {
             phase3BudgetCheck(budget);
+            var informationOnly = Boolean(
+              plan.record && plan.record.classification_json &&
+              Array.isArray(plan.record.classification_json.actions) &&
+              plan.record.classification_json.actions.length > 0 &&
+              plan.record.classification_json.actions.every(
+                function (action) {
+                  return action && action.action_type === 'INFORMATION_ONLY';
+                }
+              )
+            );
             summary.gmail_called = true;
             gateway.syncAiLabels(
               selectedThreadId,
@@ -2696,51 +2749,99 @@ var WorkOsWorker = (function () {
                   plan.lease,
                   contexts.messages
                 );
-              var currentTasks =
-                WorkOsTaskRepository.findByStableThreadKey(
+              if (!informationOnly) {
+                var currentTasks =
+                  WorkOsTaskRepository.findByStableThreadKey(
+                    contexts.tasks,
+                    selectedStableThreadKey
+                  );
+                if (JSON.stringify(taskVersionSnapshot(currentTasks)) !==
+                    JSON.stringify(plan.task_versions)) {
+                  throw new WorkOsAppError(
+                    'E_FINALIZE_STALE_RESULT',
+                    'FINALIZE',
+                    true,
+                    'Gmail label同期中にTask versionが変更されました。'
+                  );
+                }
+                enqueueCalendarTasksInContext(
+                  currentTasks,
                   contexts.tasks,
-                  selectedStableThreadKey
-                );
-              if (JSON.stringify(taskVersionSnapshot(currentTasks)) !==
-                  JSON.stringify(plan.task_versions)) {
-                throw new WorkOsAppError(
-                  'E_FINALIZE_STALE_RESULT',
-                  'FINALIZE',
+                  contexts.outbox,
+                  clock(),
                   true,
-                  'Gmail label同期中にTask versionが変更されました。'
+                  budget
                 );
-              }
-              enqueueCalendarTasksInContext(
-                currentTasks,
-                contexts.tasks,
-                contexts.outbox,
-                clock(),
-                true,
-                budget
-              );
-              WorkOsMessageStateRepository
-                .checkpointCalendarPendingInContext(
-                  selectedMessageId,
-                  runId,
-                  contexts.messages,
-                  clock()
-                );
-              var calendarClaim =
-                WorkOsMessageStateRepository.claimForResumeInContext(
-                  selectedMessageId,
-                  runId,
-                  contexts.messages,
-                  clock()
-                );
-              if (!calendarClaim.claimed) {
-                throw new WorkOsAppError(
-                  'E_MESSAGE_CLAIM_CONFLICT',
-                  'CALENDAR_CHECKPOINT',
-                  true,
-                  'Calendar checkpoint ownershipが変更されました。'
-                );
+                WorkOsMessageStateRepository
+                  .checkpointCalendarPendingInContext(
+                    selectedMessageId,
+                    runId,
+                    contexts.messages,
+                    clock()
+                  );
+                var calendarClaim =
+                  WorkOsMessageStateRepository.claimForResumeInContext(
+                    selectedMessageId,
+                    runId,
+                    contexts.messages,
+                    clock()
+                  );
+                if (!calendarClaim.claimed) {
+                  throw new WorkOsAppError(
+                    'E_MESSAGE_CLAIM_CONFLICT',
+                    'CALENDAR_CHECKPOINT',
+                    true,
+                    'Calendar checkpoint ownershipが変更されました。'
+                  );
+                }
               }
             }, WorkOsConfig.LOCK_WAIT_MS);
+            if (informationOnly) {
+              var failureLabelEnabled = WorkOsUtilities.withScriptLock(
+                function (lock) {
+                  var contexts = freshContexts(lock);
+                  WorkOsLogAndDeadLetter.resolveErrorsForMessage(
+                    selectedMessageId,
+                    spreadsheet,
+                    clock(),
+                    getErrorContext()
+                  );
+                  return threadHasUnresolvedFailure(
+                    contexts.messages,
+                    selectedThreadId,
+                    selectedMessageId
+                  ) || WorkOsLogAndDeadLetter.hasUnresolvedThreadError(
+                    selectedThreadId,
+                    spreadsheet,
+                    getErrorContext()
+                  );
+                },
+                WorkOsConfig.LOCK_WAIT_MS
+              );
+              gateway.setSystemFailureLabel(
+                selectedThreadId,
+                failureLabelEnabled,
+                {
+                  label_cache: settings.gmail_label_cache || null,
+                  call_meter: callMeter,
+                  budget: budget,
+                  reserve_ms: reserveMs
+                }
+              );
+              WorkOsUtilities.withScriptLock(function (lock) {
+                var contexts = freshContexts(lock);
+                WorkOsMessageStateRepository.checkpointDoneInContext(
+                  selectedMessageId,
+                  runId,
+                  contexts.messages,
+                  clock()
+                );
+              }, WorkOsConfig.LOCK_WAIT_MS);
+              summary.checkpoint = 'DONE';
+              summary.processed_count = 1;
+              completed = true;
+              continue;
+            }
             continue;
           }
           if (plan.stage === 'CALENDAR') {
@@ -4071,6 +4172,30 @@ var WorkOsWorker = (function () {
     return date;
   }
 
+  function automaticPilotStartBoundary(properties) {
+    var raw = String(properties.getProperty(
+      WorkOsConfig.PROPERTIES.AUTOMATION_PILOT_STARTED_AT
+    ) || '');
+    if (!raw) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_PILOT_START_BOUNDARY_MISSING',
+        'AUTOMATIC_SCAN_STATE',
+        false,
+        'Automatic Inbox Pilotの開始境界がありません。'
+      );
+    }
+    var value = safePropertyDate(raw);
+    if (!value) {
+      throw new WorkOsAppError(
+        'E_AUTOMATION_PILOT_START_BOUNDARY_INVALID',
+        'AUTOMATIC_SCAN_STATE',
+        false,
+        'Automatic Inbox Pilotの開始境界が不正です。'
+      );
+    }
+    return value;
+  }
+
   function taskVersionSnapshot(tasks) {
     return (tasks || []).map(function (task) {
       return {
@@ -4094,7 +4219,7 @@ var WorkOsWorker = (function () {
   function processProductionClassificationOnce(options) {
     var settings = options || {};
     var pilotOnly = isAutomationPilotMode(settings);
-    // Production-shaped runs use the label-gated pilot. The explicit options
+    // Production-shaped runs use the automatic Inbox pilot. The explicit options
     // remain available only to local test harnesses and audit fixtures.
     var qualificationOnly = !pilotOnly && (WorkOsConfig.TEST_MODE !== true ||
       settings.qualification_only === true);
@@ -5134,6 +5259,7 @@ var WorkOsWorker = (function () {
     var errorContext = null;
     var systemFailureSubsystem = 'STATE_WRITE';
     var calendarJobLimit = null;
+    var pilotStartAt = null;
 
     function addVerticalResult(result, source) {
       summary.processed_count += Number(result.processed_count || 0);
@@ -5226,6 +5352,9 @@ var WorkOsWorker = (function () {
         summary.run_status = 'PAUSED';
         summary.note = 'E_BUDGET_EXHAUSTED';
       } else {
+        if (pilotOnly) {
+          pilotStartAt = automaticPilotStartBoundary(properties);
+        }
         providerSuppression = WorkOsUtilities.withScriptLock(
           function () {
             errorContext =
@@ -5315,7 +5444,14 @@ var WorkOsWorker = (function () {
                 };
               }).filter(function (record) {
                 if (pilotOnly) {
-                  return isAutomationPilotRecord(record);
+                  if (!isAutomationPilotRecord(record)) {
+                    return false;
+                  }
+                  var receivedAt = record.received_at instanceof Date
+                    ? record.received_at
+                    : new Date(record.received_at);
+                  return !isNaN(receivedAt.getTime()) &&
+                    receivedAt.getTime() >= pilotStartAt.getTime();
                 }
                 return WorkOsConfig.TEST_MODE === true ||
                   String(record.source_mode || '') ===
@@ -5458,6 +5594,7 @@ var WorkOsWorker = (function () {
               label_cache: getGmailLabelCache(),
               call_meter: callMeter,
               pilot_only: pilotOnly,
+              pilot_start_at: pilotStartAt,
               qualification_only: !pilotOnly &&
                 (WorkOsConfig.TEST_MODE !== true ||
                   settings.qualification_only === true)

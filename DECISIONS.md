@@ -2,24 +2,27 @@
 
 Last updated: 2026-08-19
 
-This file records active decisions for Code `2.8.22-prepilot`, with frozen
+This file records active decisions for Code `2.8.23-prepilot`, with frozen
 2.8.20 and 2.8.21 recovery baselines. Historical handoffs, reports, releases,
 and audit records remain immutable evidence.
 
-Current candidate machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
+Current candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Current ChatGPT review disposition:
-`READY — LABEL_GATED_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
+`READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
 
-## D-068: Work 0037 is label-gated personal shadow pilot
+## D-068: Work 0037 is automatic personal Inbox shadow pilot
 
-Code `2.8.22-prepilot` admits scheduled Gmail processing only when an Inbox
-message has the human-owned `手動/取込` label and does not have `手動/除外`.
-Spam, trash, and ordinary unlabeled Inbox mail are excluded. The scheduled
-source mode is `AUTOMATIC_PILOT`, the run bound is one message per five-minute
+Code `2.8.23-prepilot` admits ordinary eligible personal Inbox messages while
+applying a Thread-wide `手動/除外` veto. Spam, trash, non-Inbox, Promotions,
+Social, clear newsletters/list mail, and Google Calendar notifications are
+hard exclusions; `手動/取込` is optional priority only. The scheduled source
+mode is `AUTOMATIC_INBOX_PILOT`, the run bound is one message per five-minute
 interval, and Automation remains OFF until the later user-controlled pilot.
-The manual worker fails closed while pilot Automation is active so the two
-entrypoints cannot ambiguously own the same candidate pool.
+The first successful explicit enable establishes a durable start boundary and
+older messages can never enter the automatic backlog. The manual worker fails
+closed while pilot Automation is active so the two entrypoints cannot
+ambiguously own the same candidate pool.
 
 ## D-048: one active candidate
 

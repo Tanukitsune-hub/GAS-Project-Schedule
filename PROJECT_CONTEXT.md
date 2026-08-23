@@ -6,9 +6,9 @@ Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.22-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.23-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
+Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Personal runtime status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
@@ -30,9 +30,9 @@ deployment is planned.
 - Authority: hidden protected 21-column Task Authority Ledger.
 - AI Schema: provider-neutral `2.0`; application validation is authoritative.
 - Provider: Gemini Interactions `/v1beta/interactions`, behind explicit gates.
-- Release: Code `2.8.22-prepilot`, Schema `2.6`, Migration `3`.
-- Product state: label-gated personal shadow-pilot candidate; frozen 2.8.20
-  and 2.8.21 remain recovery baselines.
+- Release: Code `2.8.23-prepilot`, Schema `2.6`, Migration `3`.
+- Product state: automatic personal Inbox shadow-pilot candidate; frozen
+  2.8.20, 2.8.21, and 2.8.22 remain recovery baselines.
 
 ## Qualified behavior
 
@@ -49,9 +49,11 @@ remain outside GitHub and ChatGPT.
 ## Current repository boundary
 
 Work 0035 cleanly integrated the qualified Code `2.8.20-prepilot` state into
-current `main`. Work 0036 is the frozen 2.8.21 successor, and Work 0037 is the
-direct label-gated 2.8.22 pilot successor, preserving current-main governance
-and historical release evidence without replaying stacked Draft-PR history.
+current `main`. Work 0036 is the frozen 2.8.21 successor, Work 0037's prior
+2.8.22 label-gated candidate is historical, and the revised Work 0037 is the
+direct automatic Inbox 2.8.23 pilot successor, preserving current-main
+governance and historical release evidence without replaying stacked Draft-PR
+history.
 
 The canonical non-Google gate must work on `main` itself as well as on numbered
 Work branches and PR merge refs. A branch-name-only validation exception is not
@@ -59,12 +61,14 @@ an acceptable completion state.
 
 ## Work 0037 boundary
 
-The Work 0037 candidate requires `手動/取込` for scheduled admission, gives
-`手動/除外` precedence, excludes spam/trash, rejects ordinary unlabeled Inbox
-mail, uses `AUTOMATIC_PILOT`, and processes one message per five-minute run.
-Automation remains OFF. The next outcome is a separately user-controlled
-24-hour shadow pilot with at least 12 explicitly labeled work-like messages;
-Codex does not run it or invoke any Apps Script runtime function.
+The revised Work 0037 candidate admits ordinary eligible personal Inbox mail,
+gives `手動/除外` Thread-wide precedence, excludes spam/trash, non-Inbox,
+Promotions, Social, clear newsletters/list mail, and Google Calendar
+notifications, uses `AUTOMATIC_INBOX_PILOT`, and processes one message per
+five-minute run. A successful explicit enable establishes the pilot-start
+boundary; older mail is never admitted. Automation remains OFF. The next
+outcome is a separately user-controlled automatic Inbox shadow pilot; Codex
+does not run it or invoke any Apps Script runtime function.
 
 ## Assurance and privacy
 

@@ -7,14 +7,14 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.22-prepilot` |
+| Code | `2.8.23-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Candidate machine gate | `READY_FOR_USER_PERSONAL_SHADOW_PILOT` |
-| ChatGPT review disposition | `READY — LABEL_GATED_PERSONAL_SHADOW_PILOT_IMPLEMENTED` |
+| Candidate machine gate | `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` |
+| ChatGPT review disposition | `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED` |
 | Personal Gemini E2E | `PASS` |
-| Product-code state | label-gated personal shadow-pilot candidate |
+| Product-code state | automatic personal Inbox shadow-pilot candidate |
 | Automation | `OFF` |
 | Intended environment | personal Google Workspace only |
 
@@ -26,11 +26,11 @@ uses the canonical-main Work 0037 lineage and preserves the frozen 2.8.20 and
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.22-prepilot/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.23-prepilot/`:
   `TEST_MODE=true`, harness included, Automation OFF.
-- `implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c/`:
   the audited production-mode transform with the harness excluded, bounded
-  provider-readiness flags enabled, label-gated pilot admission, and
+  provider-readiness flags enabled, automatic Inbox pilot admission, and
   Automation still OFF.
 
 Neither package authorizes deployment or Automation enablement by itself.
@@ -56,22 +56,25 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 80-suite regression manifest, deterministic 2.8.22 release packages,
+committed 82-suite regression manifest, deterministic 2.8.23 release packages,
 canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
 current-main integration scope, and secret/local-state exclusions. It performs
 no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
 
 ## Work 0037 personal shadow-pilot boundary
 
-Code `2.8.22-prepilot` replaces the historical synthetic-only automatic
-admission with a label-gated personal shadow pilot. Scheduled discovery is
-limited to fresh Inbox messages carrying `手動/取込`, excludes `手動/除外`,
-spam, and trash, and processes at most one message per five-minute run.
-Ordinary unlabeled Inbox mail is rejected, the pilot source mode is
-`AUTOMATIC_PILOT`, and the manual worker fails closed while pilot Automation
-is active. Automation remains OFF in both packages.
+Code `2.8.23-prepilot` replaces the historical label-gated admission with an
+automatic personal Inbox shadow pilot. Scheduled discovery admits ordinary
+eligible personal Inbox messages, excludes `手動/除外` thread-wide, spam,
+trash, non-Inbox, Promotions, Social, clear newsletters/list mail, and Google
+Calendar notification mail. `手動/取込` is optional priority only and cannot
+bypass a hard exclusion. The distinct pilot source mode is
+`AUTOMATIC_INBOX_PILOT`, the run bound is one message per five-minute run, and
+the manual worker fails closed while pilot Automation is active. A successful
+explicit enable establishes a durable start boundary; older messages are
+never admitted. Automation remains OFF in both packages.
 
-The later user-controlled pilot is not executed by Codex. Its bounded steps
+The later user-controlled automatic Inbox pilot is not executed by Codex. Its bounded steps
 and stop criteria are recorded in
 `docs/handoffs/0037-personal-shadow-pilot-runbook.md`.
 

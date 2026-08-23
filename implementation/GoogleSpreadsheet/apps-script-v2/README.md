@@ -1,12 +1,12 @@
-# Google Workspace Personal Work OS v2 - 2.8.22-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.23-prepilot
 
 This directory is the canonical Apps Script source for the Work 0037
-label-gated personal shadow-pilot candidate in
+automatic personal Inbox shadow-pilot candidate in
 `Tanukitsune-hub/GAS-Project-Schedule`.
 
 ## Active contract
 
-- Code: `2.8.22-prepilot`
+- Code: `2.8.23-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
@@ -14,9 +14,9 @@ label-gated personal shadow-pilot candidate in
 - Authority: protected hidden `Task Authority Ledger`, 21 columns
 - `TEST_MODE`: `true` in the Phase 8B package
 - Automation: `OFF`
-- Machine gate: `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
+- Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 - Work 0037 highest permitted status:
-  `READY_FOR_USER_PERSONAL_SHADOW_PILOT`
+  `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 The source retains the Gmail byte-body decoder, durable Task authority,
 Review/CAS, Calendar outbox, diagnostics, and strict privacy boundaries. It
@@ -26,12 +26,15 @@ documented structured-output subset, bounded generation settings, strict
 `thought* model_output` parsing, exact synthetic UTF-8 fixture, and
 no-argument readiness/validation entrypoints.
 
-Automatic discovery is label-gated: a fresh Inbox message must carry
-`手動/取込`, `手動/除外` wins, and spam/trash plus ordinary unlabeled Inbox
-mail are excluded. The scheduled source mode is `AUTOMATIC_PILOT`, one message
-is processed per existing five-minute run, and there is no broad-Inbox fallback.
-The candidate preparation and readiness surfaces preserve Automation OFF and
-use personal owner/operator approval semantics.
+Automatic discovery admits ordinary eligible personal Inbox messages. A
+Thread-wide `手動/除外` veto, spam/trash, non-Inbox, Promotions, Social, clear
+newsletter/list mail, and Google Calendar notification exclusions are hard
+boundaries; `手動/取込` is optional priority only. The scheduled source mode is
+`AUTOMATIC_INBOX_PILOT`, one message is processed per existing five-minute
+run, and the first successful explicit enable establishes a durable start
+boundary that rejects older messages. The candidate preparation and readiness
+surfaces preserve Automation OFF and use personal owner/operator approval
+semantics.
 
 `getPersonalShadowPilotStatus()` now requires the complete
 fail-closed readiness boundary shared with `enableAutomation()`. It reports
@@ -42,8 +45,8 @@ the existing no-argument idempotent preparation path and leaves Automation OFF.
 
 `getPersonalShadowPilotStatus()` and `preparePersonalShadowPilot()` perform no
 Gmail or Gemini request. The later user-controlled pilot is the only boundary
-that may process explicitly labeled personal messages; it is not executed by
-Codex and must not be replaced by a broad Inbox fallback.
+that may process personal Inbox messages; it is not executed by Codex and must
+not be replaced by an unbounded fallback.
 
 ## Local validation
 
@@ -55,7 +58,7 @@ pnpm run verify:local
 ```
 
 The local gate runs the exact committed test inventory, source/static checks,
-release parity, A21/B21 lineage, historical A20/B20 preservation,
+release parity, A23/B23 lineage, historical A20/B20/A21/B21/A22/B22 preservation,
 active-document UTF-8/history checks, and secret/local
 state scans. It does not configure or inspect a real key and performs no
 Google, OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.
