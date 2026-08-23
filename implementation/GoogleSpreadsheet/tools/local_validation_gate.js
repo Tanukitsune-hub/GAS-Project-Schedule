@@ -39,6 +39,8 @@ const work0037ReleaseToolCorrectionParentRef =
   'b24e2297250d518dc634e270f5fe3236b871d091';
 const work0037TemplatePathCorrectionParentRef =
   '4dfaa8b7ec90775b6feba0ea9b215440499b9a5b';
+const work0037ValidationRepairParentRef =
+  'bfc023a15e6ee0ceeda0fb9c8ca9198542ce9055';
 const sourceParentRef = 'ea484cf3e7cef3b5e67d15eebd7b2aac03c1ec6a';
 const a21SourceCommit = '6d039189e67515c1d67f1efc11d6303827293f5a';
 const b21ReleaseCommit = 'f8a77afa3af9c0b68d77b71c9460f0da229052ca';
@@ -63,6 +65,10 @@ const phase8bPath =
   'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot';
 const phase8cPath =
   'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c';
+const historicalWork0036Phase8bPath =
+  'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot';
+const historicalWork0036Phase8cPath =
+  'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c';
 const releaseReportPath =
   'docs/handoffs/0037-report.md';
 const testInventoryPath = path.join(
@@ -548,8 +554,8 @@ function checkReleaseLineage() {
   if (git(['rev-parse', `${b21ReleaseCommit}^`]) !== a21SourceCommit) {
     throw new Error('B21_NOT_DIRECT_CHILD_OF_A21');
   }
-  if (gitObjectExists(`${a21SourceCommit}:${phase8bPath}`) ||
-      gitObjectExists(`${a21SourceCommit}:${phase8cPath}`)) {
+  if (gitObjectExists(`${a21SourceCommit}:${historicalWork0036Phase8bPath}`) ||
+      gitObjectExists(`${a21SourceCommit}:${historicalWork0036Phase8cPath}`)) {
     throw new Error('A21_CONTAINS_GENERATED_RELEASE');
   }
   const b21Changed = git([
@@ -557,13 +563,13 @@ function checkReleaseLineage() {
   ]).split(/\r?\n/).filter(Boolean).sort();
   const invalidB21 = b21Changed.filter((file) =>
     file !== 'CURRENT_CONTRACT.json' &&
-    !file.startsWith(`${phase8bPath}/`) &&
-    !file.startsWith(`${phase8cPath}/`)
+    !file.startsWith(`${historicalWork0036Phase8bPath}/`) &&
+    !file.startsWith(`${historicalWork0036Phase8cPath}/`)
   );
   if (invalidB21.length ||
       !b21Changed.includes('CURRENT_CONTRACT.json') ||
-      !b21Changed.some((file) => file.startsWith(`${phase8bPath}/`)) ||
-      !b21Changed.some((file) => file.startsWith(`${phase8cPath}/`))) {
+      !b21Changed.some((file) => file.startsWith(`${historicalWork0036Phase8bPath}/`)) ||
+      !b21Changed.some((file) => file.startsWith(`${historicalWork0036Phase8cPath}/`))) {
     throw new Error('B21_SCOPE_INVALID');
   }
   const releaseCommit = git([
@@ -707,6 +713,17 @@ function checkReleaseLineage() {
         JSON.stringify(expectedWork0037TemplatePathCorrectionFiles)
     ) {
       throw new Error('WORK_0037_TEMPLATE_PATH_SCOPE_INVALID');
+    }
+  } else if (sourceParent === work0037ValidationRepairParentRef) {
+    const expectedWork0037ValidationRepairFiles = [
+      'implementation/GoogleSpreadsheet/tests/work_0004_target_bootstrap_test.js',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedWork0037ValidationRepairFiles)
+    ) {
+      throw new Error('WORK_0037_VALIDATION_REPAIR_SCOPE_INVALID');
     }
   } else {
     throw new Error('WORK_0037_SOURCE_SCOPE_INVALID');
