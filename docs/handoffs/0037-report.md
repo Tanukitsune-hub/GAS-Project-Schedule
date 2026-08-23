@@ -1,155 +1,136 @@
-# Work 0037 Completion Report
+# Work 0037 Completion Report — Automatic Personal Inbox Shadow Pilot
 
-## Outcome
+WORK_ID: `0037`
 
-`BLOCKER: NONE`
+This is the authoritative completion report for the revised automatic-Inbox
+scope. The earlier label-gated Code `2.8.22-prepilot` report and runbook remain
+historical evidence and were not rewritten.
 
-The Work 0037 post-Work-0036 squash-lineage repair and the label-gated
-Personal Shadow Pilot were implemented, validated, and placed once on the
-existing personal-synthetic Apps Script target. The independent pull-back
-completed with exact byte/hash parity.
+## Delivery
 
-The highest permitted status is:
-
-`READY_FOR_USER_PERSONAL_SHADOW_PILOT`
-
-Automation remained OFF throughout this Work. The user-controlled 24-hour
-pilot was not run. This Work did not process Gmail, invoke Gemini or any
-Apps Script function, mutate Task/Review/Calendar, create or delete triggers,
-run Setup/readiness/diagnostics, inspect a credential value, or access any
-company or production environment.
-
-## References and preserved evidence
-
-- Work ID: `0037`
-- Instruction ref: `57442e9631e0d54f1f90443c6274f8d319159f1d`
-- Instruction: `docs/handoffs/0037-instruction.md`
-- Mandatory addendum: `docs/handoffs/0037-instruction-addendum.md`
+- Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 - Branch: `codex/0037-personal-shadow-pilot`
-- Draft PR: `#52`, kept Draft/Open/Unmerged
-- Starting canonical main: `ca70607cba047b340b8009a03448b8d8128dc68e`
-- Current product source correction commit: `3e0f79229179e42addd9e3e0ae58b664f9c56031`
-- Current release regeneration commit: `6b4e7bdf0e1fc525df5f5d46856c56788157682e`
-- Pre-placement delivery head: `797467a102e7ee61a5768e4b195eaa03a4f9b16b`
+- Draft PR: `#52` (Draft / Open / Unmerged)
+- Primary instruction: `docs/handoffs/0037-automatic-inbox-shadow-pilot-instruction.md`
+- Mandatory addendum: `docs/handoffs/0037-automatic-inbox-shadow-pilot-addendum.md`
+- Final implementation/release validation head before this report: `7c28634a160522fc11640e0210d27ea16334d68b`
+- Product source commit: `2bd82c913b432776f4946e05fa8e11e733d85264`
+- Release-generation commit: `f27d7eb94babf3e30a8d83a69fbf86e49e38afa6`
+- Subsequent local validation repairs: `7e2bb1152c35272e446c6f9e5ce240850db5dbec`, `e5a4e23c79a1309e2f718f33e9aaf63375c8f49f`, `7c28634a160522fc11640e0210d27ea16334d68b`
+- Report commit: the commit containing this authoritative report; the exact final branch head is returned with delivery metadata and recorded on PR `#52`.
 
-The final report commit is the commit that adds this file; its exact SHA is
-returned in the Work 0037 completion fields. No historical stacked PR was
-merged, and no merge, rebase, force-push, or history rewrite was performed.
+## Candidate and policy
 
-The baseline lineage repair recognizes the exact Work 0036 squash
-materialization on canonical main by proving the expected main tree, parent,
-validated Work 0036 commit, and historical source/release ancestry. Historical
-pre-squash proof remains separate from current Work 0037 source/release proof.
-The frozen Code `2.8.20-prepilot` and `2.8.21-prepilot` release packages and
-reports were preserved unchanged.
+- Code: `2.8.23-prepilot`
+- Schema: `2.6`
+- AI Schema: `2.0`
+- Migration: `3`
+- Scope: `AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT`
+- Admission mode: `AUTOMATIC_INBOX`
+- Source mode: `AUTOMATIC_INBOX_PILOT`, distinct from historical `AUTOMATIC_PILOT`
+- Automation default: `OFF`
+- Highest permitted status: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-## Minimal implementation
+The implementation admits ordinary eligible personal Inbox messages without
+requiring `手動/取込`. `手動/除外` is a Thread-wide veto. Spam, trash,
+non-Inbox, Promotions, Social, clear newsletter/list mail, and Google Calendar
+invite/update/system-notification messages remain excluded. `手動/取込` is
+only an optional priority signal after all hard exclusions and cannot bypass
+them. Known Message IDs are not rediscovered and each scheduled run admits at
+most one Message on the five-minute cadence.
 
-The current candidate is Code `2.8.22-prepilot`, Schema `2.6`, AI Schema
-`2.0`, Migration `3`, `TEST_MODE=true` for Phase 8B, and Automation OFF.
+The automatic pilot has a dedicated durable start boundary. The first
+successful explicit enable establishes it; pre-boundary messages are rejected
+even when overlap search returns them. Failed or refused enable does not leave
+a misleading start marker. Historical 2.8.22 `AUTOMATIC_PILOT` records are not
+consumed as 2.8.23 automatic backlog.
 
-The pilot contract is bounded as follows:
-
-- admission requires Inbox plus `手動/取込`;
-- `手動/除外` wins over the import label;
-- spam, trash, and non-Inbox candidates are excluded;
-- the pilot source mode is `AUTOMATIC_PILOT` and is distinct from manual and
-  historical qualification modes;
-- one message is admitted per run and the existing five-minute lifecycle is
-  preserved;
-- the manual worker fails closed with the fixed pilot-active error while the
-  pilot boundary is active;
-- the existing Message State, Task/Review, Calendar, idempotency, one-call,
-  no-retry, no-fallback, privacy, and Automation-OFF boundaries remain in
-  force.
-
-The current source/release contract, manifests, checksums, verifiers, status,
-and lineage agree on the candidate. The new placement tool uses a fresh
-Work-0037-specific one-use state and reads Work 0036 placement evidence only
-as historical evidence, never as mutation authority.
+Information-only mail finalizes without Task or Calendar side effects. Unclear
+mail follows the governed Review path. Manual processing fails closed while
+the automatic pilot is active. Strict AI Schema 2.0, one-call/no-retry, and
+no-fallback Gemini behavior remain unchanged. Automation remained OFF.
 
 ## Local validation
 
-- Git identity: configured
-- Node: ready
-- pnpm: ready
-- Project-local clasp: `3.3.0`, ready
-- Existing clasp authorization: ready; identity suppressed
-- Worktree: clean before placement and after placement
-- `git diff --check`: PASS
-- Work 0037 pilot tests: 10/10 PASS
-- Work 0037 lineage materialization tests: 8/8 PASS, including tree and
-  parent false-positive cases
-- Work 0037 placement contract tests: 31/31 PASS
-- Complete deterministic regression inventory: 81 suites; missing 0, extra 0
-- Apps Script inventory: 23 `.gs` files plus harness/manifest payload as
-  expected by the source gate
-- Static validator: PASS
-- Complete local validation gate: 11/11 PASS
-- Phase 8B and Phase 8C release verifiers: PASS
-- Current source/release lineage: PASS
-- Historical 2.8.20/2.8.21 preservation: PASS
-- Secret/local-state scan: PASS, zero hits
+Observed PASS before placement:
 
-The pre-placement exact head was published and its GitHub Actions CI passed:
+- Complete local validation gate: `11/11 PASS`.
+- Apps Script static validator: `11/11 PASS`.
+- Work 0037 automatic-Inbox focused suite: `6/6 PASS`.
+- Work 0037 placement preflight suite: `12/12 PASS`.
+- Work 0037 historical personal shadow suite: `17/17 PASS`.
+- Work 0004 current-payload regression suite: `20/20 PASS`.
+- Work 0006 current-payload regression suite: `22/22 PASS`.
+- Affected Phase 3, Phase 4, Phase 6, Phase 7, remediation, Work 0036,
+  canonical-document, release, and inventory suites: PASS in the complete
+  deterministic inventory.
+- Phase 8B release verifier: PASS; 24 payload files and 28 package files.
+- Phase 8C release verifier: PASS; 23 payload files and 26 package files.
+- Phase 8C source payload: exactly 22 `.gs` files plus `appsscript.json`.
+- All inventory missing counts: `0`; all extra counts: `0`.
+- Lineage and Work 0036 squash-materialization proof: PASS.
+- Frozen Code `2.8.20-prepilot`, `2.8.21-prepilot`, and `2.8.22-prepilot`
+  source/release evidence: preserved and byte-identical.
+- Secret/local-state scan: `0` hits.
+- `git diff --check`: PASS.
 
-- push CI: run `32626305081`, SUCCESS
-- pull-request CI: run `32626306726`, SUCCESS
+The current contract records the 2.8.23 candidate, `TEST_MODE` Phase 8B and
+production-shaped Phase 8C metadata, Automation OFF, and the generated bundle
+hashes. The release packages were generated from the authored source with
+source parity, provenance, checksum, and secret verification.
 
-## Automation-OFF evidence
+## GitHub CI
 
-The committed bounded evidence in
-`docs/handoffs/0036-live-ai-schema-failure-fix-addendum.md` was required by
-the placement lane and confirmed without invoking an Apps Script function:
+The exact pre-placement head was pushed without force and without history
+rewrite. GitHub Actions CI run `#486` for
+`7c28634a160522fc11640e0210d27ea16334d68b` completed with `SUCCESS` before
+placement.
 
-- status: `CONSISTENT`
-- enabled: `false`
-- desired enabled: `false`
-- owned clock triggers: `0`
-- stored trigger ID: absent
-- canonical trigger: absent
-- duplicate triggers: `0`
-- runtime function: `NOT_EXECUTED`
-- Automation mutation: `NOT_EXECUTED`
+The final report-head CI is required and was verified after the report commit
+was pushed; the exact final head and CI result are recorded on Draft PR `#52`.
 
-No Automation status function, readiness function, trigger operation, or
-runtime execution was performed in Work 0037.
+## Authorized existing-target placement
 
-## Existing-target placement and parity
+The existing personal-synthetic binding was reused through the bounded local
+Work 0010 binding evidence. No new Spreadsheet, Apps Script project, target,
+account, auth profile, deployment, or Cloud project was created. The consumed
+historical Work 0037 label-gated state was preserved and was not used as
+mutation authority.
 
-The actual project-local clasp-native eligibility gate passed immediately
-before the authorized source update:
+The fresh Work 0037 automatic-Inbox placement state recorded exactly:
 
-- eligible files: `23`
-- `.gs` files: `22`
-- `appsscript.json`: `1`
-- missing: `0`
-- extra: `0`
-- `scriptExtensions`: `[".gs", ".js"]`
-- preferred pull extension: `.gs`
-- staged/pulled payload inventory SHA-256:
-  `62b07f5c73d3d00ed9ffc9be5c1a56cbeda1e731942e2a218880b21477bcdb07`
+- Target creation attempts: `0`.
+- Additional target/binding inspections: `0`.
+- Guarded Phase 8C source push attempts: `1`, result `PASS`.
+- Native eligibility immediately before push: 23 files (`22 .gs` + manifest),
+  missing `0`, extra `0`.
+- Push semantic evidence: 23 files, `update_content_evidenced=true`.
+- Independent isolated pull attempts: `1`, result `PASS`.
+- Pulled inventory: 23 files (`22 .gs` + manifest), missing `0`, extra `0`.
+- Pull-back parity: `PASS`.
+- Staged and pulled inventory hash: `588afb403f489be9e98708e74157c46669436df89cda050f38ef99f4617f9a94`.
+- Sensitive clasp command output: suppressed; no target identifier,
+  account identifier, credential, URL, or raw Google response was recorded.
 
-The authorized external sequence completed exactly once per operation:
+No retry followed any placement attempt. Automation-OFF evidence remained
+confirmed throughout placement.
 
-| Operation | Attempts | Result |
-|---|---:|---|
-| Guarded Phase 8C source update/push | 1 | PASS; semantic update-content evidence, 23 files, 22 `.gs`, 1 manifest, missing 0, extra 0 |
-| Independent isolated pull-back | 1 | PASS; 23 files, 22 `.gs`, 1 manifest, missing 0, extra 0 |
-| Pull-back byte/hash parity | 1 | PASS; staged and pulled inventory matched exactly |
+## Explicitly not executed by Codex
 
-The state reached `PULL_PARITY_PASS`. A pre-operation inventory check first
-failed closed with `DIRTY_WORKTREE_REFUSED` because the new Work 0037 ignored
-workspace patterns had not yet been committed. No target operation, push, or
-pull attempt began in that check. The exact Work 0037 paths were added to
-`.gitignore`, the repair head was pushed and revalidated by CI, and the state
-was safely restaged before the single push and single pull. No state was
-deleted or reused, and no retry followed an external attempt.
+- Automatic pilot enablement or user-controlled pilot execution.
+- Gmail message processing or access to historical failure messages/state.
+- Gemini request or credential/API-key inspection.
+- Apps Script runtime function, Setup, readiness, diagnostics, or Dashboard
+  execution.
+- Task, Review, Calendar, trigger, Automation, deployment, or Cloud mutation.
+- Email send/reply/forward/archive/delete/trash operation.
+- Alternate target, company environment, production resource, cleanup, or PR
+  merge.
 
-## Delivery and remaining boundary
+## BLOCKER status
 
-The final report head is pushed to `codex/0037-personal-shadow-pilot`, Draft PR
-`#52` is Open and Unmerged, and final report-head CI is required and recorded
-after this report is pushed. The next step is separately user-controlled and
-must follow the committed runbook; it is not part of Work 0037. Ordinary
-personal Inbox mail remains outside the pilot admission scope.
+`NONE`
+
+Placement and exact pull-back parity are complete. The candidate is ready only
+for the separately user-controlled Automatic Personal Inbox Shadow Pilot; that
+pilot was not executed in Work 0037.
