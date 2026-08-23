@@ -6,7 +6,7 @@ Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Mig
 
 Overall status: `PERSONAL_SYNTHETIC_AUTOMATION_E2E_PASS`
 
-Machine gate: `PERSONAL_SYNTHETIC_AUTOMATION_E2E_PASS`
+Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
 ChatGPT review disposition: `PASS — CONTROLLED_SYNTHETIC_AUTOMATION_E2E_COMPLETE`
 
@@ -25,6 +25,11 @@ transform with the harness excluded, bounded provider-readiness flags enabled,
 and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
 verifiers bind the A21/B21 candidate while preserving historical A20/B20 source
 and release evidence.
+
+The canonical Code `2.8.21-prepilot` release gate remains
+`READY_FOR_USER_PERSONAL_AUTOMATION_E2E`; the successful live qualification
+recorded below is runtime evidence that the controlled user E2E passed, not a
+renaming of that release contract.
 
 The source includes the Gemini Interactions provider, provider-facing schema
 projection, strict AI Schema 2.0 post-response validation, exact synthetic
