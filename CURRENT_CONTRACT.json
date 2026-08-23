@@ -3,31 +3,31 @@
   "repository": "Tanukitsune-hub/GAS-Project-Schedule",
   "starting_main": "ca70607cba047b340b8009a03448b8d8128dc68e",
   "branch": "codex/0037-personal-shadow-pilot",
-  "code_version": "2.8.22-prepilot",
+  "code_version": "2.8.23-prepilot",
   "schema_version": "2.6",
   "ai_schema_version": "2.0",
   "migration_version": "3",
-  "highest_gate": "READY_FOR_USER_PERSONAL_SHADOW_PILOT",
+  "highest_gate": "READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT",
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "3e0f79229179e42addd9e3e0ae58b664f9c56031",
+  "source_commit": "2bd82c913b432776f4946e05fa8e11e733d85264",
   "release_commit": "SELF",
   "phase8b": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.22-prepilot",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.23-prepilot",
     "test_mode": true,
     "test_harness": true,
     "payload_files": 24,
     "package_files": 28,
-    "payload_sha256": "edb4a077a6468d30c2044c4d8a79a4ce8cc10033eb0e232365320569c058bb28"
+    "payload_sha256": "08a8ef4980e5184b4cf796ef8a7639fc5a49a312973123493ec2eb27a430ddf0"
   },
   "phase8c": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c",
     "test_mode": false,
     "test_harness": false,
     "transform": "TEST_MODE_AND_APPROVED_PROVIDER_READINESS_FLAGS",
     "payload_files": 23,
     "package_files": 26,
-    "payload_sha256": "038d9bfb5f767778a79f8c1255233fb644c4d3799d86f07e2e233cbc64a3b1af"
+    "payload_sha256": "22cde6013ad845ec63e5c790184712735bf278067e97afdbbc30596743f7a769"
   }
 }
