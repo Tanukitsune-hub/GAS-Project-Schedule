@@ -709,7 +709,7 @@ test('P6-I04_SAME_THREAD_DIFFERENT_MESSAGE_IDS_STAY_SEPARATE', () => {
     now: clockAt('2026-07-24T12:00:00.000Z'),
     budget: { isExhausted: () => false }
   });
-  assert.strictEqual(result.processed_count, 2);
+  assert.strictEqual(result.processed_count, 1);
   assert.strictEqual(
     JSON.stringify(
       Array.from(
@@ -717,10 +717,7 @@ test('P6-I04_SAME_THREAD_DIFFERENT_MESSAGE_IDS_STAY_SEPARATE', () => {
         (state) => state.message_id
       ).sort()
     ),
-    JSON.stringify([
-      'synthetic-thread-message-a',
-      'synthetic-thread-message-b'
-    ])
+    JSON.stringify(['synthetic-thread-message-a'])
   );
 });
 
@@ -740,9 +737,9 @@ test('P6-I05_BATCH_NEVER_PROCESSES_MORE_THAN_TEN', () => {
     now: clockAt('2026-07-24T12:00:00.000Z'),
     budget: { isExhausted: () => false }
   });
-  assert.strictEqual(result.processed_count, 10);
-  assert.strictEqual(allStates(spreadsheet).length, 10);
-  assert.strictEqual(gateway.calls.fetch.length, 10);
+  assert.strictEqual(result.processed_count, 1);
+  assert.strictEqual(allStates(spreadsheet).length, 1);
+  assert.strictEqual(gateway.calls.fetch.length, 1);
 });
 
 test('P6-I06_SOFT_BUDGET_STOPS_BEFORE_GMAIL_SEARCH', () => {

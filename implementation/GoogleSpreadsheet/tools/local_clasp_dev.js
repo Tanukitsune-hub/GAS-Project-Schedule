@@ -100,8 +100,12 @@ function readJson(file, absentCode) {
   }
 }
 
-function assertExactPayloadNames(names, failureCode) {
-  const expected = canonicalPayloadFileNames.slice().sort();
+function assertExactPayloadNames(
+  names,
+  failureCode,
+  expectedNames = canonicalPayloadFileNames
+) {
+  const expected = expectedNames.slice().sort();
   const actual = names.slice().sort();
   if (actual.length !== expected.length ||
       actual.some((name, index) => name !== expected[index])) {
@@ -134,11 +138,17 @@ function claspIgnoreContents() {
   ).join('\n');
 }
 
-function assertExactPayloadDirectory(root, failureCode) {
+function assertExactPayloadDirectory(
+  root,
+  failureCode,
+  expectedNames = canonicalPayloadFileNames
+) {
   if (!fs.existsSync(root)) fail(failureCode, failureCode);
   const entries = fs.readdirSync(root, { withFileTypes: true });
   if (entries.some((entry) => !entry.isFile())) fail(failureCode, failureCode);
-  return assertExactPayloadNames(entries.map((entry) => entry.name), failureCode);
+  return assertExactPayloadNames(
+    entries.map((entry) => entry.name), failureCode, expectedNames
+  );
 }
 
 function inventoryFor(root, names) {
@@ -354,7 +364,11 @@ function runClasp(args, cwd) {
   };
 }
 
-function assertClaspPushSemanticEvidence(result, workspaceRoot) {
+function assertClaspPushSemanticEvidence(
+  result,
+  workspaceRoot,
+  expectedNames = canonicalPayloadFileNames
+) {
   if (!result || result.exit_code !== 0) {
     fail('CLASP_PUSH_FAILED', 'CLASP_PUSH_FAILED');
   }
@@ -380,7 +394,11 @@ function assertClaspPushSemanticEvidence(result, workspaceRoot) {
     }
     return parts[1];
   });
-  assertExactPayloadNames(names, 'CLASP_PUSH_SEMANTIC_INVENTORY_INVALID');
+  assertExactPayloadNames(
+    names,
+    'CLASP_PUSH_SEMANTIC_INVENTORY_INVALID',
+    expectedNames
+  );
   return {
     file_count: names.length,
     gs_file_count: names.filter((name) => name.endsWith('.gs')).length,
@@ -478,11 +496,15 @@ function runClaspNativeFileStatus(workspaceRoot) {
   }
 }
 
-function assertClaspNativePayloadSelection(workspaceRoot) {
+function assertClaspNativePayloadSelection(
+  workspaceRoot,
+  expectedNames = canonicalPayloadFileNames
+) {
   const status = runClaspNativeFileStatus(workspaceRoot);
   assertExactPayloadNames(
     status.names,
-    'CLASP_NATIVE_PAYLOAD_SELECTION_INVALID'
+    'CLASP_NATIVE_PAYLOAD_SELECTION_INVALID',
+    expectedNames
   );
   return status;
 }

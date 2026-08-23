@@ -26,9 +26,9 @@ function test(name, fn) {
   }
 }
 
-test('R4-06A_CURRENT_CONFIG_USES_2_8_19_SCHEMA_2_6_MIGRATION_3', () => {
+test('R4-06A_CURRENT_CONFIG_USES_2_8_21_SCHEMA_2_6_MIGRATION_3', () => {
   const source = read('apps-script-v2/00_Config.gs');
-  assert.match(source, /CODE_VERSION:\s*'2\.8\.20-prepilot'/);
+  assert.match(source, /CODE_VERSION:\s*'2\.8\.21-prepilot'/);
   assert.match(source, /SCHEMA_VERSION:\s*'2\.6'/);
   assert.match(source, /AI_SCHEMA_VERSION:\s*'2\.0'/);
   assert.match(source, /MIGRATION_VERSION:\s*'3'/);
@@ -49,7 +49,7 @@ test('R3-06B_TRACEABILITY_NAMES_ONLY_GAS_REPOSITORY_AS_CURRENT', () => {
 test('R4-06C_CURRENT_README_AND_CHANGELOG_PRESERVE_R4_01_TO_R4_06', () => {
   const readme = read('apps-script-v2/README.md');
   const changelog = read('apps-script-v2/CHANGELOG.md');
-  assert.ok(readme.includes('2.8.20-prepilot'));
+  assert.ok(readme.includes('2.8.21-prepilot'));
   assert.ok(readme.includes('Tanukitsune-hub/GAS-Project-Schedule'));
   for (let finding = 1; finding <= 6; finding += 1) {
     assert.ok(
@@ -61,12 +61,12 @@ test('R4-06C_CURRENT_README_AND_CHANGELOG_PRESERVE_R4_01_TO_R4_06', () => {
 
 test('R4-06D_MANUAL_GUIDE_USES_CURRENT_VERSION_AND_NO_GO_STATUS_CAP', () => {
   const guide = read('docs/V2_MANUAL_ACCEPTANCE_GUIDE.md');
-  assert.ok(guide.includes('2.8.20-prepilot'));
+  assert.ok(guide.includes('2.8.21-prepilot'));
   assert.ok(guide.includes('Schema Version: `2.6`'));
   assert.ok(guide.includes('Migration Version: `3`'));
   assert.ok(guide.includes('50'));
   assert.ok(guide.includes(
-    '`READY_FOR_CONTROLLED_SANDBOX_VALIDATION`'
+    '`READY_FOR_USER_PERSONAL_AUTOMATION_E2E`'
   ));
   assert.ok(!guide.includes('`READY_FOR_INDEPENDENT_REAUDIT`'));
   assert.ok(!/\|\s*Phase 8B[^|]*\|\s*(?:GO|PASS|GO\/PASS)\s*\|/.test(

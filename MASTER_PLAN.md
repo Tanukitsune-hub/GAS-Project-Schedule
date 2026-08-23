@@ -1,14 +1,14 @@
 # Master Plan
 
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.20-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Current machine gate: `READY_FOR_CONTROLLED_SANDBOX_VALIDATION`
+Candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 
-Current personal runtime status: `PERSONAL_GEMINI_E2E_PASS_READY_FOR_PERSONAL_AUTOMATION_QUALIFICATION`
+ChatGPT review disposition: `READY — FALSE_READINESS_SURFACE_REPAIRED`
 
 ## Historical release chain
 
@@ -42,47 +42,89 @@ and left Automation consistently OFF with no clock trigger.
 This closes the real-Gemini classification-to-Task boundary and freezes Code
 `2.8.20-prepilot` as the manual-plus-Gemini recovery baseline.
 
-## Work 0035: clean main integration
+## Completed boundary: Work 0035 clean main integration
 
-Work 0035 takes the qualified Work 0034 tree and materializes it from current
-`main` without merging or replaying the long stacked Draft-PR history. It keeps
-current-main governance, preserves the frozen Apps Script and 2.8.20 release
-bytes, and makes the completed baseline the canonical repository state.
+Work 0035 materialized the qualified 2.8.20 tree from current `main` without
+merging or replaying the long stacked Draft-PR history. It preserved current-
+main governance, the frozen Apps Script and release bytes, and a validation
+gate that also works after becoming canonical `main`.
 
-The merge is permitted only after:
+## Work 0036: personal Automation qualification candidate
 
-- protected main governance remains unchanged;
-- frozen payload parity remains exact;
-- the complete gate passes on the PR head and merge ref;
-- the validation gate is also valid for canonical `main`, not only the Work
-  0035 branch name; and
-- no blocker remains.
+Work 0036 is the direct 2.8.21 successor of the frozen 2.8.20 recovery
+baseline. Its automatic discovery scope is the single exact synthetic subject
+and normalized body `WORK_OS_AUTOMATION_SYNTHETIC_BODY_0036`; ordinary Inbox
+mail cannot reach the Gemini boundary. Automation remains OFF.
 
-## Next phase: personal Automation qualification
+Codex completed the source review-fix and the bounded runtime-preparation fix,
+regenerated the deterministic A21/B21 release packages, passed the exact
+78-suite inventory and complete non-Google validation, and performed the
+authorized one-use replacement tranche for the runtime-preparation repair on
+the same existing personal-synthetic target. One independent pull-back reached
+exact parity. Runtime-fix pre-placement CI passed at head
+`dab94362c34e837bb236186ace7c0cf9c0f63e40`; final report-head CI is the
+publication gate for this report.
 
-No company-PC or company-environment deployment is planned. After clean main
-integration, the next outcome is to prove controlled automatic operation in the
-same personal Google Workspace environment.
+## Work 0036 review repair complete
 
-The shortest safe sequence is:
+The repaired `getPersonalAutomationQualificationStatus()` is authoritative,
+bounded, and read-only: it shares the complete prerequisite boundary with
+`enableAutomation()` and requires candidate/version, Setup, exact synthetic
+scope, approvals, actual credential presence, OAuth, production Gemini adapter,
+formal Gmail labels, dedicated Calendar, and clean Automation/trigger state.
+The menu provides a confirmed call to the existing no-argument idempotent
+preparation path.
 
-1. Keep the 2.8.20 baseline recoverable and Automation OFF.
-2. Decide the automatic inbox exclusions. Default decision: exclude newsletters
-   and Calendar-generated notification mail from task creation.
-3. Prepare a successor production-mode candidate only for changes genuinely
-   required to satisfy Automation prerequisites; do not weaken fail-closed
-   gates or silently mutate 2.8.20.
-4. Confirm readiness with no trigger and no external processing.
-5. Enable Automation once and prove exactly one canonical time trigger.
-6. Place one fresh synthetic ordinary request in Inbox and prove unattended
-   Gmail → Gemini → governed Task/Review completion.
-7. Separately test a synthetic due-date case only if Calendar projection is
-   explicitly authorized for that Work.
-8. Disable Automation and prove the trigger is removed and processing stops.
-9. Re-enable for real personal use only after the synthetic automatic E2E and
-   rollback checks pass with no BLOCKER.
+The actual enable path remains fail-closed, Automation remains OFF, and
+ordinary Inbox mail remains excluded. The Phase 8C replacement and independent
+pull-back reached exact 23-file parity on the same existing synthetic target.
+No Apps Script function, Gmail, Gemini, Calendar, trigger, Setup, diagnostic,
+or user E2E action was executed.
 
-Product source may reopen only for evidence-backed defects or the minimal
-configuration/version changes required for this Automation outcome. Broad
-redesign, fallback providers, speculative hardening, and company rollout remain
-out of scope.
+The same Work ID continues. The completed review repair provides:
+
+1. An authoritative readiness decision and bounded diagnostic details.
+2. An explicit confirmation-gated preparation menu action.
+3. Automation OFF, exact synthetic-only discovery, Gemini no-fallback, and all
+   durable-state protections.
+4. Deterministic 2.8.21 package verification and a fresh one-use replacement
+   tranche on the same target.
+5. Final CI and independent source/release/placement review.
+
+## Work 0036 runtime-preparation fix complete
+
+The production no-argument `preparePersonalAutomationQualification()` caller
+now invokes the real no-argument Automation status path. Test-mode callers
+retain dependency injection, and the production `E_TEST_MODE_DISABLED` guard
+is unchanged. The repair is covered by focused production-shaped and Test-mode
+regressions, with Automation-OFF, zero-clock-trigger, bounded-metadata, and
+non-runtime side-effect checks preserved.
+
+The 2.8.21 Phase 8B/8C packages were regenerated and verified. The same
+existing personal-synthetic target received exactly one guarded Phase 8C
+source update; one isolated pull-back verified 23-file byte/hash parity. No
+Apps Script function, preparation, readiness, enablement, Gmail, Gemini,
+Calendar, trigger, Setup, diagnostic, or user E2E action was executed.
+
+## Next phase after the runtime-preparation fix
+
+No company-PC or company-environment deployment is planned. Once the repaired
+candidate is placed and all gates pass, the shortest safe user sequence is:
+
+1. Keep Automation OFF and use the new preparation menu action once.
+2. Run the repaired readiness/status action and require a truthful all-ready
+   result with zero owned clock triggers.
+3. Create one fresh exact Work 0036 synthetic Gmail fixture; do not use real
+   personal mail or a prior terminal fixture.
+4. Explicitly enable Automation once and verify exactly one canonical 5-minute
+   trigger.
+5. Allow the unattended synthetic Gmail → Gemini → governed Task/Review flow to
+   complete once, with no ordinary Inbox candidate admitted.
+6. Disable Automation and prove zero effective running state and zero owned
+   triggers while unrelated triggers remain untouched.
+7. Record the bounded result before deciding whether a later Work may broaden
+   the scope to normal personal Inbox mail.
+
+Calendar projection is not required for this non-high-impact fixture unless a
+later exact handoff explicitly authorizes it. Broad redesign, fallback
+providers, speculative hardening, and company rollout remain out of scope.

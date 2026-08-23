@@ -115,7 +115,7 @@ test('EXACT_COMMITTED_CURRENT_CANDIDATE_IS_24_FILES', () => {
   assert.strictEqual(inventory.file_count, 24);
   assert.strictEqual(
     expectedPayloadSha256,
-    '31849408d30085f117944c7161e8ca30d54fa7d8afec94ee1e91f45524358fed'
+    '2559fc976dafb0bf3198342e4108886584228b7f8c127c43fb561d3639c6e550'
   );
   assert.match(inventory.payload_sha256, /^[0-9a-f]{64}$/);
   assert.strictEqual(

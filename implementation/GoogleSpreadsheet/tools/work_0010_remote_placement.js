@@ -58,7 +58,7 @@ const exactBranch = 'codex/0010-fresh-controlled-remote-placement';
 const startingWork0007Head =
   '3f54d2a90c38ea574db6bd20ab8341d27d82a183';
 const expectedPayloadSha256 =
-  '31849408d30085f117944c7161e8ca30d54fa7d8afec94ee1e91f45524358fed';
+  '2559fc976dafb0bf3198342e4108886584228b7f8c127c43fb561d3639c6e550';
 const syntheticTitle = 'Work OS Synthetic Sandbox Work 0010';
 const spreadsheetMimeType = 'application/vnd.google-apps.spreadsheet';
 

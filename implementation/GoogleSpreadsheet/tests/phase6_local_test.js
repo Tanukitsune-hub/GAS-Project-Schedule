@@ -323,7 +323,7 @@ test('P6-L01_CONFIG_LIMITS_AND_DEFAULT_DISABLED', () => {
   assert.strictEqual(sandbox.WorkOsConfig.AUTOMATION_OVERLAP_MS, 86400000);
   assert.strictEqual(
     sandbox.WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN,
-    10
+    1
   );
   assert.strictEqual(
     sandbox.WorkOsConfig.AUTOMATION_MAX_SEARCH_THREADS,
@@ -362,7 +362,7 @@ test('P6-L03_DEFAULT_ENABLE_REFUSES_WITH_ZERO_TRIGGER', () => {
   assert.strictEqual(result.enabled, false);
   assert.strictEqual(fixture.script_app.triggers.length, 0);
   assert(result.reasons.includes('EXTERNAL_AI_NOT_CONFIGURED'));
-  assert(result.reasons.includes('COMPANY_APPROVAL_NOT_CONFIRMED'));
+  assert(result.reasons.includes('OPERATOR_APPROVAL_NOT_CONFIRMED'));
   assert(result.reasons.includes('REAL_AI_TRANSPORT_NOT_IMPLEMENTED'));
   assert.strictEqual(
     fixture.properties.getProperty(

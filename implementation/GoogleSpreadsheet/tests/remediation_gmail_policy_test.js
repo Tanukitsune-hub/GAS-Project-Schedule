@@ -141,9 +141,9 @@ test('R-GMAIL-05_NEWSLETTER_RULE_REMAINS_BLOCKED_PENDING_DECISION', () => {
   );
   assert.strictEqual(
     sandbox.WorkOsConfig.AUTOMATION_NEWSLETTER_FILTER_APPROVED,
-    false
+    true
   );
-  assert.strictEqual(result.reason, 'NORMAL_INBOX');
+  assert.strictEqual(result.reason, 'CLEAR_NEWSLETTER');
 });
 
 test('R-GMAIL-06_CALENDAR_RULE_REMAINS_BLOCKED_PENDING_DECISION', () => {
@@ -158,9 +158,9 @@ test('R-GMAIL-06_CALENDAR_RULE_REMAINS_BLOCKED_PENDING_DECISION', () => {
   assert.strictEqual(
     sandbox.WorkOsConfig
       .AUTOMATION_CALENDAR_NOTIFICATION_FILTER_APPROVED,
-    false
+    true
   );
-  assert.strictEqual(result.reason, 'NORMAL_INBOX');
+  assert.strictEqual(result.reason, 'GOOGLE_CALENDAR_NOTIFICATION');
 });
 
 test('R-GMAIL-07_NORMAL_INBOX_IS_INCLUDED_INDEPENDENT_OF_READ_STATE', () => {

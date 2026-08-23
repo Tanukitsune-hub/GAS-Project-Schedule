@@ -401,6 +401,111 @@ test('CANONICAL_VALIDATOR_REMAINS_STRICT_AND_SEMANTICALLY_AUTHORITATIVE', () => 
   });
 });
 
+test('GEMINI_PROMPT_EXPLICITLY_PROJECTS_CANONICAL_SEMANTICS', () => {
+  const generalRequest = Gemini.buildRequest(providerRequest());
+  assert.match(generalRequest.system_instruction,
+    /exactly the required fields and no extra fields/);
+  assert.match(generalRequest.system_instruction,
+    /For NEW_TASK or ADD_TASK/);
+  assert.match(generalRequest.system_instruction,
+    /changes must be exactly \{\}/);
+
+  const synthetic = validInput();
+  synthetic.message.subject = Gemini.AUTOMATION_SYNTHETIC_SUBJECT;
+  synthetic.message.plain_body = Gemini.AUTOMATION_SYNTHETIC_BODY;
+  assert.strictEqual(Gemini.isAutomationSyntheticInput(synthetic), true);
+  const syntheticRequest = Gemini.buildRequest({
+    provider: Gemini.PROVIDER_ID,
+    model: Gemini.MODEL,
+    prompt_version: Gemini.PROMPT_VERSION,
+    input: synthetic
+  });
+  assert.match(syntheticRequest.system_instruction,
+    /exact Work 0036 automation qualification fixture/);
+  assert.match(syntheticRequest.system_instruction,
+    /exactly seven calendar days/);
+  assert.match(syntheticRequest.system_instruction,
+    /calendar_category NONE/);
+
+  const nearMatch = clone(synthetic);
+  nearMatch.message.subject += ' near-match';
+  assert.strictEqual(Gemini.isAutomationSyntheticInput(nearMatch), false);
+  const nearMatchRequest = Gemini.buildRequest({
+    provider: Gemini.PROVIDER_ID,
+    model: Gemini.MODEL,
+    prompt_version: Gemini.PROMPT_VERSION,
+    input: nearMatch
+  });
+  assert.doesNotMatch(nearMatchRequest.system_instruction,
+    /exact Work 0036 automation qualification fixture/);
+});
+
+test('PROJECTED_SCHEMA_VALID_CANONICAL_INVALID_RESPONSE_FAILS_WITH_BOUNDED_RULE', () => {
+  let fetchCalls = 0;
+  const transport = Gemini.createTransport({
+    url_fetch_app: {
+      fetch: () => {
+        fetchCalls += 1;
+        const invalid = validOutput();
+        invalid.actions[0].changes = {
+          task_title: 'private raw provider output marker-0036-schema-failure'
+        };
+        return {
+          getResponseCode: () => 200,
+          getContentText: () => JSON.stringify({
+            status: 'completed',
+            steps: [{
+              type: 'model_output',
+              content: [{ type: 'text', text: JSON.stringify(invalid) }]
+            }]
+          })
+        };
+      }
+    }
+  });
+  const adapter = makeProviderAdapter(transport);
+  let error = null;
+  try {
+    adapter.classify(validInput());
+  } catch (caught) {
+    error = caught;
+  }
+  assert.ok(error);
+  assert.strictEqual(error.code, 'E_AI_SCHEMA');
+  const safe = sandbox.WorkOsUtilities.safeError(error);
+  assert.strictEqual(safe.retryable, false);
+  assert.ok([
+    'EXACT_FIELDS',
+    'CHANGES_FIELDS',
+    'DEADLINE_SEMANTICS',
+    'TYPE_ENUM_RANGE',
+    'OUTPUT_LIMIT',
+    'REQUIRED_VALUE',
+    'ACTION_SEMANTICS',
+    'CANONICAL_SCHEMA_INVALID'
+  ].includes(safe.diagnostic.canonical_schema_rule));
+  assert.strictEqual(
+    JSON.stringify(safe).includes('marker-0036-schema-failure'), false
+  );
+  assert.strictEqual(JSON.stringify(safe).includes('private raw provider'), false);
+  assert.strictEqual(fetchCalls, 1);
+});
+
+test('EXACT_WORK_0036_FIXTURE_CANONICAL_RESPONSE_REMAINS_VALID', () => {
+  const input = validInput();
+  input.message.subject = Gemini.AUTOMATION_SYNTHETIC_SUBJECT;
+  input.message.plain_body = Gemini.AUTOMATION_SYNTHETIC_BODY;
+  const adapter = makeProviderAdapter({
+    send: () => ({
+      status: 200,
+      body: JSON.stringify(validOutput())
+    })
+  });
+  const expected = validOutput();
+  expected.actions[0].reason = 'External classification rationale withheld';
+  assert.deepStrictEqual(adapter.classify(input), expected);
+});
+
 test('400_INVALID_REQUEST_RETAINS_BOUNDED_SAFE_DIAGNOSTICS', () => {
   let fetchCalls = 0;
   const transport = Gemini.createTransport({

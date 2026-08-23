@@ -28,6 +28,14 @@
 **/.clasp-pull-verify-work-0032/
 **/.clasp-work-0033/
 **/.clasp-pull-verify-work-0033/
+**/.clasp-work-0036/
+**/.clasp-pull-verify-work-0036/
+**/.clasp-work-0036-review-fix/
+**/.clasp-pull-verify-work-0036-review-fix/
+**/.clasp-work-0036-runtime-preparation-fix/
+**/.clasp-pull-verify-work-0036-runtime-preparation-fix/
+**/.clasp-work-0036-live-ai-schema-failure-fix/
+**/.clasp-pull-verify-work-0036-live-ai-schema-failure-fix/
 **/creds.json
 **/credentials*.json
 **/client_secret*.json
