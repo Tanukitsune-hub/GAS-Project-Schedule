@@ -171,8 +171,11 @@ ChatGPT independently reviewed the final source, repair diff, report, tests,
 final CI, release/lineage evidence, and placement result. No BLOCKER was found.
 The user E2E runbook was updated at docs-only head
 `260a52ea2eae3ea4240aab7f70e402494a738db6` and CI `#452` passed. The active
-status review was then synchronized and CI `#454` passed. Product/release
-payload is unchanged by these ChatGPT documentation updates.
+status review was synchronized at docs-only head
+`7ed37fa1314849bbfe5dbdde9e53ff8485d78d88` and CI `#454` passed. The following
+docs-only wording sync at `3ff71e72c7d3439772152fb6a7df089a644b5a08`
+also passed CI `#456`. Product/release payload is unchanged by these ChatGPT
+documentation updates.
 
 ## Historical preparation defect and repair
 
