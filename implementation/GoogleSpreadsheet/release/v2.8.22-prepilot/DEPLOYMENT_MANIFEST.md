@@ -6,7 +6,7 @@
 | Field | Value |
 |---|---|
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `d4eae96be7c7d9a1976f86ab51db36dc4e41acdb` |
+| Source commit | `3e0f79229179e42addd9e3e0ae58b664f9c56031` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.22-prepilot` |
 | Schema Version | `2.6` |
