@@ -4,17 +4,17 @@ Last updated: 2026-08-23
 
 Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Overall status: `PERSONAL_SYNTHETIC_AUTOMATION_E2E_PASS`
 
-Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Machine gate: `PERSONAL_SYNTHETIC_AUTOMATION_E2E_PASS`
 
-ChatGPT review disposition: `READY — LIVE_AI_SCHEMA_REPAIR_INDEPENDENTLY_REVIEWED`
+ChatGPT review disposition: `PASS — CONTROLLED_SYNTHETIC_AUTOMATION_E2E_COMPLETE`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
 
-User Automation E2E: `READY_FOR_FRESH_EXPLICIT_RETRY`
+User Automation E2E: `PASS`
 
 ## Current contract
 
@@ -44,7 +44,7 @@ planned.
 
 ## Work 0036 implementation evidence
 
-- Draft PR `#51` remains Open / Unmerged.
+- PR `#51` contains the Code `2.8.21-prepilot` qualification successor.
 - Runtime-preparation-fix source repair commit: `0f0b7eab0ed27b883ae25fb15af4371b42157662`.
 - Runtime-preparation-fix release commit: `3a4c053ba9775659d5bb902ff0f7cd0bcffba531`.
 - Runtime-preparation-fix pre-placement head: `dab94362c34e837bb236186ace7c0cf9c0f63e40`.
@@ -66,25 +66,24 @@ planned.
 
 ## Work 0036 preparation/readiness/enable live checkpoints
 
-The repaired preparation path subsequently passed live on the existing
-personal-synthetic target. The candidate version metadata aligned to Code
-`2.8.21-prepilot` while Automation remained OFF and no external request was
-performed.
+The repaired preparation path passed live on the existing personal-synthetic
+target. The candidate version metadata aligned to Code `2.8.21-prepilot` while
+Automation remained OFF and no external request was performed.
 
-The authoritative readiness check then returned
+The authoritative readiness check returned
 `READY_FOR_CONTROLLED_QUALIFICATION` with Setup/version, production-shaped exact
 synthetic scope, approvals, Gemini credential/adapter, OAuth, all seven formal
 Gmail labels, dedicated Calendar, and zero-trigger Automation-OFF state ready.
 
-The user explicitly enabled Automation once. The immediate live status was
+The user explicitly enabled Automation. The immediate live status was
 `CONSISTENT` with enabled/desired enabled `true`, exactly one canonical
 5-minute clock trigger, zero duplicates, and prerequisites ready.
 
-## Live user evidence: scheduled Automation AI-schema failure
+## Historical live failure: scheduled Automation AI-schema validation
 
-On 2026-08-23 the normal scheduled trigger discovered exactly one fresh exact
-Work 0036 synthetic candidate. The run reached the real Gemini classification
-boundary, then failed before Task/Review/Calendar output.
+On 2026-08-23 the first normal scheduled trigger discovered exactly one fresh
+exact Work 0036 synthetic candidate. The run reached the real Gemini
+classification boundary, then failed before Task/Review/Calendar output.
 
 Bounded evidence:
 
@@ -102,19 +101,18 @@ Bounded evidence:
 - message state: `AUTOMATIC_QUALIFICATION -> CLASSIFY -> DEAD`
 - retry count: `0`
 
-The provider response and email content were not persisted. Source review shows
+The provider response and email content were not persisted. Source review showed
 that the provider-facing structured-output schema cannot express all of the
 stricter action-type-dependent semantic rules enforced by canonical AI Schema
 2.0 validation. The historical run therefore could not identify the exact
 violating field without weakening the privacy boundary.
 
-The historical failed candidate and Dead Letter remain un-retried and out of
-scope for the next qualification attempt.
+The historical failed candidate and Dead Letter remain un-retried.
 
-## Live user evidence: disable rollback after failure
+## Historical disable rollback after failure
 
-After the failed scheduled run, the user explicitly disabled Automation and
-immediately verified the real trigger state:
+After that failed scheduled run, the user explicitly disabled Automation and
+verified the real trigger state:
 
 - status: `CONSISTENT`
 - enabled: `false`
@@ -172,10 +170,63 @@ final CI, release/lineage evidence, and placement result. No BLOCKER was found.
 The user E2E runbook was updated at docs-only head
 `260a52ea2eae3ea4240aab7f70e402494a738db6` and CI `#452` passed. The active
 status review was synchronized at docs-only head
-`7ed37fa1314849bbfe5dbdde9e53ff8485d78d88` and CI `#454` passed. The following
-docs-only wording sync at `3ff71e72c7d3439772152fb6a7df089a644b5a08`
-also passed CI `#456`. Product/release payload is unchanged by these ChatGPT
-documentation updates.
+`7ed37fa1314849bbfe5dbdde9e53ff8485d78d88` and CI `#454` passed. Subsequent
+docs-only status wording heads also passed CI through `#458`. Product/release
+payload was unchanged by those documentation updates.
+
+## Final live user evidence: successful controlled Automation E2E
+
+After the AI-schema repair was placed and independently reviewed, the user ran
+one fresh controlled synthetic qualification under the updated runbook.
+
+Bounded evidence from the successful scheduled run:
+
+- trigger: `TIME_DRIVEN`
+- mode: `AUTO_PHASE6`
+- candidate count: `1`
+- processed count: `1`
+- created Task count: `1`
+- updated Task count: `0`
+- review count: `1`
+- skipped count: `0`
+- error count: `0`
+- run status: `COMPLETE`
+- Message State: `AUTOMATIC_QUALIFICATION -> DONE / DONE`
+- action count: `1`
+- retry count: `0`
+- last error: none
+- provider: `GEMINI`
+- model: `gemini-3.6-flash`
+- prompt version: `gemini-interactions-v1-work-os-v2`
+
+The governed synthetic Task used one `NEW_TASK` action with the expected
+relative seven-day deadline semantics, medium priority, no waiting flag,
+`calendar_category=NONE`, `calendar_importance=LOW`, and Calendar sync
+`NOT_REQUIRED`. The user observed expected Gmail label application. The prior
+failed candidate was not retried.
+
+The final bounded review is recorded in
+`docs/handoffs/0036-user-automation-e2e-review.md`.
+
+## Final disable / zero-trigger rollback
+
+Immediately after the successful run, the user explicitly disabled Automation
+and verified:
+
+- status: `CONSISTENT`
+- enabled: `false`
+- desired enabled: `false`
+- trigger count: `0`
+- clock trigger count: `0`
+- invalid event trigger count: `0`
+- stored trigger ID present: `false`
+- canonical trigger present: `false`
+- duplicate trigger count: `0`
+- watermark present: `true`
+- last run present: `true`
+
+No owned clock-trigger residue remains. The watermark and last-run markers are
+expected historical evidence of successful scheduled execution.
 
 ## Historical preparation defect and repair
 
@@ -201,21 +252,20 @@ Historical handoffs and reports remain immutable evidence.
 - Work 0033: Code `2.8.20-prepilot`, source A20 and release B20; the subsequent
   user-controlled personal Gemini E2E passed.
 - Work 0036: Code `2.8.21-prepilot`, source A21 and release B21; automatic
-  discovery, readiness, preparation, and trigger enablement reached live PASS;
-  the first scheduled exact synthetic candidate exposed the strict AI-schema
-  response mismatch; the subsequent repair was independently reviewed and is
-  ready for one fresh user-controlled retry.
+  discovery, readiness, preparation, real Gemini classification, strict AI
+  Schema 2.0 acceptance, governed Task creation, expected Gmail labeling, and
+  explicit disable/zero-trigger rollback have now passed in the controlled
+  personal-synthetic Automation E2E.
 
-## Next boundary
+## Completion / next boundary
 
-Proceed only under `docs/handoffs/0036-user-automation-e2e-runbook.md`.
+Work 0036 is complete with `BLOCKER: NONE`.
 
-The next user-controlled sequence is: authoritative readiness re-check while
-Automation is OFF; exactly one Automation enable; exactly one **fresh** exact
-Work 0036 synthetic Gmail fixture; unattended scheduled processing; bounded
-outcome inspection; and explicit disable/zero-trigger rollback.
+PR `#51` may be integrated after this final documentation head passes CI. The
+controlled synthetic Automation path is qualified, but Automation remains OFF
+by default and in the live target after qualification.
 
-Do not retry the historical failed candidate or Dead Letter. Do not create a
-second fresh synthetic message after a failure. Ordinary personal Inbox mail,
-manual worker invocation, broader Calendar testing, credential changes,
-alternate targets, and PR merge remain out of scope.
+Ordinary personal Inbox admission, broader automatic-mail policy, additional
+Calendar behavior beyond the proven `NOT_REQUIRED` synthetic case, or any
+company-environment rollout are separate future Work boundaries and are not
+authorized by this completion.
