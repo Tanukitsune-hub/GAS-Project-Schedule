@@ -1,7 +1,7 @@
 # Work 0037 Dispatch Ledger
 
 WORK_ID: `0037`
-Current Dispatch ID: `0037-CODEX-03`
+Current Dispatch ID: `0037-CODEX-04`
 BALL: `CODEX`
 STATUS: `READY`
 
@@ -31,21 +31,34 @@ This file is the authoritative ball-control ledger for Work 0037.
 
 ### 0037-CODEX-03
 
-- Purpose: operational log hardening and final Work 0037 convergence.
+- Purpose: operational log hardening and Work 0037 convergence.
 - Instruction: `docs/handoffs/0037-CODEX-03-operational-log-hardening-instruction.md`
-- Target Code: `2.8.24-prepilot`
-- Scope: correct automatic-pilot Run History mode, suppress fully healthy idle detail rows while preserving existing `AUTOMATION_LAST_RUN_AT` heartbeat, enforce 90-day retention only for detailed Run History, converge active docs, regenerate/verify release, and perform one OFF-state existing-target placement plus isolated pull-back parity.
-- Explicit runtime boundary: no Automation enable/re-enable, no scheduled smoke, no Gmail/Gemini/Task/Review/Calendar execution.
+- Report: `docs/handoffs/0037-CODEX-03-operational-log-hardening-report.md`
+- Target Code: `2.8.24-prepilot`.
+- Returned evidence: exact pre-placement CI and final report-head CI passed; local gate 11/11, 85 suites missing 0 / extra 0, static/release/lineage/frozen/secret/diff gates passed; one OFF-state Phase 8C placement and one isolated pull-back passed exact 23-file parity.
+- Accepted implementation portions: `AUTO_PILOT` audit mode correction, strict healthy-idle detail suppression predicate, existing heartbeat preservation, 90-day Run History-only retention semantics, frozen 2.8.20-2.8.23 preservation.
+- ChatGPT final review found an acceptance-contract defect: the healthy-idle path invokes `pruneRunHistory()` and full Run History duplicate-ID/retention reads before deciding to suppress the row, contrary to the instruction that idle runs must not trigger retention maintenance. The suppression return value is also discarded by `appendRunSummarySafely()`, so a suppressed detail reports `log_recorded=true`.
+- Code `2.8.24-prepilot` is frozen as returned placement evidence; do not rewrite it.
+- BALL: `NONE`
+- STATUS: `SUPERSEDED`
+
+### 0037-CODEX-04
+
+- Purpose: final idle-log fast-path and truthful detail-record status, with no change to accepted Automatic Inbox behavior.
+- Instruction: `docs/handoffs/0037-CODEX-04-idle-log-finalization-instruction.md`
+- Target Code: `2.8.25-prepilot`.
+- Scope: move fully healthy/no-op AUTO_PILOT suppression ahead of all Run History full-data/duplicate/retention work; make the result surface truthfully report that no detail row was recorded; preserve meaningful-run retention/audit behavior and heartbeat; converge final active docs/release; perform one newly authorized OFF-state correction placement plus isolated pull-back parity.
+- Explicit runtime boundary: no Automation enable/re-enable, no scheduled smoke, no live Run History retention execution, no Gmail/Gemini/Task/Review/Calendar runtime action, no company or alternate target.
 - BALL: `CODEX`
 - STATUS: `READY`
 
 ## Current ball
 
-Codex owns only the bounded implementation, local executable validation, release regeneration, exact-head CI, and one authorized OFF-state existing-target placement/pull-back defined in Dispatch `0037-CODEX-03`.
+Codex owns only the bounded implementation, executable validation, release regeneration, exact-head CI, and one newly authorized OFF-state correction placement/pull-back defined in Dispatch `0037-CODEX-04`.
 
-ChatGPT retains Primary Outcome, scope, authorization, final review, PR merge decision, Work acceptance, and any later company-sandbox routing.
+ChatGPT retains Primary Outcome, scope, authorization, final review, PR merge decision, Completion Latch, and any later company-sandbox routing.
 
 WORK_ID: `0037`
-Current Dispatch ID: `0037-CODEX-03`
+Current Dispatch ID: `0037-CODEX-04`
 BALL: `CODEX`
 STATUS: `READY`
