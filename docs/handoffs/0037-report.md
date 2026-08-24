@@ -134,3 +134,42 @@ confirmed throughout placement.
 Placement and exact pull-back parity are complete. The candidate is ready only
 for the separately user-controlled Automatic Personal Inbox Shadow Pilot; that
 pilot was not executed in Work 0037.
+
+---
+
+## Dispatch 0037-CODEX-03 — Operational-log hardening
+
+The later operational-log hardening dispatch preserves all historical
+2.8.22/2.8.23 pilot evidence above and advances only the active candidate to
+Code `2.8.24-prepilot`. It does not reopen the Automatic Inbox admission
+design or execute the user-controlled pilot.
+
+- Dispatch: `0037-CODEX-03`
+- Instruction: `docs/handoffs/0037-CODEX-03-operational-log-hardening-instruction.md`
+- Product source commit: `1dbd28fd8e98e13849a29f3c4eeb6fa6c5663eb1`
+- Release commit: `a2deb099df5581436284cdab8e01ca4e87fb72d2`
+- Exact pre-placement head: `0ab1850e9bdec02251f08181b7b1bd75fde71374`
+- Detailed report: `docs/handoffs/0037-CODEX-03-operational-log-hardening-report.md`
+
+The implementation records `AUTO_PILOT` as `TIME_DRIVEN` / `AUTO_PILOT`,
+preserves `AUTO_PHASE6` and manual behavior, suppresses only healthy complete
+no-op automatic detail rows, keeps the existing
+`AUTOMATION_LAST_RUN_AT` heartbeat, and applies strict 90-day retention only
+to detailed `処理履歴`. Fixed headers/schema/order/appendability and all
+business/audit state outside Run History remain unchanged.
+
+The complete local gate passed `11/11`; the deterministic inventory passed
+`85` suites with missing `0` and extra `0`; static, release, lineage, frozen
+preservation, secret/local-state, and diff checks passed. Phase 8C contains
+exactly `22 .gs` files plus `appsscript.json`.
+
+After exact-head CI passed, one guarded Phase 8C update and one independent
+pull-back were performed on the same existing personal-synthetic target. No
+target was created, no additional inspection was performed, and no retry was
+made. Push and pull each passed with `23` files, missing `0`, extra `0`, and
+exact byte/hash parity. Automation remained OFF and no Apps Script runtime
+function, Gmail, Gemini, Task, Review, Calendar, trigger, deployment,
+credential, or cleanup operation was executed.
+
+The authoritative bounded evidence is the detailed Dispatch 0037-CODEX-03
+report above. BLOCKER status remains `NONE`; PR #52 remains Draft/Open/Unmerged.
