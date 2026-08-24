@@ -1,7 +1,7 @@
 {
   "schema": "WORK_OS_TEST_INVENTORY_V1",
-  "suite_count": 84,
-  "fingerprint": "8f7a595cf6d55f4aa662aaf67485ec81aa0771d9d1e98e3a63c59e5ca5c3b512",
+  "suite_count": 85,
+  "fingerprint": "e28f32fb7dfa117013cd77ed15b731350cb20d420d0bf0c2e5f9fca4f9012cb4",
   "suites": [
     "baseline_upgrade_test.js",
     "canonical_document_consistency_test.js",
@@ -83,6 +83,7 @@
     "work_0036_test_inventory_contract_test.js",
     "work_0037_automatic_inbox_shadow_pilot_placement_test.js",
     "work_0037_automatic_inbox_shadow_pilot_test.js",
+    "work_0037_codex_03_operational_log_hardening_placement_test.js",
     "work_0037_codex_03_operational_log_hardening_test.js",
     "work_0037_lineage_materialization_test.js",
     "work_0037_personal_shadow_pilot_placement_test.js",
