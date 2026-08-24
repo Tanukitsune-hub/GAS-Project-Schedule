@@ -7,7 +7,7 @@
 |---|---|
 | Package | `v2.8.24-prepilot-phase8c` |
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `2250104eddf7ad2bd7deb80c1aaa7a0a35528cfb` |
+| Source commit | `1dbd28fd8e98e13849a29f3c4eeb6fa6c5663eb1` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.24-prepilot` |
 | Schema Version | `2.6` |
@@ -20,7 +20,7 @@
 | Snapshot-cell fallback | `FORBIDDEN` |
 | TEST_MODE | `false` |
 | Automation default | `OFF` |
-| Package prepared at | `2026-08-25T12:00:00+09:00` |
+| Package prepared at | `2026-08-25T13:00:00+09:00` |
 | Highest local status | `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` |
 
 This payload is distinct from the Phase 8B package. It excludes
@@ -42,7 +42,7 @@ Provider fails closed.
 
 - Payload files: `23`
 - `.gs` files: `22`
-- Canonical payload-list SHA-256: `e9f3b9056195243971c902681c00ee5c0fe5ce0cb995bce6bb6a05357d67d634`
+- Canonical payload-list SHA-256: `2525aec5321f0c2eb6bcd1ea13b255cf601529a1812a28f150ca1458ecc65710`
 - `99_TestHarness.gs`: `EXCLUDED`
 - `.clasp.json`: `EXCLUDED`
 
@@ -61,7 +61,7 @@ Provider fails closed.
 | `apps-script/10_CalendarSync.gs` | `7ec0be9c1a18f99913dcab3f657fe737f6f2e6321a5661bd3c46e43f15232975` |
 | `apps-script/11_EditHandler.gs` | `244b8424f8ffce15f436721484aeffa7b890d086926bd6530ce934b0e94f2297` |
 | `apps-script/12_Triggers.gs` | `69f125b80862af3fd80413a67e3b2b2859afbdcf5ed6b742d6ac35283b20d751` |
-| `apps-script/13_LogAndDeadLetter.gs` | `2c390e77fbe9c3287393e8edca91200d5ed505c5f57c88c597385a732c711b3f` |
+| `apps-script/13_LogAndDeadLetter.gs` | `8a683761c58720152947b2ee8be11f946d2084a59a482a87b57a712fd3df7b2c` |
 | `apps-script/14_Migrations.gs` | `4d93d8b336893a8d71392fbe7b5cf8222925d44cdd854b5b6df86e2ceea3e568` |
 | `apps-script/15_Dashboard.gs` | `c18be435239c3468493971baab82fe746de4210f7513b1677eadff3b00405353` |
 | `apps-script/16_Diagnostics.gs` | `b69eff8cc567969bf2fa00b6347009b7fdb0b38e06aa867684e8a7666c000c8c` |

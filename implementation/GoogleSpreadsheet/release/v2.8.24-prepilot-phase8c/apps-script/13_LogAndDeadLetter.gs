@@ -1194,6 +1194,7 @@ var WorkOsLogAndDeadLetter = (function () {
           }
         }
       }
+      pruneRunHistory(historySheet, runHistoryRetentionReference(value));
       if (isHealthyIdleAutomaticPilot(value, deferredError)) {
         return null;
       }
@@ -1210,7 +1211,6 @@ var WorkOsLogAndDeadLetter = (function () {
           // Run summary remains independently writable and contains no payload.
         }
       }
-      pruneRunHistory(historySheet, runHistoryRetentionReference(value));
       return appendRecord(
         spreadsheet,
         WorkOsConfig.SHEETS.RUN_HISTORY,
