@@ -59,7 +59,7 @@ const work0037AutomaticInboxParentRef =
 const work0037Codex03ParentRef =
   'a829396106cea9f8b440c62e13bc7e33bdf28a19';
 const work0037Codex03SourceCommit =
-  '2250104eddf7ad2bd7deb80c1aaa7a0a35528cfb';
+  'e8f4de00e6525cd35c7a0c0c587261037d220743';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
