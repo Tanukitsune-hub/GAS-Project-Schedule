@@ -2,9 +2,9 @@
 
 Last updated: 2026-08-25
 
-Candidate version: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.24-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `WORK_0037_FINAL_LOG_CONVERGENCE_IN_PROGRESS`
+Overall status: `WORK_0037_FINAL_LOG_CONVERGENCE_BLOCKED`
 
 Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
@@ -20,10 +20,12 @@ User Automatic Inbox Pilot: `PASS — USER-CONTROLLED LIVE PILOT COMPLETED AND S
 
 The canonical source is `implementation/GoogleSpreadsheet/apps-script-v2/`.
 Code `2.8.23-prepilot` is frozen as accepted Work 0037 live-pilot evidence.
-Code `2.8.24-prepilot` is frozen as the returned first operational-log-hardening
-placement evidence. The active target for final convergence is Code
-`2.8.25-prepilot`; Schema `2.6`, AI Schema `2.0`, and Migration `3` remain
-unchanged.
+Code `2.8.24-prepilot` is the currently placed/returned operational-log candidate
+and is now frozen as Dispatch `0037-CODEX-03` evidence. Dispatch
+`0037-CODEX-04` targets the successor Code `2.8.25-prepilot`; the canonical
+candidate/version must not advance to 2.8.25 until that source and release are
+actually implemented and validated. Schema `2.6`, AI Schema `2.0`, and
+Migration `3` remain unchanged.
 
 The accepted Work 0037 Automatic Inbox product boundary is closed:
 
@@ -85,11 +87,12 @@ before it decides to suppress the idle row. The row no longer grows history,
 but every empty five-minute cycle still performs unnecessary full-history work.
 The helper also reports `log_recorded=true` after intentional suppression.
 
-Dispatch `0037-CODEX-04` therefore owns the final Code `2.8.25-prepilot`
-micro-fix. It must move healthy-idle suppression ahead of Run History
-maintenance, make detail-record status truthful, preserve meaningful-run
-retention/audit semantics and heartbeat, pass all gates, and perform one newly
-authorized OFF-state correction placement plus one isolated pull-back.
+Dispatch `0037-CODEX-04` therefore owns the final target Code
+`2.8.25-prepilot` micro-fix. It must move healthy-idle suppression ahead of Run
+History maintenance, make detail-record status truthful, preserve
+meaningful-run retention/audit semantics and heartbeat, pass all gates, and
+perform one newly authorized OFF-state correction placement plus one isolated
+pull-back.
 
 No Automation enable/re-enable, scheduled smoke, Gmail/Gemini/Task/Review/
 Calendar runtime action, live retention cleanup, alternate target, or company
@@ -104,8 +107,8 @@ the remaining blocker is limited to operational-log finalization.
 
 ## Next boundary after Work 0037
 
-After Dispatch `0037-CODEX-04` passes final ChatGPT review and PR #52 is merged,
-Work 0037 can be Completion-Latched. A separate Work `0038` may then qualify a
-company-environment sandbox only after explicit authorization. It must begin
-with company policy/environment readiness rather than ordinary company Inbox
-processing.
+After Dispatch `0037-CODEX-04` implements/validates Code `2.8.25-prepilot`,
+passes final ChatGPT review, and PR #52 is merged, Work 0037 can be
+Completion-Latched. A separate Work `0038` may then qualify a company-environment
+sandbox only after explicit authorization. It must begin with company
+policy/environment readiness rather than ordinary company Inbox processing.
