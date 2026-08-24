@@ -58,6 +58,8 @@ const work0037AutomaticInboxParentRef =
   'c24ad73156031f9a273cfd1be1da48d31d5d2e7a';
 const work0037Codex03ParentRef =
   'a829396106cea9f8b440c62e13bc7e33bdf28a19';
+const work0037Codex03SourceCommit =
+  '2250104eddf7ad2bd7deb80c1aaa7a0a35528cfb';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -651,6 +653,32 @@ function checkReleaseLineage() {
       throw new Error(
         'WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_SOURCE_SCOPE_INVALID'
       );
+    }
+  } else if (sourceParent === work0037Codex03SourceCommit) {
+    const expectedWork0037Codex03RepairFiles = [
+      'CURRENT_STATUS.md',
+      'MASTER_PLAN.md',
+      'README.md',
+      'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html',
+      'docs/visualizations/index.html',
+      'implementation/GoogleSpreadsheet/apps-script-v2/13_LogAndDeadLetter.gs',
+      'implementation/GoogleSpreadsheet/tests/canonical_document_consistency_test.js',
+      'implementation/GoogleSpreadsheet/tests/phase7_schema_extension_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_round3_provenance_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_runtime_dashboard_reliability_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0036_personal_automation_qualification_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_automatic_inbox_shadow_pilot_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_codex_03_operational_log_hardening_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_personal_shadow_pilot_test.js',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js',
+      'implementation/GoogleSpreadsheet/tools/work_0037_codex_03_operational_log_hardening_placement.js',
+      'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_22.html'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedWork0037Codex03RepairFiles)
+    ) {
+      throw new Error('WORK_0037_CODEX_03_REPAIR_SOURCE_SCOPE_INVALID');
     }
   } else if (sourceParent === work0037Codex03ParentRef) {
     const expectedWork0037Codex03Files = [

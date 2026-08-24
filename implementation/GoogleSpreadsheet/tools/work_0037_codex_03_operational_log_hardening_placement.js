@@ -72,7 +72,7 @@ const historicalAutomaticInboxStatePath = path.join(
   'work-0037-automatic-inbox-shadow-pilot-execution-state.json'
 );
 const automationOffEvidenceRelativePath =
-  'docs/handoffs/0037-codex-03-operational-log-hardening-addendum.md';
+  'docs/handoffs/0037-automatic-inbox-shadow-pilot-addendum.md';
 const automationOffEvidencePath = path.join(
   repositoryRoot, automationOffEvidenceRelativePath
 );

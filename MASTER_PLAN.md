@@ -119,7 +119,7 @@ a durable pilot-start boundary and pre-start messages are rejected. The
 manual worker fails closed while pilot Automation is active, and all
 Task/Review/Calendar/idempotency and strict Gemini boundaries remain unchanged.
 
-The repaired canonical-main squash lineage gate, 84-suite local inventory,
+The repaired canonical-main squash lineage gate, 85-suite local inventory,
 2.8.24 Phase 8B/8C packages, frozen 2.8.20/2.8.21/2.8.22/2.8.23
 preservation, bounded AUTO_PILOT Run History logging, healthy-idle suppression,
 90-day detailed-history retention, and the existing-target placement are

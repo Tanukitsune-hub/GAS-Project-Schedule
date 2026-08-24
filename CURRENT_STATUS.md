@@ -64,7 +64,7 @@ no company-PC or company-environment rollout is planned.
 - Automation: `OFF` by default and throughout Codex work. User-controlled
   24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar
   mutation, trigger changes, and runtime functions are `NOT EXECUTED`.
-- Code `2.8.24-prepilot` Phase 8B/8C packages, the 84-suite deterministic local
+- Code `2.8.24-prepilot` Phase 8B/8C packages, the 85-suite deterministic local
   inventory, AUTO_PILOT Run History semantics, healthy-idle suppression, and
   90-day detailed-history retention are regenerated/validated by the Work 0037
   delivery gate.

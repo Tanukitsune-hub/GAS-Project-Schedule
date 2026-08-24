@@ -288,7 +288,7 @@ function evaluateFake(overrides = {}) {
 }
 
 test('WORK_0036_CANDIDATE_VERSION_AND_DEFAULT_OFF', () => {
-  assert.strictEqual(Config.CODE_VERSION, '2.8.23-prepilot');
+  assert.strictEqual(Config.CODE_VERSION, '2.8.24-prepilot');
   assert.strictEqual(Config.SCHEMA_VERSION, '2.6');
   assert.strictEqual(Config.AI_SCHEMA_VERSION, '2.0');
   assert.strictEqual(Config.MIGRATION_VERSION, '3');

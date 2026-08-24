@@ -412,8 +412,25 @@ function testRetentionIsRunHistoryOnlyAndAppendable() {
   assertSnapshotsEqual(before, snapshotSheets(spreadsheet, otherNames));
 }
 
+function testHealthyIdleStillRunsRunHistoryRetention() {
+  const spreadsheet = makeSpreadsheet();
+  const now = new Date('2026-08-25T00:01:00.000Z');
+  const old = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000 - 1);
+  setHistoryRecord(spreadsheet, {
+    run_id: 'idle-retention-old',
+    finished_at: old,
+    run_status: 'COMPLETE'
+  });
+  append(spreadsheet, 'healthy-idle-after-retention', {
+    retention_reference_at: now
+  });
+  assert.deepStrictEqual(historyRecords(spreadsheet), [],
+    'healthy idle suppression must not disable Run History retention');
+}
+
 testModesAndManualCompatibility();
 testHealthyIdleSuppressionAndHeartbeatBoundary();
 testMeaningfulRunsAreNeverSuppressed();
 testRetentionIsRunHistoryOnlyAndAppendable();
+testHealthyIdleStillRunsRunHistoryRetention();
 console.log('work_0037_codex_03_operational_log_hardening_test: PASS');
