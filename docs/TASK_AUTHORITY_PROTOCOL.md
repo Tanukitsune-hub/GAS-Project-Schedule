@@ -1,10 +1,10 @@
-# Task Authority Protocol - Code 2.8.23-prepilot
+# Task Authority Protocol - Code 2.8.24-prepilot
 
 ## Contract
 
 | Field | Value |
 |---|---|
-| Code | `2.8.23-prepilot` |
+| Code | `2.8.24-prepilot` |
 | Schema | `2.6` |
 | Migration | `3` |
 | Task columns | `50` |

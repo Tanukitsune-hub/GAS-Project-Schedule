@@ -7,7 +7,7 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.23-prepilot` |
+| Code | `2.8.24-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
@@ -20,15 +20,15 @@ Workspace Personal Work OS.
 
 The canonical payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers preserve
-the historical A20/B20 and Work 0036 A21/B21 evidence. The active successor
-uses the canonical-main Work 0037 lineage and preserves the frozen 2.8.20 and
-2.8.21 release bytes.
+the historical A20/B20, A21/B21, A22/B22, and A23/B23 evidence. The active
+successor uses the canonical-main Work 0037 lineage and preserves the frozen
+2.8.20, 2.8.21, 2.8.22, and 2.8.23 source/release bytes.
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.23-prepilot/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.24-prepilot/`:
   `TEST_MODE=true`, harness included, Automation OFF.
-- `implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.24-prepilot-phase8c/`:
   the audited production-mode transform with the harness excluded, bounded
   provider-readiness flags enabled, automatic Inbox pilot admission, and
   Automation still OFF.
@@ -56,14 +56,14 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 82-suite regression manifest, deterministic 2.8.23 release packages,
+committed 84-suite regression manifest, deterministic 2.8.24 release packages,
 canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
 current-main integration scope, and secret/local-state exclusions. It performs
 no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
 
 ## Work 0037 personal shadow-pilot boundary
 
-Code `2.8.23-prepilot` replaces the historical label-gated admission with an
+Code `2.8.24-prepilot` replaces the historical label-gated admission with an
 automatic personal Inbox shadow pilot. Scheduled discovery admits ordinary
 eligible personal Inbox messages, excludes `手動/除外` thread-wide, spam,
 trash, non-Inbox, Promotions, Social, clear newsletters/list mail, and Google
@@ -73,6 +73,13 @@ bypass a hard exclusion. The distinct pilot source mode is
 the manual worker fails closed while pilot Automation is active. A successful
 explicit enable establishes a durable start boundary; older messages are
 never admitted. Automation remains OFF in both packages.
+
+Healthy scheduled `AUTO_PILOT` runs use the existing
+`AUTOMATION_LAST_RUN_AT` property as their heartbeat and do not create a
+detailed `処理履歴` row when they are a fully healthy no-op. Meaningful runs
+remain detailed, and only valid detailed Run History rows older than 90 days
+are compacted; Errors, Message State, Task/Review, Calendar, and Task Authority
+Ledger evidence are outside this retention boundary.
 
 The later user-controlled automatic Inbox pilot is not executed by Codex. Its bounded steps
 and stop criteria are recorded in

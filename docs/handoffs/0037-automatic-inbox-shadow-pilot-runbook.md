@@ -3,7 +3,7 @@
 WORK_ID: `0037`
 
 This is the authoritative user-controlled runtime runbook for Code
-`2.8.23-prepilot`. It supersedes the historical label-gated 2.8.22 runbook for
+`2.8.24-prepilot`. It supersedes the historical label-gated 2.8.22 runbook for
 all future Work 0037 pilot operations. The historical file
 `docs/handoffs/0037-personal-shadow-pilot-runbook.md` remains unchanged as
 2.8.22 evidence.
@@ -32,6 +32,15 @@ The code must exclude, before admission:
 At most one Message may be admitted in each scheduled run. Automation remains
 OFF until the user explicitly enables it.
 
+Healthy scheduled `AUTO_PILOT` no-op runs are intentionally not written as
+detailed `処理履歴` rows; `AUTOMATION_LAST_RUN_AT` remains the heartbeat.
+Meaningful automatic runs are recorded as `TIME_DRIVEN / AUTO_PILOT`, while
+historical `AUTO_PHASE6` and manual modes retain their existing semantics. A
+90-day retention cutoff applies only to detailed Run History rows: valid
+timestamps strictly older than the cutoff may be compacted, invalid or missing
+timestamps are retained, and Errors, Message State, Task/Review, Calendar, and
+Task Authority Ledger evidence are never touched.
+
 ## Privacy gate before starting
 
 Use only the existing personal test environment and non-sensitive test content.
@@ -53,7 +62,7 @@ GitHub, Codex, or ChatGPT.
 
 Before any enablement:
 
-1. The Spreadsheet has reloaded after placement of Code `2.8.23-prepilot`.
+1. The Spreadsheet has reloaded after placement of Code `2.8.24-prepilot`.
 2. Automation is `CONSISTENT` and OFF.
 3. `enabled=false` and `desired_enabled=false`.
 4. Owned `trigger_count=0` and `clock_trigger_count=0`.
@@ -71,14 +80,14 @@ Before enabling Automation, place one fresh, non-sensitive, unlabeled test
 Message in Inbox. Record only that one pre-start witness exists; do not record
 its content or identifier. It must remain unprocessed throughout the pilot.
 
-### 2. Prepare the 2.8.23 candidate
+### 2. Prepare the 2.8.24 candidate
 
 From `業務OS v2`, run:
 
 - `個人用Shadow Pilotを準備`
 - `個人用Shadow Pilotの準備状態を確認`
 
-Proceed only when the preparation reports Code `2.8.23-prepilot` and readiness
+Proceed only when the preparation reports Code `2.8.24-prepilot` and readiness
 reports `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` with Automation OFF,
 zero owned clock Triggers, the automatic-Inbox scope, all hard exclusions, and
 provider/OAuth/label/Calendar readiness.

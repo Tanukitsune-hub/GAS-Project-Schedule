@@ -1,12 +1,12 @@
 # Project Context
 
-Last updated: 2026-08-19
+Last updated: 2026-08-25
 
 Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.23-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.24-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
@@ -30,9 +30,10 @@ deployment is planned.
 - Authority: hidden protected 21-column Task Authority Ledger.
 - AI Schema: provider-neutral `2.0`; application validation is authoritative.
 - Provider: Gemini Interactions `/v1beta/interactions`, behind explicit gates.
-- Release: Code `2.8.23-prepilot`, Schema `2.6`, Migration `3`.
-- Product state: automatic personal Inbox shadow-pilot candidate; frozen
-  2.8.20, 2.8.21, and 2.8.22 remain recovery baselines.
+- Release: Code `2.8.24-prepilot`, Schema `2.6`, Migration `3`.
+- Product state: automatic personal Inbox shadow-pilot operational-log
+  candidate; frozen 2.8.20, 2.8.21, 2.8.22, and 2.8.23 remain historical
+  source/release evidence.
 
 ## Qualified behavior
 
@@ -50,8 +51,8 @@ remain outside GitHub and ChatGPT.
 
 Work 0035 cleanly integrated the qualified Code `2.8.20-prepilot` state into
 current `main`. Work 0036 is the frozen 2.8.21 successor, Work 0037's prior
-2.8.22 label-gated candidate is historical, and the revised Work 0037 is the
-direct automatic Inbox 2.8.23 pilot successor, preserving current-main
+2.8.22 label-gated and 2.8.23 automatic-Inbox candidates are historical, and
+the current Work 0037 is the direct 2.8.24 operational-log successor, preserving current-main
 governance and historical release evidence without replaying stacked Draft-PR
 history.
 
@@ -69,6 +70,12 @@ five-minute run. A successful explicit enable establishes the pilot-start
 boundary; older mail is never admitted. Automation remains OFF. The next
 outcome is a separately user-controlled automatic Inbox shadow pilot; Codex
 does not run it or invoke any Apps Script runtime function.
+
+Scheduled `AUTO_PILOT` logging records `TIME_DRIVEN / AUTO_PILOT` for
+meaningful runs, suppresses only fully healthy/no-op detail rows, preserves the
+existing `AUTOMATION_LAST_RUN_AT` heartbeat, and applies the 90-day cutoff only
+to detailed Run History. Missing or invalid timestamps and all non-Run-History
+business/audit surfaces are preserved.
 
 ## Assurance and privacy
 

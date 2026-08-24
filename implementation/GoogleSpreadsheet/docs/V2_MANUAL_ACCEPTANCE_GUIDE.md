@@ -1,6 +1,6 @@
-# Controlled Personal Shadow Pilot Guide - 2.8.23-prepilot
+# Controlled Personal Shadow Pilot Guide - 2.8.24-prepilot
 
-Code Version: `2.8.23-prepilot`
+Code Version: `2.8.24-prepilot`
 
 Schema Version: `2.6`
 
@@ -58,6 +58,15 @@ into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
 This guide is documentation only. Work 0037 Codex execution does not run the
 pilot, process Gmail, invoke Gemini, mutate Task/Review/Calendar, or invoke an
 Apps Script function.
+
+## Operational log boundary
+
+Meaningful scheduled pilot runs are recorded as `TIME_DRIVEN / AUTO_PILOT`.
+Fully healthy/no-op runs use the existing `AUTOMATION_LAST_RUN_AT` heartbeat
+and do not add a detailed `処理履歴` row. Only detailed Run History records
+with valid `finished_at` values strictly older than 90 days are compacted;
+invalid/missing timestamps, Errors, Message State, Task/Review, Calendar, and
+Task Authority Ledger evidence are not subject to this retention.
 
 ## Historical Work 0036 qualification boundary
 

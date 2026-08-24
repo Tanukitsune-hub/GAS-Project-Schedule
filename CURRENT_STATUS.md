@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-08-23
+Last updated: 2026-08-25
 
-Candidate version: Code `2.8.23-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.24-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
@@ -23,10 +23,10 @@ The payload is exactly 23 `.gs` files plus `appsscript.json`. Phase 8B keeps
 `TEST_MODE=true` and the test harness. Phase 8C is the audited production-mode
 transform with the harness excluded, bounded provider-readiness flags enabled,
 and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
-verifiers bind the A23/B23 candidate while preserving historical A20/B20,
-A21/B21, and A22/B22 source and release evidence.
+verifiers bind the A24/B24 candidate while preserving historical A20/B20,
+A21/B21, A22/B22, and A23/B23 source and release evidence.
 
-The canonical Code `2.8.23-prepilot` release gate is
+The canonical Code `2.8.24-prepilot` release gate is
 `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`. The historical Work 0036 live
 qualification remains evidence for the frozen 2.8.21 baseline and is not
 reinterpreted as Work 0037 pilot execution.
@@ -44,8 +44,9 @@ bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
 Code `2.8.20-prepilot` remains the frozen manual-plus-Gemini recovery baseline.
 Work 0036 remains the frozen 2.8.21 synthetic Automation recovery baseline.
-Work 0037 is the automatic-Inbox 2.8.23 personal shadow-pilot successor; no
-company-PC or company-environment rollout is planned.
+Code `2.8.23-prepilot` remains frozen Work 0037 live-pilot evidence. The
+current Work 0037 candidate is the 2.8.24 operational-log-hardening successor;
+no company-PC or company-environment rollout is planned.
 
 ## Work 0037 implementation status
 
@@ -63,8 +64,10 @@ company-PC or company-environment rollout is planned.
 - Automation: `OFF` by default and throughout Codex work. User-controlled
   24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar
   mutation, trigger changes, and runtime functions are `NOT EXECUTED`.
-- Code `2.8.23-prepilot` Phase 8B/8C packages and the 82-suite deterministic
-  local inventory are regenerated/validated by the Work 0037 delivery gate.
+- Code `2.8.24-prepilot` Phase 8B/8C packages, the 84-suite deterministic local
+  inventory, AUTO_PILOT Run History semantics, healthy-idle suppression, and
+  90-day detailed-history retention are regenerated/validated by the Work 0037
+  delivery gate.
 
 ## Work 0036 implementation evidence
 

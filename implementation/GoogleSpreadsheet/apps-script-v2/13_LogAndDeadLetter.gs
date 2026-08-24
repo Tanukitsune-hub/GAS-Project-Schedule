@@ -665,6 +665,148 @@ var WorkOsLogAndDeadLetter = (function () {
     return row;
   }
 
+  function hasRunHistoryContent(row) {
+    return (row || []).some(function (value) {
+      return !WorkOsUtilities.isBlank(value);
+    });
+  }
+
+  function runHistoryDate(value) {
+    var date = value instanceof Date
+      ? new Date(value.getTime())
+      : new Date(String(value || ''));
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  function runHistoryRetentionReference(summary) {
+    var supplied = summary && summary.retention_reference_at;
+    var suppliedDate = runHistoryDate(supplied);
+    return suppliedDate || WorkOsUtilities.now();
+  }
+
+  /*
+   * Compact only when an old, valid Run History record exists.  This keeps
+   * healthy five-minute idle runs cheap while preserving the fixed schema,
+   * chronological order, and the first-empty-row append contract.
+   */
+  function pruneRunHistory(historySheet, referenceAt) {
+    var ids = WorkOsSchemas.getInternalIds(
+      WorkOsConfig.SHEETS.RUN_HISTORY
+    );
+    var rowCount = Math.max(
+      0,
+      historySheet.getMaxRows() - WorkOsConfig.DATA_START_ROW + 1
+    );
+    if (!rowCount) {
+      return 0;
+    }
+    var map = WorkOsSchemas.buildColumnMapFromIds(ids);
+    var rows = historySheet.getRange(
+      WorkOsConfig.DATA_START_ROW,
+      1,
+      rowCount,
+      ids.length
+    ).getValues();
+    var cutoff = new Date(
+      referenceAt.getTime() -
+      Number(WorkOsConfig.RUN_HISTORY_RETENTION_DAYS || 90) *
+      24 * 60 * 60 * 1000
+    );
+    var removed = 0;
+    var retained = [];
+    rows.forEach(function (row) {
+      var runId = row[map.run_id];
+      var finishedAt = runHistoryDate(row[map.finished_at]);
+      var removable = !WorkOsUtilities.isBlank(runId) &&
+        finishedAt && finishedAt.getTime() < cutoff.getTime();
+      if (removable) {
+        removed += 1;
+        return;
+      }
+      if (hasRunHistoryContent(row)) {
+        retained.push(row);
+      }
+    });
+    if (!removed) {
+      return 0;
+    }
+    var blankRow = new Array(ids.length).fill('');
+    while (retained.length < rowCount) {
+      retained.push(blankRow.slice());
+    }
+    historySheet.getRange(
+      WorkOsConfig.DATA_START_ROW,
+      1,
+      rowCount,
+      ids.length
+    ).setValues(retained);
+    return removed;
+  }
+
+  function finiteZero(value) {
+    if (value == null || value === '') {
+      return true;
+    }
+    var number = Number(value);
+    return isFinite(number) && number === 0;
+  }
+
+  function hasAutomaticPilotWarning(summary) {
+    var value = summary || {};
+    var warning = [
+      'provider_retry_suppressed',
+      'system_retry_deferred',
+      'scan_cursor_reset',
+      'search_saturated'
+    ].some(function (key) {
+      return value[key] === true;
+    });
+    return warning || Boolean(
+      value.failure_finalization === true ||
+      value.provider_error_code ||
+      value.provider_http_status ||
+      value.provider_interaction_status ||
+      value.safe_error_code ||
+      value.safe_error_stage ||
+      value.failure_finalization_code ||
+      value.canonical_schema_rule ||
+      !finiteZero(value.ai_classified_outside_lock_count) ||
+      (Object.prototype.hasOwnProperty.call(value, 'ai_transport_outside_lock') &&
+        value.ai_transport_outside_lock !== true)
+    );
+  }
+
+  function isHealthyIdleAutomaticPilot(summary, deferredError) {
+    var value = summary || {};
+    if (String(value.mode || '') !== 'AUTO_PILOT' ||
+        String(value.run_status || '') !== 'COMPLETE' ||
+        (deferredError && deferredError.error)) {
+      return false;
+    }
+    var allCountsZero = [
+      'candidate_count',
+      'processed_count',
+      'backlog_processed_count',
+      'inbox_processed_count',
+      'created_task_count',
+      'updated_task_count',
+      'review_count',
+      'calendar_job_count',
+      'skipped_count',
+      'error_count'
+    ].every(function (key) {
+      return finiteZero(value[key]);
+    });
+    if (!allCountsZero) {
+      return false;
+    }
+    if (hasAutomaticPilotWarning(value)) {
+      return false;
+    }
+    var note = String(value.note || '');
+    return !note || note === 'Bounded automation; lock-free external I/O';
+  }
+
   function createErrorContext(spreadsheet, options) {
     var settings = options || {};
     var sheetName = WorkOsConfig.SHEETS.ERRORS;
@@ -954,6 +1096,7 @@ var WorkOsLogAndDeadLetter = (function () {
       AI_PHASE5: true,
       CALENDAR_PHASE4: true,
       AUTO_PHASE6: true,
+      AUTO_PILOT: true,
       MANUAL_EDIT: true
     };
     var requestedMode = String(value.mode || 'GMAIL_PHASE2');
@@ -997,39 +1140,39 @@ var WorkOsLogAndDeadLetter = (function () {
     }
     return WorkOsUtilities.withScriptLock(function () {
       var runId = String(value.run_id || '');
+      var historySheet = sheetFor(
+        spreadsheet,
+        WorkOsConfig.SHEETS.RUN_HISTORY
+      );
+      var historyIds = WorkOsSchemas.getInternalIds(
+        WorkOsConfig.SHEETS.RUN_HISTORY
+      );
+      if (historySheet.getMaxColumns() !== historyIds.length) {
+        throw new WorkOsAppError(
+          'E_SCHEMA_CONFLICT',
+          'LOG',
+          false,
+          '運用記録Sheetの列数がSchemaと一致しません。'
+        );
+      }
+      var actualHistoryIds = historySheet.getRange(
+        1,
+        1,
+        1,
+        historyIds.length
+      ).getValues()[0];
+      if (JSON.stringify(actualHistoryIds) !==
+          JSON.stringify(historyIds)) {
+        throw new WorkOsAppError(
+          'E_SCHEMA_MISSING_COLUMN',
+          'LOG',
+          false,
+          '運用記録Sheetの内部列IDがSchemaと一致しません。'
+        );
+      }
+      var historyMap =
+        WorkOsSchemas.buildColumnMapFromIds(actualHistoryIds);
       if (runId) {
-        var historySheet = sheetFor(
-          spreadsheet,
-          WorkOsConfig.SHEETS.RUN_HISTORY
-        );
-        var historyIds = WorkOsSchemas.getInternalIds(
-          WorkOsConfig.SHEETS.RUN_HISTORY
-        );
-        if (historySheet.getMaxColumns() !== historyIds.length) {
-          throw new WorkOsAppError(
-            'E_SCHEMA_CONFLICT',
-            'LOG',
-            false,
-            '運用記録Sheetの列数がSchemaと一致しません。'
-          );
-        }
-        var actualHistoryIds = historySheet.getRange(
-          1,
-          1,
-          1,
-          historyIds.length
-        ).getValues()[0];
-        if (JSON.stringify(actualHistoryIds) !==
-            JSON.stringify(historyIds)) {
-          throw new WorkOsAppError(
-            'E_SCHEMA_MISSING_COLUMN',
-            'LOG',
-            false,
-            '運用記録Sheetの内部列IDがSchemaと一致しません。'
-          );
-        }
-        var historyMap =
-          WorkOsSchemas.buildColumnMapFromIds(actualHistoryIds);
         var historyRowCount = Math.max(
           0,
           historySheet.getMaxRows() -
@@ -1051,6 +1194,9 @@ var WorkOsLogAndDeadLetter = (function () {
           }
         }
       }
+      if (isHealthyIdleAutomaticPilot(value, deferredError)) {
+        return null;
+      }
       if (deferredError && deferredError.error) {
         try {
           recordOperationalError(
@@ -1064,16 +1210,21 @@ var WorkOsLogAndDeadLetter = (function () {
           // Run summary remains independently writable and contains no payload.
         }
       }
+      pruneRunHistory(historySheet, runHistoryRetentionReference(value));
       return appendRecord(
         spreadsheet,
         WorkOsConfig.SHEETS.RUN_HISTORY,
         'run_id',
         {
           run_id: runId,
-          trigger_type: requestedMode === 'AUTO_PHASE6'
+          trigger_type: requestedMode === 'AUTO_PHASE6' ||
+            requestedMode === 'AUTO_PILOT'
             ? 'TIME_DRIVEN'
             : 'MANUAL',
-          mode: allowedModes[requestedMode]
+          mode: Object.prototype.hasOwnProperty.call(
+            allowedModes,
+            requestedMode
+          )
             ? requestedMode
             : 'GMAIL_PHASE2',
           started_at: value.started_at,

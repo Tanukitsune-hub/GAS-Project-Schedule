@@ -1,4 +1,4 @@
-# Google Workspace Personal Work OS v2 - 2.8.23-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.24-prepilot
 
 This directory is the canonical Apps Script source for the Work 0037
 automatic personal Inbox shadow-pilot candidate in
@@ -6,7 +6,7 @@ automatic personal Inbox shadow-pilot candidate in
 
 ## Active contract
 
-- Code: `2.8.23-prepilot`
+- Code: `2.8.24-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
@@ -48,6 +48,13 @@ Gmail or Gemini request. The later user-controlled pilot is the only boundary
 that may process personal Inbox messages; it is not executed by Codex and must
 not be replaced by an unbounded fallback.
 
+The scheduled `AUTO_PILOT` path records `TIME_DRIVEN / AUTO_PILOT` for
+meaningful runs. A fully healthy/no-op run leaves the existing
+`AUTOMATION_LAST_RUN_AT` heartbeat intact without adding a detailed Run History
+row. Only valid detailed Run History records strictly older than 90 days are
+compacted; invalid or missing timestamps and all non-Run-History business or
+audit surfaces are preserved.
+
 ## Local validation
 
 From `implementation/GoogleSpreadsheet`:
@@ -58,7 +65,7 @@ pnpm run verify:local
 ```
 
 The local gate runs the exact committed test inventory, source/static checks,
-release parity, A23/B23 lineage, historical A20/B20/A21/B21/A22/B22 preservation,
+release parity, A24/B24 lineage, historical A20/B20/A21/B21/A22/B22/A23/B23 preservation,
 active-document UTF-8/history checks, and secret/local
 state scans. It does not configure or inspect a real key and performs no
 Google, OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.

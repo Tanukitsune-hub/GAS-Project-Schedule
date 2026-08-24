@@ -56,6 +56,8 @@ const liveAiSchemaFailureFixParentRef =
   'd330d94f9202d3a8bbb13cf2536fadb8cd031293';
 const work0037AutomaticInboxParentRef =
   'c24ad73156031f9a273cfd1be1da48d31d5d2e7a';
+const work0037Codex03ParentRef =
+  'a829396106cea9f8b440c62e13bc7e33bdf28a19';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -64,13 +66,13 @@ const materializedSourceCommit = '0c0304f6a63a08796c7ea788b4e3bc8de077aec8';
 const materializedReleaseCommit = 'b321d83e29ba04557cbed87b75accc746144da6c';
 const expectedBranch = 'codex/0037-personal-shadow-pilot';
 const expectedRefBaseline =
-  'c24ad73156031f9a273cfd1be1da48d31d5d2e7a';
+  'a829396106cea9f8b440c62e13bc7e33bdf28a19';
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot';
+  'implementation/GoogleSpreadsheet/release/v2.8.24-prepilot';
 const phase8cPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c';
+  'implementation/GoogleSpreadsheet/release/v2.8.24-prepilot-phase8c';
 const historicalWork0036Phase8bPath =
   'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot';
 const historicalWork0036Phase8cPath =
@@ -159,7 +161,7 @@ function readContract() {
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
     starting_main: contractStartingMain,
     branch: expectedBranch,
-    code_version: '2.8.23-prepilot',
+    code_version: '2.8.24-prepilot',
     schema_version: '2.6',
     ai_schema_version: '2.0',
     migration_version: '3',
@@ -464,15 +466,15 @@ function checkRelease() {
       'implementation', 'GoogleSpreadsheet'
     );
     const outputs = [
-      runPowerShell('verify_v2_8_23_release.ps1', [
+      runPowerShell('verify_v2_8_24_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot),
-      runPowerShell('verify_v2_8_23_phase8c_release.ps1', [
+      runPowerShell('verify_v2_8_24_phase8c_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot)
     ];
     return {
-      command: 'v2.8.23 Phase 8B/8C package verifiers in committed LF checkout',
+      command: 'v2.8.24 Phase 8B/8C package verifiers in committed LF checkout',
       verifier_count: outputs.length,
       checkout: 'TEMP_LF_COMMITTED_HEAD',
       output_sha256: sha256(
@@ -650,6 +652,40 @@ function checkReleaseLineage() {
         'WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_SOURCE_SCOPE_INVALID'
       );
     }
+  } else if (sourceParent === work0037Codex03ParentRef) {
+    const expectedWork0037Codex03Files = [
+      '.gitignore',
+      'CURRENT_STATUS.md',
+      'DECISIONS.md',
+      'MASTER_PLAN.md',
+      'PROJECT_CONTEXT.md',
+      'README.md',
+      'docs/R4_VERIFICATION_MATRIX.md',
+      'docs/TASK_AUTHORITY_PROTOCOL.md',
+      'docs/handoffs/0037-automatic-inbox-shadow-pilot-runbook.md',
+      'implementation/GoogleSpreadsheet/apps-script-v2/00_Config.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/13_LogAndDeadLetter.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
+      'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tests/expected_test_inventory.json',
+      'implementation/GoogleSpreadsheet/tests/work_0037_codex_03_operational_log_hardening_placement_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_codex_03_operational_log_hardening_test.js',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_24_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_24_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/local_validation_gate.js',
+      'implementation/GoogleSpreadsheet/tools/v2_8_24/DEPLOYMENT_MANIFEST.template.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_24/MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_24/SANDBOX_QUICKSTART.md',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_24_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_24_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/work_0037_codex_03_operational_log_hardening_placement.js'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedWork0037Codex03Files)
+    ) {
+      throw new Error('WORK_0037_CODEX_03_SOURCE_SCOPE_INVALID');
+    }
   } else if (sourceParent === work0037SourceParentRef) {
     const expectedWork0037SourceFiles = [
       'CURRENT_STATUS.md',
@@ -769,14 +805,14 @@ function checkReleaseLineage() {
       'implementation/GoogleSpreadsheet/tests/work_0037_automatic_inbox_shadow_pilot_placement_test.js',
       'implementation/GoogleSpreadsheet/tests/work_0037_automatic_inbox_shadow_pilot_test.js',
       'implementation/GoogleSpreadsheet/tests/work_0037_personal_shadow_pilot_test.js',
-      'implementation/GoogleSpreadsheet/tools/build_v2_8_23_phase8c_release.ps1',
-      'implementation/GoogleSpreadsheet/tools/build_v2_8_23_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_24_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_24_release.ps1',
       'implementation/GoogleSpreadsheet/tools/local_validation_gate.js',
-      'implementation/GoogleSpreadsheet/tools/v2_8_23/DEPLOYMENT_MANIFEST.template.md',
-      'implementation/GoogleSpreadsheet/tools/v2_8_23/MANUAL_ACCEPTANCE_GUIDE.md',
-      'implementation/GoogleSpreadsheet/tools/v2_8_23/SANDBOX_QUICKSTART.md',
-      'implementation/GoogleSpreadsheet/tools/verify_v2_8_23_phase8c_release.ps1',
-      'implementation/GoogleSpreadsheet/tools/verify_v2_8_23_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/v2_8_24/DEPLOYMENT_MANIFEST.template.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_24/MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_24/SANDBOX_QUICKSTART.md',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_24_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_24_release.ps1',
       'implementation/GoogleSpreadsheet/tools/work_0037_automatic_inbox_shadow_pilot_placement.js',
       'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_22.html'
     ];
@@ -787,7 +823,7 @@ function checkReleaseLineage() {
   } else {
     throw new Error('WORK_0037_SOURCE_SCOPE_INVALID');
   }
-  if (contract.code_version !== '2.8.23-prepilot' ||
+  if (contract.code_version !== '2.8.24-prepilot' ||
       contract.schema_version !== '2.6' ||
       contract.ai_schema_version !== '2.0' ||
       contract.migration_version !== '3') {
@@ -827,7 +863,9 @@ function checkReleaseLineage() {
     'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot',
     'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c',
     'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot',
-    'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c'
+    'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c',
+    'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot',
+    'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c'
   ];
   if (historicalReleasePaths.slice(0, 4).some((releasePath) =>
     !gitObjectExists(`${currentScopeStartingMain}:${releasePath}`)) ||
@@ -885,6 +923,8 @@ function isForbiddenCredentialPath(file) {
     '.clasp-work-0033', '.clasp-pull-verify-work-0033',
     '.clasp-work-0037-automatic-inbox-shadow-pilot',
     '.clasp-pull-verify-work-0037-automatic-inbox-shadow-pilot',
+    '.clasp-work-0037-codex-03-operational-log-hardening',
+    '.clasp-pull-verify-work-0037-codex-03-operational-log-hardening',
     '.local-validation'
   ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) {

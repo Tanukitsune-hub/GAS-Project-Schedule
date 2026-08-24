@@ -4,7 +4,7 @@ Last updated: 2026-08-20
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.23-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.24-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
@@ -108,8 +108,8 @@ Calendar, trigger, Setup, diagnostic, or user E2E action was executed.
 
 ## Work 0037: automatic personal Inbox shadow pilot
 
-The revised Work 0037 advances the frozen 2.8.22 label-gated candidate to Code
-`2.8.23-prepilot`. Scheduled discovery admits ordinary eligible personal Inbox
+The revised Work 0037 advances the frozen 2.8.23 pilot evidence to Code
+`2.8.24-prepilot`. Scheduled discovery admits ordinary eligible personal Inbox
 messages, rejects `手動/除外` Thread-wide, excludes spam/trash, non-Inbox,
 Promotions, Social, clear newsletters/list mail, and Google Calendar
 notifications, and treats `手動/取込` only as optional priority. It uses the
@@ -119,10 +119,19 @@ a durable pilot-start boundary and pre-start messages are rejected. The
 manual worker fails closed while pilot Automation is active, and all
 Task/Review/Calendar/idempotency and strict Gemini boundaries remain unchanged.
 
-The repaired canonical-main squash lineage gate, 82-suite local inventory,
-2.8.23 Phase 8B/8C packages, frozen 2.8.20/2.8.21/2.8.22 preservation, and the
-bounded existing-target placement are recorded in the Work 0037 report. The
+The repaired canonical-main squash lineage gate, 84-suite local inventory,
+2.8.24 Phase 8B/8C packages, frozen 2.8.20/2.8.21/2.8.22/2.8.23
+preservation, bounded AUTO_PILOT Run History logging, healthy-idle suppression,
+90-day detailed-history retention, and the existing-target placement are
+recorded in the Work 0037 report. The
 later 24-hour shadow pilot is user-controlled and is not executed by Codex.
+
+Healthy scheduled `AUTO_PILOT` no-op runs retain the existing
+`AUTOMATION_LAST_RUN_AT` heartbeat without adding detailed `処理履歴` rows.
+Meaningful automatic and all manual runs remain appendable in chronological
+order. Only valid detailed Run History records strictly older than 90 days are
+compacted; business state, Error rows, and other audit evidence are not part of
+that retention rule.
 
 ## Next phase after Work 0037
 
@@ -131,8 +140,9 @@ candidate is placed and all gates pass, the shortest safe user sequence is:
 
 1. Keep Automation OFF and use the Work 0037 preparation/status surfaces.
 2. Confirm label readiness and zero owned clock triggers.
-3. Select at least 12 bounded, non-sensitive work-like messages by applying
-   `手動/取込`; do not use ordinary unlabeled Inbox mail.
+3. Use the current automatic-Inbox runbook: ordinary eligible personal Inbox
+   mail does not require `手動/取込`, while every hard exclusion remains
+   excluded and `手動/除外` remains a Thread-wide veto.
 4. Explicitly enable Automation once and verify exactly one canonical
    five-minute trigger.
 5. Allow the bounded automatic-Inbox → Gemini → governed Task/Review flow
