@@ -966,7 +966,7 @@ function checkReleaseLineage() {
     throw new Error('HISTORICAL_2_8_24_RELEASE_CHANGED');
   }
   return {
-    command: 'Work 0036 squash proof, bounded Work 0037 source scope, current release-only scope, and historical 2.8.20/2.8.21/2.8.22 preservation',
+    command: 'Work 0036 squash proof, bounded Work 0037 source scope, current release-only scope, and historical 2.8.20/2.8.21/2.8.22/2.8.23/2.8.24 preservation',
     a21_source_commit: a21SourceCommit,
     b21_release_commit: b21ReleaseCommit,
     source_correction_commit: contract.source_commit === a21SourceCommit

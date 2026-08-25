@@ -80,7 +80,7 @@ test('STAGING_USES_EXACT_COMMITTED_CURRENT_PAYLOAD_BYTES', () => {
   assert.strictEqual(inventory.file_count, 24);
   assert.strictEqual(
     inventory.payload_sha256,
-    'bd3693f223198ef1e1e91ddca73aa28c4eaf3cf036bd04aee63dfe50b60c7328'
+    '239f5d7052ae4488b059cf7526d0045b11aa558d44dad8cc7a28c729d2d9ba35'
   );
 });
 
