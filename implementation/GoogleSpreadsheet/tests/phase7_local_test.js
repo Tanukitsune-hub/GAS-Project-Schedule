@@ -667,6 +667,67 @@ test('P7-L15_CALENDAR_DEAD_LETTER_RESUMES_WITHOUT_AI_TASK_OR_EVENT_DUPLICATE',
     const clock = fixture.makeClock('2026-07-24T00:00:00.000Z');
     const pipeline = fixture.makeCountedPipeline(message);
 
+    const calendarClassification = {
+      schema_version: '2.0',
+      overall_confidence: 0.99,
+      actions: [{
+        action_type: 'INFORMATION_ONLY',
+        target_task_id: null,
+        task_title: null,
+        deadline: null,
+        suggested_deadline: null,
+        deadline_basis: 'NONE',
+        priority: 'MEDIUM',
+        waiting_for_reply: false,
+        needs_review: false,
+        calendar_category: 'NONE',
+        calendar_importance: 'LOW',
+        confidence: 0.99,
+        reason: 'No Task action',
+        changes: {}
+      }],
+      warnings: []
+    };
+    State.withLockedContext(
+      harness.stateSheet(spreadsheet),
+      (stateContext) => {
+        const runId = 'run_phase7_calendar_seed';
+        const now = new FakeDate('2026-07-24T00:00:00.000Z');
+        const claim = State.claimForResumeInContext(
+          message.message_id,
+          runId,
+          stateContext,
+          now
+        );
+        assert.strictEqual(claim.claimed, true);
+        State.checkpointClassificationInContext(
+          message.message_id,
+          runId,
+          calendarClassification,
+          stateContext,
+          now,
+          sandbox.WorkOsAiAdapter.getMetadata(null)
+        );
+        State.checkpointTasksWrittenInContext(
+          message.message_id,
+          runId,
+          stateContext,
+          now
+        );
+        State.checkpointCalendarPendingInContext(
+          message.message_id,
+          runId,
+          stateContext,
+          now
+        );
+      }
+    );
+    sandbox.WorkOsCalendarSync.enqueueTask(task, {
+      sheet: spreadsheet.getSheetByName(Config.SHEETS.SYNC_STATE),
+      now: new FakeDate('2026-07-24T00:00:00.000Z'),
+      timezone: Config.TIMEZONE
+    });
+
     [0, 6, 16, 61].forEach((advanceMinutes, index) => {
       if (advanceMinutes) {
         clock.advanceMinutes(advanceMinutes);
@@ -717,8 +778,8 @@ test('P7-L15_CALENDAR_DEAD_LETTER_RESUMES_WITHOUT_AI_TASK_OR_EVENT_DUPLICATE',
     assert.strictEqual(recovered.status, 'COMPLETE');
     assert.strictEqual(gateway.events.size, 1);
     assert.strictEqual(gateway.calls.eventInsert, 5);
-    assert.strictEqual(pipeline.counts.classify, 1);
-    assert.strictEqual(pipeline.gateway.calls.refetch, 1);
+    assert.strictEqual(pipeline.counts.classify, 0);
+    assert.strictEqual(pipeline.gateway.calls.refetch, 0);
     assert.strictEqual(
       harness.allTasks(harness.taskSheet(spreadsheet)).length,
       1

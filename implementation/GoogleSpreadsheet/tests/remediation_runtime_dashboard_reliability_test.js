@@ -614,13 +614,13 @@ test('R-UX-03_PAUSED_ACTION_DEPENDS_ON_OPERATION', () => {
 test('R-META-01_PHASE_BOUNDARY_AND_VERSIONS_ARE_CURRENT', () => {
   const config = source('00_Config.gs');
   const setup = source('02_Setup.gs');
-  assert.match(config, /CODE_VERSION:\s*'2\.8\.21-prepilot'/);
+  assert.match(config, /CODE_VERSION:\s*'2\.8\.25-prepilot'/);
   assert.match(config, /SCHEMA_VERSION:\s*'2\.6'/);
   assert.match(config, /AI_SCHEMA_VERSION:\s*'2\.0'/);
   assert.match(config, /MIGRATION_VERSION:\s*'3'/);
   assert.match(
     setup,
-    /READY_FOR_PHASE8B_SANDBOX_RETRANSFER/
+    /READY_FOR_AUTOMATIC_INBOX_SHADOW_PILOT/
   );
   assert(!setup.includes('STOP_BEFORE_PHASE7'));
 });

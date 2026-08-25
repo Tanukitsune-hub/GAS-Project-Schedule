@@ -586,7 +586,10 @@ function rawMessage(marker, overrides = {}) {
       `root:synthetic-root-${messageId}`,
     subject: `[MOCK:${marker}] Synthetic worker subject`,
     sender: 'noreply@example.invalid',
-    received_at: new Date('2026-07-24T00:00:00.000Z'),
+    received_at: overrides.received_at
+      ? new Date(overrides.received_at)
+      : new Date('2026-07-24T00:00:00.000Z'),
+    source_mode: overrides.source_mode || 'MANUAL',
     plain_body: overrides.plain_body || 'Synthetic worker body.',
     previous_messages: []
   };
@@ -610,7 +613,7 @@ function seedPreprocessed(spreadsheet, message) {
           thread_id: message.thread_id,
           stable_thread_key: message.stable_thread_key,
           received_at: message.received_at,
-          source_mode: 'MANUAL'
+          source_mode: message.source_mode || 'MANUAL'
         },
         'seed-phase3',
         context,

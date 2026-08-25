@@ -36,6 +36,14 @@
 **/.clasp-pull-verify-work-0036-runtime-preparation-fix/
 **/.clasp-work-0036-live-ai-schema-failure-fix/
 **/.clasp-pull-verify-work-0036-live-ai-schema-failure-fix/
+**/.clasp-work-0037-personal-shadow-pilot/
+**/.clasp-pull-verify-work-0037-personal-shadow-pilot/
+**/.clasp-work-0037-automatic-inbox-shadow-pilot/
+**/.clasp-pull-verify-work-0037-automatic-inbox-shadow-pilot/
+**/.clasp-work-0037-codex-03-operational-log-hardening/
+**/.clasp-pull-verify-work-0037-codex-03-operational-log-hardening/
+**/.clasp-work-0037-codex-04-idle-log-finalization/
+**/.clasp-pull-verify-work-0037-codex-04-idle-log-finalization/
 **/creds.json
 **/credentials*.json
 **/client_secret*.json

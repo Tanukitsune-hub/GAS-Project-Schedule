@@ -1,6 +1,6 @@
-# Current Verification Matrix - 2.8.21-prepilot
+# Current Verification Matrix - 2.8.25-prepilot
 
-Gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 | Requirement | Integrated mechanism | Primary evidence | Boundary |
 |---|---|---|---|
@@ -14,7 +14,8 @@ Gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
 | Provider schema compatibility projection | canonical/provider field, enum, and complexity drift tests | Work 0033 schema suite | Synthetic VM only |
 | Source/release identity | A21/B21 direct-child lineage, manifests, checksums, historical A20/B20 preservation | release verifiers/local gate | Local/fresh clone/CI |
 | Gemini runtime diagnostics | bounded provider error envelope, Message finalization, exact candidate pin | Work 0032 diagnostics suite | Synthetic fakes only |
-| Synthetic-only Automation qualification | exact subject/body, one-message bound, operator readiness, trigger-safe status | Work 0036 qualification and lifecycle suites | Synthetic VM only |
+| Automatic Inbox Personal Shadow Pilot | ordinary eligible Inbox, `手動/除外` Thread-wide veto, category/newsletter/Calendar hard exclusions, start boundary, one-message run | Work 0037 pilot and worker suites | Local fake runtime; personal pilot executed and stopped by user |
+| Operational Run History hardening | `TIME_DRIVEN / AUTO_PILOT`, pre-scan healthy-idle suppression, truthful detail status, independent heartbeat, 90-day detailed-history retention | Work 0037 CODEX-04 and worker suites | Local fake runtime; no runtime function |
 | Secret and local-state exclusion | tracked path/content scan | secret-scan suites | Local/CI |
 
 Historical A14/B14, A15/B15, and A17/B17 identities remain immutable. Local and CI

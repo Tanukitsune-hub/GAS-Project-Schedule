@@ -7,29 +7,31 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.21-prepilot` |
+| Code | `2.8.25-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
-| Candidate machine gate | `READY_FOR_USER_PERSONAL_AUTOMATION_E2E` |
-| ChatGPT review disposition | `READY — RUNTIME_PREPARATION_FIX_VALIDATED_AND_PLACED` |
+| Candidate machine gate | `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` |
+| ChatGPT review disposition | `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED` |
 | Personal Gemini E2E | `PASS` |
-| Product-code state | synthetic-only personal Automation qualification candidate |
+| Product-code state | automatic personal Inbox shadow-pilot candidate |
 | Automation | `OFF` |
 | Intended environment | personal Google Workspace only |
 
 The canonical payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers preserve
-the historical A20/B20 source and release evidence. The active successor uses
-A21/B21 lineage and preserves the 2.8.20 recovery bytes.
+the historical A20/B20, A21/B21, A22/B22, A23/B23, and A24/B24 evidence. The active
+successor uses the canonical-main Work 0037 lineage and preserves the frozen
+2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 source/release bytes.
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.21-prepilot/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.25-prepilot/`:
   `TEST_MODE=true`, harness included, Automation OFF.
-- `implementation/GoogleSpreadsheet/release/v2.8.21-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.25-prepilot-phase8c/`:
   the audited production-mode transform with the harness excluded, bounded
-  provider-readiness flags enabled, and Automation still OFF.
+  provider-readiness flags enabled, automatic Inbox pilot admission, and
+  Automation still OFF.
 
 Neither package authorizes deployment or Automation enablement by itself.
 
@@ -54,10 +56,34 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 78-suite regression manifest, deterministic 2.8.21 release packages,
-A21/B21 provenance, historical 2.8.20 preservation, current-main integration
-scope, and secret/local-state exclusions. It performs no real Google, Gmail,
-Calendar, Apps Script function, or Gemini operation.
+committed 86-suite regression manifest, deterministic 2.8.25 release packages,
+canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
+current-main integration scope, and secret/local-state exclusions. It performs
+no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
+
+## Work 0037 personal shadow-pilot boundary
+
+Code `2.8.25-prepilot` replaces the historical label-gated admission with an
+automatic personal Inbox shadow pilot. Scheduled discovery admits ordinary
+eligible personal Inbox messages, excludes `手動/除外` thread-wide, spam,
+trash, non-Inbox, Promotions, Social, clear newsletters/list mail, and Google
+Calendar notification mail. `手動/取込` is optional priority only and cannot
+bypass a hard exclusion. The distinct pilot source mode is
+`AUTOMATIC_INBOX_PILOT`, the run bound is one message per five-minute run, and
+the manual worker fails closed while pilot Automation is active. A successful
+explicit enable establishes a durable start boundary; older messages are
+never admitted. Automation remains OFF in both packages.
+
+Healthy scheduled `AUTO_PILOT` runs use the existing
+`AUTOMATION_LAST_RUN_AT` property as their heartbeat and do not create a
+detailed `処理履歴` row when they are a fully healthy no-op. Meaningful runs
+remain detailed, and only valid detailed Run History rows older than 90 days
+are compacted; Errors, Message State, Task/Review, Calendar, and Task Authority
+Ledger evidence are outside this retention boundary.
+
+The later user-controlled automatic Inbox pilot is not executed by Codex. Its bounded steps
+and stop criteria are recorded in
+`docs/handoffs/0037-personal-shadow-pilot-runbook.md`.
 
 ## Work 0036 review-fix result
 

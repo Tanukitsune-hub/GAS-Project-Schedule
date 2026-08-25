@@ -109,17 +109,33 @@ test('R-GMAIL-02_SPAM_TRASH_AND_NON_INBOX_FAIL_CLOSED', () => {
   );
 });
 
-test('R-GMAIL-03_MANUAL_IMPORT_OVERRIDES_LOW_VALUE_FILTERS', () => {
+test('R-GMAIL-03_MANUAL_IMPORT_IS_PRIORITY_ONLY', () => {
   const result = Gateway.automaticCandidatePolicy(
     ['手動/取込'],
     message({
-      labels: ['INBOX', 'CATEGORY_PROMOTIONS'],
-      unsubscribe: '<mailto:unsubscribe@example.invalid>'
+      labels: ['INBOX', 'CATEGORY_UPDATES']
     })
   );
   assert.strictEqual(result.process, true);
   assert.strictEqual(result.reason, 'MANUAL_IMPORT');
-  assert.strictEqual(result.priority, 1);
+  assert.strictEqual(result.priority, 10);
+  assert.strictEqual(
+    Gateway.automaticCandidatePolicy(
+      ['手動/取込'],
+      message({ labels: ['INBOX', 'CATEGORY_PROMOTIONS'] })
+    ).process,
+    false
+  );
+  assert.strictEqual(
+    Gateway.automaticCandidatePolicy(
+      ['手動/取込'],
+      message({
+        labels: ['INBOX'],
+        unsubscribe: '<mailto:unsubscribe@example.invalid>'
+      })
+    ).process,
+    false
+  );
 });
 
 test('R-GMAIL-04_PROMOTIONS_AND_SOCIAL_ARE_EXCLUDED', () => {

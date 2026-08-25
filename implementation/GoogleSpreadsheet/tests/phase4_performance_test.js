@@ -180,7 +180,7 @@ function test(id, body) {
   }
 }
 
-test('P4-P01_VERTICAL_RETRY_CHAIN_5_15_60_THEN_DEAD', () => {
+test('P4-P01_INFORMATION_ONLY_FINALIZATION_HAS_NO_CALENDAR_RETRY_CHAIN', () => {
   const spreadsheet = harness.makeOperationalSpreadsheet();
   harness.setActiveSpreadsheet(spreadsheet);
   const stableThreadKey = 'root:phase4-performance-retry';
@@ -210,15 +210,13 @@ test('P4-P01_VERTICAL_RETRY_CHAIN_5_15_60_THEN_DEAD', () => {
     clock,
     { pipeline }
   ).result;
-  assert.strictEqual(first.status, 'FAILED');
-  assert.strictEqual(first.calendar_job_count, 1);
-  assert.strictEqual(calendarGateway.calls.eventInsert, 1);
-  assertRetryState(
-    spreadsheet,
-    message.message_id,
-    'RETRY',
-    1,
-    '2026-07-24T00:25:00.000Z'
+  assert.strictEqual(first.status, 'COMPLETE');
+  assert.strictEqual(first.processed_count, 1);
+  assert.strictEqual(first.calendar_job_count, 0);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
+  assert.strictEqual(
+    runtime.messageRecord(spreadsheet, message.message_id).processing_status,
+    'DONE'
   );
   const stableBusinessState = businessSnapshot(
     taskById(spreadsheet, task.task_id)
@@ -243,76 +241,37 @@ test('P4-P01_VERTICAL_RETRY_CHAIN_5_15_60_THEN_DEAD', () => {
   ).result;
   assert.strictEqual(tooEarly.processed_count, 0);
   assert.strictEqual(tooEarly.calendar_job_count, 0);
-  assert.strictEqual(calendarGateway.calls.eventInsert, 1);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
   assert.strictEqual(taskSheet.writeLog.length, 0);
 
-  const retryCases = [
+  clock.advanceMinutes(76);
+  taskSheet.writeLog = [];
+  const second = runtime.runVertical(
+    spreadsheet,
+    message,
+    calendarGateway,
+    clock,
+    { pipeline }
+  ).result;
+  assert.strictEqual(second.status, 'COMPLETE');
+  assert.strictEqual(second.processed_count, 0);
+  assert.strictEqual(second.calendar_job_count, 0);
+  assert.strictEqual(calendarGateway.calls.eventInsert, 0);
+  assert.strictEqual(taskSheet.writeLog.length, 0);
+  assert.deepStrictEqual(
+    businessSnapshot(taskById(spreadsheet, task.task_id)),
+    stableBusinessState,
+    'Information-only processing rewrote a Task business field'
+  );
+  assert.deepStrictEqual(
     {
-      advance_minutes: 1,
-      status: 'RETRY',
-      retry_count: 2,
-      next_retry_at: '2026-07-24T00:40:00.000Z',
-      insert_calls: 2
+      refetch: pipeline.gateway.calls.refetch,
+      preprocess: pipeline.counts.preprocess,
+      classify: pipeline.counts.classify
     },
-    {
-      advance_minutes: 15,
-      status: 'RETRY',
-      retry_count: 3,
-      next_retry_at: '2026-07-24T01:40:00.000Z',
-      insert_calls: 3
-    },
-    {
-      advance_minutes: 60,
-      status: 'DEAD',
-      retry_count: 3,
-      next_retry_at: '',
-      insert_calls: 4
-    }
-  ];
-
-  retryCases.forEach((expected) => {
-    clock.advanceMinutes(expected.advance_minutes);
-    taskSheet.writeLog = [];
-    const result = runtime.runVertical(
-      spreadsheet,
-      message,
-      calendarGateway,
-      clock,
-      { pipeline }
-    ).result;
-    assert.strictEqual(result.status, 'FAILED');
-    assert.strictEqual(result.calendar_job_count, 1);
-    assert.strictEqual(
-      calendarGateway.calls.eventInsert,
-      expected.insert_calls
-    );
-    assertRetryState(
-      spreadsheet,
-      message.message_id,
-      expected.status,
-      expected.retry_count,
-      expected.next_retry_at
-    );
-    assert.deepStrictEqual(
-      businessSnapshot(taskById(spreadsheet, task.task_id)),
-      stableBusinessState,
-      'Calendar retry rewrote a Task business field'
-    );
-    assert.strictEqual(
-      onlyCalendarManagementWrites(taskSheet),
-      true,
-      'Calendar retry wrote outside Calendar-owned management fields'
-    );
-    assert.deepStrictEqual(
-      {
-        refetch: pipeline.gateway.calls.refetch,
-        preprocess: pipeline.counts.preprocess,
-        classify: pipeline.counts.classify
-      },
-      { refetch: 1, preprocess: 1, classify: 1 },
-      'Calendar retry reran Gmail/preprocess/AI'
-    );
-  });
+    { refetch: 1, preprocess: 1, classify: 1 },
+    'Information-only replay reran Gmail/preprocess/AI'
+  );
 });
 
 test('P4-P02_EDIT_HANDLER_READS_ONLY_SELECTED_ROWS', () => {

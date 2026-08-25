@@ -1,6 +1,6 @@
-# Controlled Sandbox Trial Guide - 2.8.21-prepilot
+# Controlled Personal Shadow Pilot Guide - 2.8.25-prepilot
 
-Code Version: `2.8.21-prepilot`
+Code Version: `2.8.25-prepilot`
 
 Schema Version: `2.6`
 
@@ -8,14 +8,17 @@ AI Schema Version: `2.0`
 
 Migration Version: `3`
 
-Highest machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Highest machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-Work 0036 scope: `SYNTHETIC_AUTOMATION_QUALIFICATION_ONLY`; automatic
-discovery accepts only the exact `[WORK_OS_AUTOMATION_SYNTHETIC_0036]`
-fixture, and Automation remains `OFF` until a later explicit user action.
+Work 0037 scope: `AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT`; automatic discovery
+admits ordinary eligible personal Inbox mail, gives `手動/除外` Thread-wide
+precedence, and excludes spam, trash, non-Inbox, Promotions, Social, clear
+newsletter/list mail, and Google Calendar notifications. `手動/取込` is
+optional priority only. Automation remains `OFF` until a later explicit user
+action.
 
-Work 0036 highest permitted status:
-`READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Work 0037 highest permitted status:
+`READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Automation: `OFF`
 
@@ -35,7 +38,37 @@ credential configured outside the repository. Do not re-enter, rotate, inspect,
 or copy the credential for this qualification. The key must never be pasted
 into GitHub, Codex, ChatGPT, source, tests, reports, or logs.
 
-## Work 0036 qualification boundary
+## Work 0037 shadow-pilot boundary
+
+- The existing five-minute schedule processes at most one admitted message per
+  run and records the distinct `AUTOMATIC_INBOX_PILOT` source mode.
+- The first successful explicit enable establishes the durable pilot-start
+  boundary. Messages older than that boundary are never admitted, including
+  through overlap search. A refused or failed enable leaves no misleading new
+  boundary.
+- Include a `手動/取込` plus `手動/除外` conflict case and verify it does not
+  process. Do not retry historical Work 0036 failures or Dead Letters.
+- Do not invoke the manual worker while pilot Automation is enabled. Stop on
+  any unlabeled processing, duplicate Task/Review/Calendar side effect,
+  privacy leak, unexpected Calendar target, duplicate trigger, or
+  non-recoverable runtime failure.
+- After the run, disable Automation and verify zero owned clock triggers and
+  no stored or canonical trigger residue.
+
+This guide is documentation only. Work 0037 Codex execution does not run the
+pilot, process Gmail, invoke Gemini, mutate Task/Review/Calendar, or invoke an
+Apps Script function.
+
+## Operational log boundary
+
+Meaningful scheduled pilot runs are recorded as `TIME_DRIVEN / AUTO_PILOT`.
+Fully healthy/no-op runs use the existing `AUTOMATION_LAST_RUN_AT` heartbeat
+and do not add a detailed `処理履歴` row. Only detailed Run History records
+with valid `finished_at` values strictly older than 90 days are compacted;
+invalid/missing timestamps, Errors, Message State, Task/Review, Calendar, and
+Task Authority Ledger evidence are not subject to this retention.
+
+## Historical Work 0036 qualification boundary
 
 - Gemini uses the exact `/v1beta/interactions` creation endpoint and completed
   responses are accepted only as `thought* model_output`.

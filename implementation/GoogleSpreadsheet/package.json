@@ -118,7 +118,14 @@
     "gas:inventory:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js inventory-check",
     "gas:push:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js push",
     "gas:pull-verify:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js pull-verify",
-    "gas:evidence:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js evidence"
+    "gas:evidence:work-0036-review-fix": "node tools/work_0036_review_fix_placement.js evidence",
+    "verify:work-0037-codex-04": "node tests/work_0037_codex_04_idle_log_finalization_placement_test.js",
+    "gas:auth-status:work-0037-codex-04": "node tools/work_0037_codex_04_idle_log_finalization_placement.js auth-status",
+    "gas:stage:work-0037-codex-04": "node tools/work_0037_codex_04_idle_log_finalization_placement.js stage",
+    "gas:inventory:work-0037-codex-04": "node tools/work_0037_codex_04_idle_log_finalization_placement.js inventory-check",
+    "gas:push:work-0037-codex-04": "node tools/work_0037_codex_04_idle_log_finalization_placement.js push",
+    "gas:pull-verify:work-0037-codex-04": "node tools/work_0037_codex_04_idle_log_finalization_placement.js pull-verify",
+    "gas:evidence:work-0037-codex-04": "node tools/work_0037_codex_04_idle_log_finalization_placement.js evidence"
   },
   "devDependencies": {
     "@google/clasp": "3.3.0",

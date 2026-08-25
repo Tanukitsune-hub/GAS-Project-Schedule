@@ -1,15 +1,39 @@
 # Decisions
 
-Last updated: 2026-08-19
+Last updated: 2026-08-25
 
-This file records active decisions for Code `2.8.21-prepilot` and its frozen
-2.8.20 recovery baseline. Historical handoffs, reports, releases, and audit
-records remain immutable evidence.
+This file records active decisions for Code `2.8.25-prepilot`, with frozen
+2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 evidence. Historical handoffs, reports, releases,
+and audit records remain immutable evidence.
 
-Current candidate machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Current candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Current ChatGPT review disposition:
-`READY — FALSE_READINESS_SURFACE_REPAIRED`
+`READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
+
+## D-068: Work 0037 is automatic personal Inbox shadow pilot
+
+Code `2.8.25-prepilot` admits ordinary eligible personal Inbox messages while
+applying a Thread-wide `手動/除外` veto. Spam, trash, non-Inbox, Promotions,
+Social, clear newsletters/list mail, and Google Calendar notifications are
+hard exclusions; `手動/取込` is optional priority only. The scheduled source
+mode is `AUTOMATIC_INBOX_PILOT`, the run bound is one message per five-minute
+interval, and Automation remains OFF until the later user-controlled pilot.
+The first successful explicit enable establishes a durable start boundary and
+older messages can never enter the automatic backlog. The manual worker fails
+closed while pilot Automation is active so the two entrypoints cannot
+ambiguously own the same candidate pool.
+
+## D-069: operational log detail is bounded, not business state
+
+Code `2.8.25-prepilot` records meaningful scheduled pilot runs as
+`TIME_DRIVEN / AUTO_PILOT`. A fully healthy/no-op `AUTO_PILOT` invocation may
+omit only its detailed `処理履歴` row; the existing
+`AUTOMATION_LAST_RUN_AT` property remains the heartbeat. Detailed Run History
+records with valid `finished_at` values strictly older than 90 days may be
+compacted in chronological order. Invalid/missing timestamps, Error rows,
+Message State, Task/Review, Calendar, Task Authority Ledger, and other audit
+evidence are never covered by this retention rule.
 
 ## D-048: one active candidate
 

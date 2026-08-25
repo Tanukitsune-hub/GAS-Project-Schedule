@@ -1,20 +1,20 @@
 # Current Status
 
-Last updated: 2026-08-23
+Last updated: 2026-08-25
 
-Candidate version: Code `2.8.21-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `PERSONAL_SYNTHETIC_AUTOMATION_E2E_PASS`
+Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
-Machine gate: `READY_FOR_USER_PERSONAL_AUTOMATION_E2E`
+Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-ChatGPT review disposition: `PASS — CONTROLLED_SYNTHETIC_AUTOMATION_E2E_COMPLETE`
+ChatGPT review disposition: `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
 
 Personal Gemini E2E: `PASS`
 
 Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
 
-User Automation E2E: `PASS`
+User Automation E2E: `EXECUTED AND STOPPED — historical accepted evidence; no new run in CODEX-04`
 
 ## Current contract
 
@@ -23,13 +23,13 @@ The payload is exactly 23 `.gs` files plus `appsscript.json`. Phase 8B keeps
 `TEST_MODE=true` and the test harness. Phase 8C is the audited production-mode
 transform with the harness excluded, bounded provider-readiness flags enabled,
 and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
-verifiers bind the A21/B21 candidate while preserving historical A20/B20 source
-and release evidence.
+verifiers bind the A25/B25 candidate while preserving historical A20/B20,
+A21/B21, A22/B22, A23/B23, and A24/B24 source and release evidence.
 
-The canonical Code `2.8.21-prepilot` release gate remains
-`READY_FOR_USER_PERSONAL_AUTOMATION_E2E`; the successful live qualification
-recorded below is runtime evidence that the controlled user E2E passed, not a
-renaming of that release contract.
+The canonical Code `2.8.25-prepilot` release gate is
+`READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`. The historical Work 0036 live
+qualification remains evidence for the frozen 2.8.21 baseline and is not
+reinterpreted as Work 0037 pilot execution.
 
 The source includes the Gemini Interactions provider, provider-facing schema
 projection, strict AI Schema 2.0 post-response validation, exact synthetic
@@ -43,9 +43,34 @@ fresh approved synthetic-message E2E on Code `2.8.20-prepilot`. The reviewed
 bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 
 Code `2.8.20-prepilot` remains the frozen manual-plus-Gemini recovery baseline.
-Work 0036 is its direct 2.8.21 successor for synthetic-only personal
-Automation qualification. No company-PC or company-environment rollout is
-planned.
+Work 0036 remains the frozen 2.8.21 synthetic Automation recovery baseline.
+Code `2.8.23-prepilot` remains frozen Work 0037 live-pilot evidence. The
+current Work 0037 candidate is the 2.8.25 idle-log-finalization successor;
+no company-PC or company-environment rollout is planned.
+
+## Work 0037 implementation status
+
+- Canonical baseline: merged `main` Work 0036 completion `ca70607...`; the
+  repaired gate proves exact squash materialization and historical A21/B21
+  ancestry without weakening lineage checks.
+- Pilot admission: ordinary eligible personal Inbox mail is admitted;
+  `手動/除外` wins thread-wide; spam, trash, non-Inbox, Promotions, Social,
+  clear newsletters/list mail, and Google Calendar notifications are hard
+  exclusions. `手動/取込` is optional priority only.
+- Scheduled source mode: `AUTOMATIC_INBOX_PILOT`; maximum one candidate per
+  five-minute run; manual processing fails closed while pilot Automation is
+  active. A successful explicit enable establishes the durable pilot-start
+  boundary, and older messages are rejected.
+- Automation: `OFF` by default and throughout Codex work. No new user-controlled
+  24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar mutation,
+  trigger changes, or runtime functions are executed in CODEX-04; the prior
+  personal pilot remains accepted historical evidence and was stopped by the user.
+- Code `2.8.25-prepilot` Phase 8B/8C packages, the 86-suite deterministic local
+  inventory, pre-scan AUTO_PILOT idle suppression, truthful detail status, and
+  90-day detailed-history retention are regenerated/validated by the Work 0037
+  delivery gate. The exact pre-placement head passed CI; one guarded OFF-state
+  Phase 8C correction push and one isolated pull-back proved exact 23-file
+  parity. Code `2.8.24-prepilot` remains frozen placement evidence.
 
 ## Work 0036 implementation evidence
 
