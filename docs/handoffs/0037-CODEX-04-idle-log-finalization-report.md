@@ -99,6 +99,7 @@ The required reports and dispatch ledger were updated without rewriting the
 historical Work 0037 evidence. PR `#52` remains Draft/Open/Unmerged for
 ChatGPT final review and merge decision.
 
-Final report-head: `TO_BE_FILLED_AFTER_REPORT_COMMIT`
+Final report-head: the final commit containing this report; the exact SHA is
+returned with the completion handoff and verified against the pushed branch.
 
 BLOCKER: `NONE`
