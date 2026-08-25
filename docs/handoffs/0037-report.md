@@ -14,7 +14,9 @@ The Automatic Personal Inbox Shadow Pilot itself has been user-executed and acce
 - the user explicitly stopped Automation after the observation window;
 - the user then confirmed the real Automation status was stopped/consistent with owned time-trigger cleanup complete.
 
-The active Work remains open only for final operational-log convergence before PR merge and the Completion Latch.
+That earlier pre-CODEX-04 state was superseded by the final idle-log convergence
+recorded below. Work 0037 is now ready for ChatGPT final review and the
+Completion Latch.
 
 ## Accepted automatic-Inbox product boundary
 
@@ -88,12 +90,43 @@ Required final correction is deliberately narrow:
 
 No Automation re-enable or live scheduled smoke is authorized. The accepted durable pilot-start boundary remains historical state, so local executable evidence plus OFF-state placement parity is the safer decisive validation.
 
+## Dispatch 0037-CODEX-04 — Completion evidence
+
+The final idle-log repair returned Code `2.8.25-prepilot` / Schema `2.6` /
+AI Schema `2.0` / Migration `3` and is recorded in:
+
+`docs/handoffs/0037-CODEX-04-idle-log-finalization-report.md`
+
+The repair moves healthy/no-op `AUTO_PILOT` suppression ahead of all Run
+History full-data, duplicate-ID, retention, compaction, and append work, and
+propagates the intentional non-recorded result as `log_recorded=false`. The
+existing heartbeat, meaningful-run retention, `TIME_DRIVEN / AUTO_PILOT`,
+`AUTO_PHASE6`, and manual behavior remain unchanged.
+
+Returned evidence:
+
+- pre-placement HEAD: `53a9ea6fe6dad2fa963db8e94be637ace22ab876`;
+- complete local gate: `11/11 PASS`;
+- deterministic inventory: `86` suites, missing `0`, extra `0`;
+- Apps Script static validation: PASS;
+- 2.8.25 Phase 8B/8C release verification: PASS;
+- lineage, frozen 2.8.20/2.8.21/2.8.22/2.8.23/2.8.24 preservation,
+  secret/local-state scan, and `git diff --check`: PASS;
+- exact pre-placement CI: SUCCESS;
+- one guarded OFF-state Phase 8C 2.8.25 push: PASS;
+- one isolated pull-back: PASS;
+- exact `22 .gs + appsscript.json` inventory and byte/hash parity: PASS;
+- Automation and all Apps Script runtime functions: NOT EXECUTED.
+
+The final report-head CI remains the last publication gate. PR #52 remains
+Draft/Open/Unmerged for ChatGPT final review and merge decision.
+
 ## Current BLOCKER status
 
-`BLOCKER: YES — IDLE_RUN_RETENTION_MAINTENANCE_ORDER`
+`BLOCKER: NONE`
 
-This blocker is limited to the final operational-log acceptance contract. The Automatic Inbox live pilot itself remains accepted evidence.
-
-Work 0037 remains Draft/Open/Unmerged until Dispatch `0037-CODEX-04` returns, ChatGPT reviews the exact final evidence, active docs/contract are converged, PR #52 is merged, and the Completion Latch is applied.
+The previous `IDLE_RUN_RETENTION_MAINTENANCE_ORDER` blocker was resolved by
+Dispatch `0037-CODEX-04`. Historical Work 0037 evidence and the prior blocker
+statement are retained above for provenance.
 
 A company-environment sandbox remains a separate later Work 0038 after Work 0037 final acceptance and explicit authorization.

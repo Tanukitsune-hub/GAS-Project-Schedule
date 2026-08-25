@@ -49,16 +49,24 @@ This file is the authoritative ball-control ledger for Work 0037.
 - Target Code: `2.8.25-prepilot`.
 - Scope: move fully healthy/no-op AUTO_PILOT suppression ahead of all Run History full-data/duplicate/retention work; make the result surface truthfully report that no detail row was recorded; preserve meaningful-run retention/audit behavior and heartbeat; converge final active docs/release; perform one newly authorized OFF-state correction placement plus isolated pull-back parity.
 - Explicit runtime boundary: no Automation enable/re-enable, no scheduled smoke, no live Run History retention execution, no Gmail/Gemini/Task/Review/Calendar runtime action, no company or alternate target.
-- BALL: `CODEX`
-- STATUS: `READY`
+- Report: `docs/handoffs/0037-CODEX-04-idle-log-finalization-report.md`
+- Returned candidate: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`.
+- Exact pre-placement HEAD: `53a9ea6fe6dad2fa963db8e94be637ace22ab876`.
+- Complete local gate: `11/11 PASS`; deterministic inventory `86` suites, missing `0`, extra `0`; Apps Script static validation, 2.8.25 Phase 8B/8C release verification, lineage, frozen-release preservation, secret/local-state scan, and diff check all PASS.
+- Exact pre-placement CI: SUCCESS.
+- Existing-target correction: one guarded OFF-state Phase 8C push PASS; one isolated pull-back PASS; exact `22 .gs + appsscript.json` inventory, missing `0`, extra `0`, and byte/hash parity PASS.
+- Automation remained OFF; no Apps Script runtime function or business-state mutation was executed.
+- Outcome: idle fast-path and truthful non-recorded detail result implemented; no blocker remains.
+- BALL: `CHATGPT`
+- STATUS: `COMPLETE_PENDING_FINAL_REVIEW`
 
 ## Current ball
 
-Codex owns only the bounded implementation, executable validation, release regeneration, exact-head CI, and one newly authorized OFF-state correction placement/pull-back defined in Dispatch `0037-CODEX-04`.
+Codex has completed the bounded implementation, executable validation, release regeneration, exact-head CI, and one newly authorized OFF-state correction placement/pull-back defined in Dispatch `0037-CODEX-04`.
 
 ChatGPT retains Primary Outcome, scope, authorization, final review, PR merge decision, Completion Latch, and any later company-sandbox routing.
 
 WORK_ID: `0037`
 Current Dispatch ID: `0037-CODEX-04`
-BALL: `CODEX`
-STATUS: `READY`
+BALL: `CHATGPT`
+STATUS: `COMPLETE_PENDING_FINAL_REVIEW`

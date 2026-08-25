@@ -65,10 +65,12 @@ no company-PC or company-environment rollout is planned.
   24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar mutation,
   trigger changes, or runtime functions are executed in CODEX-04; the prior
   personal pilot remains accepted historical evidence and was stopped by the user.
-- Code `2.8.25-prepilot` Phase 8B/8C packages, the 85-suite deterministic local
+- Code `2.8.25-prepilot` Phase 8B/8C packages, the 86-suite deterministic local
   inventory, pre-scan AUTO_PILOT idle suppression, truthful detail status, and
   90-day detailed-history retention are regenerated/validated by the Work 0037
-  delivery gate. Code `2.8.24-prepilot` remains frozen placement evidence.
+  delivery gate. The exact pre-placement head passed CI; one guarded OFF-state
+  Phase 8C correction push and one isolated pull-back proved exact 23-file
+  parity. Code `2.8.24-prepilot` remains frozen placement evidence.
 
 ## Work 0036 implementation evidence
 

@@ -56,7 +56,7 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 85-suite regression manifest, deterministic 2.8.25 release packages,
+committed 86-suite regression manifest, deterministic 2.8.25 release packages,
 canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
 current-main integration scope, and secret/local-state exclusions. It performs
 no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
