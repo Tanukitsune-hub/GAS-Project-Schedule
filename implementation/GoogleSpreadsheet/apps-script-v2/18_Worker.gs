@@ -324,12 +324,14 @@ var WorkOsWorker = (function () {
 
   function appendRunSummarySafely(summary, spreadsheet, deferredError) {
     try {
-      WorkOsLogAndDeadLetter.appendRunSummary(
+      var result = WorkOsLogAndDeadLetter.appendRunSummary(
         summary,
         spreadsheet,
         deferredError
       );
-      return true;
+      // appendRunSummary() returns null for an intentionally suppressed
+      // healthy AUTO_PILOT detail row and a row number for persisted detail.
+      return result !== null && result !== undefined;
     } catch (error) {
       return false;
     }

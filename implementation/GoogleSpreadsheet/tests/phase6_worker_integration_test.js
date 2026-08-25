@@ -392,6 +392,48 @@ test('P6-I00_PRODUCTION_PATH_NEVER_FALLS_BACK_TO_MOCK', () => {
   assert.strictEqual(gateway.calls.list, 0);
 });
 
+test('P6-I00C_HEALTHY_IDLE_AUTO_PILOT_SKIPS_RUN_HISTORY_AND_REPORTS_NOT_RECORDED', () => {
+  const spreadsheet = fixture.makeOperationalSpreadsheet();
+  const history = spreadsheet.getSheetByName(Config.SHEETS.RUN_HISTORY);
+  const calls = { getRange: 0, getMaxRows: 0, getMaxColumns: 0 };
+  ['getRange', 'getMaxRows', 'getMaxColumns'].forEach((method) => {
+    const original = history[method];
+    history[method] = function (...args) {
+      calls[method] += 1;
+      return original.apply(this, args);
+    };
+  });
+  const result = Worker.processAutomaticBatch({
+    spreadsheet,
+    gateway: automaticGateway([]),
+    properties: (() => {
+      const props = properties();
+      props.setProperty(
+        Config.PROPERTIES.AUTOMATION_PILOT_STARTED_AT,
+        '2026-07-24T00:00:00.000Z'
+      );
+      return props;
+    })(),
+    pilot_only: true,
+    adapter: new sandbox.WorkOsAiAdapter.MockAiAdapter(),
+    now: clockAt('2026-07-24T12:00:00.000Z'),
+    budget: { isExhausted: () => false }
+  });
+  assert.strictEqual(result.status, 'COMPLETE');
+  assert.strictEqual(result.candidate_count, 0);
+  assert.strictEqual(result.log_recorded, false);
+  assert.deepStrictEqual(calls, {
+    getRange: 0,
+    getMaxRows: 0,
+    getMaxColumns: 0
+  });
+  assert.strictEqual(
+    history.cells.slice(Config.DATA_START_ROW - 1)
+      .some((row) => row.some((value) => value !== '')),
+    false
+  );
+});
+
 test('P6-I00B_PRODUCTION_SHAPED_INTERNAL_VERTICAL_BYPASSES_ONLY_PRIVATE_GUARD', () => {
   const spreadsheet = fixture.makeOperationalSpreadsheet();
   const message = fixture.rawMessage('INFORMATION_ONLY', {

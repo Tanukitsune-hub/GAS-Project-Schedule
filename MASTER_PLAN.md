@@ -4,7 +4,7 @@ Last updated: 2026-08-20
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.24-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
@@ -109,7 +109,7 @@ Calendar, trigger, Setup, diagnostic, or user E2E action was executed.
 ## Work 0037: automatic personal Inbox shadow pilot
 
 The revised Work 0037 advances the frozen 2.8.23 pilot evidence to Code
-`2.8.24-prepilot`. Scheduled discovery admits ordinary eligible personal Inbox
+`2.8.25-prepilot`. Scheduled discovery admits ordinary eligible personal Inbox
 messages, rejects `手動/除外` Thread-wide, excludes spam/trash, non-Inbox,
 Promotions, Social, clear newsletters/list mail, and Google Calendar
 notifications, and treats `手動/取込` only as optional priority. It uses the
@@ -120,11 +120,12 @@ manual worker fails closed while pilot Automation is active, and all
 Task/Review/Calendar/idempotency and strict Gemini boundaries remain unchanged.
 
 The repaired canonical-main squash lineage gate, 85-suite local inventory,
-2.8.24 Phase 8B/8C packages, frozen 2.8.20/2.8.21/2.8.22/2.8.23
+2.8.25 Phase 8B/8C packages, frozen 2.8.20/2.8.21/2.8.22/2.8.23/2.8.24
 preservation, bounded AUTO_PILOT Run History logging, healthy-idle suppression,
 90-day detailed-history retention, and the existing-target placement are
 recorded in the Work 0037 report. The
-later 24-hour shadow pilot is user-controlled and is not executed by Codex.
+later 24-hour shadow pilot is user-controlled and is not executed by Codex;
+the completed personal observation remains historical accepted evidence.
 
 Healthy scheduled `AUTO_PILOT` no-op runs retain the existing
 `AUTOMATION_LAST_RUN_AT` heartbeat without adding detailed `処理履歴` rows.

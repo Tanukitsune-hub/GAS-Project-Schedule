@@ -7,7 +7,7 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.24-prepilot` |
+| Code | `2.8.25-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
@@ -20,15 +20,15 @@ Workspace Personal Work OS.
 
 The canonical payload is exactly 23 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers preserve
-the historical A20/B20, A21/B21, A22/B22, and A23/B23 evidence. The active
+the historical A20/B20, A21/B21, A22/B22, A23/B23, and A24/B24 evidence. The active
 successor uses the canonical-main Work 0037 lineage and preserves the frozen
-2.8.20, 2.8.21, 2.8.22, and 2.8.23 source/release bytes.
+2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 source/release bytes.
 
 Current packages:
 
-- `implementation/GoogleSpreadsheet/release/v2.8.24-prepilot/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.25-prepilot/`:
   `TEST_MODE=true`, harness included, Automation OFF.
-- `implementation/GoogleSpreadsheet/release/v2.8.24-prepilot-phase8c/`:
+- `implementation/GoogleSpreadsheet/release/v2.8.25-prepilot-phase8c/`:
   the audited production-mode transform with the harness excluded, bounded
   provider-readiness flags enabled, automatic Inbox pilot admission, and
   Automation still OFF.
@@ -56,14 +56,14 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 85-suite regression manifest, deterministic 2.8.24 release packages,
+committed 85-suite regression manifest, deterministic 2.8.25 release packages,
 canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
 current-main integration scope, and secret/local-state exclusions. It performs
 no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
 
 ## Work 0037 personal shadow-pilot boundary
 
-Code `2.8.24-prepilot` replaces the historical label-gated admission with an
+Code `2.8.25-prepilot` replaces the historical label-gated admission with an
 automatic personal Inbox shadow pilot. Scheduled discovery admits ordinary
 eligible personal Inbox messages, excludes `手動/除外` thread-wide, spam,
 trash, non-Inbox, Promotions, Social, clear newsletters/list mail, and Google

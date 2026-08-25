@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-25
 
-Candidate version: Code `2.8.24-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
@@ -26,7 +26,7 @@ and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
 verifiers bind the A24/B24 candidate while preserving historical A20/B20,
 A21/B21, A22/B22, and A23/B23 source and release evidence.
 
-The canonical Code `2.8.24-prepilot` release gate is
+The canonical Code `2.8.25-prepilot` release gate is
 `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`. The historical Work 0036 live
 qualification remains evidence for the frozen 2.8.21 baseline and is not
 reinterpreted as Work 0037 pilot execution.
@@ -45,7 +45,7 @@ bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 Code `2.8.20-prepilot` remains the frozen manual-plus-Gemini recovery baseline.
 Work 0036 remains the frozen 2.8.21 synthetic Automation recovery baseline.
 Code `2.8.23-prepilot` remains frozen Work 0037 live-pilot evidence. The
-current Work 0037 candidate is the 2.8.24 operational-log-hardening successor;
+current Work 0037 candidate is the 2.8.25 idle-log-finalization successor;
 no company-PC or company-environment rollout is planned.
 
 ## Work 0037 implementation status
@@ -64,10 +64,10 @@ no company-PC or company-environment rollout is planned.
 - Automation: `OFF` by default and throughout Codex work. User-controlled
   24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar
   mutation, trigger changes, and runtime functions are `NOT EXECUTED`.
-- Code `2.8.24-prepilot` Phase 8B/8C packages, the 85-suite deterministic local
-  inventory, AUTO_PILOT Run History semantics, healthy-idle suppression, and
+- Code `2.8.25-prepilot` Phase 8B/8C packages, the 85-suite deterministic local
+  inventory, pre-scan AUTO_PILOT idle suppression, truthful detail status, and
   90-day detailed-history retention are regenerated/validated by the Work 0037
-  delivery gate.
+  delivery gate. Code `2.8.24-prepilot` remains frozen placement evidence.
 
 ## Work 0036 implementation evidence
 

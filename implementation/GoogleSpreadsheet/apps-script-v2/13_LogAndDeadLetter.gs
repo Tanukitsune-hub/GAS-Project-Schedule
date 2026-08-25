@@ -1090,6 +1090,12 @@ var WorkOsLogAndDeadLetter = (function () {
 
   function appendRunSummary(summary, spreadsheet, deferredError) {
     var value = summary || {};
+    // A healthy five-minute AUTO_PILOT heartbeat has no detail to persist.
+    // Decide that before touching Run History so idle cycles do not perform
+    // duplicate scans, retention maintenance, compaction, or append work.
+    if (isHealthyIdleAutomaticPilot(value, deferredError)) {
+      return null;
+    }
     var allowedModes = {
       GMAIL_PHASE2: true,
       MOCK_PHASE3: true,
@@ -1195,9 +1201,6 @@ var WorkOsLogAndDeadLetter = (function () {
         }
       }
       pruneRunHistory(historySheet, runHistoryRetentionReference(value));
-      if (isHealthyIdleAutomaticPilot(value, deferredError)) {
-        return null;
-      }
       if (deferredError && deferredError.error) {
         try {
           recordOperationalError(

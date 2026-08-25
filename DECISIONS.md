@@ -2,8 +2,8 @@
 
 Last updated: 2026-08-25
 
-This file records active decisions for Code `2.8.24-prepilot`, with frozen
-2.8.20, 2.8.21, 2.8.22, and 2.8.23 evidence. Historical handoffs, reports, releases,
+This file records active decisions for Code `2.8.25-prepilot`, with frozen
+2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 evidence. Historical handoffs, reports, releases,
 and audit records remain immutable evidence.
 
 Current candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
@@ -13,7 +13,7 @@ Current ChatGPT review disposition:
 
 ## D-068: Work 0037 is automatic personal Inbox shadow pilot
 
-Code `2.8.24-prepilot` admits ordinary eligible personal Inbox messages while
+Code `2.8.25-prepilot` admits ordinary eligible personal Inbox messages while
 applying a Thread-wide `手動/除外` veto. Spam, trash, non-Inbox, Promotions,
 Social, clear newsletters/list mail, and Google Calendar notifications are
 hard exclusions; `手動/取込` is optional priority only. The scheduled source
@@ -26,7 +26,7 @@ ambiguously own the same candidate pool.
 
 ## D-069: operational log detail is bounded, not business state
 
-Code `2.8.24-prepilot` records meaningful scheduled pilot runs as
+Code `2.8.25-prepilot` records meaningful scheduled pilot runs as
 `TIME_DRIVEN / AUTO_PILOT`. A fully healthy/no-op `AUTO_PILOT` invocation may
 omit only its detailed `処理履歴` row; the existing
 `AUTOMATION_LAST_RUN_AT` property remains the heartbeat. Detailed Run History

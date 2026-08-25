@@ -94,7 +94,7 @@ function runCandidate(messages, known = {}) {
 }
 
 test('WORK_0037_CONFIG_IS_AUTOMATIC_INBOX_AND_BOUNDED', () => {
-  assert.strictEqual(Config.CODE_VERSION, '2.8.24-prepilot');
+  assert.strictEqual(Config.CODE_VERSION, '2.8.25-prepilot');
   assert.strictEqual(Config.AUTOMATION_ENABLED, false);
   assert.strictEqual(Config.AUTOMATION_PILOT_SCOPE,
     'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT');

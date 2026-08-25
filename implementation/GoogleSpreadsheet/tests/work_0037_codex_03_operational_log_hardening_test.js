@@ -278,7 +278,7 @@ function testModesAndManualCompatibility() {
 
 function testHealthyIdleSuppressionAndHeartbeatBoundary() {
   const spreadsheet = makeSpreadsheet();
-  append(spreadsheet, 'idle-noop');
+  assert.strictEqual(append(spreadsheet, 'idle-noop'), null);
   append(spreadsheet, 'idle-watermark', { watermark_advanced: true });
   append(spreadsheet, 'idle-filters', {
     gmail_filter_counts: { CATEGORY_SOCIAL: 3 }
@@ -412,7 +412,7 @@ function testRetentionIsRunHistoryOnlyAndAppendable() {
   assertSnapshotsEqual(before, snapshotSheets(spreadsheet, otherNames));
 }
 
-function testHealthyIdleStillRunsRunHistoryRetention() {
+function testHealthyIdleSkipsRunHistoryMaintenance() {
   const spreadsheet = makeSpreadsheet();
   const now = new Date('2026-08-25T00:01:00.000Z');
   const old = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000 - 1);
@@ -424,13 +424,15 @@ function testHealthyIdleStillRunsRunHistoryRetention() {
   append(spreadsheet, 'healthy-idle-after-retention', {
     retention_reference_at: now
   });
-  assert.deepStrictEqual(historyRecords(spreadsheet), [],
-    'healthy idle suppression must not disable Run History retention');
+  assert.deepStrictEqual(historyRecords(spreadsheet).map((record) =>
+    record.run_id
+  ), ['idle-retention-old'],
+  'healthy idle suppression must not perform Run History maintenance');
 }
 
 testModesAndManualCompatibility();
 testHealthyIdleSuppressionAndHeartbeatBoundary();
 testMeaningfulRunsAreNeverSuppressed();
 testRetentionIsRunHistoryOnlyAndAppendable();
-testHealthyIdleStillRunsRunHistoryRetention();
+testHealthyIdleSkipsRunHistoryMaintenance();
 console.log('work_0037_codex_03_operational_log_hardening_test: PASS');

@@ -1,4 +1,4 @@
-# Google Workspace Personal Work OS v2 - 2.8.24-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.25-prepilot
 
 This directory is the canonical Apps Script source for the Work 0037
 automatic personal Inbox shadow-pilot candidate in
@@ -6,7 +6,7 @@ automatic personal Inbox shadow-pilot candidate in
 
 ## Active contract
 
-- Code: `2.8.24-prepilot`
+- Code: `2.8.25-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
