@@ -944,7 +944,7 @@ function checkReleaseLineage() {
   ];
   if (historicalReleasePaths.slice(0, 4).some((releasePath) =>
     !gitObjectExists(`${currentScopeStartingMain}:${releasePath}`)) ||
-      historicalReleasePaths.slice(4).some((releasePath) =>
+      historicalReleasePaths.slice(4, 8).some((releasePath) =>
         !gitObjectExists(`${expectedRefBaseline}:${releasePath}`)) ||
       historicalReleasePaths.slice(8).some((releasePath) =>
         !gitObjectExists(`${work0037Codex04HistoricalBaseline}:${releasePath}`))) {

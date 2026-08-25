@@ -14,7 +14,7 @@ Personal Gemini E2E: `PASS`
 
 Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
 
-User Automation E2E: `NOT EXECUTED — Work 0037 prepares only the later user-controlled pilot`
+User Automation E2E: `EXECUTED AND STOPPED — historical accepted evidence; no new run in CODEX-04`
 
 ## Current contract
 
@@ -23,8 +23,8 @@ The payload is exactly 23 `.gs` files plus `appsscript.json`. Phase 8B keeps
 `TEST_MODE=true` and the test harness. Phase 8C is the audited production-mode
 transform with the harness excluded, bounded provider-readiness flags enabled,
 and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
-verifiers bind the A24/B24 candidate while preserving historical A20/B20,
-A21/B21, A22/B22, and A23/B23 source and release evidence.
+verifiers bind the A25/B25 candidate while preserving historical A20/B20,
+A21/B21, A22/B22, A23/B23, and A24/B24 source and release evidence.
 
 The canonical Code `2.8.25-prepilot` release gate is
 `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`. The historical Work 0036 live
@@ -61,9 +61,10 @@ no company-PC or company-environment rollout is planned.
   five-minute run; manual processing fails closed while pilot Automation is
   active. A successful explicit enable establishes the durable pilot-start
   boundary, and older messages are rejected.
-- Automation: `OFF` by default and throughout Codex work. User-controlled
-  24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar
-  mutation, trigger changes, and runtime functions are `NOT EXECUTED`.
+- Automation: `OFF` by default and throughout Codex work. No new user-controlled
+  24-hour pilot, Gmail processing, Gemini calls, Task/Review/Calendar mutation,
+  trigger changes, or runtime functions are executed in CODEX-04; the prior
+  personal pilot remains accepted historical evidence and was stopped by the user.
 - Code `2.8.25-prepilot` Phase 8B/8C packages, the 85-suite deterministic local
   inventory, pre-scan AUTO_PILOT idle suppression, truthful detail status, and
   90-day detailed-history retention are regenerated/validated by the Work 0037

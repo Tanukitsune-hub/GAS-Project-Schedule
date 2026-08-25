@@ -157,7 +157,7 @@ function Assert-ExactSourceCheckout {
   if ($headCommit.ToLowerInvariant() -ne $resolvedSourceCommit.ToLowerInvariant()) {
     throw (
       'SourceCommit must exactly match checkout HEAD before package generation. ' +
-      'Create/checkout Source A21 first; package generation stopped.'
+      'Create/checkout the exact 2.8.25 source commit first; package generation stopped.'
     )
   }
 }

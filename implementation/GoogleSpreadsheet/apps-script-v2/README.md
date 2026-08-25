@@ -45,8 +45,9 @@ the existing no-argument idempotent preparation path and leaves Automation OFF.
 
 `getPersonalShadowPilotStatus()` and `preparePersonalShadowPilot()` perform no
 Gmail or Gemini request. The later user-controlled pilot is the only boundary
-that may process personal Inbox messages; it is not executed by Codex and must
-not be replaced by an unbounded fallback.
+that may process personal Inbox messages; the prior personal pilot was executed
+and stopped by the user, while no new pilot is executed by Codex and must not
+be replaced by an unbounded fallback.
 
 The scheduled `AUTO_PILOT` path records `TIME_DRIVEN / AUTO_PILOT` for
 meaningful runs. A fully healthy/no-op run leaves the existing
@@ -65,7 +66,7 @@ pnpm run verify:local
 ```
 
 The local gate runs the exact committed test inventory, source/static checks,
-release parity, A24/B24 lineage, historical A20/B20/A21/B21/A22/B22/A23/B23 preservation,
+release parity, A25/B25 lineage, historical A20/B20/A21/B21/A22/B22/A23/B23/A24/B24 preservation,
 active-document UTF-8/history checks, and secret/local
 state scans. It does not configure or inspect a real key and performs no
 Google, OAuth, Gmail, Calendar, Apps Script function, or Gemini operation.
