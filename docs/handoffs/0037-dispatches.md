@@ -2,8 +2,8 @@
 
 WORK_ID: `0037`
 Current Dispatch ID: `0037-CODEX-04`
-BALL: `CODEX`
-STATUS: `READY`
+BALL: `NONE`
+STATUS: `ACCEPTED`
 
 This file is the authoritative ball-control ledger for Work 0037.
 
@@ -37,7 +37,7 @@ This file is the authoritative ball-control ledger for Work 0037.
 - Target Code: `2.8.24-prepilot`.
 - Returned evidence: exact pre-placement CI and final report-head CI passed; local gate 11/11, 85 suites missing 0 / extra 0, static/release/lineage/frozen/secret/diff gates passed; one OFF-state Phase 8C placement and one isolated pull-back passed exact 23-file parity.
 - Accepted implementation portions: `AUTO_PILOT` audit mode correction, strict healthy-idle detail suppression predicate, existing heartbeat preservation, 90-day Run History-only retention semantics, frozen 2.8.20-2.8.23 preservation.
-- ChatGPT final review found an acceptance-contract defect: the healthy-idle path invokes `pruneRunHistory()` and full Run History duplicate-ID/retention reads before deciding to suppress the row, contrary to the instruction that idle runs must not trigger retention maintenance. The suppression return value is also discarded by `appendRunSummarySafely()`, so a suppressed detail reports `log_recorded=true`.
+- ChatGPT final review found an acceptance-contract defect: the healthy-idle path invoked `pruneRunHistory()` and full Run History duplicate-ID/retention reads before deciding to suppress the row, contrary to the instruction that idle runs must not trigger retention maintenance. The suppression return value was also discarded by `appendRunSummarySafely()`, so a suppressed detail reported `log_recorded=true`.
 - Code `2.8.24-prepilot` is frozen as returned placement evidence; do not rewrite it.
 - BALL: `NONE`
 - STATUS: `SUPERSEDED`
@@ -46,27 +46,27 @@ This file is the authoritative ball-control ledger for Work 0037.
 
 - Purpose: final idle-log fast-path and truthful detail-record status, with no change to accepted Automatic Inbox behavior.
 - Instruction: `docs/handoffs/0037-CODEX-04-idle-log-finalization-instruction.md`
-- Target Code: `2.8.25-prepilot`.
-- Scope: move fully healthy/no-op AUTO_PILOT suppression ahead of all Run History full-data/duplicate/retention work; make the result surface truthfully report that no detail row was recorded; preserve meaningful-run retention/audit behavior and heartbeat; converge final active docs/release; perform one newly authorized OFF-state correction placement plus isolated pull-back parity.
-- Explicit runtime boundary: no Automation enable/re-enable, no scheduled smoke, no live Run History retention execution, no Gmail/Gemini/Task/Review/Calendar runtime action, no company or alternate target.
 - Report: `docs/handoffs/0037-CODEX-04-idle-log-finalization-report.md`
-- Returned candidate: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`.
+- Target and returned Code: `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`.
 - Exact pre-placement HEAD: `53a9ea6fe6dad2fa963db8e94be637ace22ab876`.
-- Complete local gate: `11/11 PASS`; deterministic inventory `86` suites, missing `0`, extra `0`; Apps Script static validation, 2.8.25 Phase 8B/8C release verification, lineage, frozen-release preservation, secret/local-state scan, and diff check all PASS.
-- Exact pre-placement CI: SUCCESS.
+- Final Codex report head: `e8273eec584f5bf0239c70f8a86ad5aa7067b93c`.
+- Complete local/final CI gate: `11/11 PASS`; deterministic inventory `86` suites, missing `0`, extra `0`; Apps Script static validation, 2.8.25 Phase 8B/8C release verification, lineage, frozen 2.8.20-2.8.24 preservation, secret/local-state scan, and diff check all PASS.
+- Exact pre-placement CI `#516`: SUCCESS; final report-head CI `#518`: SUCCESS.
+- Source review confirms fully healthy/no-op `AUTO_PILOT` suppression occurs before any Run History sheet lookup/full-data read/duplicate-ID scan/retention/compaction/append work.
+- Source review confirms intentional suppression propagates as `log_recorded=false` while meaningful runs preserve `TIME_DRIVEN / AUTO_PILOT`, 90-day Run History retention, and existing heartbeat semantics.
 - Existing-target correction: one guarded OFF-state Phase 8C push PASS; one isolated pull-back PASS; exact `22 .gs + appsscript.json` inventory, missing `0`, extra `0`, and byte/hash parity PASS.
-- Automation remained OFF; no Apps Script runtime function or business-state mutation was executed.
-- Outcome: idle fast-path and truthful non-recorded detail result implemented; no blocker remains.
-- BALL: `CHATGPT`
-- STATUS: `COMPLETE_PENDING_FINAL_REVIEW`
+- Automation remained OFF; no Apps Script runtime function, scheduled/manual worker, Gmail, Gemini, Task, Review, Calendar, credential, alternate-target, company-environment, or retry action was executed.
+- ChatGPT final review: PASS; BLOCKER NONE; Completion Latch may be applied after final docs-only CI and PR integration.
+- BALL: `NONE`
+- STATUS: `ACCEPTED`
 
 ## Current ball
 
-Codex has completed the bounded implementation, executable validation, release regeneration, exact-head CI, and one newly authorized OFF-state correction placement/pull-back defined in Dispatch `0037-CODEX-04`.
+No Codex dispatch remains active. Work 0037 implementation, live personal Automatic Inbox pilot evidence, final logging convergence, release validation, and OFF-state placement verification are accepted.
 
-ChatGPT retains Primary Outcome, scope, authorization, final review, PR merge decision, Completion Latch, and any later company-sandbox routing.
+PR `#52` is ready for final integration by ChatGPT. After integration, the next work boundary is a separate Work `0038` for company-environment sandbox qualification, only with explicit authorization and beginning with policy/environment readiness rather than ordinary company Inbox processing.
 
 WORK_ID: `0037`
 Current Dispatch ID: `0037-CODEX-04`
-BALL: `CHATGPT`
-STATUS: `COMPLETE_PENDING_FINAL_REVIEW`
+BALL: `NONE`
+STATUS: `ACCEPTED`
