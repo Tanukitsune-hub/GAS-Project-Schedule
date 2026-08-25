@@ -33,4 +33,4 @@ jobs:
 
       - name: Run non-Google local verification gate
         working-directory: implementation/GoogleSpreadsheet
-        run: pnpm run verify:ci
+        run: node tools/post_merge_validation_gate.js --mode ci
