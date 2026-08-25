@@ -60,6 +60,10 @@ const work0037Codex03ParentRef =
   'a829396106cea9f8b440c62e13bc7e33bdf28a19';
 const work0037Codex03SourceCommit =
   'e8f4de00e6525cd35c7a0c0c587261037d220743';
+const work0037Codex04ParentRef =
+  '71b0ea873b179cd155df958d69d609daace454f9';
+const work0037Codex04HistoricalBaseline =
+  '71b0ea873b179cd155df958d69d609daace454f9';
 // Retained only for the historical Work 0035 materialization regression;
 // current Work 0036 scope uses currentScopeStartingMain above.
 const integrationStartingMain = 'ee2e4a06e21f1755d6c735ef8dbfb25a698ecf2e';
@@ -72,9 +76,9 @@ const expectedRefBaseline =
 const numberedWorkBranchPattern =
   /^codex\/\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const phase8bPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.24-prepilot';
+  'implementation/GoogleSpreadsheet/release/v2.8.25-prepilot';
 const phase8cPath =
-  'implementation/GoogleSpreadsheet/release/v2.8.24-prepilot-phase8c';
+  'implementation/GoogleSpreadsheet/release/v2.8.25-prepilot-phase8c';
 const historicalWork0036Phase8bPath =
   'implementation/GoogleSpreadsheet/release/v2.8.21-prepilot';
 const historicalWork0036Phase8cPath =
@@ -163,7 +167,7 @@ function readContract() {
     repository: 'Tanukitsune-hub/GAS-Project-Schedule',
     starting_main: contractStartingMain,
     branch: expectedBranch,
-    code_version: '2.8.24-prepilot',
+    code_version: '2.8.25-prepilot',
     schema_version: '2.6',
     ai_schema_version: '2.0',
     migration_version: '3',
@@ -468,15 +472,15 @@ function checkRelease() {
       'implementation', 'GoogleSpreadsheet'
     );
     const outputs = [
-      runPowerShell('verify_v2_8_24_release.ps1', [
+      runPowerShell('verify_v2_8_25_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot),
-      runPowerShell('verify_v2_8_24_phase8c_release.ps1', [
+      runPowerShell('verify_v2_8_25_phase8c_release.ps1', [
         '-SourceCommit', contract.source_commit
       ], verificationModuleRoot)
     ];
     return {
-      command: 'v2.8.24 Phase 8B/8C package verifiers in committed LF checkout',
+      command: 'v2.8.25 Phase 8B/8C package verifiers in committed LF checkout',
       verifier_count: outputs.length,
       checkout: 'TEMP_LF_COMMITTED_HEAD',
       output_sha256: sha256(
@@ -653,6 +657,47 @@ function checkReleaseLineage() {
       throw new Error(
         'WORK_0036_LIVE_AI_SCHEMA_FAILURE_FIX_SOURCE_SCOPE_INVALID'
       );
+    }
+  } else if (sourceParent === work0037Codex04ParentRef) {
+    const expectedWork0037Codex04Files = [
+      'CURRENT_STATUS.md',
+      'DECISIONS.md',
+      'MASTER_PLAN.md',
+      'PROJECT_CONTEXT.md',
+      'README.md',
+      'docs/R4_VERIFICATION_MATRIX.md',
+      'docs/TASK_AUTHORITY_PROTOCOL.md',
+      'docs/handoffs/0037-automatic-inbox-shadow-pilot-runbook.md',
+      'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html',
+      'docs/visualizations/index.html',
+      'implementation/GoogleSpreadsheet/apps-script-v2/00_Config.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/13_LogAndDeadLetter.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/18_Worker.gs',
+      'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
+      'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tests/canonical_document_consistency_test.js',
+      'implementation/GoogleSpreadsheet/tests/phase6_worker_integration_test.js',
+      'implementation/GoogleSpreadsheet/tests/phase7_schema_extension_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_round3_provenance_test.js',
+      'implementation/GoogleSpreadsheet/tests/remediation_runtime_dashboard_reliability_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0036_personal_automation_qualification_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_automatic_inbox_shadow_pilot_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_codex_03_operational_log_hardening_test.js',
+      'implementation/GoogleSpreadsheet/tests/work_0037_personal_shadow_pilot_test.js',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_25_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/build_v2_8_25_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/v2_8_25/DEPLOYMENT_MANIFEST.template.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_25/MANUAL_ACCEPTANCE_GUIDE.md',
+      'implementation/GoogleSpreadsheet/tools/v2_8_25/SANDBOX_QUICKSTART.md',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_25_phase8c_release.ps1',
+      'implementation/GoogleSpreadsheet/tools/verify_v2_8_25_release.ps1',
+      'implementation/GoogleSpreadsheet/visualizations/task_authority_protocol_v2_8_22.html'
+    ];
+    if (
+      JSON.stringify(sourceCorrectionChanged) !==
+        JSON.stringify(expectedWork0037Codex04Files)
+    ) {
+      throw new Error('WORK_0037_CODEX_04_SOURCE_SCOPE_INVALID');
     }
   } else if (sourceParent === work0037Codex03SourceCommit) {
     const expectedWork0037Codex03RepairFiles = [
@@ -851,7 +896,7 @@ function checkReleaseLineage() {
   } else {
     throw new Error('WORK_0037_SOURCE_SCOPE_INVALID');
   }
-  if (contract.code_version !== '2.8.24-prepilot' ||
+  if (contract.code_version !== '2.8.25-prepilot' ||
       contract.schema_version !== '2.6' ||
       contract.ai_schema_version !== '2.0' ||
       contract.migration_version !== '3') {
@@ -893,12 +938,16 @@ function checkReleaseLineage() {
     'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot',
     'implementation/GoogleSpreadsheet/release/v2.8.22-prepilot-phase8c',
     'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot',
-    'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c'
+    'implementation/GoogleSpreadsheet/release/v2.8.23-prepilot-phase8c',
+    'implementation/GoogleSpreadsheet/release/v2.8.24-prepilot',
+    'implementation/GoogleSpreadsheet/release/v2.8.24-prepilot-phase8c'
   ];
   if (historicalReleasePaths.slice(0, 4).some((releasePath) =>
     !gitObjectExists(`${currentScopeStartingMain}:${releasePath}`)) ||
       historicalReleasePaths.slice(4).some((releasePath) =>
-        !gitObjectExists(`${expectedRefBaseline}:${releasePath}`))) {
+        !gitObjectExists(`${expectedRefBaseline}:${releasePath}`)) ||
+      historicalReleasePaths.slice(8).some((releasePath) =>
+        !gitObjectExists(`${work0037Codex04HistoricalBaseline}:${releasePath}`))) {
     throw new Error('HISTORICAL_2_8_20_RELEASE_MISSING');
   }
   if (git([
@@ -908,8 +957,13 @@ function checkReleaseLineage() {
   }
   if (git([
     'diff', '--name-only', expectedRefBaseline, 'HEAD', '--'
-  ].concat(historicalReleasePaths.slice(4))).trim()) {
+  ].concat(historicalReleasePaths.slice(4, 8))).trim()) {
     throw new Error('HISTORICAL_2_8_22_RELEASE_CHANGED');
+  }
+  if (git([
+    'diff', '--name-only', work0037Codex04HistoricalBaseline, 'HEAD', '--'
+  ].concat(historicalReleasePaths.slice(8))).trim()) {
+    throw new Error('HISTORICAL_2_8_24_RELEASE_CHANGED');
   }
   return {
     command: 'Work 0036 squash proof, bounded Work 0037 source scope, current release-only scope, and historical 2.8.20/2.8.21/2.8.22 preservation',
@@ -953,6 +1007,8 @@ function isForbiddenCredentialPath(file) {
     '.clasp-pull-verify-work-0037-automatic-inbox-shadow-pilot',
     '.clasp-work-0037-codex-03-operational-log-hardening',
     '.clasp-pull-verify-work-0037-codex-03-operational-log-hardening',
+    '.clasp-work-0037-codex-04-idle-log-finalization',
+    '.clasp-pull-verify-work-0037-codex-04-idle-log-finalization',
     '.local-validation'
   ].includes(segment))) return true;
   if (['.clasp.json', '.clasprc', '.clasprc.json'].includes(base)) {
