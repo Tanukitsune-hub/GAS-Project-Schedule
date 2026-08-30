@@ -12,7 +12,7 @@ STATUS: `READY_FOR_COMPANY_TRANSFER`
 
 Branch: `delivery/0038-company-live-bundle`
 
-Commit: `ede198f216476a1864f275ea8192fa9134df7f94`
+Commit: `fd5bc3e61363dbae1ff98eda8ebbd12cdb371c76`
 
 The branch is intentionally a minimal transfer tree rather than a development branch.
 
@@ -24,6 +24,15 @@ The branch is intentionally a minimal transfer tree rather than a development br
 - `DEPLOYMENT_MANIFEST.md`
 - `PHASE8C_SANDBOX_GUIDE.md`
 - `apps-script/` containing the exact Phase 8C runtime: 22 `.gs` files plus `appsscript.json`
+- `QUICK_INSTALL/` containing the copy-ready `Code.gs`, `appsscript.json`,
+  `BUNDLE_PROVENANCE.json`, and single-file `CHECKSUMS.sha256`
+
+The preferred manual installation is exactly two paste actions:
+
+1. paste `QUICK_INSTALL/Code.gs` into the default Apps Script `Code.gs`;
+2. reveal `appsscript.json` and paste `QUICK_INSTALL/appsscript.json` into it.
+
+No 22-file manual source recreation is required.
 
 ## Identity proof
 
@@ -38,6 +47,23 @@ This is the exact same tree object used by:
 on the canonical Work 0037 release. Therefore the delivered runtime files are byte-identical to the validated Code `2.8.25-prepilot` Phase 8C runtime; there is no company-specific code fork in this transfer.
 
 The original `CHECKSUMS.sha256`, `DEPLOYMENT_MANIFEST.md`, and Phase 8C guide are reused by exact Git blob identity.
+
+The quick-copy directory tree is `da75892220a1eb3f7148a58dec52df5237fd7d12`.
+Its generated artifact identity is:
+
+- `QUICK_INSTALL/Code.gs`: 1,190,034 bytes,
+  SHA-256 `355f07522b55834353d92f69947524e356c07189e8a2ebf27ec8113709c147ce`;
+- `QUICK_INSTALL/appsscript.json`: 868 bytes,
+  SHA-256 `e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe`;
+- `QUICK_INSTALL/BUNDLE_PROVENANCE.json`: SHA-256
+  `60ef97190874f70bdbf9ff05a2a959177712d82439cd69762b3906ff79dbbec1`;
+- `QUICK_INSTALL/CHECKSUMS.sha256`: SHA-256
+  `38562ba40c7dbbd416ed272d8de62941c0e43c4737209193089d8c53e24d1c15`.
+
+The single-file package was generated and parity-tested on
+`codex/0038-single-file-company-install` at implementation commit `fc6db16`.
+The generated provenance binds all 22 source files in explicit order to the
+validated Phase 8C source commit `8364a2deb091d52ef322c9aa6cb67098f721d93e`.
 
 ## Security boundary
 
