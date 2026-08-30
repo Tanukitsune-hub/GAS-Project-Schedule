@@ -13,6 +13,8 @@ const path = require('node:path');
 
 const moduleRoot = path.resolve(__dirname, '..');
 const phase8cPackage = 'v2.8.25-prepilot-phase8c';
+const phase8cSourceCommit =
+  '8364a2deb091d52ef322c9aa6cb67098f721d93e';
 const defaultSourceRoot = path.join(
   moduleRoot,
   'release',
@@ -109,7 +111,28 @@ function sourceCommitFromPackage(packageRoot) {
   const text = fs.readFileSync(manifestPath, 'utf8');
   const match = text.match(/\|\s*Source commit\s*\|\s*`?([0-9a-f]{40})`?\s*\|/i);
   if (!match) throw new Error('WORK_0038_PHASE8C_SOURCE_COMMIT_MISSING');
-  return match[1].toLowerCase();
+  const sourceCommit = match[1].toLowerCase();
+  if (sourceCommit !== phase8cSourceCommit) {
+    throw new Error('WORK_0038_PHASE8C_SOURCE_COMMIT_UNEXPECTED');
+  }
+  return sourceCommit;
+}
+
+function validatedPayloadChecksums(packageRoot) {
+  const checksumPath = path.join(packageRoot, 'CHECKSUMS.sha256');
+  const records = new Map();
+  fs.readFileSync(checksumPath, 'utf8').trimEnd().split(/\r?\n/)
+    .forEach((line) => {
+      const match = line.match(/^([0-9a-f]{64})  (.+)$/i);
+      if (match) records.set(match[2], match[1].toLowerCase());
+    });
+  const required = sourceOrder.concat(manifestName).map(
+    (name) => `apps-script/${name}`
+  );
+  if (required.some((name) => !records.has(name))) {
+    throw new Error('WORK_0038_PHASE8C_VALIDATED_CHECKSUMS_INCOMPLETE');
+  }
+  return records;
 }
 
 function assertOutputDirectory(outputRoot) {
@@ -135,6 +158,7 @@ function buildBundle(options = {}) {
   const packageRoot = path.dirname(sourceRoot);
   const outputRoot = path.resolve(options.outputRoot || defaultOutputRoot);
   assertInputInventory(sourceRoot);
+  const validatedChecksums = validatedPayloadChecksums(packageRoot);
 
   const manifest = readBuffer(path.join(sourceRoot, manifestName));
   let manifestJson;
@@ -147,6 +171,9 @@ function buildBundle(options = {}) {
       !Array.isArray(manifestJson.oauthScopes)) {
     throw new Error('WORK_0038_PHASE8C_MANIFEST_CONTRACT_INVALID');
   }
+  if (sha256(manifest) !== validatedChecksums.get(`apps-script/${manifestName}`)) {
+    throw new Error('WORK_0038_PHASE8C_MANIFEST_HASH_INVALID');
+  }
 
   const parts = [Buffer.from(bundleHeader, 'utf8')];
   let offset = Buffer.byteLength(bundleHeader, 'utf8');
@@ -155,6 +182,9 @@ function buildBundle(options = {}) {
   sourceOrder.forEach((name) => {
     const source = readBuffer(path.join(sourceRoot, name));
     const digest = sha256(source);
+    if (digest !== validatedChecksums.get(`apps-script/${name}`)) {
+      throw new Error(`WORK_0038_PHASE8C_SOURCE_HASH_INVALID_${name}`);
+    }
     const begin = Buffer.from(
       sourceBeginMarker(name, source.length, digest),
       'utf8'
@@ -292,6 +322,7 @@ if (require.main === module) {
 
 module.exports = {
   phase8cPackage,
+  phase8cSourceCommit,
   sourceOrder,
   manifestName,
   provenanceName,

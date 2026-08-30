@@ -62,6 +62,7 @@ function assertBundleParity(root) {
   );
   const sourceNames = builder.sourceOrder.slice();
   assert.strictEqual(provenance.schema, 'WORK_0038_SINGLE_FILE_INSTALL_V1');
+  assert.strictEqual(provenance.source_commit, builder.phase8cSourceCommit);
   assert.strictEqual(provenance.manual_install.paste_count, 2);
   assert.deepStrictEqual(provenance.source_order, sourceNames);
   assert.strictEqual(provenance.source_files.length, sourceNames.length);
