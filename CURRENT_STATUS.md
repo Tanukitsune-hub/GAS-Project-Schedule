@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-08-25
+Last updated: 2026-08-31
 
 Candidate version: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
@@ -9,6 +9,8 @@ Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 ChatGPT review disposition: `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
+
+Company rollout Work 0038: `SINGLE_FILE_INSTALL_ACCEPTED / COMPANY_RUNTIME_NOT_EXECUTED`
 
 Personal Gemini E2E: `PASS`
 
@@ -45,8 +47,33 @@ bounded result is recorded in `docs/handoffs/0033-live-e2e-review.md`.
 Code `2.8.20-prepilot` remains the frozen manual-plus-Gemini recovery baseline.
 Work 0036 remains the frozen 2.8.21 synthetic Automation recovery baseline.
 Code `2.8.23-prepilot` remains frozen Work 0037 live-pilot evidence. The
-current Work 0037 candidate is the 2.8.25 idle-log-finalization successor;
-no company-PC or company-environment rollout is planned.
+current Work 0037 candidate is the 2.8.25 idle-log-finalization successor.
+Work 0038 company-PC rollout is now active: the two-paste installation packaging
+is accepted, while company-environment installation and runtime acceptance remain
+`NOT EXECUTED`.
+
+## Work 0038 company deployment status
+
+- Dispatch `0038-CODEX-01` is accepted with `BLOCKER: NONE`.
+- Canonical development remains modular under
+  `implementation/GoogleSpreadsheet/apps-script-v2/`; no source consolidation
+  or refactor was performed.
+- The preferred company manual-install path is exactly two pastes from
+  `delivery/0038-company-live-bundle`: `QUICK_INSTALL/Code.gs`, then
+  `QUICK_INSTALL/appsscript.json`.
+- The original modular delivery payload remains present for provenance and
+  optional engineering use; the bundle is a deterministic derived distribution
+  artifact only.
+- Validated implementation head before acceptance sync:
+  `0178eade638c2d2ef4e6e14b29749facf85b30e6`.
+- Delivery head: `fd5bc3e61363dbae1ff98eda8ebbd12cdb371c76`.
+- Final implementation CI `#541` / run `33319331072`: SUCCESS; 11/11 checks,
+  87 suites, missing 0, extra 0, release/lineage PASS, secret scan 0 hits.
+- Company Google Workspace paste, Setup/readiness, OAuth, Gmail, Calendar,
+  trigger, Gemini/provider request, credential handling, and live runtime are
+  `NOT EXECUTED` and remain user-controlled Work 0038 actions.
+- Current ball: `USER`; current dispatch ledger:
+  `docs/handoffs/0038-dispatches.md`.
 
 ## Work 0037 implementation status
 
@@ -296,6 +323,7 @@ controlled synthetic Automation path is qualified, but Automation remains OFF
 by default and in the live target after qualification.
 
 Ordinary personal Inbox admission, broader automatic-mail policy, additional
-Calendar behavior beyond the proven `NOT_REQUIRED` synthetic case, or any
-company-environment rollout are separate future Work boundaries and are not
-authorized by this completion.
+Calendar behavior beyond the proven `NOT_REQUIRED` synthetic case remain
+separate future Work boundaries. Company-environment rollout is now Work 0038
+and is governed by its current handoff and dispatch ledger rather than by this
+historical Work 0036 completion boundary.
