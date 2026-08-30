@@ -1,0 +1,232 @@
+{
+  "schema": "WORK_0038_SINGLE_FILE_INSTALL_V1",
+  "work_id": "0038",
+  "dispatch_id": "0038-CODEX-01",
+  "package": "v2.8.25-prepilot-phase8c",
+  "source_root": "implementation/GoogleSpreadsheet/release/v2.8.25-prepilot-phase8c/apps-script",
+  "source_commit": "8364a2deb091d52ef322c9aa6cb67098f721d93e",
+  "generated_by": "implementation/GoogleSpreadsheet/tools/build_work_0038_single_file_company_install.js",
+  "encoding": "UTF-8 bytes; source sections are preserved without normalization",
+  "manual_install": {
+    "paste_count": 2,
+    "application_code_file": "Code.gs",
+    "manifest_file": "appsscript.json"
+  },
+  "source_order": [
+    "00_Config.gs",
+    "01_TypesAndSchemas.gs",
+    "02_Setup.gs",
+    "03_SheetBuilder.gs",
+    "04_MessageStateRepository.gs",
+    "05_GmailGateway.gs",
+    "06_EmailPreprocessor.gs",
+    "07_AiAdapter.gs",
+    "08_TaskRepository.gs",
+    "09_TaskReviewPolicy.gs",
+    "10_CalendarSync.gs",
+    "11_EditHandler.gs",
+    "12_Triggers.gs",
+    "13_LogAndDeadLetter.gs",
+    "14_Migrations.gs",
+    "15_Dashboard.gs",
+    "16_Diagnostics.gs",
+    "17_Utilities.gs",
+    "18_Worker.gs",
+    "19_RuntimeSettings.gs",
+    "20_GeminiProvider.gs",
+    "Menu.gs"
+  ],
+  "source_files": [
+    {
+      "name": "00_Config.gs",
+      "byte_length": 11473,
+      "sha256": "a13f1f4b5efff8af76afa26c6645b22da6d97cb017212ea77575af3a66b5bb34",
+      "source_start_byte": 366,
+      "source_end_byte": 11839,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "01_TypesAndSchemas.gs",
+      "byte_length": 29145,
+      "sha256": "1096aa80cd95fc4f4215072cdcdf88a059e1e36ce4c48c6521dfad9b6cf0f250",
+      "source_start_byte": 12024,
+      "source_end_byte": 41169,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "02_Setup.gs",
+      "byte_length": 42637,
+      "sha256": "0e8ed392e85de6863dc1a6cd4f2e1ab9193635f6a04bb2343c1ee9548a80c58b",
+      "source_start_byte": 41353,
+      "source_end_byte": 83990,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "03_SheetBuilder.gs",
+      "byte_length": 37587,
+      "sha256": "de99de32edb15b90a437788446bdb05a86a13e76853fa1a73347e0ae55fccbf6",
+      "source_start_byte": 84171,
+      "source_end_byte": 121758,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "04_MessageStateRepository.gs",
+      "byte_length": 51608,
+      "sha256": "c99a0d761613471f9a5b31d68824414b734a75ff33259beac0bdc812cd10ed77",
+      "source_start_byte": 121956,
+      "source_end_byte": 173564,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "05_GmailGateway.gs",
+      "byte_length": 42640,
+      "sha256": "cfd5abd0247fb12585351b8755ff2fd9f8e15ad3d41c8f6f5e343d7df9ce84f3",
+      "source_start_byte": 173762,
+      "source_end_byte": 216402,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "06_EmailPreprocessor.gs",
+      "byte_length": 5834,
+      "sha256": "febba4f009201fdf880d39dc43f54c8ff3b9bc17790ce588aa9f9c9d60394657",
+      "source_start_byte": 216594,
+      "source_end_byte": 222428,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "07_AiAdapter.gs",
+      "byte_length": 57505,
+      "sha256": "5ff32a910ddd9626d331539a58a1d8242b51998e2e929e5714380d67f706437f",
+      "source_start_byte": 222618,
+      "source_end_byte": 280123,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "08_TaskRepository.gs",
+      "byte_length": 183463,
+      "sha256": "4eb1e9c98e123e714207ddd8e7d3d9b8a9e2f690729eb0ec318c0e3973fbd17a",
+      "source_start_byte": 280311,
+      "source_end_byte": 463774,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "09_TaskReviewPolicy.gs",
+      "byte_length": 16837,
+      "sha256": "47d036409127dc96cdace40cf61428fdc002c5c48d963eeb004e721d8720c23c",
+      "source_start_byte": 463968,
+      "source_end_byte": 480805,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "10_CalendarSync.gs",
+      "byte_length": 92494,
+      "sha256": "7ec0be9c1a18f99913dcab3f657fe737f6f2e6321a5661bd3c46e43f15232975",
+      "source_start_byte": 480997,
+      "source_end_byte": 573491,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "11_EditHandler.gs",
+      "byte_length": 22943,
+      "sha256": "244b8424f8ffce15f436721484aeffa7b890d086926bd6530ce934b0e94f2297",
+      "source_start_byte": 573678,
+      "source_end_byte": 596621,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "12_Triggers.gs",
+      "byte_length": 72708,
+      "sha256": "69f125b80862af3fd80413a67e3b2b2859afbdcf5ed6b742d6ac35283b20d751",
+      "source_start_byte": 596804,
+      "source_end_byte": 669512,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "13_LogAndDeadLetter.gs",
+      "byte_length": 65676,
+      "sha256": "fdb0d2dd81290f117cc7e286cea4e23b64e8da4001abe9114d59546adfac8b06",
+      "source_start_byte": 669700,
+      "source_end_byte": 735376,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "14_Migrations.gs",
+      "byte_length": 50326,
+      "sha256": "4d93d8b336893a8d71392fbe7b5cf8222925d44cdd854b5b6df86e2ceea3e568",
+      "source_start_byte": 735566,
+      "source_end_byte": 785892,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "15_Dashboard.gs",
+      "byte_length": 62232,
+      "sha256": "c18be435239c3468493971baab82fe746de4210f7513b1677eadff3b00405353",
+      "source_start_byte": 786075,
+      "source_end_byte": 848307,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "16_Diagnostics.gs",
+      "byte_length": 62692,
+      "sha256": "b69eff8cc567969bf2fa00b6347009b7fdb0b38e06aa867684e8a7666c000c8c",
+      "source_start_byte": 848491,
+      "source_end_byte": 911183,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "17_Utilities.gs",
+      "byte_length": 14212,
+      "sha256": "4cdc8b03d0d7023422c924ca3407c77e948f0db1a841a3414a1b635bde0d57bd",
+      "source_start_byte": 911367,
+      "source_end_byte": 925579,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "18_Worker.gs",
+      "byte_length": 206607,
+      "sha256": "756a0bce8c6e5729cdca6741e6db2c6e2be3c9904026ad2ef7a2cab2e04c61fc",
+      "source_start_byte": 925759,
+      "source_end_byte": 1132366,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "19_RuntimeSettings.gs",
+      "byte_length": 15854,
+      "sha256": "106370ebf78c81266d061f690b3448902d40bf177f283d880fe3965ac6fc618f",
+      "source_start_byte": 1132551,
+      "source_end_byte": 1148405,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "20_GeminiProvider.gs",
+      "byte_length": 22103,
+      "sha256": "c7eb7d3220dbfe7fb072c6af3613877fe47f6d8199fd4f2cb6d79fc3cae42579",
+      "source_start_byte": 1148598,
+      "source_end_byte": 1170701,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "Menu.gs",
+      "byte_length": 19114,
+      "sha256": "9a1329eb2088a0f63ec90a544d35489d927e786c57ea4a4de5d5cc3d1ae71f70",
+      "source_start_byte": 1170880,
+      "source_end_byte": 1189994,
+      "trailing_separator_bytes": 0
+    }
+  ],
+  "bundle": {
+    "path": "Code.gs",
+    "byte_length": 1190034,
+    "sha256": "355f07522b55834353d92f69947524e356c07189e8a2ebf27ec8113709c147ce"
+  },
+  "manifest": {
+    "path": "appsscript.json",
+    "byte_length": 868,
+    "sha256": "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe"
+  },
+  "separators": {
+    "begin_marker": "/* WORK_0038_SOURCE_BEGIN ... */",
+    "end_marker": "/* WORK_0038_SOURCE_END ... */",
+    "newline": "\n"
+  }
+}

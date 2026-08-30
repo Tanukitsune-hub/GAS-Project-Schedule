@@ -37,19 +37,36 @@ If company policy blocks one of these, do not bypass the control.
 3. This new bound project is the company target.
 4. Do not copy a personal Spreadsheet or personal Apps Script project.
 
-## 2. Install the runtime
+## 2. Install the runtime — preferred manual path (exactly two pastes)
 
-Preferred method when local `clasp`/Node is permitted:
+The company-PC manual path has exactly two paste actions:
+
+1. Open `QUICK_INSTALL/Code.gs`, copy the complete file, and replace the
+   default Apps Script editor `Code.gs` contents with that one paste.
+2. In Apps Script project settings, reveal `appsscript.json`, then open
+   `QUICK_INSTALL/appsscript.json`, copy the complete manifest, and replace the
+   manifest contents with that one paste.
+
+Save both files. Do not create or paste the 22 modular `.gs` files. The
+`QUICK_INSTALL/` directory is the copy-ready artifact; use its
+`BUNDLE_PROVENANCE.json` and `CHECKSUMS.sha256` for local identity checks where
+practical. The generated `Code.gs` contains deterministic provenance comments
+only; it has no runtime loader or external fetch.
+
+### Optional engineering path: `clasp`
+
+If the company engineering workflow explicitly permits local `clasp`/Node,
+the unchanged modular payload in `apps-script/` may be uploaded as exactly 23
+payload files:
 
 1. Extract this bundle to a temporary company-PC folder.
 2. Authenticate `clasp` to the company account.
-3. Bind the local folder to the new company Apps Script project using a local `.clasp.json` containing the new company Script ID.
-4. Use `apps-script/` as the push root and upload exactly the 23 payload files.
+3. Bind the local folder to the new company Apps Script project using a local
+   `.clasp.json` containing the new company Script ID.
+4. Use `apps-script/` as the push root.
 5. Do not share or commit `.clasp.json` or clasp credentials.
 
-If `clasp` is not permitted, use the Apps Script editor and recreate the files exactly from `apps-script/`. Enable manifest visibility in Apps Script project settings and replace `appsscript.json` with the supplied manifest. Do not alter source contents during transfer.
-
-After installation, verify the transferred runtime against `CHECKSUMS.sha256` where practical.
+This optional path does not change the preferred two-paste manual path.
 
 ## 3. Configure the company Gemini credential
 
