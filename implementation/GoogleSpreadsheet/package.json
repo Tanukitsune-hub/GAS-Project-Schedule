@@ -18,6 +18,8 @@
     "verify:release": "node tools/local_validation_gate.js --section release",
     "verify:lineage": "node tools/post_merge_validation_gate.js --section lineage",
     "verify:secret-scan": "node tools/local_validation_gate.js --section secret-scan",
+    "build:work-0038-single-file": "node tools/build_work_0038_single_file_company_install.js",
+    "verify:work-0038-single-file": "node tests/work_0038_single_file_company_install_test.js",
     "verify:clasp-contract": "node tests/clasp_native_inventory_contract_test.js",
     "verify:clasp-push-contract": "node tests/clasp_push_update_content_contract_test.js",
     "gas:stage:dev": "node tools/local_clasp_dev.js stage",
