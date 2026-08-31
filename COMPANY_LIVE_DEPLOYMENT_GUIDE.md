@@ -53,6 +53,12 @@ Save both files. Do not create or paste the 22 modular `.gs` files. The
 practical. The generated `Code.gs` contains deterministic provenance comments
 only; it has no runtime loader or external fetch.
 
+If company email blocks `.gs` or `.json` attachments, use
+`QUICK_INSTALL/Code.txt` and `QUICK_INSTALL/appsscript.txt` instead. They are
+distribution-only, byte-identical transport copies of `Code.gs` and
+`appsscript.json`; paste their contents into the same two Apps Script files
+without editing or reformatting.
+
 ### Optional engineering path: `clasp`
 
 If the company engineering workflow explicitly permits local `clasp`/Node,

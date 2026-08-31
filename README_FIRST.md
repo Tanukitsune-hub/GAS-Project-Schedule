@@ -15,6 +15,12 @@ The files in `QUICK_INSTALL/` are ready to open and copy directly from this
 delivery branch. Its `BUNDLE_PROVENANCE.json` and `CHECKSUMS.sha256` prove the
 derived bundle and manifest identity.
 
+If company email blocks `.gs` or `.json` attachments, use
+`QUICK_INSTALL/Code.txt` and `QUICK_INSTALL/appsscript.txt` as transport copies.
+Their bytes and contents are exactly identical to `Code.gs` and
+`appsscript.json`; paste each file's contents in the same two steps above. Do
+not edit or reformat the `.txt` copies.
+
 Continue with `COMPANY_LIVE_DEPLOYMENT_GUIDE.md` for the company setup,
 readiness, and controlled-operation boundaries.
 
