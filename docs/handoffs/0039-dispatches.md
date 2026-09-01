@@ -18,6 +18,7 @@ Add a direct OpenAI API provider beside the completed Gemini provider and provid
 
 - Dispatch ID: `0039-CODEX-01`
 - Instruction: `docs/handoffs/0039-CODEX-01-openai-provider-selection-instruction.md`
+- Data-governance addendum: `docs/handoffs/0039-CODEX-01-openai-data-governance-addendum.md`
 - Implementation branch: `codex/0039-openai-provider-selection`
 - Recommended model: `Sol High`
 - Reason: the outcome and safety decisions are closed, but implementation crosses provider, configuration, state, retry, menu, test, migration, release, and bundle boundaries.
@@ -40,6 +41,7 @@ These refs are immutable recovery baselines and are outside the Work 0039 write 
 - Direct OpenAI Responses API is the target; Azure OpenAI or a company proxy triggers a Strategy Reset.
 - Initial OpenAI model candidate is `gpt-5.6-luna`; unavailable entitlement is a bounded stop condition, not a reason for silent substitution.
 - Canonical AI Schema and final application validation remain authoritative.
+- Every OpenAI request must use `store=false`, but this is not treated as proof of Zero Data Retention. Company live use requires an explicitly approved OpenAI organization/project data-governance state.
 - Canonical source remains modular; successor company installation remains a generated two-paste bundle with txt transport copies.
 - No live Workspace/provider action or credential handling is authorized in this dispatch.
 
