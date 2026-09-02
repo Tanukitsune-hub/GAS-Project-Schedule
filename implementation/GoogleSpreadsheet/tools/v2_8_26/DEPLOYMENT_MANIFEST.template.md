@@ -25,6 +25,7 @@
 | Automation default | `OFF` |
 | Package prepared at | `{{PREPARED_AT}}` |
 | Highest local status | `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` |
+| Live runtime | `NOT_EXECUTED` |
 
 This is a derived, non-live Work 0039 candidate artifact. The canonical
 developer source remains the modular `apps-script-v2/` directory. Provider

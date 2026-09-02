@@ -53,7 +53,8 @@ function listFiles(root) {
 }
 
 function expectedPackageFiles(sourceNames) {
-  return sourceNames.map((name) => `apps-script/${name}`).concat([
+  return sourceNames.concat([builder.manifestName])
+    .map((name) => `apps-script/${name}`).concat([
     'CHECKSUMS.sha256',
     'DEPLOYMENT_MANIFEST.md',
     'MANUAL_ACCEPTANCE_GUIDE.md',
@@ -120,7 +121,7 @@ function verifyPackage(options) {
     .toString('utf8');
   for (const required of [
     `Package | \`${options.packageName}\``,
-    `Source commit | ${options.sourceCommit}`,
+    `Source commit | \`${options.sourceCommit}\``,
     'Code Version | `2.8.26-prepilot`',
     'Schema Version | `2.6`',
     'AI Schema Version | `2.0`',
