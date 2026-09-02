@@ -245,8 +245,9 @@ function checkAppsScriptStatic() {
 }
 
 function checkPackageInstall() {
+  const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
   return Object.assign({ command: 'pnpm install --frozen-lockfile' }, run(
-    'pnpm', ['install', '--frozen-lockfile'],
+    pnpmCommand, ['install', '--frozen-lockfile'],
     { cwd: moduleRoot, failureCode: 'PNPM_FROZEN_INSTALL_FAILED' }
   ));
 }
