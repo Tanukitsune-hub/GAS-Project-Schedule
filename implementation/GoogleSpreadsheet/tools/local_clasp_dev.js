@@ -19,6 +19,11 @@ const repositoryRoot = path.resolve(moduleRoot, '..', '..');
 const sourceRoot = path.join(moduleRoot, 'apps-script-v2');
 const sourceRootFromRepository = path.relative(repositoryRoot, sourceRoot)
   .split(path.sep).join('/');
+// Historical Work 0006 placement lanes remain pinned to the Work 0039
+// starting-main payload.  The Work 0039 provider payload is built separately
+// and must not re-baseline those older evidence contracts.
+const legacyPayloadSourceCommit =
+  '3e302c2bc1e13c9482b208b754bc893e9a73fc70';
 const devRoot = path.join(moduleRoot, '.clasp-work-0006');
 const payloadRoot = path.join(devRoot, 'payload');
 const pullRoot = path.join(moduleRoot, '.clasp-pull-verify-work-0006');
@@ -120,6 +125,27 @@ function canonicalPayloadNames(root = sourceRoot) {
     .map((entry) => entry.name)
     .filter((name) => name.endsWith('.gs') || name === 'appsscript.json')
     .sort();
+  if (root === sourceRoot) {
+    // This is the historical Work 0006 clasp lane.  Work 0039 has its own
+    // versioned builder and must not silently re-baseline old placement
+    // evidence to the new provider payload.
+    const expected = new Set(canonicalPayloadFileNames);
+    const knownSuccessorFiles = new Set([
+      '21_OpenAiProvider.gs',
+      '22_AiProviderSelection.gs'
+    ]);
+    const missing = canonicalPayloadFileNames.filter((name) =>
+      !names.includes(name)
+    );
+    const unexpected = names.filter((name) =>
+      !expected.has(name) && !knownSuccessorFiles.has(name)
+    );
+    if (missing.length || unexpected.length) {
+      fail('CANONICAL_PAYLOAD_INVENTORY_INVALID',
+        'CANONICAL_PAYLOAD_INVENTORY_INVALID');
+    }
+    return canonicalPayloadFileNames.slice().sort();
+  }
   return assertExactPayloadNames(names, 'CANONICAL_PAYLOAD_INVENTORY_INVALID');
 }
 
@@ -166,7 +192,7 @@ function inventoryFor(root, names) {
 }
 
 function committedPayloadBuffer(name) {
-  const spec = `HEAD:${sourceRootFromRepository}/${name}`;
+  const spec = `${legacyPayloadSourceCommit}:${sourceRootFromRepository}/${name}`;
   const result = childProcess.spawnSync('git', [
     '-C', repositoryRoot, 'show', spec
   ], {
