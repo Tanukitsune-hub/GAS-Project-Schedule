@@ -98,7 +98,7 @@ function payloadRecords(root) {
       sha256: sha256(value),
       byte_length: value.length
     };
-  }).sort((left, right) => left.path.localeCompare(right.path));
+  });
 }
 
 function manifestPayloadHash(manifestText) {

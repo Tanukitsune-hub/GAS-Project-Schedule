@@ -4,6 +4,8 @@ This guide is descriptive only. It does not authorize deployment, OAuth,
 clasp, Gmail, Calendar, Sheets, trigger mutation, Automation, Provider
 requests, or company data processing.
 
+Machine live-runtime state: `NOT_EXECUTED`.
+
 Required candidate: Code `2.8.26-prepilot`, Schema `2.6`, AI Schema `2.0`,
 Migration `3`, TEST_MODE=`{{TEST_MODE}}`, Automation `OFF`.
 

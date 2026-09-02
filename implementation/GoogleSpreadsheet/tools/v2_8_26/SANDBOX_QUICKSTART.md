@@ -7,6 +7,7 @@ contains 24 `.gs` files plus the manifest. Neither package contains a
 `.clasp.json`, credential, key, private URL, or real Workspace identifier.
 
 Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`.
+Machine live-runtime state: `NOT_EXECUTED`.
 
 1. Verify the generated manifest, checksums, source commit, and package
    inventory.
