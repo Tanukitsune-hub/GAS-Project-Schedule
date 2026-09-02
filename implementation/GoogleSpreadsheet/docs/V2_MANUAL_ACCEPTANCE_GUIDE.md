@@ -1,6 +1,6 @@
-# Controlled Personal Shadow Pilot Guide - 2.8.25-prepilot
+# Controlled Personal Shadow Pilot Guide - 2.8.26-prepilot
 
-Code Version: `2.8.25-prepilot`
+Code Version: `2.8.26-prepilot`
 
 Schema Version: `2.6`
 
@@ -67,6 +67,31 @@ and do not add a detailed `処理履歴` row. Only detailed Run History records
 with valid `finished_at` values strictly older than 90 days are compacted;
 invalid/missing timestamps, Errors, Message State, Task/Review, Calendar, and
 Task Authority Ledger evidence are not subject to this retention.
+
+## Work 0039 provider-selection boundary
+
+The authoritative active provider is the code-owned Script Property
+`WORK_OS_V2_ACTIVE_AI_PROVIDER`, with exactly `GEMINI` and `OPENAI` allowed.
+An absent property remains Gemini for backward compatibility. The Settings
+sheet `ai_provider` row is informational and cannot select a provider.
+
+Switching requires consistent Automation-OFF state, zero owned clock triggers,
+no active worker lease, and no in-flight or retry-pending message state. It is
+serialized by Script Lock, performs no external request, and rolls back after a
+dependent-update failure. Provider/model/prompt metadata is code-owned; no
+automatic cross-provider fallback is allowed.
+
+OpenAI uses `gpt-5.6-luna` at `https://api.openai.com/v1/responses` with
+structured JSON output, `store=false`, no tools, no background mode, and no
+streaming. `WORK_OS_V2_OPENAI_API_KEY` is separate from the Gemini property.
+The governance state is `NOT_APPROVED_OR_UNKNOWN`; `store=false` is not proof
+of a particular retention tier. No company data, credential, account setting,
+or live request is handled by this guide or Work 0039.
+
+The synthetic qualification is local/test-shaped only, accepts the exact
+fictional fixture, makes at most one request per explicit action, and stores
+only bounded qualification status and fingerprints. A current OpenAI
+qualification is required before any future OpenAI Automation enablement.
 
 ## Historical Work 0036 qualification boundary
 

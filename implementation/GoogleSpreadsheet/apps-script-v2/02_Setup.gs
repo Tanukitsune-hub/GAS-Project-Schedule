@@ -526,6 +526,14 @@ var WorkOsSetup = (function () {
           WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE
         );
       }
+      if (typeof WorkOsAiProviderSelection !== 'undefined' &&
+          WorkOsAiProviderSelection &&
+          typeof WorkOsAiProviderSelection.ensureDefaultSelection ===
+            'function') {
+        WorkOsAiProviderSelection.ensureDefaultSelection({
+          properties: props
+        });
+      }
     }
     return result;
   }
@@ -662,6 +670,14 @@ var WorkOsSetup = (function () {
           WorkOsConfig.PROPERTIES.AUTOMATION_DESIRED_STATE,
           'false'
         );
+      }
+      if (typeof WorkOsAiProviderSelection !== 'undefined' &&
+          WorkOsAiProviderSelection &&
+          typeof WorkOsAiProviderSelection.ensureDefaultSelection ===
+            'function') {
+        WorkOsAiProviderSelection.ensureDefaultSelection({
+          properties: props
+        });
       }
       return { stored: true };
     }

@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-08-31
+Last updated: 2026-09-02
 
-Candidate version: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.26-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
 
@@ -21,23 +21,27 @@ User Automation E2E: `EXECUTED AND STOPPED — historical accepted evidence; no 
 ## Current contract
 
 The canonical source is `implementation/GoogleSpreadsheet/apps-script-v2/`.
-The payload is exactly 23 `.gs` files plus `appsscript.json`. Phase 8B keeps
+The payload is exactly 25 `.gs` files plus `appsscript.json`. Phase 8B keeps
 `TEST_MODE=true` and the test harness. Phase 8C is the audited production-mode
-transform with the harness excluded, bounded provider-readiness flags enabled,
-and Automation OFF. `CURRENT_CONTRACT.json`, release manifests, checksums, and
-verifiers bind the A25/B25 candidate while preserving historical A20/B20,
-A21/B21, A22/B22, A23/B23, and A24/B24 source and release evidence.
+transform with the harness excluded, legacy Gemini readiness flags enabled,
+OpenAI readiness and data-governance flags still blocked, and Automation OFF.
+`CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers bind the
+Work 0039 candidate while preserving historical A20/B20, A21/B21, A22/B22,
+A23/B23, A24/B24, and Work 0038 release/bundle evidence.
 
-The canonical Code `2.8.25-prepilot` release gate is
+The canonical Code `2.8.26-prepilot` release gate is
 `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`. The historical Work 0036 live
 qualification remains evidence for the frozen 2.8.21 baseline and is not
-reinterpreted as Work 0037 pilot execution.
+reinterpreted as Work 0037 pilot execution or OpenAI qualification.
 
-The source includes the Gemini Interactions provider, provider-facing schema
-projection, strict AI Schema 2.0 post-response validation, exact synthetic
-fixture guards, bounded provider diagnostics, durable Task/Review handling,
-Calendar outbox controls, and an Automation lifecycle that remains disabled by
-default and fail-closed.
+The source includes the Gemini Interactions provider, a parallel direct OpenAI
+Responses provider, code-owned explicit provider selection, provider-facing
+schema projections, strict AI Schema 2.0 post-response validation, exact
+synthetic fixture guards, bounded provider diagnostics, durable Task/Review
+handling, Calendar outbox controls, and an Automation lifecycle that remains
+disabled by default and fail-closed. OpenAI uses `store=false`, no tools,
+background, or stream, and its data-governance state is
+`NOT_APPROVED_OR_UNKNOWN`; no live OpenAI request was made.
 
 The Gemini credential is not stored in this repository. The user configured it
 in the personal-synthetic Apps Script target and, on 2026-08-18, completed one
@@ -74,6 +78,30 @@ is accepted, while company-environment installation and runtime acceptance remai
   `NOT EXECUTED` and remain user-controlled Work 0038 actions.
 - Current ball: `USER`; current dispatch ledger:
   `docs/handoffs/0038-dispatches.md`.
+
+## Work 0039 OpenAI provider-selection status
+
+- Dispatch `0039-CODEX-01` is implemented as a local, synthetic-only candidate
+  on `codex/0039-openai-provider-selection`.
+- The authoritative active provider property is
+  `WORK_OS_V2_ACTIVE_AI_PROVIDER`; absent values remain backward-compatible
+  with Gemini, and allowed values are exactly `GEMINI` and `OPENAI`.
+- Provider switches require consistent Automation-OFF state, zero owned clock
+  triggers, no active worker lease, no in-flight classification, and no pending
+  retry. The switch itself performs no external request and rolls back on a
+  dependent-update failure.
+- OpenAI model metadata is code-owned as `gpt-5.6-luna` with prompt
+  `openai-responses-v1-work-os-v2` and endpoint
+  `https://api.openai.com/v1/responses`. A missing or unsupported model is a
+  bounded failure; there is no cross-provider fallback.
+- OpenAI company data governance, credentials, provider requests, company
+  Workspace installation, deployment, OAuth, triggers, and Automation remain
+  `NOT EXECUTED`; company runtime acceptance is blocked until a separately
+  authorized qualification records an approved governance state.
+- New release paths are
+  `implementation/GoogleSpreadsheet/release/v2.8.26-prepilot/`,
+  `implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c/`, and
+  `implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install/`.
 
 ## Work 0037 implementation status
 

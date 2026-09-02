@@ -5,7 +5,7 @@
  */
 var WorkOsConfig = Object.freeze({
   SYSTEM_NAME: 'Google Workspace Personal Work OS v2',
-  CODE_VERSION: '2.8.25-prepilot',
+  CODE_VERSION: '2.8.26-prepilot',
   SCHEMA_VERSION: '2.6',
   AI_SCHEMA_VERSION: '2.0',
   MIGRATION_VERSION: '3',
@@ -93,6 +93,20 @@ var WorkOsConfig = Object.freeze({
   EXTERNAL_AI_MODEL: 'gemini-3.6-flash',
   EXTERNAL_AI_PROMPT_VERSION: 'gemini-interactions-v1-work-os-v2',
   EXTERNAL_AI_CREDENTIAL_REFERENCE: 'WORK_OS_V2_GEMINI_API_KEY',
+  // Work 0039 keeps provider selection code-owned.  These OpenAI values are
+  // metadata and guarded readiness defaults; no credential or live approval
+  // is stored in source or the release artifact.
+  AI_PROVIDER_SELECTION_ALLOWED: Object.freeze(['GEMINI', 'OPENAI']),
+  OPENAI_EXTERNAL_AI_ENABLED: false,
+  OPENAI_MODEL: 'gpt-5.6-luna',
+  OPENAI_PROMPT_VERSION: 'openai-responses-v1-work-os-v2',
+  OPENAI_ENDPOINT: 'https://api.openai.com/v1/responses',
+  OPENAI_CREDENTIAL_REFERENCE: 'WORK_OS_V2_OPENAI_API_KEY',
+  OPENAI_OPERATOR_APPROVED: false,
+  OPENAI_DATA_POLICY_APPROVED: false,
+  OPENAI_CREDENTIAL_STORAGE_APPROVED: false,
+  OPENAI_AUTH_CONFIGURED: false,
+  OPENAI_DATA_GOVERNANCE_STATUS: 'NOT_APPROVED_OR_UNKNOWN',
   // Work 0036 uses personal-owner approval semantics.  The legacy company
   // key remains only as an internal compatibility alias for historical tests;
   // active readiness and runtime gates must use the operator flag below.
@@ -196,6 +210,12 @@ var WorkOsConfig = Object.freeze({
     AI_PROVIDER_SUPPRESS_UNTIL:
       'WORK_OS_V2_AI_PROVIDER_SUPPRESS_UNTIL',
     GEMINI_API_KEY: 'WORK_OS_V2_GEMINI_API_KEY',
+    OPENAI_API_KEY: 'WORK_OS_V2_OPENAI_API_KEY',
+    ACTIVE_AI_PROVIDER: 'WORK_OS_V2_ACTIVE_AI_PROVIDER',
+    AI_QUALIFICATION_STATUS: 'WORK_OS_V2_AI_QUALIFICATION_STATUS',
+    AI_QUALIFICATION_FINGERPRINT:
+      'WORK_OS_V2_AI_QUALIFICATION_FINGERPRINT',
+    ACTIVE_WORKER_LEASE: 'WORK_OS_V2_ACTIVE_WORKER_LEASE',
     AUTHORITY_MIGRATION_STATE:
       'WORK_OS_V2_AUTHORITY_MIGRATION_STATE'
   }),

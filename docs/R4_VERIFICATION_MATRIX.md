@@ -1,4 +1,4 @@
-# Current Verification Matrix - 2.8.25-prepilot
+# Current Verification Matrix - 2.8.26-prepilot
 
 Gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
@@ -16,6 +16,8 @@ Gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 | Gemini runtime diagnostics | bounded provider error envelope, Message finalization, exact candidate pin | Work 0032 diagnostics suite | Synthetic fakes only |
 | Automatic Inbox Personal Shadow Pilot | ordinary eligible Inbox, `手動/除外` Thread-wide veto, category/newsletter/Calendar hard exclusions, start boundary, one-message run | Work 0037 pilot and worker suites | Local fake runtime; personal pilot executed and stopped by user |
 | Operational Run History hardening | `TIME_DRIVEN / AUTO_PILOT`, pre-scan healthy-idle suppression, truthful detail status, independent heartbeat, 90-day detailed-history retention | Work 0037 CODEX-04 and worker suites | Local fake runtime; no runtime function |
+| Explicit AI provider selection | Code-owned Gemini/OpenAI selection, guarded switch, provider-pinned attempt, no cross-provider fallback | Work 0039 provider-selection suite | Synthetic VM only; no live provider |
+| OpenAI data governance | `store=false`, direct Responses endpoint, no tools/background/stream, bounded unknown approval state | Work 0039 provider and release suites | Local synthetic only; company gate not approved |
 | Secret and local-state exclusion | tracked path/content scan | secret-scan suites | Local/CI |
 
 Historical A14/B14, A15/B15, and A17/B17 identities remain immutable. Local and CI

@@ -4396,6 +4396,15 @@ var WorkOsWorker = (function () {
         reserve_ms: WorkOsConfig.AUTOMATION_WORKER_RESERVE_MS
       });
       WorkOsAiAdapter.validateOutput(classification);
+      if (typeof WorkOsAiProviderSelection !== 'undefined' &&
+          WorkOsAiProviderSelection &&
+          typeof WorkOsAiProviderSelection.assertProviderUnchanged ===
+            'function') {
+        WorkOsAiProviderSelection.assertProviderUnchanged(
+          metadata.provider,
+          settings.properties
+        );
+      }
     } catch (externalError) {
       WorkOsUtilities.withScriptLock(function (lock) {
         var messageContext =

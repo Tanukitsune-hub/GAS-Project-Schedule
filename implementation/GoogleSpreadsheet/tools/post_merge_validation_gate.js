@@ -31,6 +31,7 @@ const path = require('node:path');
 const moduleRoot = path.resolve(__dirname, '..');
 const repositoryRoot = path.resolve(moduleRoot, '..', '..');
 const localGatePath = path.join(__dirname, 'local_validation_gate.js');
+const work0039GatePath = path.join(__dirname, 'work_0039_validation_gate.js');
 const reportPath = path.join(
   moduleRoot,
   '.local-validation',
@@ -299,6 +300,39 @@ function runCoreGate(argv) {
   );
 }
 
+function shouldUseWork0039Gate() {
+  const branchResult = spawnGit(['branch', '--show-current']);
+  const branch = String(branchResult.stdout || '').trim();
+  if (branch === 'codex/0039-openai-provider-selection' ||
+      String(process.env.GITHUB_HEAD_REF || '') ===
+        'codex/0039-openai-provider-selection') {
+    return true;
+  }
+  try {
+    const contract = JSON.parse(fs.readFileSync(
+      path.join(repositoryRoot, 'CURRENT_CONTRACT.json'), 'utf8'
+    ));
+    return contract && contract.branch ===
+      'codex/0039-openai-provider-selection' &&
+      contract.code_version === '2.8.26-prepilot';
+  } catch (error) {
+    return false;
+  }
+}
+
+function runWork0039Gate(argv) {
+  return childProcess.spawnSync(
+    process.execPath,
+    [work0039GatePath].concat(argv),
+    {
+      cwd: moduleRoot,
+      encoding: 'utf8',
+      windowsHide: true,
+      maxBuffer: 64 * 1024 * 1024
+    }
+  );
+}
+
 function writeReport(report) {
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
@@ -306,6 +340,16 @@ function writeReport(report) {
 
 function main() {
   const argv = process.argv.slice(2);
+  if (shouldUseWork0039Gate()) {
+    const result = runWork0039Gate(argv);
+    process.stdout.write(String(result.stdout || ''));
+    if (result.stderr) process.stderr.write(String(result.stderr));
+    if (result.error || result.status !== 0) {
+      process.exitCode = typeof result.status === 'number'
+        ? result.status : 1;
+    }
+    return;
+  }
   const result = runCoreGate(argv);
   if (!result.error && result.status === 0) {
     process.stdout.write(String(result.stdout || ''));

@@ -911,6 +911,16 @@ var WorkOsAiAdapter = (function () {
         }
       });
     }
+    if (typeof WorkOsOpenAiProvider !== 'undefined' &&
+        WorkOsOpenAiProvider &&
+        typeof WorkOsOpenAiProvider.createAdapterSettings === 'function') {
+      entries.push({
+        provider_id: 'OPENAI',
+        create_adapter_settings: function (settings) {
+          return WorkOsOpenAiProvider.createAdapterSettings(settings);
+        }
+      });
+    }
     return entries.length ? createProviderRegistry(entries) :
       EMPTY_PRODUCTION_PROVIDER_REGISTRY;
   }
@@ -933,6 +943,28 @@ var WorkOsAiAdapter = (function () {
 
   function productionConfigSnapshot(options) {
     var settings = options || {};
+    var explicitFields = [
+      'external_enabled',
+      'provider',
+      'model',
+      'prompt_version',
+      'credential_reference',
+      'operator_approved',
+      'company_approved',
+      'data_policy_approved',
+      'credential_storage_approved',
+      'auth_configured'
+    ];
+    var hasExplicitConfig = explicitFields.some(function (field) {
+      return settings[field] != null;
+    });
+    if (!hasExplicitConfig &&
+        typeof WorkOsAiProviderSelection !== 'undefined' &&
+        WorkOsAiProviderSelection &&
+        typeof WorkOsAiProviderSelection.getProductionConfigSnapshot ===
+          'function') {
+      return WorkOsAiProviderSelection.getProductionConfigSnapshot(settings);
+    }
     return {
       external_enabled: settings.external_enabled == null
         ? WorkOsConfig.EXTERNAL_AI_ENABLED
@@ -1018,6 +1050,10 @@ var WorkOsAiAdapter = (function () {
       ready: reasons.length === 0,
       reasons: reasons,
       provider: metadataToken(provider) ? provider : '',
+      model: metadataToken(config.model) ? String(config.model) : '',
+      prompt_version: metadataToken(config.prompt_version)
+        ? String(config.prompt_version)
+        : '',
       model_configured: metadataToken(config.model),
       prompt_version_configured: metadataToken(config.prompt_version),
       registry_entry_present: Boolean(
@@ -1619,6 +1655,7 @@ var WorkOsAiAdapter = (function () {
       credential_reference: validateOpaqueCredentialReference(
         config.credential_reference
       ),
+      properties: settings.properties || config.properties,
       timeout_ms: Number(config.timeout_ms),
       max_response_chars: Number(config.max_response_chars)
     }));

@@ -8,6 +8,11 @@ function onOpen() {
     .addItem('Deep Diagnostic（明示・読取専用）', 'menuDeepDiagnostic')
     .addItem('運用Dashboardを更新', 'menuRefreshDashboard')
     .addItem('自動処理の状態を確認', 'menuAutomationStatus')
+    .addItem('AI Providerの状態を確認', 'menuAiProviderStatus')
+    .addItem('Geminiへ切り替え', 'menuSwitchAiProviderToGemini')
+    .addItem('OpenAIへ切り替え', 'menuSwitchAiProviderToOpenAi')
+    .addItem('選択中Providerの合成接続テスト',
+      'menuRunSelectedProviderSyntheticQualification')
     .addItem('個人用Shadow Pilotの準備状態を確認',
       'menuPersonalShadowPilotStatus')
     .addItem('個人用Shadow Pilotを準備',
@@ -50,6 +55,52 @@ function menuCheckGeminiSyntheticReadiness() {
   showSafeResult_(
     'Gemini synthetic readiness',
     checkGeminiSyntheticReadiness()
+  );
+}
+
+function menuAiProviderStatus() {
+  showSafeResult_('AI Providerの状態', getAiProviderStatus());
+}
+
+function menuSwitchAiProviderToGemini() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    'Geminiへ切り替え',
+    'AI ProviderをGeminiへ切り替えます。Automationは有効化されず、停止状態・owned clock Triggerゼロ・未完了AI処理なしを確認します。続行しますか。',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_('Geminiへ切り替え', switchAiProviderToGemini());
+}
+
+function menuSwitchAiProviderToOpenAi() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    'OpenAIへ切り替え',
+    'AI Providerをコード管理されたOpenAIへ切り替えます。Automationは有効化されず、停止状態・owned clock Triggerゼロ・未完了AI処理なしを確認します。OpenAIのデータガバナンス承認がない限り実処理は開始できません。続行しますか。',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_('OpenAIへ切り替え', switchAiProviderToOpenAi());
+}
+
+function menuRunSelectedProviderSyntheticQualification() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    '選択中Providerの合成接続テスト',
+    'Automation停止中に、実在データを使わない固定合成fixtureを1件だけ送信します。選択中Provider以外へのfallback、メール本文の保存、Automationの有効化は行いません。続行しますか。',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (response !== ui.Button.OK) {
+    return;
+  }
+  showSafeResult_(
+    '選択中Providerの合成接続テスト',
+    runSelectedProviderSyntheticQualification()
   );
 }
 

@@ -701,7 +701,7 @@ var WorkOsSheetBuilder = (function () {
     return [
       ['timezone', 'タイムゾーン', WorkOsConfig.TIMEZONE, 'STRING', WorkOsConfig.TIMEZONE, '固定。日付計算基準', false],
       ['automation_enabled', '自動処理の初期値', false, 'BOOLEAN', 'false', '固定。現在状態はDashboardと明示menuで確認', false],
-      ['ai_provider', 'Local AI Provider', WorkOsConfig.AI_PROVIDER, 'STRING', 'MOCK', '固定。実Providerは未決定でSettingsへcredentialを保存しない', false],
+      ['ai_provider', 'Local AI Provider（表示専用）', WorkOsConfig.AI_PROVIDER, 'STRING', 'MOCK', '固定。実ProviderはScript Propertiesのactive selectionで管理し、Settingsから変更しない', false],
       ['manual_max_messages', '手動最大メッセージ数', WorkOsConfig.MANUAL_MAX_MESSAGES, 'INTEGER', '1', '固定。手動試験は1回1件', false],
       ['auto_max_messages', '自動最大メッセージ数', WorkOsConfig.AUTOMATION_MAX_MESSAGES_PER_RUN, 'INTEGER', '1..10', 'Runtimeが1 runに処理する上限', true],
       ['manual_soft_limit_sec', '手動soft limit秒', WorkOsConfig.MANUAL_WORKER_SOFT_LIMIT_MS / 1000, 'INTEGER', '30..120', 'Runtimeの手動Worker budget', true],

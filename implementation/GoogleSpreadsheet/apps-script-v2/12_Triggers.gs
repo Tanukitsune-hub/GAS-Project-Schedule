@@ -659,6 +659,44 @@ var WorkOsAutomation = (function () {
     };
   }
 
+  function providerApprovalSnapshot(propertiesValue) {
+    var legacy = {
+      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
+        ? 'CONFIRMED' : 'NOT_CONFIRMED',
+      data_policy_approval: WorkOsConfig.EXTERNAL_AI_DATA_POLICY_APPROVED
+        ? 'CONFIRMED' : 'NOT_CONFIRMED',
+      credential_storage_approval:
+        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
+          ? 'CONFIRMED' : 'NOT_CONFIRMED',
+      auth_configured: WorkOsConfig.EXTERNAL_AI_AUTH_CONFIGURED
+        ? 'CONFIGURED' : 'NOT_CONFIGURED'
+    };
+    if (typeof WorkOsAiProviderSelection === 'undefined' ||
+        !WorkOsAiProviderSelection ||
+        typeof WorkOsAiProviderSelection.getProductionConfigSnapshot !==
+          'function') {
+      return legacy;
+    }
+    try {
+      var selected = WorkOsAiProviderSelection.getProductionConfigSnapshot({
+        properties: propertiesValue
+      });
+      return {
+        operator_approval: selected.operator_approved === true
+          ? 'CONFIRMED' : 'NOT_CONFIRMED',
+        data_policy_approval: selected.data_policy_approved === true
+          ? 'CONFIRMED' : 'NOT_CONFIRMED',
+        credential_storage_approval:
+          selected.credential_storage_approved === true
+            ? 'CONFIRMED' : 'NOT_CONFIRMED',
+        auth_configured: selected.auth_configured === true
+          ? 'CONFIGURED' : 'NOT_CONFIGURED'
+      };
+    } catch (error) {
+      return legacy;
+    }
+  }
+
   function safeCredentialState(value) {
     if (value === true || value === false) {
       return value;
@@ -832,8 +870,12 @@ var WorkOsAutomation = (function () {
       'AI_CREDENTIAL_NOT_READY');
     requireReady(details.provider.adapter_status === 'READY',
       'REAL_AI_ADAPTER_NOT_READY');
-    requireReady(details.provider.provider === 'GEMINI',
-      'AI_PROVIDER_NOT_GEMINI');
+    var expectedProvider = String(value.selected_provider || 'GEMINI')
+      .toUpperCase();
+    requireReady(details.provider.provider === expectedProvider,
+      expectedProvider === 'GEMINI'
+        ? 'AI_PROVIDER_NOT_GEMINI'
+        : 'AI_PROVIDER_SELECTION_MISMATCH');
     requireReady(details.oauth.ready === true, 'OAUTH_NOT_READY');
     requireReady(details.formal_labels.ready === true,
       'FORMAL_GMAIL_LABEL_MISSING');
@@ -919,8 +961,12 @@ var WorkOsAutomation = (function () {
       'AI_CREDENTIAL_NOT_READY');
     requireReady(details.provider.adapter_status === 'READY',
       'REAL_AI_ADAPTER_NOT_READY');
-    requireReady(details.provider.provider === 'GEMINI',
-      'AI_PROVIDER_NOT_GEMINI');
+    var expectedProvider = String(value.selected_provider || 'GEMINI')
+      .toUpperCase();
+    requireReady(details.provider.provider === expectedProvider,
+      expectedProvider === 'GEMINI'
+        ? 'AI_PROVIDER_NOT_GEMINI'
+        : 'AI_PROVIDER_SELECTION_MISMATCH');
     requireReady(details.oauth.ready === true, 'OAUTH_NOT_READY');
     requireReady(details.formal_labels.ready === true,
       'FORMAL_GMAIL_LABEL_MISSING');
@@ -944,6 +990,7 @@ var WorkOsAutomation = (function () {
 
   function defaultPrerequisiteCheck(settings, scopeMode) {
     var props = properties(settings);
+    var approval = providerApprovalSnapshot(props);
     var pilotMode = scopeMode !== 'QUALIFICATION';
     var reasons = [];
     var completed = [];
@@ -1020,11 +1067,29 @@ var WorkOsAutomation = (function () {
         'AI_PRODUCTION_BOUNDARY_UNAVAILABLE'
       ].forEach(function (reason) { addUniqueReason(reasons, reason); });
     } else {
-      var aiReadiness = WorkOsAiAdapter.getProductionReadiness();
+      var aiReadiness = WorkOsAiAdapter.getProductionReadiness({
+        properties: props
+      });
       provider = providerSnapshot(aiReadiness);
       (aiReadiness.reasons || []).forEach(function (reason) {
         addUniqueReason(reasons, reason);
       });
+      if (typeof WorkOsAiProviderSelection !== 'undefined' &&
+          WorkOsAiProviderSelection &&
+          typeof WorkOsAiProviderSelection.getSelectionSnapshot ===
+            'function') {
+        var selected = WorkOsAiProviderSelection.getSelectionSnapshot({
+          properties: props
+        });
+        if (selected.provider === 'OPENAI' &&
+            typeof WorkOsAiProviderSelection.isCurrentQualificationValid ===
+              'function' &&
+            !WorkOsAiProviderSelection.isCurrentQualificationValid({
+              properties: props
+            }).valid) {
+          addUniqueReason(reasons, 'OPENAI_QUALIFICATION_NOT_CURRENT');
+        }
+      }
     }
     var scriptApp = scriptService(settings);
     if (!scriptApp ||
@@ -1096,14 +1161,11 @@ var WorkOsAutomation = (function () {
           WorkOsAiAdapter.createProductionExternalAdapter();
         var health = productionAdapter.healthCheck();
         var metadata = WorkOsAiAdapter.getMetadata(productionAdapter);
-        var providerIsGemini =
-          String(metadata.provider || '').toUpperCase() === 'GEMINI';
         provider = {
-          status: health && health.status === 'READY' && providerIsGemini
+          status: health && health.status === 'READY'
             ? 'READY'
             : 'BLOCKED',
-          ready: Boolean(health && health.status === 'READY' &&
-            providerIsGemini),
+          ready: Boolean(health && health.status === 'READY'),
           provider: safeReadinessToken(metadata.provider, 'MISSING'),
           model: safeReadinessToken(metadata.model, 'MISSING'),
           adapter_status: health && health.status === 'READY'
@@ -1145,13 +1207,10 @@ var WorkOsAutomation = (function () {
       ready: reasons.length === 0,
       reasons: reasons,
       real_provider_connection: 'NOT_EXECUTED',
-      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
-        ? 'CONFIRMED'
-        : 'NOT_CONFIRMED',
-      credential_storage_approval:
-        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
-          ? 'CONFIRMED'
-          : 'NOT_CONFIRMED',
+      operator_approval: approval.operator_approval,
+      data_policy_approval: approval.data_policy_approval,
+      credential_storage_approval: approval.credential_storage_approval,
+      auth_configured: approval.auth_configured,
       shared_preflight_ready:
         Boolean(sharedPreflight && sharedPreflight.ready),
       runtime_settings: safeRuntimeSettings(sharedPreflight),
@@ -1207,6 +1266,7 @@ var WorkOsAutomation = (function () {
 
   function diagnosticPrerequisiteStatus(settings) {
     var reasons = ['SERVICE_READINESS_NOT_EXECUTED'];
+    var approval = providerApprovalSnapshot(settings && settings.properties);
     appendScopeDecisionReasons(reasons);
     var sharedPreflight =
       appendSharedPreflightReasons(settings, reasons);
@@ -1232,13 +1292,10 @@ var WorkOsAutomation = (function () {
       ready: false,
       reasons: reasons,
       real_provider_connection: 'NOT_EXECUTED',
-      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
-        ? 'CONFIRMED'
-        : 'NOT_CONFIRMED',
-      credential_storage_approval:
-        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
-          ? 'CONFIRMED'
-          : 'NOT_CONFIRMED',
+      operator_approval: approval.operator_approval,
+      data_policy_approval: approval.data_policy_approval,
+      credential_storage_approval: approval.credential_storage_approval,
+      auth_configured: approval.auth_configured,
       shared_preflight_ready:
         Boolean(sharedPreflight && sharedPreflight.ready),
       runtime_settings: safeRuntimeSettings(sharedPreflight)
@@ -1324,14 +1381,46 @@ var WorkOsAutomation = (function () {
       automation: automation,
       prerequisites: prerequisites,
       details: details,
+      selected_provider: typeof WorkOsAiProviderSelection !== 'undefined' &&
+        WorkOsAiProviderSelection &&
+        typeof WorkOsAiProviderSelection.getSelectionSnapshot === 'function'
+        ? WorkOsAiProviderSelection.getSelectionSnapshot({
+          properties: settings.properties
+        }).provider
+        : 'GEMINI',
       external_request_performed: false
     });
     var safeReasons = Array.isArray(prerequisites.reasons)
       ? prerequisites.reasons.slice(0, 40)
       : [];
+    var selectedProvider = details.provider.provider;
+    var selectedMetadata = null;
+    var qualification = null;
+    if (typeof WorkOsAiProviderSelection !== 'undefined' &&
+        WorkOsAiProviderSelection &&
+        typeof WorkOsAiProviderSelection.getSelectionSnapshot ===
+          'function') {
+      var selection = WorkOsAiProviderSelection.getSelectionSnapshot({
+        properties: settings.properties
+      });
+      selectedProvider = selection.provider;
+      selectedMetadata = WorkOsAiProviderSelection.getProviderMetadata(
+        selectedProvider
+      );
+      qualification = WorkOsAiProviderSelection.isCurrentQualificationValid({
+        properties: settings.properties
+      });
+    }
     var providerReady = details.provider.ready === true &&
       details.provider.adapter_status === 'READY' &&
       details.provider.credential_configured === true;
+    var selectedProviderModel = selectedMetadata
+      ? selectedMetadata.model
+      : WorkOsConfig.EXTERNAL_AI_MODEL;
+    var selectedProviderPrompt = selectedMetadata
+      ? selectedMetadata.prompt_version
+      : WorkOsConfig.EXTERNAL_AI_PROMPT_VERSION;
+    var approval = providerApprovalSnapshot(settings.properties);
     return {
       status: decision.ready
         ? 'READY_FOR_CONTROLLED_QUALIFICATION'
@@ -1351,21 +1440,20 @@ var WorkOsAutomation = (function () {
       setup: details.setup,
       test_mode: details.test_mode,
       scope: details.scope,
-      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
-        ? 'CONFIRMED'
-        : 'NOT_CONFIRMED',
-      data_policy_approval: WorkOsConfig.EXTERNAL_AI_DATA_POLICY_APPROVED
-        ? 'CONFIRMED'
-        : 'NOT_CONFIRMED',
-      credential_storage_approval:
-        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
-          ? 'CONFIRMED'
-          : 'NOT_CONFIRMED',
-      auth_configured: WorkOsConfig.EXTERNAL_AI_AUTH_CONFIGURED
-        ? 'CONFIGURED'
-        : 'NOT_CONFIGURED',
-      provider: String(WorkOsConfig.EXTERNAL_AI_PROVIDER),
-      model: String(WorkOsConfig.EXTERNAL_AI_MODEL),
+      selected_provider: selectedProvider,
+      qualification_status: qualification
+        ? qualification.status
+        : 'NOT_CHECKED',
+      qualification_fingerprint_current: qualification
+        ? qualification.valid
+        : false,
+      operator_approval: approval.operator_approval,
+      data_policy_approval: approval.data_policy_approval,
+      credential_storage_approval: approval.credential_storage_approval,
+      auth_configured: approval.auth_configured,
+      provider: String(selectedProvider),
+      model: String(selectedProviderModel),
+      prompt_version: String(selectedProviderPrompt),
       provider_readiness: details.provider,
       production_readiness: {
         ready: providerReady,
@@ -1400,14 +1488,46 @@ var WorkOsAutomation = (function () {
       automation: automation,
       prerequisites: prerequisites,
       details: details,
+      selected_provider: typeof WorkOsAiProviderSelection !== 'undefined' &&
+        WorkOsAiProviderSelection &&
+        typeof WorkOsAiProviderSelection.getSelectionSnapshot === 'function'
+        ? WorkOsAiProviderSelection.getSelectionSnapshot({
+          properties: settings.properties
+        }).provider
+        : 'GEMINI',
       external_request_performed: false
     });
     var safeReasons = Array.isArray(prerequisites.reasons)
       ? prerequisites.reasons.slice(0, 40)
       : [];
+    var selectedProvider = details.provider.provider;
+    var selectedMetadata = null;
+    var qualification = null;
+    if (typeof WorkOsAiProviderSelection !== 'undefined' &&
+        WorkOsAiProviderSelection &&
+        typeof WorkOsAiProviderSelection.getSelectionSnapshot ===
+          'function') {
+      var selection = WorkOsAiProviderSelection.getSelectionSnapshot({
+        properties: settings.properties
+      });
+      selectedProvider = selection.provider;
+      selectedMetadata = WorkOsAiProviderSelection.getProviderMetadata(
+        selectedProvider
+      );
+      qualification = WorkOsAiProviderSelection.isCurrentQualificationValid({
+        properties: settings.properties
+      });
+    }
     var providerReady = details.provider.ready === true &&
       details.provider.adapter_status === 'READY' &&
       details.provider.credential_configured === true;
+    var selectedProviderModel = selectedMetadata
+      ? selectedMetadata.model
+      : WorkOsConfig.EXTERNAL_AI_MODEL;
+    var selectedProviderPrompt = selectedMetadata
+      ? selectedMetadata.prompt_version
+      : WorkOsConfig.EXTERNAL_AI_PROMPT_VERSION;
+    var approval = providerApprovalSnapshot(settings.properties);
     return {
       status: decision.ready
         ? 'READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT'
@@ -1446,21 +1566,20 @@ var WorkOsAutomation = (function () {
       setup: details.setup,
       test_mode: details.test_mode,
       scope: details.scope,
-      operator_approval: WorkOsConfig.EXTERNAL_AI_OPERATOR_APPROVED
-        ? 'CONFIRMED'
-        : 'NOT_CONFIRMED',
-      data_policy_approval: WorkOsConfig.EXTERNAL_AI_DATA_POLICY_APPROVED
-        ? 'CONFIRMED'
-        : 'NOT_CONFIRMED',
-      credential_storage_approval:
-        WorkOsConfig.EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED
-          ? 'CONFIRMED'
-          : 'NOT_CONFIRMED',
-      auth_configured: WorkOsConfig.EXTERNAL_AI_AUTH_CONFIGURED
-        ? 'CONFIGURED'
-        : 'NOT_CONFIGURED',
-      provider: String(WorkOsConfig.EXTERNAL_AI_PROVIDER),
-      model: String(WorkOsConfig.EXTERNAL_AI_MODEL),
+      selected_provider: selectedProvider,
+      qualification_status: qualification
+        ? qualification.status
+        : 'NOT_CHECKED',
+      qualification_fingerprint_current: qualification
+        ? qualification.valid
+        : false,
+      operator_approval: approval.operator_approval,
+      data_policy_approval: approval.data_policy_approval,
+      credential_storage_approval: approval.credential_storage_approval,
+      auth_configured: approval.auth_configured,
+      provider: String(selectedProvider),
+      model: String(selectedProviderModel),
+      prompt_version: String(selectedProviderPrompt),
       provider_readiness: details.provider,
       production_readiness: {
         ready: providerReady,

@@ -1473,7 +1473,7 @@ test('P3-I26_MANIFEST_RETAINS_PHASE3_SCOPE_AND_ADDS_ONLY_PHASE4_CALENDAR', () =>
   const productionSource = fs
     .readdirSync(appsScriptRoot)
     .filter((name) => name.endsWith('.gs'))
-    .filter((name) => name !== '20_GeminiProvider.gs')
+    .filter((name) => !['20_GeminiProvider.gs', '21_OpenAiProvider.gs'].includes(name))
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
   assert.strictEqual(/\bUrlFetchApp\b/.test(productionSource), false);
