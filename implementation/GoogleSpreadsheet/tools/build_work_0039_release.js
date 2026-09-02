@@ -187,19 +187,19 @@ function transformPhase8cConfig(sourceConfig) {
   let transformed = sourceConfig;
   const transforms = [
     ['TEST_MODE', /TEST_MODE:\s*true/g, 'TEST_MODE: false'],
-    ['EXTERNAL_AI_ENABLED', /EXTERNAL_AI_ENABLED:\s*false/g,
+    ['EXTERNAL_AI_ENABLED', /^\s*EXTERNAL_AI_ENABLED:\s*false/gm,
       'EXTERNAL_AI_ENABLED: true'],
     ['EXTERNAL_AI_OPERATOR_APPROVED',
-      /EXTERNAL_AI_OPERATOR_APPROVED:\s*false/g,
+      /^\s*EXTERNAL_AI_OPERATOR_APPROVED:\s*false/gm,
       'EXTERNAL_AI_OPERATOR_APPROVED: true'],
     ['EXTERNAL_AI_DATA_POLICY_APPROVED',
-      /EXTERNAL_AI_DATA_POLICY_APPROVED:\s*false/g,
+      /^\s*EXTERNAL_AI_DATA_POLICY_APPROVED:\s*false/gm,
       'EXTERNAL_AI_DATA_POLICY_APPROVED: true'],
     ['EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED',
-      /EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED:\s*false/g,
+      /^\s*EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED:\s*false/gm,
       'EXTERNAL_AI_CREDENTIAL_STORAGE_APPROVED: true'],
     ['EXTERNAL_AI_AUTH_CONFIGURED',
-      /EXTERNAL_AI_AUTH_CONFIGURED:\s*false/g,
+      /^\s*EXTERNAL_AI_AUTH_CONFIGURED:\s*false/gm,
       'EXTERNAL_AI_AUTH_CONFIGURED: true']
   ];
   transforms.forEach(([name, pattern, replacement]) => {
