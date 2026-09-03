@@ -20,6 +20,9 @@ let fetchCalls = 0;
 let lastFetch = null;
 let responseBody = '';
 let responseStatus = 200;
+let boundMessageRows = [];
+let messageRepositoryMode = 'AVAILABLE';
+const boundSpreadsheet = { id: 'synthetic-bound-spreadsheet-0039' };
 
 const sandbox = {
   Date,
@@ -47,10 +50,34 @@ const sandbox = {
     getScriptProperties: () => propertyStore()
   },
   LockService: {
-    getScriptLock: () => ({
-      tryLock: () => true,
-      releaseLock: () => {}
-    })
+    getScriptLock: () => {
+      let held = false;
+      return {
+        tryLock: () => { held = true; return true; },
+        hasLock: () => held,
+        releaseLock: () => { held = false; }
+      };
+    }
+  },
+  ScriptApp: {
+    getProjectTriggers: () => []
+  },
+  SpreadsheetApp: {
+    getActiveSpreadsheet: () => boundSpreadsheet
+  },
+  WorkOsMessageStateRepository: {
+    messageSheet(spreadsheet) {
+      assert.strictEqual(spreadsheet, boundSpreadsheet);
+      if (messageRepositoryMode === 'UNAVAILABLE') {
+        throw new Error('synthetic unavailable message state');
+      }
+      return { id: 'synthetic-message-state-sheet' };
+    },
+    createContextForHeldLock(_sheet, lock) {
+      assert.strictEqual(lock.hasLock(), true);
+      if (messageRepositoryMode === 'MALFORMED_CONTEXT') return {};
+      return { logicalRows: boundMessageRows.slice() };
+    }
   }
 };
 
@@ -100,6 +127,8 @@ function reset(valuesToSet = {}) {
   fetchCalls = 0;
   lastFetch = null;
   responseStatus = 200;
+  boundMessageRows = [];
+  messageRepositoryMode = 'AVAILABLE';
   responseBody = JSON.stringify(successEnvelope());
   return propertyStore();
 }
@@ -165,8 +194,21 @@ function output() {
 
 function successEnvelope() {
   return {
+    id: 'resp_synthetic_0039',
+    object: 'response',
+    created_at: 1788310800,
+    completed_at: 1788310801,
     status: 'completed',
+    error: null,
+    incomplete_details: null,
+    instructions: null,
+    model: OpenAI ? OpenAI.MODEL : 'gpt-5.6-luna',
+    parallel_tool_calls: true,
+    store: false,
+    tools: [],
+    user: null,
     output: [{
+      id: 'msg_synthetic_0039',
       type: 'message',
       role: 'assistant',
       status: 'completed',
@@ -289,14 +331,48 @@ function testResponseAndCredentialBoundary() {
   incomplete.status = 'incomplete';
   assert.strictEqual(OpenAI.extractResponse(JSON.stringify(incomplete), 200).error_kind,
     'INVALID_RESPONSE');
-  const extra = successEnvelope();
-  extra.extra_field = 'reject';
-  assert.strictEqual(OpenAI.extractResponse(JSON.stringify(extra), 200).error_kind,
+  const documentedMetadata = successEnvelope();
+  documentedMetadata.temperature = 1;
+  documentedMetadata.top_p = 1;
+  documentedMetadata.service_tier = 'default';
+  assert.strictEqual(
+    OpenAI.extractResponse(JSON.stringify(documentedMetadata), 200).error_kind,
+    undefined
+  );
+  const reasoning = successEnvelope();
+  reasoning.output.unshift({
+    id: 'rs_synthetic_0039',
+    type: 'reasoning',
+    status: 'completed',
+    summary: []
+  });
+  assert.strictEqual(OpenAI.extractResponse(JSON.stringify(reasoning), 200).error_kind,
+    undefined);
+  const functionCall = successEnvelope();
+  functionCall.output.unshift({
+    id: 'fc_synthetic_0039',
+    type: 'function_call',
+    status: 'completed',
+    name: 'forbidden_tool',
+    arguments: '{}',
+    call_id: 'call_synthetic_0039'
+  });
+  assert.strictEqual(OpenAI.extractResponse(JSON.stringify(functionCall), 200).error_kind,
     'INVALID_RESPONSE');
   const multiple = successEnvelope();
-  multiple.output.push(multiple.output[0]);
+  multiple.output.push(JSON.parse(JSON.stringify(multiple.output[0])));
   assert.strictEqual(OpenAI.extractResponse(JSON.stringify(multiple), 200).error_kind,
     'INVALID_RESPONSE');
+  const canonicalExtra = successEnvelope();
+  const canonicalExtraBody = output();
+  canonicalExtraBody.extra_field = 'reject';
+  canonicalExtra.output[0].content[0].text = JSON.stringify(canonicalExtraBody);
+  const extractedExtra = OpenAI.extractResponse(JSON.stringify(canonicalExtra), 200);
+  assert.strictEqual(extractedExtra.error_kind, undefined);
+  assert.throws(
+    () => AI.parseCanonicalResponse(extractedExtra),
+    (error) => error && error.code === 'E_AI_SCHEMA'
+  );
 }
 
 function testUnsupportedModelAndNoFallback() {
@@ -481,7 +557,9 @@ function testSelectionGuardsAndRollback() {
     'GEMINI');
   const switched = Selection.switchProvider('OPENAI', {
     properties: props,
-    automation_status: off()
+    automation_status: off(),
+    in_flight_count: 0,
+    pending_retry_count: 0
   });
   assert.strictEqual(switched.status, 'SWITCHED');
   assert.strictEqual(props.getProperty(Config.PROPERTIES.ACTIVE_AI_PROVIDER), 'OPENAI');
@@ -506,11 +584,63 @@ function testSelectionGuardsAndRollback() {
     () => Selection.switchProvider('GEMINI', {
       properties: props,
       automation_status: off(),
+      in_flight_count: 0,
+      pending_retry_count: 0,
       dependent_update: () => { throw new Error('synthetic dependent failure'); }
     }),
     (error) => error && error.code === 'E_AI_PROVIDER_SWITCH_ROLLED_BACK'
   );
   assert.strictEqual(props.getProperty(Config.PROPERTIES.ACTIVE_AI_PROVIDER), 'OPENAI');
+}
+
+function testProductionShapedPersistedStateGuards() {
+  for (const status of ['RETRY', 'CLAIMED', 'PREPROCESSED']) {
+    const props = reset();
+    boundMessageRows = [{ processing_status: status }];
+    assert.throws(
+      () => Selection.switchProvider('OPENAI'),
+      (error) => error && error.code === 'E_AI_PROVIDER_SWITCH_BLOCKED'
+    );
+    assert.strictEqual(
+      props.getProperty(Config.PROPERTIES.ACTIVE_AI_PROVIDER),
+      null,
+      status
+    );
+    assert.strictEqual(fetchCalls, 0, status);
+  }
+
+  for (const mode of ['UNAVAILABLE', 'MALFORMED_CONTEXT']) {
+    const props = reset();
+    messageRepositoryMode = mode;
+    assert.throws(
+      () => Selection.switchProvider('OPENAI'),
+      (error) => error && error.code === 'E_AI_PROVIDER_SWITCH_BLOCKED'
+    );
+    assert.strictEqual(props.getProperty(Config.PROPERTIES.ACTIVE_AI_PROVIDER), null);
+    assert.strictEqual(fetchCalls, 0);
+  }
+
+  const props = reset();
+  boundMessageRows = [
+    { processing_status: 'DONE' },
+    { processing_status: 'DEAD' },
+    { processing_status: 'SKIPPED' }
+  ];
+  const switched = Selection.switchProvider('OPENAI');
+  assert.strictEqual(switched.status, 'SWITCHED');
+  assert.strictEqual(props.getProperty(Config.PROPERTIES.ACTIVE_AI_PROVIDER), 'OPENAI');
+  assert.strictEqual(fetchCalls, 0);
+
+  reset();
+  boundMessageRows = [{ processing_status: 'CORRUPT' }];
+  assert.throws(
+    () => Selection.switchProvider('OPENAI'),
+    (error) => error && error.code === 'E_AI_PROVIDER_SWITCH_BLOCKED'
+  );
+  assert.strictEqual(
+    propertyStore().getProperty(Config.PROPERTIES.ACTIVE_AI_PROVIDER),
+    null
+  );
 }
 
 function testQualificationBinding() {
@@ -523,6 +653,8 @@ function testQualificationBinding() {
   const result = Selection.runSyntheticQualification({
     properties: props,
     automation_status: off(),
+    in_flight_count: 0,
+    pending_retry_count: 0,
     adapter
   });
   assert.strictEqual(result.status, 'QUALIFIED');
@@ -555,6 +687,8 @@ const tests = [
   ['OPENAI_FAILURE_MATRIX_FAILS_CLOSED', testFailureMatrixAndFailClosedHandling],
   ['OPENAI_REPRESENTATIVE_CANONICAL_ACTIONS', testRepresentativeCanonicalActions],
   ['PROVIDER_SELECTION_GUARDS_AND_ROLLBACK', testSelectionGuardsAndRollback],
+  ['PERSISTED_MESSAGE_STATE_GUARDS_USE_BOUND_SPREADSHEET',
+    testProductionShapedPersistedStateGuards],
   ['QUALIFICATION_IS_BOUND_TO_PROVIDER_MODEL_PROMPT_AND_INSTANCE', testQualificationBinding]
 ];
 const failures = [];

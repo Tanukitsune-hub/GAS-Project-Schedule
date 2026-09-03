@@ -11,6 +11,10 @@
 var WorkOsAiProviderSelection = (function () {
   var DEFAULT_PROVIDER = 'GEMINI';
   var QUALIFICATION_STATUS_VERSION = 'WORK_OS_AI_QUALIFICATION_V1';
+  var MESSAGE_STATE_STATUSES = [
+    'DISCOVERED', 'CLAIMED', 'PREPROCESSED', 'CLASSIFIED', 'TASKS_WRITTEN',
+    'CALENDAR_PENDING', 'DONE', 'RETRY', 'DEAD', 'SKIPPED'
+  ];
 
   function fail(code, stage, message) {
     throw new WorkOsAppError(
@@ -263,7 +267,7 @@ var WorkOsAiProviderSelection = (function () {
     return { status: 'EXPIRED', active: false };
   }
 
-  function recordStateCounts(settings, spreadsheet, lock) {
+  function recordStateCounts(settings, spreadsheet, lock, requirePersistedState) {
     var value = settings || {};
     var inFlight = Number(value.in_flight_count || 0);
     var pendingRetry = Number(value.pending_retry_count || 0);
@@ -287,32 +291,40 @@ var WorkOsAiProviderSelection = (function () {
           sheet,
           lock
         );
-        records = context.logicalRows;
+        records = context && Array.isArray(context.logicalRows)
+          ? context.logicalRows
+          : null;
       } catch (error) {
         return { in_flight_count: -1, pending_retry_count: -1 };
       }
     }
     if (!records) {
-      return { in_flight_count: 0, pending_retry_count: 0 };
+      return requirePersistedState === true
+        ? { in_flight_count: -1, pending_retry_count: -1 }
+        : { in_flight_count: 0, pending_retry_count: 0 };
     }
     var inFlightCount = 0;
     var pendingRetryCount = 0;
-    records.forEach(function (record) {
+    for (var index = 0; index < records.length; index += 1) {
+      var record = records[index];
       var status = String(record && record.processing_status || '');
+      if (MESSAGE_STATE_STATUSES.indexOf(status) === -1) {
+        return { in_flight_count: -1, pending_retry_count: -1 };
+      }
       if (status === 'CLAIMED' || status === 'PREPROCESSED') {
         inFlightCount += 1;
       }
       if (status === 'RETRY') {
         pendingRetryCount += 1;
       }
-    });
+    }
     return {
       in_flight_count: inFlightCount,
       pending_retry_count: pendingRetryCount
     };
   }
 
-  function switchBlockers(settings, spreadsheet, lock) {
+  function switchBlockers(settings, spreadsheet, lock, requirePersistedState) {
     var value = settings || {};
     var props = propertyService(value.properties);
     var automation = automationSnapshot(value, props);
@@ -332,7 +344,12 @@ var WorkOsAiProviderSelection = (function () {
         ? 'WORKER_LEASE_MALFORMED'
         : 'WORKER_LEASE_ACTIVE');
     }
-    var counts = recordStateCounts(value, spreadsheet, lock);
+    var counts = recordStateCounts(
+      value,
+      spreadsheet,
+      lock,
+      requirePersistedState
+    );
     if (counts.in_flight_count < 0 || counts.pending_retry_count < 0) {
       reasons.push('MESSAGE_STATE_UNAVAILABLE');
     } else {
@@ -383,9 +400,18 @@ var WorkOsAiProviderSelection = (function () {
     }
     var selected = normalizeProvider(target);
     var props = propertyService(value.properties);
-    var spreadsheet = value.spreadsheet || null;
     return WorkOsUtilities.withScriptLock(function (lock) {
-      var guards = switchBlockers(value, spreadsheet, lock);
+      var spreadsheet = value.spreadsheet || null;
+      if (!spreadsheet && typeof SpreadsheetApp !== 'undefined' &&
+          SpreadsheetApp &&
+          typeof SpreadsheetApp.getActiveSpreadsheet === 'function') {
+        try {
+          spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+        } catch (error) {
+          spreadsheet = null;
+        }
+      }
+      var guards = switchBlockers(value, spreadsheet, lock, true);
       if (!guards.ready) {
         var error = new WorkOsAppError(
           'E_AI_PROVIDER_SWITCH_BLOCKED',

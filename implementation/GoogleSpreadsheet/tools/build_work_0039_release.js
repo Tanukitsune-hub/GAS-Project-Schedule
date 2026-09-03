@@ -421,7 +421,7 @@ function buildBundle(options) {
   const provenance = {
     schema: 'WORK_0039_SINGLE_FILE_INSTALL_V1',
     work_id: '0039',
-    dispatch_id: '0039-CODEX-01',
+    dispatch_id: '0039-CODEX-03',
     package: phase8cPackage,
     source_root: `implementation/GoogleSpreadsheet/release/${phase8cPackage}/apps-script`,
     source_commit: options.sourceCommit,

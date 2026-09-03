@@ -6,7 +6,7 @@
 | Field | Value |
 |---|---|
 | Work | `0039` |
-| Dispatch | `0039-CODEX-01` |
+| Dispatch | `0039-CODEX-03` |
 | Package | `{{PACKAGE}}` |
 | Repository | `{{REPOSITORY}}` |
 | Source commit | `{{SOURCE_COMMIT}}` |

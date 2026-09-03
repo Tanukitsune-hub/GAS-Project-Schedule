@@ -224,7 +224,7 @@ function verifyBundle(sourceCommit, preparedAt) {
   ).toString('utf8'));
   if (provenance.schema !== 'WORK_0039_SINGLE_FILE_INSTALL_V1' ||
       provenance.work_id !== '0039' ||
-      provenance.dispatch_id !== '0039-CODEX-01' ||
+      provenance.dispatch_id !== '0039-CODEX-03' ||
       provenance.package !== builder.phase8cPackage ||
       provenance.source_commit !== sourceCommit ||
       provenance.prepared_at !== preparedAt ||

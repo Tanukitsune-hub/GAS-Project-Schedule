@@ -51,13 +51,6 @@ var WorkOsOpenAiProvider = (function () {
     'Use only supported deadline semantics and never invent an identifier.'
   ].join(' ');
 
-  var ROOT_RESPONSE_FIELDS = [
-    'id', 'object', 'created_at', 'status', 'model', 'output', 'output_text',
-    'error', 'incomplete_details', 'background', 'max_output_tokens',
-    'max_tool_calls', 'metadata', 'parallel_tool_calls', 'previous_response_id',
-    'prompt', 'reasoning', 'service_tier', 'store', 'temperature', 'text',
-    'tool_choice', 'tools', 'top_logprobs', 'top_p', 'truncation', 'usage'
-  ];
   var OUTPUT_ITEM_FIELDS = [
     'id', 'type', 'status', 'role', 'content', 'summary', 'name', 'arguments',
     'call_id'
@@ -289,18 +282,33 @@ var WorkOsOpenAiProvider = (function () {
   function responseObject(response) {
     var root = safeObject(response);
     if (!root || root.status !== 'completed' || !Array.isArray(root.output) ||
-        !hasOnlyKnownFields(root, ROOT_RESPONSE_FIELDS)) {
+        (Object.prototype.hasOwnProperty.call(root, 'object') &&
+         root.object !== 'response') ||
+        (Object.prototype.hasOwnProperty.call(root, 'error') &&
+         root.error != null) ||
+        (Object.prototype.hasOwnProperty.call(root, 'incomplete_details') &&
+         root.incomplete_details != null)) {
       return null;
     }
-    if (Array.isArray(root.tools) && root.tools.length !== 0) {
+    if (Object.prototype.hasOwnProperty.call(root, 'tools') &&
+        (!Array.isArray(root.tools) || root.tools.length !== 0)) {
       return null;
     }
     var outputMessage = null;
     for (var index = 0; index < root.output.length; index += 1) {
       var item = safeObject(root.output[index]);
-      if (!item || !hasOnlyKnownFields(item, OUTPUT_ITEM_FIELDS) ||
+      if (!item) {
+        return null;
+      }
+      // Responses may contain documented reasoning items before the assistant
+      // message. Their contents are deliberately neither inspected nor
+      // persisted. Any executable/tool output item remains fail-closed.
+      if (item.type === 'reasoning') {
+        continue;
+      }
+      if (!hasOnlyKnownFields(item, OUTPUT_ITEM_FIELDS) ||
           item.type !== 'message' || item.role !== 'assistant' ||
-          item.status === 'incomplete' || item.status === 'failed' ||
+          item.status !== 'completed' ||
           !Array.isArray(item.content) || item.content.length !== 1 ||
           outputMessage !== null) {
         return null;
@@ -313,10 +321,12 @@ var WorkOsOpenAiProvider = (function () {
         // a classification and must never be treated as one.
         return null;
       }
-      if (Array.isArray(content.annotations) && content.annotations.length) {
+      if (Object.prototype.hasOwnProperty.call(content, 'annotations') &&
+          (!Array.isArray(content.annotations) || content.annotations.length)) {
         return null;
       }
-      if (Array.isArray(content.logprobs) && content.logprobs.length) {
+      if (Object.prototype.hasOwnProperty.call(content, 'logprobs') &&
+          (!Array.isArray(content.logprobs) || content.logprobs.length)) {
         return null;
       }
       if (Object.prototype.hasOwnProperty.call(content, 'refusal') &&
