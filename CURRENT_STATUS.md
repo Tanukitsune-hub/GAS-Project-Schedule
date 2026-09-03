@@ -82,8 +82,9 @@ is accepted, while company-environment installation and runtime acceptance remai
 ## Work 0039 OpenAI provider-selection status
 
 - Dispatch `0039-CODEX-03` remediates the CODEX-02 review blockers as a local,
-  synthetic-only candidate on `codex/0039-openai-provider-selection`; GitHub
-  push and pull-request CI remain a publication gate until observed complete.
+  synthetic-only candidate on `codex/0039-openai-provider-selection`. The
+  product/release publication head `9d287b411ae70fdcaa667fbde9618e1c205e8173`
+  passed both GitHub push and pull-request CI; Draft PR #55 remains unmerged.
 - The authoritative active provider property is
   `WORK_OS_V2_ACTIVE_AI_PROVIDER`; absent values remain backward-compatible
   with Gemini, and allowed values are exactly `GEMINI` and `OPENAI`.
