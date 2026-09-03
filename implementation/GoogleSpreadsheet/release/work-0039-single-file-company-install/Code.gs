@@ -34881,7 +34881,7 @@ function checkGeminiSyntheticReadiness() {
   return WorkOsGeminiProvider.readiness();
 }
 /* WORK_0039_SOURCE_END file=20_GeminiProvider.gs */
-/* WORK_0039_SOURCE_BEGIN file=21_OpenAiProvider.gs bytes=23615 sha256=e3f35af30ae8417fedfc11b2b92e3d737e041e577f6dcbe0bc76ac1c2cf61368 */
+/* WORK_0039_SOURCE_BEGIN file=21_OpenAiProvider.gs bytes=23980 sha256=893beea700c5e428ff419684033409d40abcfc398c6813efd9edf6bacaec51ba */
 /**
  * Direct OpenAI Responses API provider boundary for Work 0039.
  *
@@ -34935,13 +34935,6 @@ var WorkOsOpenAiProvider = (function () {
     'Use only supported deadline semantics and never invent an identifier.'
   ].join(' ');
 
-  var ROOT_RESPONSE_FIELDS = [
-    'id', 'object', 'created_at', 'status', 'model', 'output', 'output_text',
-    'error', 'incomplete_details', 'background', 'max_output_tokens',
-    'max_tool_calls', 'metadata', 'parallel_tool_calls', 'previous_response_id',
-    'prompt', 'reasoning', 'service_tier', 'store', 'temperature', 'text',
-    'tool_choice', 'tools', 'top_logprobs', 'top_p', 'truncation', 'usage'
-  ];
   var OUTPUT_ITEM_FIELDS = [
     'id', 'type', 'status', 'role', 'content', 'summary', 'name', 'arguments',
     'call_id'
@@ -35173,18 +35166,33 @@ var WorkOsOpenAiProvider = (function () {
   function responseObject(response) {
     var root = safeObject(response);
     if (!root || root.status !== 'completed' || !Array.isArray(root.output) ||
-        !hasOnlyKnownFields(root, ROOT_RESPONSE_FIELDS)) {
+        (Object.prototype.hasOwnProperty.call(root, 'object') &&
+         root.object !== 'response') ||
+        (Object.prototype.hasOwnProperty.call(root, 'error') &&
+         root.error != null) ||
+        (Object.prototype.hasOwnProperty.call(root, 'incomplete_details') &&
+         root.incomplete_details != null)) {
       return null;
     }
-    if (Array.isArray(root.tools) && root.tools.length !== 0) {
+    if (Object.prototype.hasOwnProperty.call(root, 'tools') &&
+        (!Array.isArray(root.tools) || root.tools.length !== 0)) {
       return null;
     }
     var outputMessage = null;
     for (var index = 0; index < root.output.length; index += 1) {
       var item = safeObject(root.output[index]);
-      if (!item || !hasOnlyKnownFields(item, OUTPUT_ITEM_FIELDS) ||
+      if (!item) {
+        return null;
+      }
+      // Responses may contain documented reasoning items before the assistant
+      // message. Their contents are deliberately neither inspected nor
+      // persisted. Any executable/tool output item remains fail-closed.
+      if (item.type === 'reasoning') {
+        continue;
+      }
+      if (!hasOnlyKnownFields(item, OUTPUT_ITEM_FIELDS) ||
           item.type !== 'message' || item.role !== 'assistant' ||
-          item.status === 'incomplete' || item.status === 'failed' ||
+          item.status !== 'completed' ||
           !Array.isArray(item.content) || item.content.length !== 1 ||
           outputMessage !== null) {
         return null;
@@ -35197,10 +35205,12 @@ var WorkOsOpenAiProvider = (function () {
         // a classification and must never be treated as one.
         return null;
       }
-      if (Array.isArray(content.annotations) && content.annotations.length) {
+      if (Object.prototype.hasOwnProperty.call(content, 'annotations') &&
+          (!Array.isArray(content.annotations) || content.annotations.length)) {
         return null;
       }
-      if (Array.isArray(content.logprobs) && content.logprobs.length) {
+      if (Object.prototype.hasOwnProperty.call(content, 'logprobs') &&
+          (!Array.isArray(content.logprobs) || content.logprobs.length)) {
         return null;
       }
       if (Object.prototype.hasOwnProperty.call(content, 'refusal') &&
@@ -35524,7 +35534,7 @@ var WorkOsOpenAiProvider = (function () {
   });
 }());
 /* WORK_0039_SOURCE_END file=21_OpenAiProvider.gs */
-/* WORK_0039_SOURCE_BEGIN file=22_AiProviderSelection.gs bytes=26325 sha256=8673dc6b420024be18ff4580c05c29b5166c0a3c2a015e19f186caa049d8f48e */
+/* WORK_0039_SOURCE_BEGIN file=22_AiProviderSelection.gs bytes=27284 sha256=0bf6e899a48388d4f9f3e45247eb6074fc8d8bee1c7939f9d8c55cd5907d3292 */
 /**
  * Code-owned AI provider selection and qualification boundary.
  *
@@ -35538,6 +35548,10 @@ var WorkOsOpenAiProvider = (function () {
 var WorkOsAiProviderSelection = (function () {
   var DEFAULT_PROVIDER = 'GEMINI';
   var QUALIFICATION_STATUS_VERSION = 'WORK_OS_AI_QUALIFICATION_V1';
+  var MESSAGE_STATE_STATUSES = [
+    'DISCOVERED', 'CLAIMED', 'PREPROCESSED', 'CLASSIFIED', 'TASKS_WRITTEN',
+    'CALENDAR_PENDING', 'DONE', 'RETRY', 'DEAD', 'SKIPPED'
+  ];
 
   function fail(code, stage, message) {
     throw new WorkOsAppError(
@@ -35790,7 +35804,7 @@ var WorkOsAiProviderSelection = (function () {
     return { status: 'EXPIRED', active: false };
   }
 
-  function recordStateCounts(settings, spreadsheet, lock) {
+  function recordStateCounts(settings, spreadsheet, lock, requirePersistedState) {
     var value = settings || {};
     var inFlight = Number(value.in_flight_count || 0);
     var pendingRetry = Number(value.pending_retry_count || 0);
@@ -35814,32 +35828,40 @@ var WorkOsAiProviderSelection = (function () {
           sheet,
           lock
         );
-        records = context.logicalRows;
+        records = context && Array.isArray(context.logicalRows)
+          ? context.logicalRows
+          : null;
       } catch (error) {
         return { in_flight_count: -1, pending_retry_count: -1 };
       }
     }
     if (!records) {
-      return { in_flight_count: 0, pending_retry_count: 0 };
+      return requirePersistedState === true
+        ? { in_flight_count: -1, pending_retry_count: -1 }
+        : { in_flight_count: 0, pending_retry_count: 0 };
     }
     var inFlightCount = 0;
     var pendingRetryCount = 0;
-    records.forEach(function (record) {
+    for (var index = 0; index < records.length; index += 1) {
+      var record = records[index];
       var status = String(record && record.processing_status || '');
+      if (MESSAGE_STATE_STATUSES.indexOf(status) === -1) {
+        return { in_flight_count: -1, pending_retry_count: -1 };
+      }
       if (status === 'CLAIMED' || status === 'PREPROCESSED') {
         inFlightCount += 1;
       }
       if (status === 'RETRY') {
         pendingRetryCount += 1;
       }
-    });
+    }
     return {
       in_flight_count: inFlightCount,
       pending_retry_count: pendingRetryCount
     };
   }
 
-  function switchBlockers(settings, spreadsheet, lock) {
+  function switchBlockers(settings, spreadsheet, lock, requirePersistedState) {
     var value = settings || {};
     var props = propertyService(value.properties);
     var automation = automationSnapshot(value, props);
@@ -35859,7 +35881,12 @@ var WorkOsAiProviderSelection = (function () {
         ? 'WORKER_LEASE_MALFORMED'
         : 'WORKER_LEASE_ACTIVE');
     }
-    var counts = recordStateCounts(value, spreadsheet, lock);
+    var counts = recordStateCounts(
+      value,
+      spreadsheet,
+      lock,
+      requirePersistedState
+    );
     if (counts.in_flight_count < 0 || counts.pending_retry_count < 0) {
       reasons.push('MESSAGE_STATE_UNAVAILABLE');
     } else {
@@ -35910,9 +35937,18 @@ var WorkOsAiProviderSelection = (function () {
     }
     var selected = normalizeProvider(target);
     var props = propertyService(value.properties);
-    var spreadsheet = value.spreadsheet || null;
     return WorkOsUtilities.withScriptLock(function (lock) {
-      var guards = switchBlockers(value, spreadsheet, lock);
+      var spreadsheet = value.spreadsheet || null;
+      if (!spreadsheet && typeof SpreadsheetApp !== 'undefined' &&
+          SpreadsheetApp &&
+          typeof SpreadsheetApp.getActiveSpreadsheet === 'function') {
+        try {
+          spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+        } catch (error) {
+          spreadsheet = null;
+        }
+      }
+      var guards = switchBlockers(value, spreadsheet, lock, true);
       if (!guards.ready) {
         var error = new WorkOsAppError(
           'E_AI_PROVIDER_SWITCH_BLOCKED',

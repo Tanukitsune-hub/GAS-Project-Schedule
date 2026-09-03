@@ -11,7 +11,7 @@
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "474d66fc3a0df224768f91d9f4cd34dee6617dc2",
+  "source_commit": "7c8b4c7709ab00b4d315f910b9271f3c4945b702",
   "release_commit": "SELF",
   "phase8b": {
     "path": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot",
@@ -19,8 +19,8 @@
     "test_harness": true,
     "payload_files": 26,
     "package_files": 30,
-    "payload_sha256": "92fb95e45e60ccbcff48ff2bf32ff79fc73743120e2fdcf8f7c0e6f47170aea7",
-    "package_sha256": "0e4bc6a739b9ed8046b6f477eccfd6ea0626a5ac5f4f9917a4718dd44daac623"
+    "payload_sha256": "92924a4546dbddbee0274c5e07f6b63977563fd45f54496abcb70cb3ec4fc636",
+    "package_sha256": "cfaad08745886f97e5bd51331ce602a4cefefaeca289f389bf2820188631409c"
   },
   "phase8c": {
     "path": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c",
@@ -29,21 +29,23 @@
     "transform": "TEST_MODE_AND_APPROVED_PROVIDER_READINESS_FLAGS",
     "payload_files": 25,
     "package_files": 29,
-    "payload_sha256": "a0befc5a165e014ef058f477ccc05cfdba24e3187fcdbb40792199e2645b6bdc",
-    "package_sha256": "23b5c38dfdb6e115d710b16e9e2bc168a2d69f571f94e17bef047ffef1acae4b"
+    "payload_sha256": "73dd9aed38260a177f9a2b6ba7d9264549f0787e4efdcaa7e4adfab68089be22",
+    "package_sha256": "7a67f4448e0208642094b7c18ef6cc516f00b72784b84bdacab41df3d03132e2"
   },
   "bundle": {
     "path": "implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install",
     "paste_count": 2,
     "paste_order": ["Code.gs", "appsscript.json"],
     "txt_transport": "BYTE_IDENTICAL",
-    "code_gs_sha256": "f205b7331bd56a7a7a5c11500f6c737aead26ed795c449fefa82b0ea8b536d27",
+    "code_gs_sha256": "a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510",
     "manifest_sha256": "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe",
-    "checksums_sha256": "14dacb1ac1b80da03ec24deb6f2a53ea5bb4e5759c1a708febaa31a5a522764e"
+    "checksums_sha256": "af99787e6883f58ee49e794b714bc7c4571f628bdc31058dc4cb9b8935defcab"
   },
   "work_0039": {
     "handoff_instruction": "docs/handoffs/0039-CODEX-01-openai-provider-selection-instruction.md",
     "handoff_addendum": "docs/handoffs/0039-CODEX-01-openai-data-governance-addendum.md",
+    "remediation_review": "docs/handoffs/0039-CODEX-02-review.md",
+    "remediation_instruction": "docs/handoffs/0039-CODEX-03-openai-contract-retry-and-pr-ci-remediation-instruction.md",
     "active_provider_property": "WORK_OS_V2_ACTIVE_AI_PROVIDER",
     "openai_model": "gpt-5.6-luna",
     "openai_prompt_version": "openai-responses-v1-work-os-v2",

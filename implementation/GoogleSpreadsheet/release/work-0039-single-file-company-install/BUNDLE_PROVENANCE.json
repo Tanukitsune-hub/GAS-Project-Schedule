@@ -1,11 +1,11 @@
 {
   "schema": "WORK_0039_SINGLE_FILE_INSTALL_V1",
   "work_id": "0039",
-  "dispatch_id": "0039-CODEX-01",
+  "dispatch_id": "0039-CODEX-03",
   "package": "v2.8.26-prepilot-phase8c",
   "source_root": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c/apps-script",
-  "source_commit": "474d66fc3a0df224768f91d9f4cd34dee6617dc2",
-  "prepared_at": "2026-09-02T00:00:00+09:00",
+  "source_commit": "7c8b4c7709ab00b4d315f910b9271f3c4945b702",
+  "prepared_at": "2026-09-03T14:16:38+09:00",
   "generated_by": "implementation/GoogleSpreadsheet/tools/build_work_0039_release.js",
   "encoding": "UTF-8 bytes; source sections are preserved without normalization",
   "manual_install": {
@@ -229,33 +229,33 @@
     },
     {
       "name": "21_OpenAiProvider.gs",
-      "byte_length": 23615,
-      "sha256": "e3f35af30ae8417fedfc11b2b92e3d737e041e577f6dcbe0bc76ac1c2cf61368",
+      "byte_length": 23980,
+      "sha256": "893beea700c5e428ff419684033409d40abcfc398c6813efd9edf6bacaec51ba",
       "source_start_byte": 1179418,
-      "source_end_byte": 1203033,
+      "source_end_byte": 1203398,
       "trailing_separator_bytes": 0
     },
     {
       "name": "22_AiProviderSelection.gs",
-      "byte_length": 26325,
-      "sha256": "8673dc6b420024be18ff4580c05c29b5166c0a3c2a015e19f186caa049d8f48e",
-      "source_start_byte": 1203230,
-      "source_end_byte": 1229555,
+      "byte_length": 27284,
+      "sha256": "0bf6e899a48388d4f9f3e45247eb6074fc8d8bee1c7939f9d8c55cd5907d3292",
+      "source_start_byte": 1203595,
+      "source_end_byte": 1230879,
       "trailing_separator_bytes": 0
     },
     {
       "name": "Menu.gs",
       "byte_length": 21245,
       "sha256": "71a22cfed86a1ed7132bc9a7bab9c2b36b6cb8493a0bd9ea0d5e27a0711012c2",
-      "source_start_byte": 1229739,
-      "source_end_byte": 1250984,
+      "source_start_byte": 1231063,
+      "source_end_byte": 1252308,
       "trailing_separator_bytes": 0
     }
   ],
   "bundle": {
     "path": "Code.gs",
-    "byte_length": 1251024,
-    "sha256": "f205b7331bd56a7a7a5c11500f6c737aead26ed795c449fefa82b0ea8b536d27"
+    "byte_length": 1252348,
+    "sha256": "a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510"
   },
   "manifest": {
     "path": "appsscript.json",

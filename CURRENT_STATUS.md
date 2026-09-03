@@ -81,19 +81,25 @@ is accepted, while company-environment installation and runtime acceptance remai
 
 ## Work 0039 OpenAI provider-selection status
 
-- Dispatch `0039-CODEX-01` is implemented as a local, synthetic-only candidate
-  on `codex/0039-openai-provider-selection`.
+- Dispatch `0039-CODEX-03` remediates the CODEX-02 review blockers as a local,
+  synthetic-only candidate on `codex/0039-openai-provider-selection`; GitHub
+  push and pull-request CI remain a publication gate until observed complete.
 - The authoritative active provider property is
   `WORK_OS_V2_ACTIVE_AI_PROVIDER`; absent values remain backward-compatible
   with Gemini, and allowed values are exactly `GEMINI` and `OPENAI`.
 - Provider switches require consistent Automation-OFF state, zero owned clock
-  triggers, no active worker lease, no in-flight classification, and no pending
-  retry. The switch itself performs no external request and rolls back on a
-  dependent-update failure.
+  triggers, no active worker lease, and a Script-Lock-held read of the bound
+  Spreadsheet Message State with no `CLAIMED`, `PREPROCESSED`, or `RETRY`
+  record. Unavailable or corrupt persisted state fails closed. The switch
+  itself performs no external request and rolls back on a dependent-update
+  failure.
 - OpenAI model metadata is code-owned as `gpt-5.6-luna` with prompt
   `openai-responses-v1-work-os-v2` and endpoint
   `https://api.openai.com/v1/responses`. A missing or unsupported model is a
   bounded failure; there is no cross-provider fallback.
+- The documented Responses envelope accepts one completed assistant
+  `output_text` message, tolerates non-consumed reasoning items, and rejects
+  refusals, executable/tool items, multiple messages, and malformed output.
 - OpenAI company data governance, credentials, provider requests, company
   Workspace installation, deployment, OAuth, triggers, and Automation remain
   `NOT EXECUTED`; company runtime acceptance is blocked until a separately

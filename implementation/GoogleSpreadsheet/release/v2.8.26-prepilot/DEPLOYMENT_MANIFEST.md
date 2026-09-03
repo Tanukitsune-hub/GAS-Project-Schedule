@@ -6,10 +6,10 @@
 | Field | Value |
 |---|---|
 | Work | `0039` |
-| Dispatch | `0039-CODEX-01` |
+| Dispatch | `0039-CODEX-03` |
 | Package | `v2.8.26-prepilot` |
 | Repository | `Tanukitsune-hub/GAS-Project-Schedule` |
-| Source commit | `474d66fc3a0df224768f91d9f4cd34dee6617dc2` |
+| Source commit | `7c8b4c7709ab00b4d315f910b9271f3c4945b702` |
 | Release content commit | `SELF (the Git commit containing this manifest)` |
 | Code Version | `2.8.26-prepilot` |
 | Schema Version | `2.6` |
@@ -23,7 +23,7 @@
 | TEST_MODE | `true` |
 | Test harness | `included` |
 | Automation default | `OFF` |
-| Package prepared at | `2026-09-02T00:00:00+09:00` |
+| Package prepared at | `2026-09-03T14:16:38+09:00` |
 | Highest local status | `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` |
 | Live runtime | `NOT_EXECUTED` |
 
@@ -48,7 +48,7 @@ non-live validation. It is not a deployment or runtime authorization.
 |---|---|
 | Payload files | `26` |
 | `.gs` files | `25` |
-| Canonical payload-list SHA-256 | `92fb95e45e60ccbcff48ff2bf32ff79fc73743120e2fdcf8f7c0e6f47170aea7` |
+| Canonical payload-list SHA-256 | `92924a4546dbddbee0274c5e07f6b63977563fd45f54496abcb70cb3ec4fc636` |
 
 | Relative path | SHA-256 |
 |---|---|
@@ -73,8 +73,8 @@ non-live validation. It is not a deployment or runtime authorization.
 | `apps-script/18_Worker.gs` | `12d91c43e0b7a0021e8a6899c9089c3c49a8d0a979918ca2418ee394fb6fd762` |
 | `apps-script/19_RuntimeSettings.gs` | `106370ebf78c81266d061f690b3448902d40bf177f283d880fe3965ac6fc618f` |
 | `apps-script/20_GeminiProvider.gs` | `c7eb7d3220dbfe7fb072c6af3613877fe47f6d8199fd4f2cb6d79fc3cae42579` |
-| `apps-script/21_OpenAiProvider.gs` | `e3f35af30ae8417fedfc11b2b92e3d737e041e577f6dcbe0bc76ac1c2cf61368` |
-| `apps-script/22_AiProviderSelection.gs` | `8673dc6b420024be18ff4580c05c29b5166c0a3c2a015e19f186caa049d8f48e` |
+| `apps-script/21_OpenAiProvider.gs` | `893beea700c5e428ff419684033409d40abcfc398c6813efd9edf6bacaec51ba` |
+| `apps-script/22_AiProviderSelection.gs` | `0bf6e899a48388d4f9f3e45247eb6074fc8d8bee1c7939f9d8c55cd5907d3292` |
 | `apps-script/99_TestHarness.gs` | `b9f0f47d23943ac6f0cdb1b3a28d9c983980ae57716d7d6f74d9fb34d4a30a02` |
 | `apps-script/Menu.gs` | `71a22cfed86a1ed7132bc9a7bab9c2b36b6cb8493a0bd9ea0d5e27a0711012c2` |
 | `apps-script/appsscript.json` | `e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe` |
