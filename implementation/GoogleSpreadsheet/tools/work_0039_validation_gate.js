@@ -32,7 +32,22 @@ const reportPath = path.join(reportRoot, 'local-validation-report.json');
 const contractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
 const expectedBranch = 'codex/0039-openai-provider-selection';
 const startingMain = '3e302c2bc1e13c9482b208b754bc893e9a73fc70';
+const acceptedProductHead = '959690d0863b268dda4f707ef213c5c353653f54';
+const acceptedSourceCommit = '7c8b4c7709ab00b4d315f910b9271f3c4945b702';
 const gate = 'READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT';
+const candidateImmutablePaths = Object.freeze([
+  'CURRENT_CONTRACT.json',
+  'implementation/GoogleSpreadsheet/apps-script-v2',
+  'implementation/GoogleSpreadsheet/release/v2.8.26-prepilot',
+  'implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c',
+  'implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install',
+  'implementation/GoogleSpreadsheet/tools/build_work_0039_release.js',
+  'implementation/GoogleSpreadsheet/tools/verify_work_0039_release.js',
+  'implementation/GoogleSpreadsheet/tools/v2_8_26'
+]);
+const integrationPreservedPaths = Object.freeze(
+  candidateImmutablePaths.concat(['CURRENT_STATUS.md'])
+);
 const work0038ArchiveRefs = Object.freeze({
   'refs/remotes/origin/archive/0038-gemini-source-baseline':
     '272612831c4a46e45fdf166c65e3075ffee7dfef',
@@ -122,7 +137,7 @@ function readContract() {
       value.highest_gate !== gate || value.automation !== false ||
       value.active_transfer !== null || value.active_deployment !== null ||
       value.release_commit !== 'SELF' ||
-      !/^[0-9a-f]{40}$/.test(String(value.source_commit || '')) ||
+      value.source_commit !== acceptedSourceCommit ||
       !value.phase8b || value.phase8b.path !==
         'implementation/GoogleSpreadsheet/release/v2.8.26-prepilot' ||
       value.phase8b.test_mode !== true || value.phase8b.test_harness !== true ||
@@ -169,19 +184,73 @@ function checkScope(options = {}) {
   const environment = options.environment || process.env;
   const expected = options.expectedBranch || expectedBranch;
   const base = options.startingMain || startingMain;
+  const acceptedHead = options.acceptedProductHead || acceptedProductHead;
+  const immutablePaths = options.candidateImmutablePaths ||
+    candidateImmutablePaths;
+  const preservedPaths = options.integrationPreservedPaths ||
+    integrationPreservedPaths;
   const contractCheck = options.readContract || readContract;
   const branch = gitCommand(['branch', '--show-current']);
+  const contract = contractCheck();
+  const sourceCommit = options.sourceCommit || contract.source_commit;
   let scopeHead = 'HEAD';
   let checkout = 'BRANCH';
-  if (branch) {
-    if (branch !== expected) throw new Error('UNEXPECTED_BRANCH');
-  } else {
-    if (String(environment.GITHUB_ACTIONS || '') !== 'true' ||
-        String(environment.GITHUB_EVENT_NAME || '') !== 'pull_request' ||
-        String(environment.GITHUB_HEAD_REF || '') !== expected ||
-        !/^refs\/pull\/\d+\/merge$/.test(String(environment.GITHUB_REF || ''))) {
-      throw new Error('UNEXPECTED_DETACHED_SCOPE');
+  let integrationMerge = null;
+  let mainFirstParent = null;
+  let workSecondParent = null;
+  let mainHistoryMergeCount = null;
+  const pullRequestContext = !branch &&
+    String(environment.GITHUB_ACTIONS || '') === 'true' &&
+    String(environment.GITHUB_EVENT_NAME || '') === 'pull_request' &&
+    String(environment.GITHUB_HEAD_REF || '') === expected &&
+    /^refs\/pull\/\d+\/merge$/.test(String(environment.GITHUB_REF || ''));
+  const mainPushContext = !branch &&
+    String(environment.GITHUB_ACTIONS || '') === 'true' &&
+    String(environment.GITHUB_EVENT_NAME || '') === 'push' &&
+    String(environment.GITHUB_REF || '') === 'refs/heads/main';
+
+  if (branch === expected) {
+    checkout = 'BRANCH';
+  } else if (branch === 'main' || mainPushContext) {
+    checkout = branch === 'main' ? 'MAIN' : 'GITHUB_MAIN_PUSH';
+    const allMerges = gitCommand([
+      'rev-list', '--merges', '--reverse', `${base}..HEAD`
+    ]).split(/\r?\n/).filter(Boolean);
+    const firstParentMerges = gitCommand([
+      'rev-list', '--first-parent', '--merges', '--reverse', `${base}..HEAD`
+    ]).split(/\r?\n/).filter(Boolean);
+    if (firstParentMerges.length !== 1) {
+      throw new Error('MAIN_INTEGRATION_MERGE_NOT_UNIQUE');
     }
+    integrationMerge = firstParentMerges[0];
+    mainHistoryMergeCount = allMerges.length;
+    const parents = gitCommand([
+      'rev-list', '--parents', '-n', '1', integrationMerge
+    ]).split(/\s+/).filter(Boolean);
+    if (parents.length !== 3) {
+      throw new Error('MAIN_INTEGRATION_MERGE_SHAPE_INVALID');
+    }
+    mainFirstParent = parents[1];
+    workSecondParent = parents[2];
+    const mainAncestry = spawnGitCommand([
+      'merge-base', '--is-ancestor', base, mainFirstParent
+    ]);
+    if (mainAncestry.error || mainAncestry.status !== 0) {
+      throw new Error('MAIN_FIRST_PARENT_LINEAGE_INVALID');
+    }
+    scopeHead = workSecondParent;
+    if (gitCommand([
+      'diff', '--name-only', workSecondParent, integrationMerge, '--'
+    ].concat(preservedPaths))) {
+      throw new Error('MAIN_INTEGRATION_PRODUCT_DRIFT');
+    }
+    if (gitCommand([
+      'diff', '--name-only', integrationMerge, 'HEAD', '--',
+      'AGENTS.md', '.codex'
+    ])) {
+      throw new Error('MAIN_DESCENDANT_GOVERNANCE_DRIFT');
+    }
+  } else if (pullRequestContext) {
     const parents = gitCommand(['rev-list', '--parents', '-n', '1', 'HEAD'])
       .split(/\s+/).filter(Boolean);
     if (parents.length !== 3) throw new Error('INVALID_PULL_REQUEST_MERGE_SHAPE');
@@ -194,23 +263,60 @@ function checkScope(options = {}) {
       throw new Error('PULL_REQUEST_BASE_NOT_DESCENDED_FROM_STARTING_MAIN');
     }
     checkout = 'GITHUB_PULL_REQUEST_MERGE';
+  } else if (branch) {
+    throw new Error('UNEXPECTED_BRANCH');
+  } else {
+    throw new Error('UNEXPECTED_DETACHED_SCOPE');
   }
   const ancestry = spawnGitCommand(['merge-base', '--is-ancestor', base, scopeHead]);
   if (ancestry.error || ancestry.status !== 0) throw new Error('STARTING_MAIN_NOT_ANCESTOR');
+  const acceptedAncestry = spawnGitCommand([
+    'merge-base', '--is-ancestor', acceptedHead, scopeHead
+  ]);
+  if (acceptedAncestry.error || acceptedAncestry.status !== 0) {
+    throw new Error('WORK_0039_ACCEPTED_HEAD_NOT_ANCESTOR');
+  }
+  const sourceAncestry = spawnGitCommand([
+    'merge-base', '--is-ancestor', sourceCommit, scopeHead
+  ]);
+  if (sourceAncestry.error || sourceAncestry.status !== 0) {
+    throw new Error('WORK_0039_SOURCE_NOT_ANCESTOR');
+  }
   if (gitCommand(['rev-list', '--merges', `${base}..${scopeHead}`])) {
     throw new Error('DONOR_MERGE_COMMIT_PRESENT');
+  }
+  if ((checkout === 'MAIN' || checkout === 'GITHUB_MAIN_PUSH') &&
+      mainHistoryMergeCount !== 1) {
+    throw new Error('MAIN_INTEGRATION_MERGE_NOT_UNIQUE');
   }
   if (gitCommand(['diff', '--name-only', base, scopeHead, '--', 'AGENTS.md', '.codex'])) {
     throw new Error('GOVERNANCE_SCOPE_CHANGED');
   }
-  contractCheck();
+  if (gitCommand([
+    'diff', '--name-only', acceptedHead, scopeHead, '--'
+  ].concat(immutablePaths))) {
+    throw new Error('WORK_0039_ACCEPTED_PRODUCT_DRIFT');
+  }
+  if ((checkout === 'MAIN' || checkout === 'GITHUB_MAIN_PUSH') &&
+      gitCommand([
+        'diff', '--name-only', acceptedHead, 'HEAD', '--'
+      ].concat(immutablePaths))) {
+    throw new Error('MAIN_CURRENT_PRODUCT_DRIFT');
+  }
   return {
-    command: 'Work 0039 branch, starting-main ancestry, and governance scope',
-    branch: branch || 'GITHUB_PULL_REQUEST_MERGE',
+    command: 'Work 0039 branch, PR synthetic merge, or authenticated main integration scope',
+    branch: branch || (checkout === 'GITHUB_MAIN_PUSH'
+      ? 'GITHUB_MAIN_PUSH' : 'GITHUB_PULL_REQUEST_MERGE'),
     checkout,
     scope_head: scopeHead,
     starting_main: base,
-    donor_merge_commit_count: 0
+    accepted_product_head: acceptedHead,
+    accepted_source_commit: sourceCommit,
+    donor_merge_commit_count: 0,
+    integration_merge: integrationMerge,
+    main_first_parent: mainFirstParent,
+    work_second_parent: workSecondParent,
+    protected_product_drift_count: 0
   };
 }
 
@@ -463,7 +569,7 @@ function main() {
   const report = {
     schema: 'WORK_OS_LOCAL_VERIFICATION_REPORT_V3',
     work_id: '0039',
-    dispatch_id: '0039-CODEX-03',
+    dispatch_id: '0039-CODEX-04',
     environment: 'LOCAL_NON_GOOGLE',
     mode: args.mode,
     git: { head, branch },
@@ -493,7 +599,7 @@ if (require.main === module) {
     const report = {
       schema: 'WORK_OS_LOCAL_VERIFICATION_REPORT_V3',
       work_id: '0039',
-      dispatch_id: '0039-CODEX-03',
+      dispatch_id: '0039-CODEX-04',
       environment: 'LOCAL_NON_GOOGLE',
       status: 'FAIL',
       safe_message: String(error && error.message || error).slice(0, 160),
@@ -509,6 +615,10 @@ if (require.main === module) {
 }
 
 module.exports = {
+  acceptedProductHead,
+  acceptedSourceCommit,
+  candidateImmutablePaths,
+  integrationPreservedPaths,
   checkWorktree,
   checkGeneratedFiles,
   checkScope,
