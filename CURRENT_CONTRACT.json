@@ -1,9 +1,9 @@
 {
   "schema": "WORK_OS_CURRENT_CONTRACT_V1",
   "repository": "Tanukitsune-hub/GAS-Project-Schedule",
-  "starting_main": "ca70607cba047b340b8009a03448b8d8128dc68e",
-  "branch": "codex/0037-personal-shadow-pilot",
-  "code_version": "2.8.25-prepilot",
+  "starting_main": "3e302c2bc1e13c9482b208b754bc893e9a73fc70",
+  "branch": "codex/0039-openai-provider-selection",
+  "code_version": "2.8.26-prepilot",
   "schema_version": "2.6",
   "ai_schema_version": "2.0",
   "migration_version": "3",
@@ -11,23 +11,47 @@
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "8364a2deb091d52ef322c9aa6cb67098f721d93e",
+  "source_commit": "7c8b4c7709ab00b4d315f910b9271f3c4945b702",
   "release_commit": "SELF",
   "phase8b": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.25-prepilot",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot",
     "test_mode": true,
     "test_harness": true,
-    "payload_files": 24,
-    "package_files": 28,
-    "payload_sha256": "ade98017b9a392f349903969abcb7450bfe632832f965d7c4567427202b9d7df"
+    "payload_files": 26,
+    "package_files": 30,
+    "payload_sha256": "92924a4546dbddbee0274c5e07f6b63977563fd45f54496abcb70cb3ec4fc636",
+    "package_sha256": "cfaad08745886f97e5bd51331ce602a4cefefaeca289f389bf2820188631409c"
   },
   "phase8c": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.25-prepilot-phase8c",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c",
     "test_mode": false,
     "test_harness": false,
     "transform": "TEST_MODE_AND_APPROVED_PROVIDER_READINESS_FLAGS",
-    "payload_files": 23,
-    "package_files": 26,
-    "payload_sha256": "ce5f6482a44e1b32d6ce0ef3694123342455222735a8a5f84052d097e1281eb4"
+    "payload_files": 25,
+    "package_files": 29,
+    "payload_sha256": "73dd9aed38260a177f9a2b6ba7d9264549f0787e4efdcaa7e4adfab68089be22",
+    "package_sha256": "7a67f4448e0208642094b7c18ef6cc516f00b72784b84bdacab41df3d03132e2"
+  },
+  "bundle": {
+    "path": "implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install",
+    "paste_count": 2,
+    "paste_order": ["Code.gs", "appsscript.json"],
+    "txt_transport": "BYTE_IDENTICAL",
+    "code_gs_sha256": "a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510",
+    "manifest_sha256": "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe",
+    "checksums_sha256": "af99787e6883f58ee49e794b714bc7c4571f628bdc31058dc4cb9b8935defcab"
+  },
+  "work_0039": {
+    "handoff_instruction": "docs/handoffs/0039-CODEX-01-openai-provider-selection-instruction.md",
+    "handoff_addendum": "docs/handoffs/0039-CODEX-01-openai-data-governance-addendum.md",
+    "remediation_review": "docs/handoffs/0039-CODEX-02-review.md",
+    "remediation_instruction": "docs/handoffs/0039-CODEX-03-openai-contract-retry-and-pr-ci-remediation-instruction.md",
+    "active_provider_property": "WORK_OS_V2_ACTIVE_AI_PROVIDER",
+    "openai_model": "gpt-5.6-luna",
+    "openai_prompt_version": "openai-responses-v1-work-os-v2",
+    "openai_endpoint": "https://api.openai.com/v1/responses",
+    "openai_data_governance_status": "NOT_APPROVED_OR_UNKNOWN",
+    "openai_live_gate": "NOT_APPROVED_OR_UNKNOWN",
+    "live_runtime": "NOT_EXECUTED"
   }
 }

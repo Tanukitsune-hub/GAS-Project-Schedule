@@ -1,7 +1,7 @@
 {
   "schema": "WORK_OS_TEST_INVENTORY_V1",
-  "suite_count": 87,
-  "fingerprint": "31d5d3128e2b3fc01fffe8025b9baa530996093b90df40492109ac510be51ca9",
+  "suite_count": 90,
+  "fingerprint": "5ec666a3e25e541221caf2cd135bb1615ff746c6a87787e21ccff2c0a5cfdc3e",
   "suites": [
     "baseline_upgrade_test.js",
     "canonical_document_consistency_test.js",
@@ -89,6 +89,9 @@
     "work_0037_lineage_materialization_test.js",
     "work_0037_personal_shadow_pilot_placement_test.js",
     "work_0037_personal_shadow_pilot_test.js",
-    "work_0038_single_file_company_install_test.js"
+    "work_0038_single_file_company_install_test.js",
+    "work_0039_ci_scope_test.js",
+    "work_0039_openai_provider_selection_test.js",
+    "work_0039_release_artifact_test.js"
   ]
 }

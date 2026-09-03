@@ -1,8 +1,8 @@
 # Decisions
 
-Last updated: 2026-08-25
+Last updated: 2026-09-02
 
-This file records active decisions for Code `2.8.25-prepilot`, with frozen
+This file records active decisions for Code `2.8.26-prepilot`, with frozen
 2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 evidence. Historical handoffs, reports, releases,
 and audit records remain immutable evidence.
 
@@ -10,6 +10,32 @@ Current candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Current ChatGPT review disposition:
 `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
+
+## D-070: Work 0039 uses explicit provider selection
+
+Code `2.8.26-prepilot` keeps Gemini and adds direct OpenAI Responses as
+parallel provider implementations behind `WorkOsAiAdapter`. The only
+authoritative selection is the code-owned Script Property
+`WORK_OS_V2_ACTIVE_AI_PROVIDER`; absent values remain Gemini for backward
+compatibility, and only `GEMINI` or `OPENAI` are accepted. Settings-sheet values
+are informational and cannot select a provider.
+
+Provider switching is serialized by Script Lock and allowed only with
+consistent Automation-OFF state, zero owned clock triggers, no active worker
+lease, and no in-flight or retry-pending message state. A switch sends no
+external request and rolls back the property after a dependent-update failure.
+One message attempt is pinned to its selected provider; no cross-provider
+fallback is permitted.
+
+## D-071: OpenAI data governance is fail-closed and non-live
+
+The OpenAI candidate is `gpt-5.6-luna` at the direct Responses endpoint with
+`store=false`, structured output, no tools, no background mode, and no stream.
+The code-owned governance state is `NOT_APPROVED_OR_UNKNOWN`; `store=false` is
+not treated as proof that abuse-monitoring retention is disabled. No company
+email/task data, credential, account setting, or live request is used in Work
+0039. Company runtime and Automation remain blocked until a separate approved
+qualification records a bounded governance state.
 
 ## D-068: Work 0037 is automatic personal Inbox shadow pilot
 

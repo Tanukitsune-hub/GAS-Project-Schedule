@@ -395,7 +395,7 @@ test('P1-L14_STATIC_GUARDRAILS', () => {
     .join('\n');
   const nonProviderSources = fs.readdirSync(appsScriptRoot)
     .filter((fileName) => fileName.endsWith('.gs') &&
-      fileName !== '20_GeminiProvider.gs')
+      !['20_GeminiProvider.gs', '21_OpenAiProvider.gs'].includes(fileName))
     .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
     .join('\n');
   const taskRepositorySource = fs.readFileSync(

@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.8.26-prepilot - 2026-09-02 OpenAI provider selection
+
+- Add a parallel direct OpenAI Responses provider while preserving the
+  provider-neutral adapter, canonical AI Schema 2.0 validator, Gemini request
+  contract, retry/idempotency boundaries, and Automation-OFF default.
+- Add explicit code-owned `GEMINI` / `OPENAI` selection with Script Lock,
+  Automation/trigger/lease/in-flight/retry guards, dependent-update rollback,
+  provider-pinned commit checks, and no cross-provider fallback.
+- Pin OpenAI metadata to `gpt-5.6-luna`, the direct `/v1/responses` endpoint,
+  structured output, `store=false`, no tools/background/stream, and the
+  separate `WORK_OS_V2_OPENAI_API_KEY` property. Refusal, incomplete,
+  malformed, unexpected, and unsupported-model responses fail closed.
+- Add synthetic-only OpenAI qualification fingerprints bound to provider,
+  model, prompt, schema, code, migration, and instance. Data governance remains
+  `NOT_APPROVED_OR_UNKNOWN`; no real provider request, credential, Workspace,
+  OAuth, trigger, deployment, or Automation action is executed.
+- Generate a new versioned Phase 8B/8C release and two-paste company bundle;
+  Work 0038 archive, release, and delivery artifacts remain unchanged.
+
 ## 2.8.20-prepilot - 2026-08-18 Gemini invalid-request schema compatibility
 
 - Add a deterministic provider-facing structured-output schema projection that

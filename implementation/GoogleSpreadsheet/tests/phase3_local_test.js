@@ -1425,7 +1425,8 @@ test('P3-G05_PHASE_BOUNDARY_AND_MANIFEST_STATIC_GUARDRAILS', () => {
     .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
     .join('\n');
   const nonProviderSources = sourceFiles
-    .filter((fileName) => fileName !== '20_GeminiProvider.gs')
+    .filter((fileName) =>
+      !['20_GeminiProvider.gs', '21_OpenAiProvider.gs'].includes(fileName))
     .map((fileName) => fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8'))
     .join('\n');
   const prohibitedPatterns = [

@@ -906,7 +906,8 @@ test('P4-I08_SETUP_MANIFEST_DIAGNOSTIC_AND_PHASE_BOUNDARIES', () => {
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
   const nonProviderGs = fs.readdirSync(appsScriptRoot)
-    .filter((name) => name.endsWith('.gs') && name !== '20_GeminiProvider.gs')
+    .filter((name) => name.endsWith('.gs') &&
+      !['20_GeminiProvider.gs', '21_OpenAiProvider.gs'].includes(name))
     .map((name) => fs.readFileSync(path.join(appsScriptRoot, name), 'utf8'))
     .join('\n');
   const manifest = JSON.parse(fs.readFileSync(

@@ -224,7 +224,7 @@ test('P7-S06_EMPTY_LEGACY_ERROR_SHEET_IS_NOT_EXTENDED_WITHOUT_AUDITED_TASK_REPAI
 
 test('P7-S07_VERSION_METADATA_IS_INDEPENDENT_AND_CURRENT', () => {
   const versions = sandbox.WorkOsMigrations.getVersionState();
-  assert.strictEqual(versions.code_version, '2.8.25-prepilot');
+  assert.strictEqual(versions.code_version, '2.8.26-prepilot');
   assert.strictEqual(versions.schema_version, '2.6');
   assert.strictEqual(versions.migration_version, '3');
   assert.strictEqual(sandbox.WorkOsConfig.AI_SCHEMA_VERSION, '2.0');

@@ -1587,7 +1587,7 @@ test('P2-L18_MANIFEST_AND_STATIC_PHASE_BOUNDARIES', () => {
     .filter((fileName) =>
       fileName.endsWith('.gs') &&
       fileName !== '99_TestHarness.gs' &&
-      fileName !== '20_GeminiProvider.gs'
+      !['20_GeminiProvider.gs', '21_OpenAiProvider.gs'].includes(fileName)
     )
     .map((fileName) =>
       fs.readFileSync(path.join(appsScriptRoot, fileName), 'utf8')

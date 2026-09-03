@@ -13,7 +13,7 @@ const worker = read('18_Worker.gs');
 
 const checks = [
   ['A24_CODE_AND_AUTOMATIC_SCOPE', () => {
-    assert.match(config, /CODE_VERSION:\s*'2\.8\.25-prepilot'/);
+    assert.match(config, /CODE_VERSION:\s*'2\.8\.26-prepilot'/);
     assert.match(config, /AUTOMATION_PILOT_SCOPE:\s*'AUTOMATIC_PERSONAL_INBOX_SHADOW_PILOT'/);
     assert.match(config, /AUTOMATION_PILOT_ADMISSION_MODE:\s*'AUTOMATIC_INBOX'/);
     assert.match(config, /AUTOMATION_PILOT_SOURCE_MODE:\s*'AUTOMATIC_INBOX_PILOT'/);

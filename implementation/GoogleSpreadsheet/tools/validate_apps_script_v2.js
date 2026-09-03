@@ -31,8 +31,8 @@ function check(id, ok, details = {}) {
   });
 }
 
-check('GS_FILE_COUNT', files.length === 23, {
-  expected: 23,
+check('GS_FILE_COUNT', files.length === 25, {
+  expected: 25,
   actual: files.length
 });
 

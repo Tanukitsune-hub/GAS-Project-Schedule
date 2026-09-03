@@ -7,7 +7,7 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.25-prepilot` |
+| Code | `2.8.26-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
@@ -18,11 +18,11 @@ Workspace Personal Work OS.
 | Automation | `OFF` |
 | Intended environment | personal Google Workspace only |
 
-The canonical payload is exactly 23 `.gs` files plus `appsscript.json`.
+The canonical payload is exactly 25 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers preserve
 the historical A20/B20, A21/B21, A22/B22, A23/B23, and A24/B24 evidence. The active
-successor uses the canonical-main Work 0037 lineage and preserves the frozen
-2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 source/release bytes.
+successor uses the Work 0039 branch baseline and preserves the frozen 2.8.20,
+2.8.21, 2.8.22, 2.8.23, 2.8.24, and Work 0038 source/release/bundle bytes.
 
 Current packages:
 
@@ -32,6 +32,13 @@ Current packages:
   the audited production-mode transform with the harness excluded, bounded
   provider-readiness flags enabled, automatic Inbox pilot admission, and
   Automation still OFF.
+- `implementation/GoogleSpreadsheet/release/v2.8.26-prepilot/` and
+  `implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c/`:
+  Work 0039 versioned candidates with the OpenAI selection module; OpenAI
+  governance and live readiness remain blocked.
+- `implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install/`:
+  `Code.gs` plus `appsscript.json` in the exact two-paste order, with
+  byte-identical `.txt` transport copies.
 
 Neither package authorizes deployment or Automation enablement by itself.
 
@@ -56,10 +63,28 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed 86-suite regression manifest, deterministic 2.8.25 release packages,
+committed regression manifest, deterministic 2.8.26 release packages and
+Work 0039 bundle,
 canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
 current-main integration scope, and secret/local-state exclusions. It performs
-no real Google, Gmail, Calendar, Apps Script function, or Gemini operation.
+no real Google, Gmail, Calendar, Apps Script function, Gemini, or OpenAI
+operation.
+
+## Work 0039 provider-selection boundary
+
+Work 0039 registers direct OpenAI Responses in parallel with Gemini and makes
+`WORK_OS_V2_ACTIVE_AI_PROVIDER` the only authoritative selection. The allowed
+values are exactly `GEMINI` and `OPENAI`; absent selection remains Gemini.
+Switching is guarded by consistent Automation-OFF state, zero owned clock
+triggers, no worker lease, and no in-flight or retry-pending state. There is no
+automatic provider fallback or dual-send.
+
+OpenAI uses code-owned `gpt-5.6-luna`, prompt
+`openai-responses-v1-work-os-v2`, direct `/v1/responses`, structured output,
+`store=false`, and no tools/background/stream. `NOT_APPROVED_OR_UNKNOWN` is the
+current data-governance state. Work 0039 uses only synthetic local fixtures;
+credentials, company data, live requests, deployment, and Automation remain
+unexecuted.
 
 ## Work 0037 personal shadow-pilot boundary
 

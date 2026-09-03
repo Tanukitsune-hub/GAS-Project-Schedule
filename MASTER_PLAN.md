@@ -1,14 +1,17 @@
 # Master Plan
 
-Last updated: 2026-08-20
+Last updated: 2026-09-02
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.25-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.26-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 ChatGPT review disposition: `READY — FALSE_READINESS_SURFACE_REPAIRED`
+
+Work 0039 provider-selection status: implemented and locally verified only;
+OpenAI company governance and runtime acceptance remain `NOT EXECUTED`.
 
 ## Historical release chain
 
@@ -133,6 +136,24 @@ Meaningful automatic and all manual runs remain appendable in chronological
 order. Only valid detailed Run History records strictly older than 90 days are
 compacted; business state, Error rows, and other audit evidence are not part of
 that retention rule.
+
+## Work 0039: explicit Gemini / OpenAI selection
+
+Work 0039 is the direct Code `2.8.26-prepilot` successor. It registers a direct
+OpenAI Responses provider alongside the existing Gemini provider and adds a
+code-owned `WORK_OS_V2_ACTIVE_AI_PROVIDER` selection property. Existing absent
+selection values infer Gemini for backward compatibility; switching is guarded
+by Automation-OFF, zero clock triggers, no active worker lease, and no unresolved
+in-flight or retry state. A switch never sends a provider request and rolls back
+if a dependent update fails.
+
+The OpenAI request is structured JSON with `store=false`, no tools, no
+background execution, and no streaming. OpenAI provider/model/prompt metadata is
+allowlisted, `gpt-5.6-luna` is not silently substituted, and canonical AI Schema
+2.0 validation remains authoritative. The exact synthetic qualification is
+provider/model/prompt/schema/code/instance-bound and stores only bounded status
+and fingerprints. No real provider, credential, Workspace, OAuth, trigger, or
+Automation action is executed in Work 0039.
 
 ## Next phase after Work 0037
 
