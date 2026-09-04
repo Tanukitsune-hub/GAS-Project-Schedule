@@ -21,30 +21,24 @@ User-observed / user-reported evidence:
 - Gemini mode can enable the 5-minute Automation;
 - when an eligible target email exists in Gemini mode, the scheduled processing completes successfully;
 - when no eligible target email exists, the scheduled processing is being recorded as `FAILED` rather than a healthy no-work completion;
-- after selecting OpenAI, Automation cannot currently be enabled.
+- the company-provided OpenAI service is Azure OpenAI, not direct OpenAI;
+- an independent bounded GAS -> Azure OpenAI smoke test returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
 
-## Repository interpretation
+## Provider interpretation
 
-### OpenAI enablement
+### Gemini
 
-The accepted Work 0039 company production-shaped release intentionally ships OpenAI with the safety gate closed:
+Gemini is the current qualified primary path. The major automatic target-email flow has succeeded in the real company environment.
 
-- `OPENAI_EXTERNAL_AI_ENABLED = false`
-- `OPENAI_OPERATOR_APPROVED = false`
-- `OPENAI_DATA_POLICY_APPROVED = false`
-- `OPENAI_CREDENTIAL_STORAGE_APPROVED = false`
-- `OPENAI_AUTH_CONFIGURED = false`
-- `OPENAI_DATA_GOVERNANCE_STATUS = NOT_APPROVED_OR_UNKNOWN`
+The remaining observed issue is the no-target scheduled run recorded as `FAILED`. The accepted worker contract permits an empty Gmail candidate set and does not intentionally map zero candidates to failure. This is therefore a bounded runtime anomaly, not evidence that Gemini itself is unusable.
 
-`WorkOsOpenAiProvider.readiness()` requires the OpenAI approval/auth flags plus a configured credential and a consistently disabled Automation state. Therefore failure to enable OpenAI Automation is currently consistent with the accepted fail-closed design and does not by itself prove an API-key or transport failure. Do not repeatedly retry enablement.
+### Direct OpenAI
 
-OpenAI company live use remains blocked pending an explicit governance/approval decision and an intentionally regenerated/qualified company release. No credential value is needed in GitHub or chat.
+Work 0039's direct OpenAI provider is not the intended company provider. Its enablement result is superseded for company qualification and should not be used as evidence about Azure OpenAI.
 
-### No-target-email scheduled failure
+### Azure OpenAI
 
-The accepted worker contract initializes an automatic run as `COMPLETE`. The current `processAutomaticBatch()` path permits an empty Gmail candidate set, records `candidate_count = 0`, and can advance the bounded scan watermark without classifying a message. There is no intended `NO_WORK => FAILED` rule.
-
-Therefore the user-observed `FAILED` record when no target email is present is a runtime anomaly requiring one bounded diagnostic token before deciding whether a code change is necessary. The empty candidate condition itself is not accepted as the failure cause.
+Azure OpenAI is a separate provider/infrastructure path. The current bounded GAS smoke test returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`, so Azure integration is deferred until the GAS-to-Azure network/auth boundary is proven reachable and the approved endpoint/deployment contract is known. Do not bypass company Azure network or governance controls.
 
 ## Next decisive evidence
 
@@ -57,14 +51,15 @@ From exactly one recent Gemini-mode scheduled run that was recorded `FAILED` whe
 - `error_count`
 - safe error stage/code if separately displayed
 
-Do **not** provide message IDs, thread IDs, subject/body text, recipient/sender addresses, account IDs, private URLs, API keys, or screenshots containing company data.
+Do not provide message IDs, thread IDs, subject/body text, recipient/sender addresses, account IDs, private URLs, API keys, or screenshots containing company data.
 
 One failed run is sufficient. Do not manufacture additional failure runs solely for diagnosis.
 
 ## Safety / qualification boundary
 
 - Gemini target-email completion is accepted runtime evidence but does not erase the no-work failure anomaly.
-- OpenAI live Automation remains intentionally blocked by the accepted release governance gate.
+- Direct OpenAI is not the intended company provider.
+- Azure OpenAI requires separate bounded network/auth qualification before integration.
 - Work 0039 product acceptance and Work 0040 transport acceptance remain closed unless direct contrary evidence appears.
 - No company credential or confidential email content may be stored in GitHub or chat.
 
