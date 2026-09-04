@@ -4,9 +4,9 @@ WORK_ID: `0040`
 
 MODE: `BUILD`
 
-BALL: `CHATGPT`
+BALL: `NONE`
 
-STATUS: `IN_PROGRESS`
+STATUS: `ACCEPTED`
 
 ## Primary Outcome
 
@@ -22,31 +22,28 @@ Deliver the accepted Work 0039 company-install transport copies to the user's ve
   - Code: `a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510`
   - Manifest: `e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe`
 
-## Fastest Safe Decisive Action
-
-Use an isolated GitHub Actions transport workflow on this branch only to copy the accepted files to `Code.txt` and `appsscript.txt`, verify the expected hashes, and upload them as a workflow artifact. Download the artifact through the GitHub connector, extract locally if a mounted file path is available, independently re-check hashes, then send through connected Gmail.
-
-## Scope / change boundary
-
-Allowed on `chatgpt/0040-company-email-transport` only:
-- this Work record;
-- a transport-only workflow under `.github/workflows/`.
-
-Not allowed:
-- Work 0039 product/source/release/bundle modification;
-- Work 0038 archive/release modification;
-- API keys or credentials in GitHub/email attachments;
-- real OpenAI/Gemini requests;
-- company Workspace deployment or Automation changes.
-
 ## Acceptance Evidence
 
-1. Artifact source SHA checks PASS.
-2. Local extracted `Code.txt` and `appsscript.txt` match the expected SHA-256 values.
-3. Connected Contacts verifies the company recipient.
-4. Connected Gmail send action returns success with both `.txt` attachments.
-5. Work 0039/0038 source-of-truth refs remain untouched.
+- Isolated transport workflow run `33829588489`: `SUCCESS`.
+- Artifact `work-0040-company-email-transport` was created from the accepted Work 0039 files after exact SHA-256 and byte-length checks.
+- Downloaded artifact was independently extracted and verified:
+  - `Code.txt`: 1,252,348 bytes; SHA-256 `a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510`.
+  - `appsscript.txt`: 868 bytes; SHA-256 `e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe`.
+- Connected Contacts resolved the intended company recipient before send.
+- Connected Gmail send action returned success with both `.txt` files attached.
+- No API key or credential was included.
+- Work 0039 accepted main/product/release/bundle bytes and Work 0038 frozen baselines were not modified.
 
-## Non-Goals
+## Residual / separate qualification
 
-Company runtime qualification, OpenAI governance approval, API-key setup, deployment, and Automation enablement are separate future work.
+Company runtime qualification, OpenAI data-governance approval, API-key setup, deployment, and Automation enablement remain separate future work. OpenAI real company-data use is not authorized by this delivery.
+
+## Completion Latch
+
+Applied. The delivery outcome is complete; no further transport retry is required absent evidence that the recipient system rejected the message or attachments.
+
+WORK_ID: `0040`
+
+BALL: `NONE`
+
+STATUS: `ACCEPTED`
