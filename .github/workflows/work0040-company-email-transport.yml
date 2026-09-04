@@ -1,0 +1,40 @@
+name: Work 0040 Company Email Transport
+
+on:
+  push:
+    branches:
+      - chatgpt/0040-company-email-transport
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Prepare verified txt transport copies
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install"
+          mkdir -p work0040-email
+          cp "$src/Code.gs.txt" work0040-email/Code.txt
+          cp "$src/appsscript.json.txt" work0040-email/appsscript.txt
+          echo "a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510  work0040-email/Code.txt" | sha256sum -c -
+          echo "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe  work0040-email/appsscript.txt" | sha256sum -c -
+          test "$(wc -c < work0040-email/Code.txt)" -eq 1252348
+          test "$(wc -c < work0040-email/appsscript.txt)" -eq 868
+
+      - name: Upload company email transport artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: work-0040-company-email-transport
+          path: work0040-email/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
