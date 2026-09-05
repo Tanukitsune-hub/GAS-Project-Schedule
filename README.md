@@ -7,24 +7,31 @@ Workspace Personal Work OS.
 
 | Field | Value |
 |---|---|
-| Code | `2.8.26-prepilot` |
+| Code | `2.8.27-prepilot` |
 | Schema | `2.6` |
 | AI Schema | `2.0` |
 | Migration | `3` |
 | Candidate machine gate | `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT` |
-| ChatGPT review disposition | `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED` |
+| ChatGPT review disposition | `WORK_0041_PENDING_REVIEW` |
 | Personal Gemini E2E | `PASS` |
-| Product-code state | automatic personal Inbox shadow-pilot candidate |
-| Automation | `OFF` |
-| Intended environment | personal Google Workspace only |
+| Product-code state | Work 0041 bounded scheduled Calendar drain candidate |
+| Automation | Candidate default `OFF`; company state not accessed by Codex |
+| Runtime evidence | Company Gemini target-email processing accepted; Calendar E2E open |
 
 The canonical payload is exactly 25 `.gs` files plus `appsscript.json`.
 `CURRENT_CONTRACT.json`, release manifests, checksums, and verifiers preserve
 the historical A20/B20, A21/B21, A22/B22, A23/B23, and A24/B24 evidence. The active
-successor uses the Work 0039 branch baseline and preserves the frozen 2.8.20,
-2.8.21, 2.8.22, 2.8.23, 2.8.24, and Work 0038 source/release/bundle bytes.
+successor starts from the published Work 0041 main baseline and preserves all
+historical release/delivery bytes, including Work 0038, Work 0039 and Work 0040.
 
-Current packages:
+Current packages: `v2.8.27-prepilot`, `v2.8.27-prepilot-phase8c`, and
+`work-0041-single-file-company-install` under `implementation/GoogleSpreadsheet/release/`.
+The company candidate remains exactly two pastes (`Code.gs`, then
+`appsscript.json`) with byte-identical `.txt` transport copies. The ordinary
+five-minute worker drains standalone Calendar Outbox work after Review/Task
+edits; manual one-job Calendar sync remains an explicit fallback.
+
+Frozen historical packages:
 
 - `implementation/GoogleSpreadsheet/release/v2.8.25-prepilot/`:
   `TEST_MODE=true`, harness included, Automation OFF.
@@ -63,8 +70,8 @@ pnpm run verify:local
 ```
 
 The gate checks JSON/YAML, Apps Script inventory and syntax, the exact
-committed regression manifest, deterministic 2.8.26 release packages and
-Work 0039 bundle,
+committed regression manifest, deterministic 2.8.27 release packages and
+Work 0041 bundle,
 canonical-main Work 0037 provenance, frozen 2.8.20/2.8.21 preservation,
 current-main integration scope, and secret/local-state exclusions. It performs
 no real Google, Gmail, Calendar, Apps Script function, Gemini, or OpenAI

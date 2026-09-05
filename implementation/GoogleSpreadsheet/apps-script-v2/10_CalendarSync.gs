@@ -2936,6 +2936,7 @@ var WorkOsCalendarSync = (function () {
 
   return Object.freeze({
     TARGET_TYPE: TARGET_TYPE,
+    isCalendarTargetType: isCalendarTargetType,
     EVENT_TYPE: EVENT_TYPE,
     DESIRED_ACTIONS: DESIRED_ACTIONS,
     JOB_STATUSES: JOB_STATUSES,

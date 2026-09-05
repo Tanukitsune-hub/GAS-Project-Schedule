@@ -1,25 +1,27 @@
 # Project Context
 
-Last updated: 2026-09-02
+Last updated: 2026-09-05
 
 Project ID: `google-workspace-personal-work-os`
 
 Repository of record: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current candidate: Code `2.8.26-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current candidate: Code `2.8.27-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-Personal runtime status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
+Current review status: `WORK_0041_PENDING_REVIEW`; company Calendar E2E: `NOT_ACCEPTED`
 
 ## Purpose
 
 The Apps Script application turns eligible Gmail messages into governed Tasks
 in Google Sheets, supports human Review, and projects authorized deadlines to a
-Calendar outbox. Sheets is the Task system of record. Automation is OFF.
+Calendar outbox. Sheets is the Task system of record. The artifact's Automation
+default is OFF; Codex has not inspected or changed company runtime state.
 
-This is a personal Google Workspace tool. No company-PC or company-environment
-deployment is planned.
+Work 0041 prepares a company-primary Gemini Calendar remediation candidate.
+Company setup and eligible-email Gemini processing are accepted user evidence;
+Calendar E2E remains open. Codex performs only local and GitHub work.
 
 ## Source contract
 
@@ -31,10 +33,10 @@ deployment is planned.
 - AI Schema: provider-neutral `2.0`; application validation is authoritative.
 - Provider: explicit code-owned selection between Gemini Interactions
   `/v1beta/interactions` and direct OpenAI Responses `/v1/responses`.
-- Release: Code `2.8.26-prepilot`, Schema `2.6`, Migration `3`.
-- Product state: automatic personal Inbox shadow-pilot operational-log
-  candidate; frozen 2.8.20, 2.8.21, 2.8.22, and 2.8.23 remain historical
-  source/release evidence.
+- Release: Code `2.8.27-prepilot`, Schema `2.6`, Migration `3`.
+- Product state: bounded scheduled Calendar-drain candidate; all prior releases
+  remain frozen source/release evidence. Company Gemini processing is accepted;
+  Azure OpenAI is a separate deferred route, not implemented by this candidate.
 
 ## Qualified behavior
 

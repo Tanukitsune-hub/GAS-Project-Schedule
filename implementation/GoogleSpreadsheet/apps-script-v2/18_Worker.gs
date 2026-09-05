@@ -5191,6 +5191,158 @@ var WorkOsWorker = (function () {
     };
   }
 
+  /**
+   * Review acceptance and Task edits can outlive their DONE Message. Drain
+   * their durable Outbox through the same Calendar claim / I/O / CAS boundary,
+   * using only the scheduled run's remaining job allowance and shared budget.
+   */
+  function drainScheduledCalendarOutbox(settings, summary, lease, budget,
+      properties, spreadsheet, clock, jobLimit) {
+    var taskSheet = spreadsheet.getSheetByName(WorkOsConfig.SHEETS.TASKS);
+    var outboxSheet = calendarOutboxSheet(spreadsheet);
+
+    function snapshot() {
+      return WorkOsUtilities.withScriptLock(function (lock) {
+        var nowValue = clock();
+        if (budget.isExhausted(WorkOsConfig.AUTOMATION_WORKER_RESERVE_MS)) {
+          throw budgetError();
+        }
+        var currentLease = JSON.parse(String(
+          properties.getProperty(WORKER_LEASE_PROPERTY) || '{}'
+        ));
+        if (!lease || !lease.acquired ||
+            currentLease.owner_token !== lease.owner_token ||
+            !(new Date(currentLease.expires_at).getTime() > nowValue.getTime())) {
+          throw new WorkOsAppError(
+            'E_WORKER_LEASE_LOST', 'CALENDAR_SYNC', true,
+            'Calendar処理前にworker leaseを確認できませんでした。'
+          );
+        }
+        var context = WorkOsCalendarSync.createOutboxContextForHeldLock(
+          outboxSheet, lock
+        );
+        var pending = 0;
+        var dead = 0;
+        context.logicalRows.forEach(function (row) {
+          var record = WorkOsCalendarSync.readOutboxRow(context, row);
+          if (!WorkOsCalendarSync.isCalendarTargetType(record.target_type)) {
+            return;
+          }
+          if (record.status === 'PENDING' || record.status === 'RETRY') {
+            pending += 1;
+          } else if (record.status === 'DEAD') {
+            dead += 1;
+          }
+        });
+        return {
+          due: Boolean(WorkOsCalendarSync.selectNextJob(context, nowValue)),
+          pending: pending,
+          dead: dead
+        };
+      }, WorkOsConfig.LOCK_WAIT_MS);
+    }
+
+    var state = snapshot();
+    while (state.due && summary.calendar_job_count < jobLimit) {
+      var calendarRun = WorkOsCalendarSync.processNextJob({
+        spreadsheet: spreadsheet,
+        sheet: outboxSheet,
+        gateway: settings.calendar_gateway,
+        properties: settings.calendar_properties || properties,
+        instance_id: settings.instance_id,
+        timezone: WorkOsConfig.TIMEZONE,
+        now: clock,
+        budget: budget,
+        reserve_ms: WorkOsConfig.AUTOMATION_WORKER_RESERVE_MS,
+        task_reader_in_context: function (taskId, lock) {
+          var context = WorkOsTaskRepository.createContextForHeldLock(
+            taskSheet, lock
+          );
+          return WorkOsTaskRepository.findByTaskId(context, taskId);
+        },
+        task_writer_in_context: function (taskId, patch, expectedVersion, lock) {
+          var context = WorkOsTaskRepository.createContextForHeldLock(
+            taskSheet, lock
+          );
+          var task = WorkOsTaskRepository.findByTaskId(context, taskId);
+          if (expectedVersion != null &&
+              Number(task && task.row_version) !== Number(expectedVersion)) {
+            throw new WorkOsAppError(
+              'E_CALENDAR_JOB_CAS_CONFLICT', 'CALENDAR_SYNC', true,
+              'Calendar Task CAS conflictです。'
+            );
+          }
+          return WorkOsTaskRepository.applyCalendarPatch(
+            taskId, patch, context, clock()
+          );
+        }
+      });
+      summary.calendar_job_count += Number(calendarRun.processed_count || 0);
+      summary.calendar_external_io_performed =
+        summary.calendar_external_io_performed === true ||
+        calendarRun.external_io_performed === true;
+      if (calendarRun.status === 'BUSY' || calendarRun.status === 'PAUSED') {
+        summary.run_status = 'PAUSED';
+        summary.note = calendarRun.status === 'BUSY'
+          ? 'CALENDAR_JOB_CLAIM_ACTIVE' : 'E_BUDGET_EXHAUSTED';
+        return;
+      }
+      var result = calendarRun.result;
+      if (result && (result.status === 'CONFLICT' ||
+          result.status === 'RETRY' || result.status === 'DEAD')) {
+        var requeuedConflict = result.status === 'CONFLICT' &&
+          calendarRun.recovery_scheduled === true;
+        summary.run_status = requeuedConflict ? 'PAUSED' : 'FAILED';
+        summary.note = requeuedConflict
+          ? 'E_CALENDAR_CAS_CONFLICT_REQUEUED'
+          : String(result.error_code || 'E_CALENDAR_SYNC');
+        if (!requeuedConflict) {
+          summary.error_count += 1;
+          WorkOsLogAndDeadLetter.recordCalendarError(
+            calendarFailureError(result), {
+              task_id: calendarRun.selected_task_id || '',
+              retry_count: result.retry_count || 0,
+              next_retry_at: result.next_retry_at || '',
+              status: result.status,
+              desired_action: result.action || ''
+            }, summary.run_id, spreadsheet
+          );
+        }
+        return;
+      }
+      if (calendarRun.authority_excluded_count) {
+        summary.run_status = 'PAUSED';
+        summary.note = 'CALENDAR_TASK_AUTHORITY_EXCLUDED';
+        return;
+      }
+      if (calendarRun.status === 'IDLE') {
+        break;
+      }
+      if (!result || result.status !== 'DONE' ||
+          Number(calendarRun.processed_count) !== 1) {
+        throw new WorkOsAppError(
+          'E_CALENDAR_SYNC_RESULT', 'CALENDAR_SYNC', false,
+          'Calendar処理の結果を確認できませんでした。'
+        );
+      }
+      WorkOsLogAndDeadLetter.resolveErrorsForTask(
+        calendarRun.selected_task_id, spreadsheet, clock()
+      );
+      summary.note = 'Calendar outbox job completed';
+      state = snapshot();
+    }
+    // A deferred retry or exhausted job allowance is not a healthy idle run.
+    if (state.dead) {
+      summary.run_status = 'FAILED';
+      summary.error_count += 1;
+      summary.note = 'CALENDAR_DEAD_REQUIRES_REVIEW';
+    } else if (state.pending) {
+      summary.run_status = 'PAUSED';
+      summary.note = state.due
+        ? 'CALENDAR_JOB_LIMIT_REACHED' : 'CALENDAR_RETRY_DEFERRED';
+    }
+  }
+
   function processAutomaticBatch(options) {
     var settings = options || {};
     if (Object.keys(settings).length && !WorkOsConfig.TEST_MODE) {
@@ -5727,6 +5879,14 @@ var WorkOsWorker = (function () {
           }
         }
       }
+      if (workerLease && workerLease.acquired &&
+          summary.run_status === 'COMPLETE') {
+        systemFailureSubsystem = 'CALENDAR_SYNC';
+        drainScheduledCalendarOutbox(
+          settings, summary, workerLease, budget, properties,
+          spreadsheet, clock, calendarJobLimit
+        );
+      }
     } catch (error) {
       var safe = WorkOsUtilities.safeError(
         error,
@@ -5840,7 +6000,8 @@ var WorkOsWorker = (function () {
         ai: summary.processed_count
           ? 'CONFIGURED_ADAPTER'
           : 'NOT_CALLED',
-        calendar: summary.calendar_job_count
+        calendar: summary.calendar_job_count ||
+          summary.calendar_external_io_performed
           ? 'ADVANCED_CALENDAR_SERVICE'
           : 'NOT_CALLED'
       }

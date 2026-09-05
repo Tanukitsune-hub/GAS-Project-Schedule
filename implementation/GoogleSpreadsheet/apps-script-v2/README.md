@@ -1,12 +1,12 @@
-# Google Workspace Personal Work OS v2 - 2.8.26-prepilot
+# Google Workspace Personal Work OS v2 - 2.8.27-prepilot
 
-This directory is the canonical Apps Script source for the Work 0039
-explicit Gemini/OpenAI provider-selection candidate in
+This directory is the canonical Apps Script source for the Work 0041
+Calendar scheduled-drain candidate in
 `Tanukitsune-hub/GAS-Project-Schedule`.
 
 ## Active contract
 
-- Code: `2.8.26-prepilot`
+- Code: `2.8.27-prepilot`
 - Schema: `2.6`
 - AI Schema: `2.0`
 - Migration: `3`
@@ -15,7 +15,7 @@ explicit Gemini/OpenAI provider-selection candidate in
 - `TEST_MODE`: `true` in the Phase 8B package
 - Automation: `OFF`
 - Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
-- Work 0039 highest permitted status:
+- Work 0041 inherited machine gate:
   `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 The source retains the Gmail byte-body decoder, durable Task authority,
@@ -66,6 +66,21 @@ row. Only valid detailed Run History records strictly older than 90 days are
 compacted; invalid or missing timestamps and all non-Run-History business or
 audit surfaces are preserved.
 
+## Work 0041 scheduled Calendar boundary
+
+After Message/Gmail processing, the canonical five-minute worker drains due
+standalone Calendar Outbox jobs created by Review acceptance or Task edits,
+including when the source Message is already DONE. The remaining per-run job
+allowance, worker lease, shared execution budget, Calendar claim/expiry,
+Task authority and CAS are enforced. Calendar failures remain FAILED or PAUSED;
+deferred retry/DEAD work is not reported as healthy idle. The manual one-job
+command remains a fallback. Schema, migration, provider and Review policies
+are unchanged.
+
+Work 0039/0040 acceptance stays closed. Company target-email Gemini processing
+is accepted user evidence; company Calendar E2E is NOT_ACCEPTED. This successor
+is a locally validated candidate with all live Codex actions NOT_EXECUTED.
+
 ## Local validation
 
 From `implementation/GoogleSpreadsheet`:
@@ -76,7 +91,7 @@ pnpm run verify:local
 ```
 
 The local gate runs the exact committed test inventory, source/static checks,
-release parity, Work 0039 bundle checks, historical A20/B20/A21/B21/A22/B22/A23/B23/A24/B24 and
+release parity, Work 0041 bundle checks, historical A20/B20/A21/B21/A22/B22/A23/B23/A24/B24 and
 Work 0038 preservation,
 active-document UTF-8/history checks, and secret/local
 state scans. It does not configure or inspect a real key and performs no
