@@ -23,7 +23,7 @@ The earlier `QUALIFICATION -> BUILD` reset addressed a reproducible repository-l
 
 Instruction: `docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-instruction.md`.
 Report: `docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-report.md`.
-Review record: PR #56, review `5119510826`.
+Review: `docs/handoffs/0041-CODEX-01-review.md`.
 Branch: `codex/0041-calendar-runtime-remediation`.
 Reviewed head: `7de465b03af4e3f412392ab02345d363efa766f1`.
 Merge: `9d46290da5612beef8f94d1aff40890ab430eae9` / PR #56.

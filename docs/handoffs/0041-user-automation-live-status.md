@@ -1,56 +1,54 @@
 # Work 0041 — Company Workspace Live Qualification Status
 
 WORK_ID: `0041`
-
 DISPATCH_ID: `0041-CODEX-01`
-
-BALL: `CODEX`
-
-STATUS: `READY`
-
-MODE: `BUILD`
+DISPATCH_STATUS: `ACCEPTED`
+BALL: `USER`
+STATUS: `ACTION_REQUIRED`
+MODE: `QUALIFICATION`
 
 ## Frozen company-runtime evidence
 
-No new live company action is authorized during this Codex dispatch. The following user-observed evidence is frozen for the implementation review:
+No company Workspace operation was performed during CODEX-01 or the ChatGPT integration review. The following user-reported evidence remains unchanged:
 
 - setup completed;
 - required Gemini credential configured in company Script Properties without exposing the value;
 - Gemini five-minute Automation can be enabled;
 - an eligible target email completed scheduled Gmail/Gemini processing;
-- at least one scheduled invocation with no new eligible target email was recorded `FAILED`;
+- at least one scheduled invocation with no new eligible target email was recorded FAILED;
 - the expected Calendar projection was not correctly observed;
 - company OpenAI is Azure OpenAI;
-- separate bounded GAS -> Azure OpenAI smoke testing returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
+- separate bounded GAS-to-Azure smoke testing returned HTTP 403 / PERMISSION_OR_NETWORK_DENIED.
 
-## Current interpretation
+## Repository repair accepted; runtime not yet updated
 
-Gemini inference/target-email processing is accepted company-runtime evidence. Calendar E2E and truthful no-new-mail scheduled semantics remain open.
+ChatGPT accepted CODEX-01 and merged PR #56 at `9d46290da5612beef8f94d1aff40890ab430eae9`. Code `2.8.27-prepilot` now consumes standalone Calendar Outbox work through the normal scheduled worker. This repairs the repository-level gap after a Message is DONE and a later Review acceptance or Task edit enqueues Calendar work.
 
-Source review identified a material Calendar scheduling concern: a Review acceptance or Calendar-relevant Task edit can persist durable Calendar Outbox work after the originating Message is already `DONE`; the normal five-minute Trigger drives the automatic worker, while a standalone Calendar Outbox drain also exists as the explicit `Calendar同期を1件処理` path. Dispatch `0041-CODEX-01` must prove or disprove this gap locally and repair it if confirmed.
+The accepted candidate is under `implementation/GoogleSpreadsheet/release/work-0041-single-file-company-install/`. Company delivery/update of this candidate and Calendar E2E are still NOT_EXECUTED. Source/CI success is not proof of the company's Calendar authorization or event projection.
 
-The no-new-mail `FAILED` observation is not automatically an idle bug. A zero-new-mail scheduled invocation may still contain Calendar/backlog/system work. Codex must not mask a real failure to satisfy an idle test.
+The company no-new-mail FAILED observation is still NEED_USER_EVIDENCE. The repair did not establish its root cause. First inspect one existing FAILED run's normalized error code and stage/subsystem only. Do not manufacture a failure or send screenshots with business data.
 
-## Next runtime qualification after Codex return
+## Later user-controlled update and qualification boundary
 
-Only after ChatGPT reviews the Codex implementation/PR and approves a company update will Work 0041 return to user-controlled runtime qualification. The later bounded evidence must establish, at minimum:
+A company update is a separate explicit user action, not performed or delegated by the merge. It must use the accepted candidate and preserve the existing bound project, all Script Properties/credentials, Task/Review/Message/Outbox/authority state, dedicated Calendar identity, and original scan/start boundary. Establish Automation-OFF/quiescence before any code replacement. Do not rerun initial Setup, delete state, create another Calendar, or use a different account/target.
 
-- eligible reviewed/accepted Task -> automatic Calendar event projection through ordinary scheduled operation;
-- no routine manual `Calendar同期を1件処理` requirement;
-- true zero-work scheduled invocation has healthy semantics;
-- genuine Calendar errors remain visible;
-- no duplicate managed Calendar event.
+After an authorized update and readiness confirmation, the bounded acceptance test is:
 
-Until then, company Calendar E2E remains `NOT_ACCEPTED`.
+1. one governed, Calendar-eligible accepted Task has due Outbox work;
+2. the ordinary scheduled path creates the correct managed event in the dedicated Calendar without a manual Calendar-sync action;
+3. Task/Outbox state reflects the result and the next observation shows no duplicate;
+4. truly zero-work behavior is healthy, while any genuine error remains visible.
 
-## Safety boundary
+A manual one-job Calendar sync can be a separately approved diagnostic fallback, not evidence that the automatic scheduling fix works. Keep company E2E NOT_ACCEPTED until direct evidence is observed.
 
-Do not expose company email/task/Calendar content, IDs, account data, private URLs, credentials, or raw provider payloads/errors. Do not use the separate Azure 403 path as a reason to change the Gemini/Calendar implementation.
+## Safety and remaining status
+
+BUILD/integration blockers: NONE. Work-wide closure still requires Calendar runtime E2E and a supported disposition of the no-new-mail FAILED symptom. Do not expose email/Task/Calendar content, identifiers, private URLs, credentials or raw provider errors. Azure remains separate and deferred.
+
+See `0041-CODEX-01-review.md` and `0041-dispatches.md` for current control state. The original instruction describes the completed BUILD, not a new active Codex authorization.
 
 WORK_ID: `0041`
-
 DISPATCH_ID: `0041-CODEX-01`
-
-BALL: `CODEX`
-
-STATUS: `READY`
+DISPATCH_STATUS: `ACCEPTED`
+BALL: `USER`
+STATUS: `ACTION_REQUIRED`
