@@ -16,6 +16,7 @@ const activeFiles = [
   'docs/CALENDAR_OUTBOX_AUTHORITY_LOSS_PROTOCOL.md',
   'docs/visualizations/index.html',
   'docs/visualizations/GoogleWorkspace_v2_Workflow_Overview.html',
+  'docs/handoffs/0041-preacceptance-current-status.md',
   'implementation/GoogleSpreadsheet/apps-script-v2/README.md',
   'implementation/GoogleSpreadsheet/apps-script-v2/CHANGELOG.md',
   'implementation/GoogleSpreadsheet/docs/V2_MANUAL_ACCEPTANCE_GUIDE.md',
@@ -49,12 +50,16 @@ for (const marker of mojibake) {
 
 assert.deepStrictEqual(failures, []);
 const status = read('CURRENT_STATUS.md');
+const historicalStatus = read('docs/handoffs/0041-preacceptance-current-status.md');
 const plan = read('MASTER_PLAN.md');
 const decisions = read('DECISIONS.md');
-assert.match(status, /Work 0018: Code `2\.8\.14-prepilot`, source A14 and release B14/);
-assert.match(status, /Work 0028: Code `2\.8\.15-prepilot`, source A15 and release B15/);
-assert.match(status, /Work 0029: Code `2\.8\.16-prepilot`, source A16 and release B16/);
-assert.match(status, /Work 0033: Code `2\.8\.20-prepilot`, source A20 and release B20/);
+assert.match(status, /Work ID: `0041`/);
+assert.match(status, /Overall status: `BUILD_ACCEPTED_COMPANY_QUALIFICATION_PENDING`/);
+assert.match(status, /Company Calendar E2E: `NOT_ACCEPTED`/);
+assert.match(historicalStatus, /Work 0018: Code `2\.8\.14-prepilot`, source A14 and release B14/);
+assert.match(historicalStatus, /Work 0028: Code `2\.8\.15-prepilot`, source A15 and release B15/);
+assert.match(historicalStatus, /Work 0029: Code `2\.8\.16-prepilot`, source A16 and release B16/);
+assert.match(historicalStatus, /Work 0033: Code `2\.8\.20-prepilot`, source A20 and release B20/);
 assert.match(plan, /Work 0018 remains Code `2\.8\.14-prepilot`, source A14, release B14/);
 assert.match(plan, /Work 0028 remains Code `2\.8\.15-prepilot`, source A15, release B15/);
 assert.match(decisions, /historical release identities/i);
@@ -69,5 +74,6 @@ process.stdout.write(`${JSON.stringify({
   active_file_count: activeFiles.length,
   mojibake_hits: 0,
   historical_lineage: 'A14_B14_A15_B15_A16_B16_A17_B17_A18_B18_PRESERVED',
+  current_status_contract: 'WORK_0041_COMPANY_QUALIFICATION_PENDING',
   status: 'PASS'
 }, null, 2)}\n`);
