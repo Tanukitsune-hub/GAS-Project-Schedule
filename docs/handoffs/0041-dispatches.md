@@ -1,107 +1,74 @@
 # Work 0041 — Dispatch Ledger
 
 WORK_ID: `0041`
-
 CURRENT_DISPATCH_ID: `0041-CODEX-01`
-
-BALL: `CHATGPT`
-
-STATUS: `RETURNED`
-
-MODE: `BUILD`
+DISPATCH_STATUS: `ACCEPTED`
+ACTIVE_CODEX_DISPATCH: `NONE`
+BALL: `USER`
+STATUS: `ACTION_REQUIRED`
+MODE: `QUALIFICATION`
 
 ## Primary Outcome
 
-Converge the company-primary Gemini + governed Task/Review + dedicated `自動期日管理` Calendar path to safely usable operation. The immediate BUILD outcome is to make the canonical five-minute scheduled operation drain bounded due standalone Calendar Outbox work created after Review acceptance/Task edits, while preserving truthful zero-work/failure semantics.
+Converge the company-primary Gemini + governed Task/Review + dedicated `自動期日管理` Calendar path to safely usable operation. The non-live Calendar scheduled-drain BUILD is now accepted and merged. Work-wide completion still requires truthful company-runtime evidence.
 
-## Strategy Reset Applied
+## Dispatch history and Strategy Reset
 
-Work 0041 was previously in `QUALIFICATION`. Static source review established a material implementation gap candidate at the post-Review/post-edit Calendar boundary, so the Work is reset to `BUILD` for Dispatch `0041-CODEX-01`.
+| Dispatch | Outcome | Disposition |
+|---|---|---|
+| N/A, initial Route A | Company setup/Gemini evidence and two unresolved runtime symptoms recorded | Retained |
+| `0041-CODEX-01` | Proved and repaired standalone Calendar Outbox scheduling; produced Code 2.8.27 and Draft PR #56 | ACCEPTED by ChatGPT; merged |
 
-The observed company scheduled `candidate_count=0` / `FAILED` run remains unresolved runtime evidence. It is not pre-classified as an idle-log defect because a zero-new-mail invocation can still contain Calendar/backlog/system work.
+The earlier `QUALIFICATION -> BUILD` reset addressed a reproducible repository-level scheduling gap. The review now returns this same Work to `QUALIFICATION`; no active Codex run remains. The last dispatch ID is retained for traceability, not as an instruction to execute it again.
 
-## Current Accepted Evidence
+Instruction: `docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-instruction.md`.
+Report: `docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-report.md`.
+Review record: PR #56, review `5119510826`.
+Branch: `codex/0041-calendar-runtime-remediation`.
+Reviewed head: `7de465b03af4e3f412392ab02345d363efa766f1`.
+Merge: `9d46290da5612beef8f94d1aff40890ab430eae9` / PR #56.
 
-Company-runtime evidence already accepted:
+## Accepted evidence
 
-- initial setup completed;
-- required API key(s) configured in company Apps Script Script Properties; values never copied to GitHub/chat;
-- Gemini 5-minute Automation can be enabled;
-- an eligible target email completes scheduled Gmail/Gemini processing;
-- at least one scheduled invocation with no new eligible target email was recorded `FAILED`;
-- the expected Calendar projection was not correctly observed;
-- company OpenAI means Azure OpenAI, and the separate bounded GAS -> Azure smoke test returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
+Historical user-reported company evidence remains unchanged: setup completed; Gemini credential configured in company Script Properties without copying its value; five-minute Automation can be enabled; an eligible target email completed scheduled Gmail/Gemini processing. The no-new-mail FAILED observation and missing expected Calendar projection are accepted observations of unresolved symptoms, not PASS results.
 
-Repository evidence already accepted:
+Company OpenAI means Azure OpenAI. The separate GAS-to-Azure smoke result `HTTP 403 / PERMISSION_OR_NETWORK_DENIED` remains outside this Work's Calendar remedy.
 
-- `10_CalendarSync.gs` owns the dedicated Calendar projection and its eligibility/idempotency contract;
-- high-impact/important Tasks intentionally require Review before Calendar eligibility;
-- `11_EditHandler.gs` can persist Calendar intent/Outbox work without calling Calendar API;
-- `runScheduledWorker` invokes `WorkOsWorker.processAutomaticBatch()`;
-- standalone Calendar draining also exists as `syncPendingCalendarJobs()` / menu `Calendar同期を1件処理`;
-- a post-edit standalone Outbox job is not inherently a Message-State backlog item.
+Repository evidence now establishes the standalone Outbox consumer after a Message is DONE. The scheduled worker shares its lease, soft budget and remaining Calendar allowance with the existing claim/CAS path. Review/eligibility, authority, schema/migration, manifest, provider and Trigger implementations are preserved. Focused tests cover the post-Review path and CREATE/UPDATE/DELETE/NOOP, bounds, failures and healthy idle.
 
-## Active Dispatch
+Final-head push CI `33940502943` and PR CI `33940504456`: SUCCESS. Inspected push job: 13/13 checks, 92 suites, missing 0 / extra 0; release parity/rebuild, frozen-path preservation and secret scan PASS. Merge-head main CI `33941081434` / #594: SUCCESS.
 
-### `0041-CODEX-01` — Calendar Runtime Remediation
+## Current decisive action and remaining evidence
 
-Instruction:
+Current action is user read-only evidence: normalized `error_code` and `stage`/subsystem from one existing no-new-mail FAILED scheduled run. No fresh failing run or private data is requested.
 
-`docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-instruction.md`
+Company Code 2.8.27 update and Calendar E2E remain NOT_EXECUTED / NOT_ACCEPTED. A subsequent explicitly user-controlled update must preserve all existing business and identity state, establish Automation-OFF/quiescence before replacement, and use the exact accepted candidate. Ordinary scheduled processing, not routine manual `Calendar同期を1件処理`, must project a Calendar-eligible accepted Task and must not duplicate its managed event.
 
-Expected branch:
+A zero-Gmail-candidate run is not automatically healthy idle; Calendar/backlog/system failures must remain visible. The observed company FAILED cause was not reproduced or fixed by CODEX-01. Local healthy-idle PASS does not close that company symptom.
 
-`codex/0041-calendar-runtime-remediation`
+## Closed conclusions
 
-Expected report:
+- Work 0039 product/release/bundle and Work 0040 transport acceptance remain closed; historical source/releases/delivery evidence are not rewritten.
+- Company Gemini target-email processing is accepted user evidence; company Calendar E2E is not accepted.
+- High-impact Review and Calendar eligibility remain unchanged.
+- No new Trigger, schema migration, provider behavior change or external permission broadening is part of this remedy.
+- Calendar setup/readiness is not event E2E; local/CI results are not company-runtime PASS.
+- Direct OpenAI is not the intended company provider; Azure remains separate and deferred.
+- No credentials, company content, private IDs/URLs or raw provider errors/payloads may be copied into chat/GitHub.
+- No Codex live Workspace/provider action was executed or is newly authorized.
 
-`docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-report.md`
+## Attempt bounds and completion
 
-Required outcome:
+No new Codex retry is authorized. A new Codex instruction after this return would be `0041-CODEX-02`, retaining Work 0041. For later live qualification, use a bounded test and stop on an unexpected failure or ownership/data-integrity issue rather than retrying blindly. A missing company observation is not grounds to reopen the accepted repository implementation without contrary evidence.
 
-1. deterministically prove or disprove the automatic standalone Calendar Outbox drain gap;
-2. if confirmed, make the normal five-minute scheduled path drain bounded due standalone Calendar work without requiring routine manual menu intervention;
-3. preserve worker lease/budget, Calendar claim/CAS, Task authority, retry/dead-letter, idempotency, Review/eligibility policy, and per-run Calendar limits;
-4. keep genuine Calendar/backlog/system failures truthful rather than suppressing them as idle;
-5. keep a truly zero-work `AUTO_PILOT` compatible with accepted idle-detail suppression and independent Trigger heartbeat;
-6. investigate the company no-new-mail `FAILED` symptom locally, but do not guess a fix if the bounded company stage/code is still required;
-7. add deterministic CREATE/UPDATE/DELETE/NOOP and failure/budget/claim regression coverage;
-8. return a Draft PR and report for ChatGPT review; no live Workspace/provider operation is authorized.
-
-## Closed Conclusions
-
-- Work 0039 Acceptance remains closed.
-- Work 0040 Acceptance remains closed.
-- Work 0039/0040 historical product, release, bundle, delivery and provenance evidence must not be rewritten.
-- Gemini target-email company processing is accepted evidence; Calendar E2E is not yet accepted.
-- Calendar setup/readiness is not Calendar event E2E.
-- High-impact Review policy stays intact unless a separate product decision changes it.
-- `candidate_count=0` alone does not prove healthy idle.
-- Direct OpenAI is superseded for company use; Azure OpenAI is separate and deferred.
-- No credential, company content, private identifier/URL, raw provider payload/error, or Calendar business content may enter GitHub/chat.
-- No live company Gmail/Calendar/Apps Script/provider/OAuth/Trigger/deployment action is authorized in `0041-CODEX-01`.
-
-## Attempt Bound / Reset
-
-Maximum two materially different repair attempts for the same core acceptance failure. Strategy Reset is required if the suspected gap is disproved without a narrow replacement root cause, schema/new-Trigger architecture becomes necessary, accepted authority/idempotency boundaries would need weakening, live Workspace access is required, or historical release evidence would need modification.
-
-## Completion Latch
-
-Dispatch 0041-CODEX-01 returned a locally and GitHub-CI-validated non-live
-2.8.27-prepilot candidate in Draft PR #56. See
-`0041-CODEX-01-calendar-runtime-remediation-report.md` for exact source/release,
-test results and hosted CI evidence. Company no-new-mail FAILED remains
-`NEED_USER_EVIDENCE` for its existing safe code/stage; no guessed repair was made.
-
-Work-level latch is not applied. Work 0041 remains open until ChatGPT reviews
-the Codex return and later user-observed company-runtime qualification proves
-the repaired primary path. All live Codex Workspace/provider actions remain
-`NOT_EXECUTED`.
+BUILD/integration BLOCKER: NONE.
+Work-level required evidence: company Calendar E2E plus no-new-mail FAILED disposition.
+Dispatch BUILD completion latch: APPLIED.
+Work completion latch: NOT_APPLIED.
 
 WORK_ID: `0041`
-
 CURRENT_DISPATCH_ID: `0041-CODEX-01`
-
-BALL: `CHATGPT`
-
-STATUS: `RETURNED`
+DISPATCH_STATUS: `ACCEPTED`
+ACTIVE_CODEX_DISPATCH: `NONE`
+BALL: `USER`
+STATUS: `ACTION_REQUIRED`
