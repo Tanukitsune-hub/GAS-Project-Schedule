@@ -38,6 +38,8 @@ Repository evidence now establishes the standalone Outbox consumer after a Messa
 
 Final-head push CI `33940502943` and PR CI `33940504456`: SUCCESS. Inspected push job: 13/13 checks, 92 suites, missing 0 / extra 0; release parity/rebuild, frozen-path preservation and secret scan PASS. Merge-head main CI `33941081434` / #594: SUCCESS.
 
+Post-acceptance Route A repository-integrity repair: main CI #596 at `85be0cd5d4ebbc0f3d01c45c9b0087bbebf9c08d` failed only `work_0029_active_document_integrity_test.js` after the accepted-current-status synchronization intentionally compacted `CURRENT_STATUS.md` and preserved the prior historical sections in `docs/handoffs/0041-preacceptance-current-status.md`. ChatGPT kept the historical lineage assertions, redirected those assertions to the preserved historical file, added current Work 0041 status assertions, and added the preserved file to the mojibake scan. Product source, release packages and accepted company bundle were untouched. Repair commit `032af32a0b9d4db870d5a89d581e887161c0e371`; main CI `33942504863` / #597: SUCCESS with 13/13 checks, 92 suites, release/lineage PASS and secret scan 0 hits. This did not reopen CODEX-01 or create CODEX-02.
+
 ## Current decisive action and remaining evidence
 
 Current action is user read-only evidence: normalized `error_code` and `stage`/subsystem from one existing no-new-mail FAILED scheduled run. No fresh failing run or private data is requested.
