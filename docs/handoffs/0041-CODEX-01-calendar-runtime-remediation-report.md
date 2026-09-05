@@ -1,10 +1,10 @@
 # Work 0041 — Calendar Runtime Remediation Report
 
-Work ID: `0041`  
-Dispatch ID: `0041-CODEX-01`  
-BALL: `CHATGPT`  
-STATUS: `RETURNED`  
-Mode: `BUILD`  
+Work ID: `0041`
+Dispatch ID: `0041-CODEX-01`
+BALL: `CHATGPT`
+STATUS: `RETURNED`
+Mode: `BUILD`
 Date: `2026-09-05`
 
 ## Outcome and evidence boundary
@@ -101,8 +101,8 @@ secret-negative testをPASSさせた。最終未解消FAILは0。製品修正戦
 
 ## Version, release and transport
 
-Source commit: `2a1b656fd7ecd411b61d728369b02fd5b49b28be`  
-Release content commit: `62f1e8d255ab3906c97e81a1ea48558fd68f8fee`  
+Source commit: `2a1b656fd7ecd411b61d728369b02fd5b49b28be`
+Release content commit: `62f1e8d255ab3906c97e81a1ea48558fd68f8fee`
 Prepared at: `2026-09-05T02:43:43Z`
 
 `build_work_0041_release.js` は既存Work 0039 toolingの版別後継で、clean source/tool
@@ -129,7 +129,7 @@ OpenAI governanceは `NOT_APPROVED_OR_UNKNOWN` のまま、Azureは別経路・�
 
 ## Preservation and GitHub delivery
 
-Branch: `codex/0041-calendar-runtime-remediation`  
+Branch: `codex/0041-calendar-runtime-remediation`
 Draft PR: [#56](https://github.com/Tanukitsune-hub/GAS-Project-Schedule/pull/56), OPEN / DRAFT / UNMERGED。
 
 最初の通常pushは
@@ -186,8 +186,8 @@ OAuth変更、credential値読取／表示、company/private data取得、別Wor
 
 ## Shared Knowledge
 
-KNOWLEDGE_RETRIEVAL: `OBS-0002`, `RULE-0001`  
-KNOWLEDGE_APPLIED: `NONE`  
+KNOWLEDGE_RETRIEVAL: `OBS-0002`, `RULE-0001`
+KNOWLEDGE_APPLIED: `NONE`
 NEW_KNOWLEDGE_CANDIDATE: `YES`
 
 canonical `origin/main` から参照したが、今回の判断は明示dispatchと実行証拠で決めた。
