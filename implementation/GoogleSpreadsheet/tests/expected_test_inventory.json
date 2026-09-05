@@ -1,7 +1,7 @@
 {
   "schema": "WORK_OS_TEST_INVENTORY_V1",
-  "suite_count": 90,
-  "fingerprint": "5ec666a3e25e541221caf2cd135bb1615ff746c6a87787e21ccff2c0a5cfdc3e",
+  "suite_count": 92,
+  "fingerprint": "3430dbfeb827e7bd2c07bec8429b4d8652fce31ddeebc1a49bbfdd7b0f060e47",
   "suites": [
     "baseline_upgrade_test.js",
     "canonical_document_consistency_test.js",
@@ -92,6 +92,8 @@
     "work_0038_single_file_company_install_test.js",
     "work_0039_ci_scope_test.js",
     "work_0039_openai_provider_selection_test.js",
-    "work_0039_release_artifact_test.js"
+    "work_0039_release_artifact_test.js",
+    "work_0041_calendar_scheduled_drain_test.js",
+    "work_0041_ci_scope_test.js"
   ]
 }

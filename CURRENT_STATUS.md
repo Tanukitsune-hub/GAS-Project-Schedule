@@ -1,22 +1,45 @@
 # Current Status
 
-Last updated: 2026-09-02
+Last updated: 2026-09-05
 
-Candidate version: Code `2.8.26-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Candidate version: Code `2.8.27-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
-Overall status: `PERSONAL_SHADOW_PILOT_READY_FOR_USER_CONTROLLED_RUN`
+Overall status: `NON_LIVE_CALENDAR_REMEDIATION_CANDIDATE`
 
 Machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-ChatGPT review disposition: `READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
+ChatGPT review disposition: `WORK_0041_PENDING_REVIEW`
 
-Company rollout Work 0038: `SINGLE_FILE_INSTALL_ACCEPTED / COMPANY_RUNTIME_NOT_EXECUTED`
+Company Work 0039/0040 installation: `ACCEPTED_USER_EVIDENCE`; Calendar E2E: `NOT_ACCEPTED`
 
 Personal Gemini E2E: `PASS`
 
-Automation: `OFF — CONSISTENT / ZERO CLOCK TRIGGERS / NO STORED OR CANONICAL TRIGGER RESIDUE`
+Automation candidate default: `OFF`; company runtime state: `NOT_ACCESSED_BY_CODEX`
 
-User Automation E2E: `EXECUTED AND STOPPED — historical accepted evidence; no new run in CODEX-04`
+Company Gemini target-email processing: `ACCEPTED_USER_EVIDENCE`; Codex live actions: `NOT_EXECUTED`
+
+## Work 0041 active candidate
+
+Dispatch `0041-CODEX-01` prepares the non-live `2.8.27-prepilot` Calendar
+scheduled-drain successor. Normal five-minute Automation drains due standalone
+Outbox work within the existing shared Calendar job bound. Review/authority,
+lease/budget, claim/CAS, retry/DEAD and idempotency remain in force.
+
+Accepted Work 0039 product/release and Work 0040 transport evidence is closed.
+Company setup and target-email scheduled Gemini processing are user-observed
+accepted evidence. Company Calendar E2E remains `NOT_ACCEPTED`; the no-new-mail
+FAILED observation remains `NEED_USER_EVIDENCE` for safe error code/stage.
+The candidate has not been deployed and all Codex live actions are
+`NOT_EXECUTED`. Automation OFF describes the artifact default, not a fresh
+observation of company Trigger state.
+
+Active packages are `v2.8.27-prepilot`, `v2.8.27-prepilot-phase8c`, and
+`work-0041-single-file-company-install`. Schema/AI Schema/Migration are unchanged.
+See `docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-report.md`.
+
+## Frozen Work 0039 and earlier status at acceptance
+
+The following sections are historical evidence; current Work 0041 status is above.
 
 ## Current contract
 

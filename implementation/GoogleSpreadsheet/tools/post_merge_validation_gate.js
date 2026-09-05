@@ -339,6 +339,20 @@ function writeReport(report) {
 }
 
 function main() {
+  const activeContractPath = path.join(repositoryRoot, 'CURRENT_CONTRACT.json');
+  const activeContract = fs.existsSync(activeContractPath)
+    ? JSON.parse(fs.readFileSync(activeContractPath, 'utf8')) : null;
+  if (git(['branch', '--show-current']) === 'codex/0041-calendar-runtime-remediation' ||
+      process.env.GITHUB_HEAD_REF === 'codex/0041-calendar-runtime-remediation' ||
+      (activeContract && activeContract.branch === 'codex/0041-calendar-runtime-remediation')) {
+    const result = childProcess.spawnSync(process.execPath,
+      [path.join(__dirname, 'work_0041_validation_gate.js')].concat(process.argv.slice(2)),
+      { cwd: moduleRoot, encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+    process.stdout.write(String(result.stdout || ''));
+    process.stderr.write(String(result.stderr || ''));
+    process.exitCode = result.error || result.status === null ? 1 : result.status;
+    return;
+  }
   const argv = process.argv.slice(2);
   if (shouldUseWork0039Gate()) {
     const result = runWork0039Gate(argv);

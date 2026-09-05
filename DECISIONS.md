@@ -1,15 +1,23 @@
 # Decisions
 
-Last updated: 2026-09-02
+Last updated: 2026-09-05
 
-This file records active decisions for Code `2.8.26-prepilot`, with frozen
+This file records active decisions for Code `2.8.27-prepilot`, with frozen
 2.8.20, 2.8.21, 2.8.22, 2.8.23, and 2.8.24 evidence. Historical handoffs, reports, releases,
 and audit records remain immutable evidence.
 
 Current candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
 Current ChatGPT review disposition:
-`READY — AUTOMATIC_INBOX_PERSONAL_SHADOW_PILOT_IMPLEMENTED`
+`WORK_0041_PENDING_REVIEW`
+
+## D-071: Scheduled Calendar Outbox drain
+
+Work 0041 uses the existing five-minute worker and remaining Calendar job
+allowance to process standalone durable intents after Review/Task edits.
+Calendar remains derived from governed Tasks. No schema, Review, provider,
+Trigger cadence or external authorization changes. Company qualification is
+separate from deterministic local evidence.
 
 ## D-070: Work 0039 uses explicit provider selection
 

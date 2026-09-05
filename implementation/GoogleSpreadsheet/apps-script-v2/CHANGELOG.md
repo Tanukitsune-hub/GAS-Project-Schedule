@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.8.27-prepilot - 2026-09-05 Calendar scheduled drain
+
+- Drain durable standalone Calendar Outbox work after Message processing in
+  the canonical five-minute worker, including post-Review and Task-edit jobs.
+- Share the existing worker lease, soft budget and per-run Calendar limit;
+  reuse Calendar claim, Task authority, CAS, retry and deterministic Event IDs.
+- Keep deferred Calendar retry, DEAD, claim contention and conflict recovery
+  visible; retain true zero-work AUTO_PILOT detail suppression and heartbeat.
+- Preserve Schema 2.6, AI Schema 2.0, Migration 3, provider behavior and all
+  historical packages. Work 0041 company runtime remains NOT_EXECUTED by Codex.
+
 ## 2.8.26-prepilot - 2026-09-02 OpenAI provider selection
 
 - Add a parallel direct OpenAI Responses provider while preserving the

@@ -1,17 +1,23 @@
 # Master Plan
 
-Last updated: 2026-09-02
+Last updated: 2026-09-05
 
 Repository: `Tanukitsune-hub/GAS-Project-Schedule`
 
-Current contract: Code `2.8.26-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
+Current contract: Code `2.8.27-prepilot` / Schema `2.6` / AI Schema `2.0` / Migration `3`
 
 Candidate machine gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 
-ChatGPT review disposition: `READY — FALSE_READINESS_SURFACE_REPAIRED`
+ChatGPT review disposition: `WORK_0041_PENDING_REVIEW`
 
 Work 0039 provider-selection status: implemented and locally verified only;
 OpenAI company governance and runtime acceptance remain `NOT EXECUTED`.
+
+## Work 0041 active remediation
+
+Complete bounded standalone Calendar draining through the existing scheduled
+worker, validate the non-live successor, and return a Draft PR. Later company
+Calendar qualification remains user-controlled after ChatGPT review.
 
 ## Historical release chain
 

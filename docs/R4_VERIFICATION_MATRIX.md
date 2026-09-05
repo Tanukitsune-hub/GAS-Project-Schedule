@@ -1,4 +1,4 @@
-# Current Verification Matrix - 2.8.26-prepilot
+# Current Verification Matrix - 2.8.27-prepilot
 
 Gate: `READY_FOR_USER_AUTOMATIC_INBOX_SHADOW_PILOT`
 

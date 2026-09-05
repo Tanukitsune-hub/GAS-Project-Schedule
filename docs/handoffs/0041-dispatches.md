@@ -4,9 +4,9 @@ WORK_ID: `0041`
 
 CURRENT_DISPATCH_ID: `0041-CODEX-01`
 
-BALL: `CODEX`
+BALL: `CHATGPT`
 
-STATUS: `READY`
+STATUS: `RETURNED`
 
 MODE: `BUILD`
 
@@ -87,12 +87,21 @@ Maximum two materially different repair attempts for the same core acceptance fa
 
 ## Completion Latch
 
-Not applied. Work 0041 remains open until ChatGPT reviews the Codex return and later company-runtime qualification proves the repaired primary path.
+Dispatch 0041-CODEX-01 returned a locally and GitHub-CI-validated non-live
+2.8.27-prepilot candidate in Draft PR #56. See
+`0041-CODEX-01-calendar-runtime-remediation-report.md` for exact source/release,
+test results and hosted CI evidence. Company no-new-mail FAILED remains
+`NEED_USER_EVIDENCE` for its existing safe code/stage; no guessed repair was made.
+
+Work-level latch is not applied. Work 0041 remains open until ChatGPT reviews
+the Codex return and later user-observed company-runtime qualification proves
+the repaired primary path. All live Codex Workspace/provider actions remain
+`NOT_EXECUTED`.
 
 WORK_ID: `0041`
 
 CURRENT_DISPATCH_ID: `0041-CODEX-01`
 
-BALL: `CODEX`
+BALL: `CHATGPT`
 
-STATUS: `READY`
+STATUS: `RETURNED`

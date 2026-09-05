@@ -1,6 +1,6 @@
-# Controlled Personal Shadow Pilot Guide - 2.8.26-prepilot
+# Controlled Personal Shadow Pilot Guide - 2.8.27-prepilot
 
-Code Version: `2.8.26-prepilot`
+Code Version: `2.8.27-prepilot`
 
 Schema Version: `2.6`
 
