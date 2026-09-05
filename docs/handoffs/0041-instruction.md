@@ -1,124 +1,85 @@
-# Work 0041 — Company Workspace Runtime Qualification
+# Work 0041 — Company Workspace Runtime Qualification / Remediation
 
 WORK_ID: `0041`
 
-DISPATCH_ID: `N/A`
+DISPATCH_ID: `0041-CODEX-01`
 
-BALL: `USER`
+BALL: `CODEX`
 
-STATUS: `ACTION_REQUIRED`
+STATUS: `READY`
 
-MODE: `QUALIFICATION`
+MODE: `BUILD`
 
-## Outcome
+## Primary Outcome
 
-Qualify the accepted Work 0039 company-install bundle on the user's company Google Workspace environment and advance it to a safely usable state using direct user-observed runtime evidence. This includes the governed Gmail -> AI -> Task/Review -> Calendar Outbox -> dedicated Google Calendar projection path. Automation and Calendar behavior must not be declared accepted from CI/local evidence alone.
+Advance the accepted Work 0039 company installation to a safely usable company-primary path: Gemini scheduled processing plus governed Task/Review plus automatic projection of eligible deadlines into the dedicated `自動期日管理` Calendar.
 
-## Already-Decided Design Choices
+The current BUILD step repairs and validates the local source boundary that can strand Calendar Outbox work after Review acceptance/Task edits. Company runtime Acceptance remains separate and must later be based on direct user-observed evidence.
 
-- GitHub `main` / Work 0039 accepted source and release remain authoritative for product bytes.
-- The canonical authored source remains `implementation/GoogleSpreadsheet/apps-script-v2/`.
-- The installed company bundle is the accepted Work 0039 two-paste distribution; do not regenerate or modify it merely to repeat qualification.
-- User-observed company-PC runtime evidence is stronger than local/CI inference for this Work.
-- Credentials and API-key values must never be copied into GitHub, chat, email, reports, screenshots, or attachments.
-- Calendar is a derived projection of the governed Task state; the Sheet remains the source of truth.
-- A company Apps Script editor size failure would trigger a Strategy Reset to the pre-decided split-bundle fallback rather than repeated paste attempts; that fallback is not active because installation/setup has already progressed.
+## Current State
 
-## Source of Truth
+Accepted company-runtime evidence:
 
-- Repository: `Tanukitsune-hub/GAS-Project-Schedule`
-- Accepted product baseline at Work start: `b9fb54217576a9e780d725118081037eadcf5b48`
-- Work 0039 acceptance: `docs/handoffs/0039-acceptance.md`
-- Work 0039 dispatch ledger: `docs/handoffs/0039-dispatches.md`
-- Runtime menu: `implementation/GoogleSpreadsheet/apps-script-v2/Menu.gs`
-- Runtime readiness behavior: `implementation/GoogleSpreadsheet/apps-script-v2/README.md`, `12_Triggers.gs`, and related current source.
-- Calendar runtime path: `09_TaskReviewPolicy.gs`, `10_CalendarSync.gs`, `11_EditHandler.gs`, `18_Worker.gs`.
+- setup completed;
+- required Gemini credential configured in Script Properties without exposing its value;
+- Gemini five-minute Automation can run;
+- an eligible target email completed scheduled Gmail/Gemini processing;
+- a no-new-mail scheduled invocation has been observed as `FAILED`;
+- expected Calendar projection was not correctly observed.
 
-## Accepted Evidence at Work Start
+Static repository review establishes a material Calendar scheduling concern: Review/Task edits can create durable Calendar Outbox work after the originating Message is already `DONE`, while the canonical scheduled Trigger drives `processAutomaticBatch()` and the standalone Calendar Outbox drain also exists separately as `syncPendingCalendarJobs()`.
 
-User-observed evidence reported in the company environment:
+The no-new-mail `FAILED` symptom is not assumed to have the same root cause. It must be reproduced locally or remain a bounded company-runtime evidence request.
 
-1. Initial setup has completed.
-2. The required API key has been configured in Apps Script Script Properties.
+## Current Dispatch
 
-The credential value was not requested, observed, recorded, or stored.
+`0041-CODEX-01` — Calendar Runtime Remediation
 
-Subsequent company-runtime evidence now also establishes:
+Authoritative instruction:
 
-- Gemini 5-minute Automation can be enabled;
-- an eligible target email can be processed successfully in Gemini mode;
-- a scheduled run with no new eligible target email has been recorded `FAILED`;
-- the expected Calendar projection was not correctly observed for the processed task path;
-- the company-provided OpenAI service is Azure OpenAI and an independent bounded GAS -> Azure OpenAI smoke test returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
+`docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-instruction.md`
 
-The following are not yet claimed as PASS unless separately observed during this Work:
+Authoritative current ball/status:
 
-- healthy zero-new-mail scheduled behavior;
-- Calendar eligibility -> Outbox -> Advanced Calendar API -> Task sync-state end-to-end behavior;
-- correct automatic draining of Calendar Outbox work created by Task/Review edits;
-- Azure OpenAI provider/infrastructure qualification.
+`docs/handoffs/0041-dispatches.md`
 
-## Required Scope
+## Acceptance Criteria for the Remediated Product Candidate
 
-1. Preserve the already-accepted Gemini target-email major flow evidence.
-2. Identify the safe stage/code for exactly one existing scheduled `FAILED` run with no new eligible email; do not assume it is an idle-run defect until Calendar/backlog failure is excluded.
-3. Trace one existing task that was expected to reach Calendar through Task eligibility, Review state, Calendar intent, Outbox, Calendar job execution, and final Task Calendar state.
-4. Determine whether the current post-edit/post-review Calendar Outbox is automatically drained by the five-minute worker or requires an implementation repair.
-5. If an existing Calendar Outbox job is safely pending and the read-only evidence is insufficient, use at most one explicit user-controlled `Calendar同期を1件処理` invocation as the bounded runtime qualification action.
-6. Resolve only defects that materially block safe company use; avoid broad hardening or provider work unrelated to these paths.
-7. Record observed PASS/FAIL/NOT_EXECUTED evidence without confidential content.
+1. A Calendar-eligible governed Task can create/update/delete its managed event through the ordinary five-minute scheduled operation without routine manual Calendar-sync intervention.
+2. Standalone due Calendar Outbox work is bounded by the existing per-run limits and existing worker/Calendar claim/CAS/authority/retry/idempotency controls.
+3. A true zero-work scheduled invocation remains healthy and compatible with accepted idle-detail suppression and the independent Trigger heartbeat.
+4. Genuine Calendar/backlog/system failure remains visible and is never converted to healthy idle.
+5. Existing Gemini Gmail/Task/Review behavior and high-impact Review policy remain intact.
+6. Source, tests, active version/release evidence and current documentation agree after any product change.
+7. No company runtime PASS is claimed until a later authorized user-observed qualification.
 
-## Non-Goals
+## Non-Goals / Boundaries
 
-- Rebuilding Work 0039 bundles without a material blocker.
-- Broad hardening, refactoring, or unrelated UI work.
-- Storing company message content, account identifiers, API keys, private URLs, provider payloads, Calendar event titles/descriptions, or raw provider errors in GitHub/chat.
-- Implementing Azure OpenAI before the separate GAS-to-Azure network/auth boundary is qualified.
-- Treating CI or synthetic local tests as company-runtime PASS.
+- no Azure OpenAI implementation or network-policy bypass;
+- no direct OpenAI company qualification;
+- no broad Review/Calendar-policy relaxation;
+- no new Trigger architecture unless a Strategy Reset is explicitly approved;
+- no live company Gmail/Calendar/Apps Script/provider/OAuth/Trigger/deployment action by Codex;
+- no credentials, company content, private identifiers/URLs, raw provider payloads/errors, or Calendar business content in GitHub/chat.
 
-## Acceptance Criteria
+## Closed Conclusions
 
-Priority order:
+- Work 0039 Acceptance remains closed.
+- Work 0040 Acceptance remains closed.
+- Gemini target-email company processing is accepted evidence.
+- Calendar configuration/readiness is not Calendar E2E and Calendar E2E is still open.
+- `candidate_count=0` alone does not establish healthy idle.
+- high-impact/important new Tasks intentionally require Review before Calendar eligibility.
+- company OpenAI is Azure OpenAI; its existing 403 smoke result is a separate provider/infrastructure path.
 
-1. Installed bundle remains saved and runnable in the company Spreadsheet/Apps Script project.
-2. Gemini target-email scheduled processing remains proven usable.
-3. A scheduled invocation with no new eligible mail completes with truthful semantics: healthy idle when there is no backlog/error, or a precise bounded failure when real backlog/system work fails.
-4. For a Calendar-eligible governed Task, the intended `CREATE` path reaches the dedicated `自動期日管理` Calendar and the Task/Outbox final state reflects success.
-5. Review acceptance or a Calendar-relevant Task edit creates durable Calendar intent and is subsequently drained automatically by the normal five-minute operation, without requiring routine manual `Calendar同期を1件処理` intervention.
-6. Existing Calendar `UPDATE`/`DELETE` behavior remains protected by the same outbox/authority contract; a local regression test must cover the repaired scheduling boundary even if live destructive verification is not required.
-7. No BLOCKER remains in the Gemini + Task + Calendar primary company path.
+## Completion Latch
 
-## Required Validation Evidence
+Not applied. Work 0041 remains open through Codex remediation, ChatGPT review, delivery decision, and later bounded company-runtime qualification.
 
-Evidence hierarchy:
+WORK_ID: `0041`
 
-1. User-observed company Spreadsheet / Apps Script / dedicated Calendar result.
-2. Bounded Task state: `status`, `needs_review`, `decision`, `review_state`, due-date presence/validity, `deadline_basis`, `calendar_sync_mode`, `calendar_importance`, `calendar_category`, `calendar_sync_status`, `calendar_reconcile_required`, and event-id/last-sync presence only.
-3. Bounded Calendar Outbox state: `target_type`, `desired_action`, `status`, `retry_count`, safe `error_code`, and whether a due job exists; omit IDs and business content.
-4. Bounded Run History state: `mode`, `run_status`, `note`/safe code, `candidate_count`, `calendar_job_count`, `error_count`, and safe error stage/code.
-5. Dedicated `自動期日管理` Calendar event presence/absence without exposing event title, description, attendees, or private URLs.
-6. Repository CI/local regression evidence only as supporting evidence.
+DISPATCH_ID: `0041-CODEX-01`
 
-Never mark an unexecuted company-runtime check PASS.
+BALL: `CODEX`
 
-## External-Action Authorization
-
-Current authorization is limited to user-controlled actions in the already-created company Workspace installation necessary to inspect the existing failure and Calendar path.
-
-Next decisive action is read-only inspection of one existing affected Task, its corresponding bounded Outbox state, and one existing failed scheduled run. If that proves a safe due Calendar job is pending, one explicit menu invocation of `業務OS v2` -> `Calendar同期を1件処理` is within the bounded qualification scope; do not create unrelated test mail or multiple Calendar jobs solely for diagnosis.
-
-Not authorized:
-
-- repeated provider requests;
-- broad Gmail processing;
-- destructive Task cleanup;
-- sharing credentials or company content;
-- Azure network-policy bypass or Azure provider integration before separate qualification.
-
-## Escalation Conditions
-
-Perform a Strategy Reset from QUALIFICATION to BUILD if the evidence establishes a reproducible code defect in either the zero-new-mail scheduled path or the normal automatic Calendar Outbox drain path. Keep the remediation narrow and preserve accepted Task authority, Calendar ownership, idempotency, and fail-closed behavior.
-
-## Delivery
-
-This Work is primarily user-executed company-runtime qualification. GitHub records contain bounded status/evidence only and no company secrets. Codex is required only after a reproducible implementation defect is fixed as the next decisive action; any such dispatch remains Work `0041` and begins at `0041-CODEX-01`.
+STATUS: `READY`

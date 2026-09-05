@@ -2,118 +2,55 @@
 
 WORK_ID: `0041`
 
-DISPATCH_ID: `N/A`
+DISPATCH_ID: `0041-CODEX-01`
 
-BALL: `USER`
+BALL: `CODEX`
 
-STATUS: `ACTION_REQUIRED`
+STATUS: `READY`
 
-MODE: `QUALIFICATION`
+MODE: `BUILD`
 
-## Current live evidence
+## Frozen company-runtime evidence
 
-The company Google Workspace installation is producing direct runtime evidence.
+No new live company action is authorized during this Codex dispatch. The following user-observed evidence is frozen for the implementation review:
 
-User-observed / user-reported evidence:
-
-- initial setup completed;
-- required API key(s) configured in Script Properties; credential values were not requested, copied, logged, or stored;
-- Gemini mode can enable the 5-minute Automation;
-- when an eligible target email exists in Gemini mode, scheduled Gmail/AI processing completes successfully;
-- when no new eligible target email exists, a scheduled invocation has been recorded `FAILED` rather than an established healthy no-work completion;
-- the expected Task-to-Calendar projection was not correctly observed;
-- the company-provided OpenAI service is Azure OpenAI, not direct OpenAI;
-- an independent bounded GAS -> Azure OpenAI smoke test returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
+- setup completed;
+- required Gemini credential configured in company Script Properties without exposing the value;
+- Gemini five-minute Automation can be enabled;
+- an eligible target email completed scheduled Gmail/Gemini processing;
+- at least one scheduled invocation with no new eligible target email was recorded `FAILED`;
+- the expected Calendar projection was not correctly observed;
+- company OpenAI is Azure OpenAI;
+- separate bounded GAS -> Azure OpenAI smoke testing returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
 
 ## Current interpretation
 
-### Gemini
+Gemini inference/target-email processing is accepted company-runtime evidence. Calendar E2E and truthful no-new-mail scheduled semantics remain open.
 
-Gemini inference on an eligible real company target-email path is accepted evidence. The remaining issues are downstream/scheduled-runtime semantics, not proof that Gemini itself is unusable.
+Source review identified a material Calendar scheduling concern: a Review acceptance or Calendar-relevant Task edit can persist durable Calendar Outbox work after the originating Message is already `DONE`; the normal five-minute Trigger drives the automatic worker, while a standalone Calendar Outbox drain also exists as the explicit `Calendar同期を1件処理` path. Dispatch `0041-CODEX-01` must prove or disprove this gap locally and repair it if confirmed.
 
-### Scheduled no-new-mail behavior
+The no-new-mail `FAILED` observation is not automatically an idle bug. A zero-new-mail scheduled invocation may still contain Calendar/backlog/system work. Codex must not mask a real failure to satisfy an idle test.
 
-The existing `FAILED` run must not yet be classified as a pure idle-run defect. The five-minute worker resumes Message-State backlog before scanning new Gmail candidates, including `CALENDAR_PENDING` work. A run with no new eligible mail can therefore fail because of real Calendar/backlog/system work. The safe `note`/stage/code from one existing run is required before changing zero-work semantics.
+## Next runtime qualification after Codex return
 
-### Calendar
+Only after ChatGPT reviews the Codex implementation/PR and approves a company update will Work 0041 return to user-controlled runtime qualification. The later bounded evidence must establish, at minimum:
 
-Calendar runtime E2E is not accepted.
+- eligible reviewed/accepted Task -> automatic Calendar event projection through ordinary scheduled operation;
+- no routine manual `Calendar同期を1件処理` requirement;
+- true zero-work scheduled invocation has healthy semantics;
+- genuine Calendar errors remain visible;
+- no duplicate managed Calendar event.
 
-Static source review shows:
+Until then, company Calendar E2E remains `NOT_ACCEPTED`.
 
-1. `10_CalendarSync.gs` permits AUTO Calendar projection only for a governed, non-Review Task with a valid deadline, `calendar_importance=HIGH`, and an allowed category.
-2. `09_TaskReviewPolicy.gs` routes HIGH/high-impact new actions into Review instead of automatic finalization, so important new deadlines normally require user acceptance before becoming Calendar-eligible.
-3. `11_EditHandler.gs` turns the accepted/edit Task change into durable Calendar Outbox intent but explicitly performs no Calendar API call.
-4. The normal five-minute `runScheduledWorker` calls `WorkOsWorker.processAutomaticBatch()` only.
-5. `syncPendingCalendarJobs()` is a separate path exposed by the menu as `Calendar同期を1件処理`; current source does not show `runScheduledWorker` invoking that standalone Outbox drain.
+## Safety boundary
 
-This creates a credible implementation gap: once a Message is already `DONE`, a later Review acceptance or Task edit may enqueue a Calendar job without creating Message-State backlog that the normal five-minute worker will resume. The Calendar job can therefore remain pending unless a manual Calendar-sync action or another eligible processing path drains it.
-
-This is a candidate root cause for the observed missing Calendar projection and must be qualified before company use is accepted.
-
-### Direct OpenAI / Azure OpenAI
-
-Direct OpenAI is superseded for company qualification because the company service is Azure OpenAI. Azure OpenAI remains a separate provider/infrastructure path; the current bounded GAS smoke test returned `HTTP 403 / PERMISSION_OR_NETWORK_DENIED`.
-
-## Next decisive evidence
-
-Use one existing affected Task and one existing failed scheduled run. Do not create unrelated new test mail solely for diagnosis.
-
-Report only bounded fields from the affected Task if present:
-
-- `status`
-- `needs_review`
-- `decision`
-- `review_state`
-- due-date present/valid: yes/no
-- `deadline_basis`
-- `calendar_sync_mode`
-- `calendar_importance`
-- `calendar_category`
-- `calendar_sync_status`
-- `calendar_reconcile_required`
-- Calendar event ID present: yes/no
-- last Calendar sync timestamp present: yes/no
-
-From the corresponding `同期状態` / Calendar Outbox row, omit IDs and report only:
-
-- `target_type`
-- `desired_action`
-- `status`
-- `retry_count`
-- safe `error_code`
-- next retry populated: yes/no
-
-From one existing `FAILED` scheduled run, report only:
-
-- `mode`
-- `run_status` / status
-- `note` / safe error code
-- `candidate_count`
-- `calendar_job_count`
-- `error_count`
-- safe error stage/code if shown separately
-
-For the dedicated `自動期日管理` Calendar, report only whether the expected managed event is `PRESENT` or `ABSENT`.
-
-Do not provide Task/message/event IDs, email subject/body, sender/recipient, Calendar title/description, account IDs, private URLs, or credentials.
-
-If the existing bounded Outbox state shows a due Calendar job that is `PENDING` or `RETRY`, one explicit `業務OS v2` -> `Calendar同期を1件処理` action is permitted as the single bounded runtime discriminator. A success would strongly support a missing automatic-Outbox-drain defect; a safe Calendar error code would instead identify an API/auth/state blocker.
-
-## Safety / qualification boundary
-
-- Gemini target-email completion is accepted runtime evidence but does not establish Calendar success.
-- Calendar configuration/readiness is not equivalent to Calendar event E2E.
-- Do not modify Review/high-impact policy until the automatic Outbox drain boundary is proven or disproven.
-- Direct OpenAI is not the intended company provider.
-- Azure OpenAI requires separate bounded network/auth qualification before integration.
-- Work 0039 product acceptance and Work 0040 transport acceptance remain closed unless direct contrary evidence appears.
-- No company credential or confidential business content may be stored in GitHub or chat.
+Do not expose company email/task/Calendar content, IDs, account data, private URLs, credentials, or raw provider payloads/errors. Do not use the separate Azure 403 path as a reason to change the Gemini/Calendar implementation.
 
 WORK_ID: `0041`
 
-DISPATCH_ID: `N/A`
+DISPATCH_ID: `0041-CODEX-01`
 
-BALL: `USER`
+BALL: `CODEX`
 
-STATUS: `ACTION_REQUIRED`
+STATUS: `READY`
