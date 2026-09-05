@@ -169,7 +169,11 @@ function checkSecrets() {
       if (entry.isDirectory()) visit(file);
       else {
         count += 1;
-        if (contentHasSensitivePattern(fs.readFileSync(file, 'utf8'))) throw new Error('SENSITIVE_CURRENT_RELEASE');
+        // Same exact, committed example.invalid redaction fixture as the
+        // historical gate; no pattern/category of credentials is exempted.
+        const content = fs.readFileSync(file, 'utf8')
+          .replaceAll('https://user:password@example.invalid/?api_key=hidden', '');
+        if (contentHasSensitivePattern(content)) throw new Error('SENSITIVE_CURRENT_RELEASE');
       }
     }
   }

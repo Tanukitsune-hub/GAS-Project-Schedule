@@ -1,9 +1,9 @@
 {
   "schema": "WORK_OS_CURRENT_CONTRACT_V1",
   "repository": "Tanukitsune-hub/GAS-Project-Schedule",
-  "starting_main": "3e302c2bc1e13c9482b208b754bc893e9a73fc70",
-  "branch": "codex/0039-openai-provider-selection",
-  "code_version": "2.8.26-prepilot",
+  "starting_main": "baddbd9dc728599dc095526e69ce7531b0f16bea",
+  "branch": "codex/0041-calendar-runtime-remediation",
+  "code_version": "2.8.27-prepilot",
   "schema_version": "2.6",
   "ai_schema_version": "2.0",
   "migration_version": "3",
@@ -11,35 +11,43 @@
   "automation": false,
   "active_transfer": null,
   "active_deployment": null,
-  "source_commit": "7c8b4c7709ab00b4d315f910b9271f3c4945b702",
+  "source_commit": "2a1b656fd7ecd411b61d728369b02fd5b49b28be",
   "release_commit": "SELF",
   "phase8b": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.27-prepilot",
     "test_mode": true,
     "test_harness": true,
     "payload_files": 26,
     "package_files": 30,
-    "payload_sha256": "92924a4546dbddbee0274c5e07f6b63977563fd45f54496abcb70cb3ec4fc636",
-    "package_sha256": "cfaad08745886f97e5bd51331ce602a4cefefaeca289f389bf2820188631409c"
+    "payload_sha256": "f1ec4f4128cd36515d8f1fddcc9c510054463dca600f4f4653b4e52e6c060c7e",
+    "package_sha256": "d2500427a584f089ae520ad35e9900def857e91020d4b9d77e58bc9538918dd6"
   },
   "phase8c": {
-    "path": "implementation/GoogleSpreadsheet/release/v2.8.26-prepilot-phase8c",
+    "path": "implementation/GoogleSpreadsheet/release/v2.8.27-prepilot-phase8c",
     "test_mode": false,
     "test_harness": false,
     "transform": "TEST_MODE_AND_APPROVED_PROVIDER_READINESS_FLAGS",
     "payload_files": 25,
     "package_files": 29,
-    "payload_sha256": "73dd9aed38260a177f9a2b6ba7d9264549f0787e4efdcaa7e4adfab68089be22",
-    "package_sha256": "7a67f4448e0208642094b7c18ef6cc516f00b72784b84bdacab41df3d03132e2"
+    "payload_sha256": "526d1dd6c2a8e8e39c43dee9e843b9782cfccdeecb3c434dd0524b20f794ff06",
+    "package_sha256": "8392ce6e670895d1325693cd8b9e6ac70da91c45d1e33c2751992f50032693b5"
   },
   "bundle": {
-    "path": "implementation/GoogleSpreadsheet/release/work-0039-single-file-company-install",
+    "path": "implementation/GoogleSpreadsheet/release/work-0041-single-file-company-install",
     "paste_count": 2,
     "paste_order": ["Code.gs", "appsscript.json"],
     "txt_transport": "BYTE_IDENTICAL",
-    "code_gs_sha256": "a3fcd9c11d232254dc9ed25d5052da0dbddd0b5ba7c2212ca055ea35446aa510",
+    "code_gs_sha256": "1535e6294197bebd97c4c3ff37a6c83ae866a9c28b112896da01203894993a78",
     "manifest_sha256": "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe",
-    "checksums_sha256": "af99787e6883f58ee49e794b714bc7c4571f628bdc31058dc4cb9b8935defcab"
+    "checksums_sha256": "ec5c756c0cef2025e67a480e7e1cce6ebfba9b44136878e6339645183dd8a1e2"
+  },
+  "work_0041": {
+    "dispatch_id": "0041-CODEX-01",
+    "handoff_instruction": "docs/handoffs/0041-CODEX-01-calendar-runtime-remediation-instruction.md",
+    "accepted_evidence_base": "baddbd9dc728599dc095526e69ce7531b0f16bea",
+    "live_runtime": "NOT_EXECUTED",
+    "company_calendar_e2e": "NOT_ACCEPTED",
+    "company_no_new_mail_failed": "NEED_USER_EVIDENCE"
   },
   "work_0039": {
     "handoff_instruction": "docs/handoffs/0039-CODEX-01-openai-provider-selection-instruction.md",

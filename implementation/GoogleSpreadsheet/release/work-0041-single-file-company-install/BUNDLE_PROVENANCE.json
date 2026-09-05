@@ -1,0 +1,276 @@
+{
+  "schema": "WORK_0041_SINGLE_FILE_INSTALL_V1",
+  "work_id": "0041",
+  "dispatch_id": "0041-CODEX-01",
+  "package": "v2.8.27-prepilot-phase8c",
+  "source_root": "implementation/GoogleSpreadsheet/release/v2.8.27-prepilot-phase8c/apps-script",
+  "source_commit": "2a1b656fd7ecd411b61d728369b02fd5b49b28be",
+  "prepared_at": "2026-09-05T02:43:43Z",
+  "generated_by": "implementation/GoogleSpreadsheet/tools/build_work_0041_release.js",
+  "encoding": "UTF-8 bytes; source sections are preserved without normalization",
+  "manual_install": {
+    "paste_count": 2,
+    "order": [
+      "Code.gs",
+      "appsscript.json"
+    ],
+    "application_code_file": "Code.gs",
+    "manifest_file": "appsscript.json",
+    "text_transport_copies": [
+      "Code.gs.txt",
+      "appsscript.json.txt"
+    ]
+  },
+  "governance": {
+    "openai_endpoint": "https://api.openai.com/v1/responses",
+    "openai_model": "gpt-5.6-luna",
+    "openai_prompt_version": "openai-responses-v1-work-os-v2",
+    "store": false,
+    "tools": false,
+    "background": false,
+    "stream": false,
+    "data_governance_status": "NOT_APPROVED_OR_UNKNOWN",
+    "live_runtime": "NOT_EXECUTED"
+  },
+  "source_order": [
+    "00_Config.gs",
+    "01_TypesAndSchemas.gs",
+    "02_Setup.gs",
+    "03_SheetBuilder.gs",
+    "04_MessageStateRepository.gs",
+    "05_GmailGateway.gs",
+    "06_EmailPreprocessor.gs",
+    "07_AiAdapter.gs",
+    "08_TaskRepository.gs",
+    "09_TaskReviewPolicy.gs",
+    "10_CalendarSync.gs",
+    "11_EditHandler.gs",
+    "12_Triggers.gs",
+    "13_LogAndDeadLetter.gs",
+    "14_Migrations.gs",
+    "15_Dashboard.gs",
+    "16_Diagnostics.gs",
+    "17_Utilities.gs",
+    "18_Worker.gs",
+    "19_RuntimeSettings.gs",
+    "20_GeminiProvider.gs",
+    "21_OpenAiProvider.gs",
+    "22_AiProviderSelection.gs",
+    "Menu.gs"
+  ],
+  "source_files": [
+    {
+      "name": "00_Config.gs",
+      "byte_length": 12509,
+      "sha256": "c9a33fba89442e99bda7cfbe77e31d55b929c47336e622fa4b6ac609ba53692f",
+      "source_start_byte": 376,
+      "source_end_byte": 12885,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "01_TypesAndSchemas.gs",
+      "byte_length": 29145,
+      "sha256": "1096aa80cd95fc4f4215072cdcdf88a059e1e36ce4c48c6521dfad9b6cf0f250",
+      "source_start_byte": 13070,
+      "source_end_byte": 42215,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "02_Setup.gs",
+      "byte_length": 43245,
+      "sha256": "7404dea0841887a4a06b2a1f28367e13c886c79352a1220d708ac90c02b1fad7",
+      "source_start_byte": 42399,
+      "source_end_byte": 85644,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "03_SheetBuilder.gs",
+      "byte_length": 37634,
+      "sha256": "32c371b549db1e8ee68c1d09f68cbcafd25e8bff3b9cad06f41f60c2703d476d",
+      "source_start_byte": 85825,
+      "source_end_byte": 123459,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "04_MessageStateRepository.gs",
+      "byte_length": 51608,
+      "sha256": "c99a0d761613471f9a5b31d68824414b734a75ff33259beac0bdc812cd10ed77",
+      "source_start_byte": 123657,
+      "source_end_byte": 175265,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "05_GmailGateway.gs",
+      "byte_length": 42640,
+      "sha256": "cfd5abd0247fb12585351b8755ff2fd9f8e15ad3d41c8f6f5e343d7df9ce84f3",
+      "source_start_byte": 175463,
+      "source_end_byte": 218103,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "06_EmailPreprocessor.gs",
+      "byte_length": 5834,
+      "sha256": "febba4f009201fdf880d39dc43f54c8ff3b9bc17790ce588aa9f9c9d60394657",
+      "source_start_byte": 218295,
+      "source_end_byte": 224129,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "07_AiAdapter.gs",
+      "byte_length": 58827,
+      "sha256": "81d830fc2e4e1872efd43f5b28da7ab850dff7394feeeda00ad482ec7edd967a",
+      "source_start_byte": 224319,
+      "source_end_byte": 283146,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "08_TaskRepository.gs",
+      "byte_length": 183463,
+      "sha256": "4eb1e9c98e123e714207ddd8e7d3d9b8a9e2f690729eb0ec318c0e3973fbd17a",
+      "source_start_byte": 283334,
+      "source_end_byte": 466797,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "09_TaskReviewPolicy.gs",
+      "byte_length": 16837,
+      "sha256": "47d036409127dc96cdace40cf61428fdc002c5c48d963eeb004e721d8720c23c",
+      "source_start_byte": 466991,
+      "source_end_byte": 483828,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "10_CalendarSync.gs",
+      "byte_length": 92542,
+      "sha256": "75828fd881f234f2f705bef61a5b4444c3a3b8c37a44faf9b6ab6acf16876bf0",
+      "source_start_byte": 484020,
+      "source_end_byte": 576562,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "11_EditHandler.gs",
+      "byte_length": 22943,
+      "sha256": "244b8424f8ffce15f436721484aeffa7b890d086926bd6530ce934b0e94f2297",
+      "source_start_byte": 576749,
+      "source_end_byte": 599692,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "12_Triggers.gs",
+      "byte_length": 77875,
+      "sha256": "1032a952dca44acb36c9f1b5c3c52010d28f36274b55964d4a0de6794e395466",
+      "source_start_byte": 599875,
+      "source_end_byte": 677750,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "13_LogAndDeadLetter.gs",
+      "byte_length": 65676,
+      "sha256": "fdb0d2dd81290f117cc7e286cea4e23b64e8da4001abe9114d59546adfac8b06",
+      "source_start_byte": 677938,
+      "source_end_byte": 743614,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "14_Migrations.gs",
+      "byte_length": 50326,
+      "sha256": "4d93d8b336893a8d71392fbe7b5cf8222925d44cdd854b5b6df86e2ceea3e568",
+      "source_start_byte": 743804,
+      "source_end_byte": 794130,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "15_Dashboard.gs",
+      "byte_length": 62232,
+      "sha256": "c18be435239c3468493971baab82fe746de4210f7513b1677eadff3b00405353",
+      "source_start_byte": 794313,
+      "source_end_byte": 856545,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "16_Diagnostics.gs",
+      "byte_length": 62692,
+      "sha256": "b69eff8cc567969bf2fa00b6347009b7fdb0b38e06aa867684e8a7666c000c8c",
+      "source_start_byte": 856729,
+      "source_end_byte": 919421,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "17_Utilities.gs",
+      "byte_length": 14212,
+      "sha256": "4cdc8b03d0d7023422c924ca3407c77e948f0db1a841a3414a1b635bde0d57bd",
+      "source_start_byte": 919605,
+      "source_end_byte": 933817,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "18_Worker.gs",
+      "byte_length": 213442,
+      "sha256": "8ff2e50071164c2040cf31da3d5dda297395452e23a0a76f0041cd051c4208b3",
+      "source_start_byte": 933997,
+      "source_end_byte": 1147439,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "19_RuntimeSettings.gs",
+      "byte_length": 15854,
+      "sha256": "106370ebf78c81266d061f690b3448902d40bf177f283d880fe3965ac6fc618f",
+      "source_start_byte": 1147624,
+      "source_end_byte": 1163478,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "20_GeminiProvider.gs",
+      "byte_length": 22103,
+      "sha256": "c7eb7d3220dbfe7fb072c6af3613877fe47f6d8199fd4f2cb6d79fc3cae42579",
+      "source_start_byte": 1163671,
+      "source_end_byte": 1185774,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "21_OpenAiProvider.gs",
+      "byte_length": 23980,
+      "sha256": "893beea700c5e428ff419684033409d40abcfc398c6813efd9edf6bacaec51ba",
+      "source_start_byte": 1185966,
+      "source_end_byte": 1209946,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "22_AiProviderSelection.gs",
+      "byte_length": 27284,
+      "sha256": "0bf6e899a48388d4f9f3e45247eb6074fc8d8bee1c7939f9d8c55cd5907d3292",
+      "source_start_byte": 1210143,
+      "source_end_byte": 1237427,
+      "trailing_separator_bytes": 0
+    },
+    {
+      "name": "Menu.gs",
+      "byte_length": 21245,
+      "sha256": "71a22cfed86a1ed7132bc9a7bab9c2b36b6cb8493a0bd9ea0d5e27a0711012c2",
+      "source_start_byte": 1237611,
+      "source_end_byte": 1258856,
+      "trailing_separator_bytes": 0
+    }
+  ],
+  "bundle": {
+    "path": "Code.gs",
+    "byte_length": 1258896,
+    "sha256": "1535e6294197bebd97c4c3ff37a6c83ae866a9c28b112896da01203894993a78"
+  },
+  "manifest": {
+    "path": "appsscript.json",
+    "byte_length": 868,
+    "sha256": "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe"
+  },
+  "text_transport": {
+    "code_path": "Code.gs.txt",
+    "manifest_path": "appsscript.json.txt",
+    "code_byte_identical": true,
+    "manifest_byte_identical": true
+  },
+  "separators": {
+    "begin_marker": "/* WORK_0041_SOURCE_BEGIN ... */",
+    "end_marker": "/* WORK_0041_SOURCE_END ... */",
+    "newline": "\n"
+  }
+}
