@@ -1,0 +1,38 @@
+name: Work 0041 company bundle transport
+
+on:
+  push:
+    branches:
+      - delivery/0041-company-live-bundle
+    paths:
+      - .github/workflows/work-0041-company-bundle-transport.yml
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Verify and package accepted company bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Verify accepted transport files
+        working-directory: implementation/GoogleSpreadsheet/release/work-0041-single-file-company-install
+        run: |
+          test "$(sha256sum Code.gs.txt | cut -d' ' -f1)" = "1535e6294197bebd97c4c3ff37a6c83ae866a9c28b112896da01203894993a78"
+          test "$(sha256sum appsscript.json.txt | cut -d' ' -f1)" = "e546725fcfe47adfd40e094e66a6c866418cb6265441f541ee000c940d4a8afe"
+
+      - name: Upload accepted company files
+        uses: actions/upload-artifact@v4
+        with:
+          name: work-0041-company-install-files
+          path: |
+            implementation/GoogleSpreadsheet/release/work-0041-single-file-company-install/Code.gs.txt
+            implementation/GoogleSpreadsheet/release/work-0041-single-file-company-install/appsscript.json.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
