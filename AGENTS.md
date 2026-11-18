@@ -9,6 +9,12 @@ This file is the always-loaded entry point for agents working in this repository
 CORE_RULES_VERSION: 1.2
 REPOSITORY_RULES_SCHEMA_VERSION: 1.1
 
+## Communication preference (user-facing)
+
+- Talk to me ELI5 by default and go deeper if I ask.
+- In Japanese conversations, use plain Japanese. Keep technical decisions, code, tests, material risks, evidence, and requested artifacts precise. Follow any explicit request for a different level of detail or tone.
+
+
 <!-- CORE_RULES_START -->
 
 ## 1. Authority and Instruction Hierarchy
